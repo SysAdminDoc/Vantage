@@ -8,12 +8,14 @@ import { renderWeather } from "./widgets/weather.js";
 import { renderQuickLinks } from "./widgets/quicklinks.js";
 import { renderRss } from "./widgets/rss.js";
 import { renderNews } from "./widgets/news.js";
+import { renderBackground } from "./widgets/background.js";
 import { renderSettingsPanel, openPanel, closePanel } from "./settings.js";
 import { makeReorderable, arrayMove } from "./utils/drag.js";
 
 let currentSettings;
 let greetingTeardown = null;
 let panelDragCleanup = null;
+let backgroundTeardown = null;
 
 const PANEL_KINDS = ["news", "rss"];
 
@@ -40,8 +42,17 @@ function injectStaticIcons() {
 }
 
 function mountAll() {
-  if (greetingTeardown) { greetingTeardown(); greetingTeardown = null; }
-  if (panelDragCleanup) { panelDragCleanup(); panelDragCleanup = null; }
+  if (greetingTeardown)   { greetingTeardown();   greetingTeardown = null; }
+  if (panelDragCleanup)   { panelDragCleanup();   panelDragCleanup = null; }
+  if (backgroundTeardown) { backgroundTeardown(); backgroundTeardown = null; }
+
+  // Kick off the animated background asynchronously — don't block the rest.
+  renderBackground(
+    document.getElementById("background-mount"),
+    currentSettings,
+    saveSettings
+  ).then((teardown) => { backgroundTeardown = teardown; })
+   .catch((err) => console.error("[Vantage] background failed", err));
 
   greetingTeardown = renderGreeting(document.getElementById("greeting-mount"), currentSettings);
   renderSearch(document.getElementById("search-mount"), currentSettings, persist);

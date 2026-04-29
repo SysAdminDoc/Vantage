@@ -1,6 +1,11 @@
-// Vantage v0.2.0 — Open-Meteo weather chip (compact pill in the utility bar)
+// Vantage v0.4.0 — Open-Meteo weather chip in the utility bar.
+// Uses the shared weather-source so the background widget and this widget
+// hit Open-Meteo at most once per 10 minutes.
 
 import { el, clear } from "../utils/dom.js";
+import { getWeatherData, detectLocation, geocodeCity } from "../utils/weather-source.js";
+
+export { geocodeCity }; // re-export so settings panel can keep its existing import path
 
 const WMO_CODES = {
   0:  { label: "Clear",                 icon: "☀️"  },
@@ -37,7 +42,6 @@ export async function renderWeather(mount, settings, saveSettings) {
   }
   mount.style.display = "";
 
-  // Skeleton chip while we load
   const skeleton = el("div", { class: "weather weather--skeleton", "aria-label": "Loading weather" });
   mount.appendChild(skeleton);
 
@@ -52,22 +56,20 @@ export async function renderWeather(mount, settings, saveSettings) {
       mount.appendChild(el("div", {
         class: "weather weather--error",
         title: "Set a city in settings to enable weather"
-      }, [
-        "Weather unavailable"
-      ]));
+      }, ["Weather unavailable"]));
       return;
     }
   }
 
   try {
-    const data = await fetchWeather(location, settings.weather.units);
+    const data = await getWeatherData(location, settings.weather.units);
     clear(mount);
     const code = data.current.weather_code;
     const meta = WMO_CODES[code] || { label: "Unknown", icon: "❓" };
     const unit = settings.weather.units === "celsius" ? "°C" : "°F";
     const locName = location.name || "Current location";
 
-    const chip = el("div", {
+    mount.appendChild(el("div", {
       class: "weather",
       title: `${meta.label} · feels like ${Math.round(data.current.apparent_temperature)}${unit}`,
       "aria-label": `${Math.round(data.current.temperature_2m)} degrees ${unit}, ${meta.label}, ${locName}`
@@ -75,57 +77,12 @@ export async function renderWeather(mount, settings, saveSettings) {
       el("span", { class: "weather__icon", "aria-hidden": "true" }, [meta.icon]),
       el("span", { class: "weather__temp" }, [`${Math.round(data.current.temperature_2m)}${unit}`]),
       el("span", { class: "weather__loc" }, [locName])
-    ]);
-    mount.appendChild(chip);
+    ]));
   } catch (err) {
     clear(mount);
     mount.appendChild(el("div", {
       class: "weather weather--error",
       title: err.message || "Could not load weather"
-    }, [
-      "Weather offline"
-    ]));
+    }, ["Weather offline"]));
   }
-}
-
-export async function geocodeCity(query) {
-  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  if (!data.results || !data.results.length) {
-    throw new Error("City not found");
-  }
-  const first = data.results[0];
-  return {
-    name: `${first.name}${first.admin1 ? ", " + first.admin1 : ""}${first.country_code ? ", " + first.country_code : ""}`,
-    latitude: first.latitude,
-    longitude: first.longitude
-  };
-}
-
-async function fetchWeather(location, units) {
-  const tempUnit = units === "celsius" ? "celsius" : "fahrenheit";
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,apparent_temperature,weather_code&temperature_unit=${tempUnit}&timezone=auto`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
-}
-
-function detectLocation() {
-  return new Promise((resolve, reject) => {
-    if (!("geolocation" in navigator)) {
-      reject(new Error("Geolocation not supported"));
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({
-        name: "Current location",
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude
-      }),
-      (err) => reject(new Error(err.message || "Location denied")),
-      { timeout: 6000, maximumAge: 1000 * 60 * 30 }
-    );
-  });
 }

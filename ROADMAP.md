@@ -25,20 +25,30 @@ Items checked off as they ship. Versions are aspirational targets, not commitmen
 Deferred to a later milestone:
 - [ ] Search history dropdown with `chrome.history` integration (opt-in) — needs new permission + privacy review.
 
-## v0.4.0 — Wallpapers & vibe
+## v0.4.0 — Animated weather background — ✅ shipped 2026-04-29
+- [x] Time-of-day phase system (9 phases) with @property color interpolation.
+- [x] Sun arc driven by real sunrise/sunset for the user's locality.
+- [x] Weather-driven overlays (clouds, rain, snow, fog, lightning, storm).
+- [x] Palm-tree silhouette during golden hour + sunset.
+- [x] Stars at dusk + night.
+- [x] Shared Open-Meteo fetch with 10-minute cache.
+- [x] Settings toggle.
+- [x] `prefers-reduced-motion` support.
+
+## v0.5.0 — Wallpapers & vibe
 - [ ] Wallpaper backgrounds — Unsplash topic feeds, local upload, solid color.
 - [ ] Bing daily image option (no auth).
 - [ ] Greeting widget ("Good morning, Matt").
 - [ ] Quote-of-the-day widget (offline-bundled quote pack, refreshes daily).
 - [ ] Custom accent color picker beyond Mocha/Latte.
 
-## v0.5.0 — Productivity widgets
+## v0.6.0 — Productivity widgets
 - [ ] Todo widget with `chrome.storage.local` persistence + drag-to-reorder.
 - [ ] Notes widget with markdown rendering (no remote sync — local only).
 - [ ] Pomodoro timer.
 - [ ] Calendar widget (read-only `.ics` URL feed).
 
-## v0.6.0 — Power-user features
+## v0.7.0 — Power-user features
 - [ ] Import / export settings JSON.
 - [ ] OPML import for RSS feeds (drop-in from Feedly, Inoreader, NetNewsWire).
 - [ ] Keyboard shortcut configuration screen.

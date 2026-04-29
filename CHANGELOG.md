@@ -2,6 +2,23 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.0 — 2026-04-29
+
+### Added
+- **Animated weather + time-of-day background.** The new tab page now sits on top of a live scene that reflects the current time, sun position, and weather at your location.
+  - **Sky** transitions through nine phases — night, pre-dawn, sunrise, morning, midday, afternoon, golden hour, sunset, dusk — each with hand-tuned multi-stop gradients, smoothly animated via CSS `@property` color interpolation.
+  - **Sun / moon** moves along an arc derived from your real sunrise / sunset times (Open-Meteo `daily.sunrise` / `daily.sunset`), east-to-west across the viewport, peaking near the top at solar noon. Sun grows and warms during golden hour and sunset; a small moon takes its place at night.
+  - **Weather overlays** drive the scene per Open-Meteo's WMO code: drifting clouds (cloudy / overcast), rain streaks (drizzle / rain / heavy rain), snow particles (snow / heavy snow), white haze (fog), darkened sky + lightning flashes (storm). Weather refreshes every 10 minutes.
+  - **Palm-tree silhouette** appears in the bottom-right during golden hour and sunset only. Subtle sway animation.
+  - **Stars** twinkle at dusk and night.
+  - **`prefers-reduced-motion`** disables the loop animations cleanly while keeping the correct phase colors and sun position.
+  - Toggle: **Settings → Background → Animated background**. Off restores the static Catppuccin gradient.
+
+- **Shared weather source** (`src/utils/weather-source.js`) — single Open-Meteo fetch with a 10-minute TTL cache used by both the weather chip and the animated background, so they don't double-fetch.
+
+### Fixed
+- **Engine-picker dropdown wouldn't close.** `.engine-picker__popover { display: flex }` and the user-agent `[hidden] { display: none }` had equal CSS specificity, and the author class won — `popover.hidden = true` did nothing visually. Fixed with a global `[hidden] { display: none !important; }` rule near the top of the stylesheet, which also keeps `panel__badge` and any future `[hidden]`-toggled elements working correctly.
+
 ## v0.3.0 — 2026-04-29
 
 Layout, feed depth, interaction polish, and a one-command Enterprise Policy installer.

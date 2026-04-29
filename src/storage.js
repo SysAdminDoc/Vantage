@@ -23,6 +23,9 @@ const DEFAULTS = {
   layout: {
     panels: ["news", "rss"]
   },
+  background: {
+    enabled: true
+  },
   quicklinks: {
     enabled: true,
     items: [

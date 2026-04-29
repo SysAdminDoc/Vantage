@@ -26,6 +26,7 @@ export function renderSettingsPanel(panel, settings, onChange) {
   panel.appendChild(body);
 
   body.appendChild(buildAppearance(settings, onChange));
+  body.appendChild(buildBackground(settings, onChange));
   body.appendChild(buildGreeting(settings, onChange));
   body.appendChild(buildSearchSection(settings, onChange));
   body.appendChild(buildWeatherSection(settings, onChange));
@@ -121,6 +122,24 @@ function buildAppearance(settings, onChange) {
         document.documentElement.setAttribute("data-theme", v);
         onChange(settings);
       }
+    })
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Background -------------------------------------------------------- */
+
+function buildBackground(settings, onChange) {
+  const sec = section("Background", "cloud");
+  const g = group();
+  g.appendChild(row(
+    "Animated background",
+    "Sky color, sun arc, weather, and time-of-day scenery driven by your live weather. Off uses a static gradient.",
+    toggle({
+      checked: settings.background.enabled,
+      ariaLabel: "Animated background",
+      onChange: (v) => { settings.background.enabled = v; onChange(settings); }
     })
   ));
   sec.appendChild(g);
