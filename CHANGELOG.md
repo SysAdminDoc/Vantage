@@ -2,6 +2,13 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.2 — 2026-04-29
+
+Cosmetic refresh.
+
+### Changed
+- **Palm tree silhouette redesigned to look like an actual coconut palm.** Single feathered-frond template (the leaflet zigzag is baked into the path with subtle leaflet-height variation so it reads organic instead of mechanical) is rotated into 10 placements around the crown anchor — back layer at 85-90% scale for depth, front layer full size, drooping pair just below horizontal. Trunk now has a real S-curve taper from a wide base to a slim crown, with frond-scar ring banding as a subtle secondary fill. Coconut bunch tucked under the crown.
+
 ## v0.4.1 — 2026-04-29
 
 Hotfix on top of v0.4.0 — the animated background was rendering correctly at the data layer but was invisible to the user.

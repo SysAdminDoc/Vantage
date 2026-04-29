@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Vantage",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Customizable new tab dashboard — search engines, RSS, news, weather, and quick links. Privacy-first. No API keys required.",
   "chrome_url_overrides": {
     "newtab": "newtab.html"

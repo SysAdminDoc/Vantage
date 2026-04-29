@@ -32,29 +32,63 @@ const CODE_TO_WEATHER = {
   95: "storm", 96: "storm", 99: "storm"
 };
 
-const PALM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" preserveAspectRatio="xMidYEnd meet">
+// Stylized coconut palm. Frond is a single feathered path defined pointing
+// along +x from the origin; each <use> rotates it to its place around the
+// crown anchor. Leaflet heights vary slightly along the path so the zigzag
+// reads as organic instead of pixel-art.
+const PALM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" preserveAspectRatio="xMidYEnd meet">
+<defs>
+  <path id="vp-frond" d="
+    M 0,-2 L 4,-7 L 8,-3 L 14,-12 L 19,-3 L 27,-14 L 32,-3 L 42,-13 L 47,-3
+    L 58,-11 L 63,-3 L 75,-9 L 80,-3 L 91,-6 L 96,-2 L 102,-1 L 105,0
+    L 102,1 L 96,2 L 91,6 L 80,3 L 75,9 L 63,3 L 58,11 L 47,3
+    L 42,13 L 32,3 L 27,14 L 19,3 L 14,12 L 8,3 L 4,7 L 0,2 Z"/>
+  <g id="vp-coconuts">
+    <ellipse cx="0"  cy="0"  rx="5"   ry="6"/>
+    <ellipse cx="-7" cy="-1" rx="4.5" ry="5"/>
+    <ellipse cx="7"  cy="-1" rx="4.5" ry="5"/>
+    <ellipse cx="-3" cy="6"  rx="4"   ry="5"/>
+    <ellipse cx="5"  cy="6"  rx="4"   ry="5"/>
+  </g>
+</defs>
 <g fill="#0a0a0d">
-  <!-- trunk -->
-  <path d="M93 320 C 92 280 90 240 95 200 C 99 165 104 135 108 105 L 116 105 C 119 135 122 165 122 200 C 122 240 124 280 122 320 Z"/>
-  <!-- trunk segments -->
-  <path d="M95 305 L 121 305 L 119 295 L 96 295 Z M97 270 L 120 270 L 118 260 L 99 260 Z M100 230 L 119 230 L 117 220 L 102 220 Z M103 190 L 117 190 L 115 180 L 105 180 Z M105 150 L 116 150 L 114 142 L 107 142 Z M107 120 L 114 120 L 112 112 L 109 112 Z" fill="#000"/>
-  <!-- coconuts cluster at top -->
-  <circle cx="106" cy="103" r="6"/>
-  <circle cx="115" cy="102" r="5"/>
-  <circle cx="111" cy="108" r="5"/>
-  <!-- fronds: long curved leaves radiating from top -->
-  <!-- left side fronds -->
-  <path d="M108 100 Q 60 80 8 60 Q 4 50 8 42 Q 60 60 110 95 Z"/>
-  <path d="M108 98 Q 50 60 16 18 Q 16 8 26 4 Q 70 50 112 92 Z"/>
-  <path d="M108 100 Q 65 100 22 110 Q 14 116 18 124 Q 70 116 112 102 Z"/>
-  <!-- right side fronds -->
-  <path d="M112 100 Q 160 80 196 56 Q 200 48 196 40 Q 152 62 110 95 Z"/>
-  <path d="M112 98 Q 170 60 192 14 Q 192 6 180 4 Q 144 50 110 92 Z"/>
-  <path d="M112 100 Q 158 102 192 110 Q 200 116 196 124 Q 150 118 110 102 Z"/>
-  <!-- center / back fronds -->
-  <path d="M110 96 Q 110 50 100 8 Q 108 0 116 8 Q 120 50 114 96 Z"/>
-  <path d="M108 100 Q 95 70 70 40 Q 76 30 86 30 Q 102 60 110 96 Z"/>
-  <path d="M114 100 Q 132 70 152 40 Q 146 30 136 30 Q 122 60 114 96 Z"/>
+  <!-- Trunk: tapers from a wide base to a slim crown, with a slight S-curve. -->
+  <path d="M 100 320
+           C 95 280,  96 240, 102 196
+           C 108 160, 114 130, 117 110
+           L 124 110
+           C 127 130, 122 160, 119 196
+           C 117 240, 121 280, 130 320 Z"/>
+  <!-- Frond-scar banding (the horizontal rings left by shed fronds). -->
+  <g fill="#1a1a22">
+    <path d="M 98 312 Q 115 314 132 312 L 132 308 Q 115 310 98 308 Z"/>
+    <path d="M 96 286 Q 114 288 129 286 L 129 282 Q 114 284 96 282 Z"/>
+    <path d="M 96 256 Q 113 258 126 256 L 126 252 Q 113 254 96 252 Z"/>
+    <path d="M 98 226 Q 113 228 124 226 L 124 222 Q 113 224 98 222 Z"/>
+    <path d="M 102 196 Q 113 198 122 196 L 122 192 Q 113 194 102 192 Z"/>
+    <path d="M 106 168 Q 114 170 121 168 L 121 164 Q 114 166 106 164 Z"/>
+    <path d="M 110 140 Q 116 142 121 140 L 121 136 Q 116 138 110 136 Z"/>
+  </g>
+  <!-- Coconut cluster, tucked under the crown. -->
+  <use href="#vp-coconuts" transform="translate(118 124)"/>
+  <!-- Crown of 10 fronds radiating from the top of the trunk.
+       Back layer is scaled down ~85-90% so it reads as depth, front at full size,
+       and the pair around 170°/10° droops slightly below horizontal. -->
+  <g transform="translate(120 112)">
+    <!-- back layer -->
+    <use href="#vp-frond" transform="rotate(-100) scale(0.85)"/>
+    <use href="#vp-frond" transform="rotate(-80)  scale(0.85)"/>
+    <use href="#vp-frond" transform="rotate(-60)  scale(0.9)"/>
+    <use href="#vp-frond" transform="rotate(-120) scale(0.9)"/>
+    <!-- front layer -->
+    <use href="#vp-frond" transform="rotate(-150)"/>
+    <use href="#vp-frond" transform="rotate(-30)"/>
+    <use href="#vp-frond" transform="rotate(-170) scale(0.95)"/>
+    <use href="#vp-frond" transform="rotate(-10)  scale(0.95)"/>
+    <!-- drooping pair -->
+    <use href="#vp-frond" transform="rotate(170)  scale(0.9)"/>
+    <use href="#vp-frond" transform="rotate(10)   scale(0.9)"/>
+  </g>
 </g>
 </svg>`;
 
