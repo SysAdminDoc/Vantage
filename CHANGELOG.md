@@ -7,9 +7,11 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 Layout, feed depth, interaction polish, and a one-command Enterprise Policy installer.
 
 ### Added — install path
-- **Enterprise Policy auto-installer** (`scripts/install.ps1`). Detects Chrome / Brave / Edge / Vivaldi / Opera / Chromium on Windows, asks which to wire up, writes the `HKLM\Software\Policies\<vendor>\<browser>\ExtensionInstallForcelist` registry value, browser auto-installs Vantage on next launch. One-liner: `irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex`. Auto-elevates if not run as admin. `-Uninstall` removes the policy entry.
-- **Self-hosted Omaha update feed** at `updates.xml` — served via raw.githubusercontent.com, points at the latest release CRX with SHA-256 pinning. Browsers configured via the policy fetch this and auto-update on every future release.
-- **Release workflow regenerates `updates.xml`** after each release is created (correct order — release first, then update the feed).
+- **`scripts/install.ps1`** — Windows PowerShell installer. Downloads the latest release ZIP, extracts to `%LOCALAPPDATA%\Vantage\extension`, finds every Brave / Chrome / Edge / Vivaldi / Opera `.lnk` shortcut on the system (Start Menu, Desktop, Taskbar pin, system-wide and per-user), and appends `--load-extension="<that path>"` to each one's arguments. The browser then loads Vantage on every launch. Idempotent (re-runs don't double-add). Auto-elevates for system-wide shortcuts. `-Uninstall` strips the flag and deletes the extension files. `-Verify` shows which shortcuts carry the flag. One-liner: `irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex`.
+- **`scripts/build-crx.py`** — pure stdlib + openssl Python implementation of CRX3 packing (used by the release workflow).
+
+### Why not Enterprise Policy?
+The original v0.3.0 build of `install.ps1` wrote `ExtensionInstallForcelist` registry values pointing at a self-hosted Omaha update feed. **Modern Chromium browsers (Chrome 137+, Brave 147+) silently filter non-CWS update URLs out of that policy** — the registry value is accepted but never reaches the extension updater. Verified empirically against Brave 147.1.89.143 with verbose extension-updater logging: even `ExtensionSettings` (the modern JSON form) is ignored for self-hosted update_urls. The launch-flag approach now used in the installer bypasses the policy machinery entirely and works on every Chromium browser.
 
 
 

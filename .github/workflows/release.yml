@@ -137,30 +137,3 @@ jobs:
             dist/Vantage-v${{ inputs.version }}.zip \
             dist/Vantage-v${{ inputs.version }}.crx \
             dist/SHA256SUMS.txt
-
-      - name: Update updates.xml on main (Enterprise Policy auto-install feed)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          HASH=$(sha256sum "dist/Vantage-v${{ inputs.version }}.crx" | cut -d' ' -f1)
-          cat > updates.xml <<EOF
-          <?xml version='1.0' encoding='UTF-8'?>
-          <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
-            <app appid='hkfepknnglonkidihcoicdfkjkjfnejn'>
-              <updatecheck
-                codebase='https://github.com/SysAdminDoc/Vantage/releases/download/v${{ inputs.version }}/Vantage-v${{ inputs.version }}.crx'
-                version='${{ inputs.version }}'
-                hash_sha256='$HASH'/>
-            </app>
-          </gupdate>
-          EOF
-
-          if [ -n "$(git status --porcelain updates.xml)" ]; then
-            git config user.name  "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add updates.xml
-            git commit -m "Update updates.xml for v${{ inputs.version }}"
-            git push origin HEAD:main
-          else
-            echo "updates.xml already current — skipping commit"
-          fi

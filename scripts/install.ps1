@@ -1,21 +1,31 @@
-# Vantage v0.3.0 -- Enterprise Policy installer for Chromium browsers (Windows)
+# Vantage v0.3.0 -- Chromium installer (Windows)
 #
-# Wires up HKLM\Software\Policies\<vendor>\<browser>\ExtensionInstallForcelist
-# so the browser auto-installs Vantage on next launch by fetching the
-# self-hosted updates.xml and the signed CRX from GitHub Releases.
+# Strategy: persistent unpacked extension load via --load-extension launch flag
+# baked into every Brave / Chrome / Edge / Vivaldi / Opera shortcut on the
+# machine. Reason: Brave 147+ silently filters self-hosted CRX URLs out of
+# the ExtensionInstallForcelist policy, so the obvious "enterprise policy"
+# path is dead for non-CWS extensions. The launch-flag path works on every
+# Chromium browser, doesn't require admin (for user-level shortcuts), and
+# can be cleanly reversed.
 #
-# Usage (right-click -> Run with PowerShell, or from an elevated prompt):
+# What the script does:
+#   1. Download Vantage-vX.Y.Z.zip from the latest GitHub Release
+#   2. Extract to %LOCALAPPDATA%\Vantage\extension (stable path, browsers
+#      load from this on every launch)
+#   3. Detect installed Chromium browsers
+#   4. Find every Brave/Chrome/Edge/etc. .lnk shortcut (Start Menu, Desktop,
+#      Taskbar pin, system-wide and per-user)
+#   5. Append --load-extension="<extracted path>" to each shortcut's
+#      arguments (idempotent -- reruns don't double-add)
+#   6. Tell the user to relaunch their browser from any shortcut
 #
-#   # Interactive (menu, recommended)
-#   powershell -ExecutionPolicy Bypass -File scripts\install.ps1
+# Run from any PowerShell window (auto-elevates to write system-wide shortcuts):
+#   irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex
 #
-#   # Non-interactive
-#   powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Browsers Chrome,Brave -NoPrompt
-#
-#   # Remove the policy entry only (extension stops being force-managed)
-#   powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Uninstall
-#
-# Run from anywhere -- the script knows the extension ID and update URL itself.
+# Or with parameters (after downloading first):
+#   .\install.ps1 -Browsers Brave,Chrome -NoPrompt
+#   .\install.ps1 -Uninstall    # strip the flag and remove extension files
+#   .\install.ps1 -Verify       # show which shortcuts carry the flag
 
 #Requires -Version 5.1
 [CmdletBinding()]
@@ -23,72 +33,24 @@ param(
     [switch]$Uninstall,
     [string[]]$Browsers,
     [switch]$NoPrompt,
-    [switch]$Verify,
-    [switch]$Diagnose
+    [switch]$Verify
 )
 
 $ErrorActionPreference = 'Stop'
 
-# Pinned for the lifetime of the project. Do NOT change without re-signing
-# every release with a new key (the extension ID is derived from the key).
-$script:ExtensionId = 'hkfepknnglonkidihcoicdfkjkjfnejn'
-$script:UpdateUrl   = 'https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/updates.xml'
-$script:SelfUrl     = 'https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1'
+$script:Version       = '0.3.0'
+$script:RepoOwner     = 'SysAdminDoc'
+$script:RepoName      = 'Vantage'
+$script:SelfUrl       = "https://raw.githubusercontent.com/$($script:RepoOwner)/$($script:RepoName)/main/scripts/install.ps1"
+$script:ZipUrlLatest  = "https://github.com/$($script:RepoOwner)/$($script:RepoName)/releases/latest/download/Vantage-v$($script:Version).zip"
+$script:ExtensionDir  = Join-Path $env:LOCALAPPDATA 'Vantage\extension'
 
-$BrowserPolicies = @(
-    [PSCustomObject]@{
-        Name       = 'Chrome'
-        ExePaths   = @(
-            'C:\Program Files\Google\Chrome\Application\chrome.exe',
-            'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
-        )
-        PolicyKey  = 'HKLM:\Software\Policies\Google\Chrome\ExtensionInstallForcelist'
-        UrlScheme  = 'chrome'
-    },
-    [PSCustomObject]@{
-        Name       = 'Brave'
-        ExePaths   = @(
-            'C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe',
-            'C:\Program Files (x86)\BraveSoftware\Brave-Browser\Application\brave.exe'
-        )
-        PolicyKey  = 'HKLM:\Software\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'
-        UrlScheme  = 'brave'
-    },
-    [PSCustomObject]@{
-        Name       = 'Edge'
-        ExePaths   = @(
-            'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',
-            'C:\Program Files\Microsoft\Edge\Application\msedge.exe'
-        )
-        PolicyKey  = 'HKLM:\Software\Policies\Microsoft\Edge\ExtensionInstallForcelist'
-        UrlScheme  = 'edge'
-    },
-    [PSCustomObject]@{
-        Name       = 'Vivaldi'
-        ExePaths   = @(
-            'C:\Program Files\Vivaldi\Application\vivaldi.exe',
-            'C:\Program Files (x86)\Vivaldi\Application\vivaldi.exe'
-        )
-        PolicyKey  = 'HKLM:\Software\Policies\Vivaldi\ExtensionInstallForcelist'
-        UrlScheme  = 'vivaldi'
-    },
-    [PSCustomObject]@{
-        Name       = 'Opera'
-        ExePaths   = @(
-            "$env:LOCALAPPDATA\Programs\Opera\opera.exe",
-            'C:\Program Files\Opera\opera.exe'
-        )
-        PolicyKey  = 'HKLM:\Software\Policies\Opera Software\Opera Stable\ExtensionInstallForcelist'
-        UrlScheme  = 'opera'
-    },
-    [PSCustomObject]@{
-        Name       = 'Chromium'
-        ExePaths   = @(
-            'C:\Program Files\Chromium\Application\chrome.exe'
-        )
-        PolicyKey  = 'HKLM:\Software\Policies\Chromium\ExtensionInstallForcelist'
-        UrlScheme  = 'chrome'
-    }
+$BrowserDefs = @(
+    [PSCustomObject]@{ Name = 'Chrome';   Exe = 'chrome.exe';  ExeRoots = @('Google\Chrome\Application'),                @('Program Files', 'Program Files (x86)') }
+    [PSCustomObject]@{ Name = 'Brave';    Exe = 'brave.exe';   ExeRoots = @('BraveSoftware\Brave-Browser\Application'),  @('Program Files', 'Program Files (x86)') }
+    [PSCustomObject]@{ Name = 'Edge';     Exe = 'msedge.exe';  ExeRoots = @('Microsoft\Edge\Application'),               @('Program Files', 'Program Files (x86)') }
+    [PSCustomObject]@{ Name = 'Vivaldi';  Exe = 'vivaldi.exe'; ExeRoots = @('Vivaldi\Application'),                      @('Program Files', 'Program Files (x86)') }
+    [PSCustomObject]@{ Name = 'Opera';    Exe = 'opera.exe';   ExeRoots = @('Opera'),                                    @('Program Files', 'Program Files (x86)') }
 )
 
 function Test-Admin {
@@ -98,54 +60,31 @@ function Test-Admin {
 }
 
 function Get-SelfPath {
-    # Resolve a usable .ps1 path for re-launching. When invoked via `irm | iex`
-    # both $PSCommandPath and $MyInvocation.MyCommand.Path are empty, so we
-    # download a fresh copy of ourselves into TEMP and use that.
-    if ($PSCommandPath -and (Test-Path -LiteralPath $PSCommandPath)) {
-        return $PSCommandPath
+    if ($PSCommandPath -and (Test-Path -LiteralPath $PSCommandPath)) { return $PSCommandPath }
+    if ($MyInvocation.MyCommand.Path -and (Test-Path -LiteralPath $MyInvocation.MyCommand.Path)) {
+        return $MyInvocation.MyCommand.Path
     }
-    $candidate = $MyInvocation.MyCommand.Path
-    if ($candidate -and (Test-Path -LiteralPath $candidate)) {
-        return $candidate
-    }
-
     $temp = Join-Path $env:TEMP 'vantage-install.ps1'
-    Write-Host "  Bootstrapping installer to $temp ..." -ForegroundColor DarkGray
-    try {
-        Invoke-WebRequest -Uri $script:SelfUrl -OutFile $temp -UseBasicParsing -ErrorAction Stop
-    } catch {
-        Write-Host ""
-        Write-Host "  Failed to download installer from $($script:SelfUrl)" -ForegroundColor Red
-        Write-Host "  $($_.Exception.Message)"                              -ForegroundColor Red
-        exit 1
-    }
+    Write-Host "  Bootstrapping installer to $temp" -ForegroundColor DarkGray
+    Invoke-WebRequest -Uri $script:SelfUrl -OutFile $temp -UseBasicParsing -ErrorAction Stop
     return $temp
 }
 
 function Invoke-Elevation {
-    # Read-only modes can run as a normal user; HKLM\Software\Policies is world-readable.
-    if ($Verify -or $Diagnose) { return }
+    if ($Verify) { return }   # read-only mode
     if (Test-Admin) { return }
-
     Write-Host ""
-    Write-Host "  Administrator rights are required to write registry policy." -ForegroundColor Yellow
-    Write-Host "  Re-launching with elevation..."                              -ForegroundColor Yellow
-    Write-Host ""
-
-    $scriptPath = Get-SelfPath
-
-    $argList = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$scriptPath`"")
-    if ($Uninstall) { $argList += '-Uninstall' }
-    if ($NoPrompt)  { $argList += '-NoPrompt' }
-    if ($Verify)    { $argList += '-Verify' }
-    if ($Diagnose)  { $argList += '-Diagnose' }
-    if ($Browsers)  { $argList += @('-Browsers') + $Browsers }
-
+    Write-Host "  Need admin rights to update system-wide Start Menu shortcuts." -ForegroundColor Yellow
+    Write-Host "  Re-launching with elevation..."                                -ForegroundColor Yellow
+    $sp = Get-SelfPath
+    $a = @('-NoProfile','-ExecutionPolicy','Bypass','-File',"`"$sp`"")
+    if ($Uninstall) { $a += '-Uninstall' }
+    if ($NoPrompt)  { $a += '-NoPrompt' }
+    if ($Browsers)  { $a += @('-Browsers') + $Browsers }
     try {
-        Start-Process -FilePath 'powershell.exe' -ArgumentList $argList -Verb RunAs -ErrorAction Stop | Out-Null
+        Start-Process powershell.exe -Verb RunAs -ArgumentList $a -ErrorAction Stop | Out-Null
     } catch {
-        Write-Host "  UAC was declined or elevation failed. Cannot continue without admin rights." -ForegroundColor Red
-        Write-Host "  $($_.Exception.Message)"                                                     -ForegroundColor Red
+        Write-Host "  UAC declined or elevation failed: $($_.Exception.Message)" -ForegroundColor Red
         exit 1
     }
     exit
@@ -153,33 +92,115 @@ function Invoke-Elevation {
 
 function Find-InstalledBrowsers {
     $detected = @()
-    foreach ($b in $BrowserPolicies) {
-        foreach ($exe in $b.ExePaths) {
-            if (Test-Path $exe) {
-                $detected += $b
-                break
+    foreach ($b in $BrowserDefs) {
+        foreach ($pf in @("$env:ProgramFiles", "${env:ProgramFiles(x86)}", "$env:LOCALAPPDATA\Programs")) {
+            if (-not $pf) { continue }
+            foreach ($sub in $b.ExeRoots[0]) {
+                $cand = Join-Path $pf "$sub\$($b.Exe)"
+                if (Test-Path -LiteralPath $cand) {
+                    $detected += [PSCustomObject]@{ Name = $b.Name; Exe = $b.Exe; Path = $cand }
+                    break
+                }
             }
         }
     }
     return ,$detected
 }
 
-function Write-Header {
-    $title  = '  VANTAGE  -  Enterprise Policy installer  '
-    $bar    = ('=' * $title.Length)
+function Find-Shortcuts {
+    param([Parameter(Mandatory)][string]$ExeName)
+
+    $roots = @(
+        "$env:APPDATA\Microsoft\Windows\Start Menu",
+        "$env:USERPROFILE\Desktop",
+        "$env:PUBLIC\Desktop",
+        "$env:ProgramData\Microsoft\Windows\Start Menu",
+        "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch"
+    )
+
+    $found = @()
+    $wsh = New-Object -ComObject WScript.Shell
+    foreach ($root in $roots) {
+        if (-not (Test-Path -LiteralPath $root)) { continue }
+        Get-ChildItem -Path $root -Recurse -Filter '*.lnk' -ErrorAction SilentlyContinue | ForEach-Object {
+            try {
+                $sc = $wsh.CreateShortcut($_.FullName)
+                $target = $sc.TargetPath
+                if ($target -and (Split-Path -Leaf $target).ToLower() -eq $ExeName.ToLower()) {
+                    $found += [PSCustomObject]@{ Path = $_.FullName; Target = $target; Args = $sc.Arguments }
+                }
+            } catch { }
+        }
+    }
+    return ,$found
+}
+
+function Update-ShortcutAddFlag {
+    param([Parameter(Mandatory)]$Shortcut, [Parameter(Mandatory)][string]$Flag)
+    $wsh = New-Object -ComObject WScript.Shell
+    $sc = $wsh.CreateShortcut($Shortcut.Path)
+    $current = $sc.Arguments
+    # idempotent: if the same --load-extension="..." substring is already present, skip
+    if ($current -match [regex]::Escape($Flag)) { return 'already' }
+    $sc.Arguments = if ($current) { "$current $Flag" } else { $Flag }
+    try { $sc.Save(); return 'modified' } catch { return "fail: $($_.Exception.Message)" }
+}
+
+function Update-ShortcutRemoveFlag {
+    param([Parameter(Mandatory)]$Shortcut, [Parameter(Mandatory)][string]$ExtPath)
+    $wsh = New-Object -ComObject WScript.Shell
+    $sc = $wsh.CreateShortcut($Shortcut.Path)
+    $current = $sc.Arguments
+    if (-not $current) { return 'no-args' }
+    # remove --load-extension="<ExtPath>" or --load-extension=<ExtPath>
+    $patterns = @(
+        '--load-extension="' + [regex]::Escape($ExtPath) + '"',
+        '--load-extension=' + [regex]::Escape($ExtPath)
+    )
+    $modified = $current
+    foreach ($p in $patterns) { $modified = [regex]::Replace($modified, $p, '') }
+    $modified = ($modified -replace '\s+', ' ').Trim()
+    if ($modified -eq $current) { return 'absent' }
+    $sc.Arguments = $modified
+    try { $sc.Save(); return 'cleaned' } catch { return "fail: $($_.Exception.Message)" }
+}
+
+function Install-VantageExtension {
+    Write-Host "  Downloading Vantage-v$($script:Version).zip ..." -ForegroundColor Cyan
+    $tmp = Join-Path $env:TEMP "vantage-v$($script:Version).zip"
+    Invoke-WebRequest -Uri $script:ZipUrlLatest -OutFile $tmp -UseBasicParsing
+    Write-Host "    downloaded: $((Get-Item $tmp).Length) bytes" -ForegroundColor DarkGray
+
+    if (Test-Path $script:ExtensionDir) {
+        Write-Host "  Removing previous extension at $script:ExtensionDir" -ForegroundColor DarkGray
+        Remove-Item -Path $script:ExtensionDir -Recurse -Force
+    }
+    New-Item -ItemType Directory -Path $script:ExtensionDir -Force | Out-Null
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($tmp, $script:ExtensionDir)
+    Remove-Item $tmp -Force
+
+    if (-not (Test-Path (Join-Path $script:ExtensionDir 'manifest.json'))) {
+        throw "Extraction succeeded but manifest.json missing at $script:ExtensionDir"
+    }
+    Write-Host "    extracted to: $script:ExtensionDir" -ForegroundColor Green
+}
+
+function Show-Header {
+    $bar = '=' * 56
     Write-Host ""
-    Write-Host $bar   -ForegroundColor DarkCyan
-    Write-Host $title -ForegroundColor White
-    Write-Host $bar   -ForegroundColor DarkCyan
+    Write-Host "  $bar"     -ForegroundColor DarkCyan
+    Write-Host "  VANTAGE v$($script:Version)  --  Chromium installer" -ForegroundColor White
+    Write-Host "  $bar"     -ForegroundColor DarkCyan
     Write-Host ""
-    Write-Host "  Extension ID : $ExtensionId" -ForegroundColor DarkGray
-    Write-Host "  Update URL   : $UpdateUrl"   -ForegroundColor DarkGray
+    Write-Host "  Strategy : --load-extension shortcut modification"   -ForegroundColor DarkGray
+    Write-Host "  Extension: $script:ExtensionDir"                     -ForegroundColor DarkGray
     Write-Host ""
 }
 
 function Show-Menu {
     param([Parameter(Mandatory)][object[]]$Detected, [switch]$Uninstall)
-
     Write-Host "  Detected Chromium browsers:" -ForegroundColor Cyan
     Write-Host ""
     for ($i = 0; $i -lt $Detected.Count; $i++) {
@@ -190,11 +211,11 @@ function Show-Menu {
     Write-Host "   [Q]  Quit"
     Write-Host ""
     if ($Uninstall) {
-        Write-Host "  Which browsers should I remove the policy from?" -ForegroundColor Cyan
+        Write-Host "  Strip the load-extension flag from which browsers?" -ForegroundColor Cyan
     } else {
-        Write-Host "  Which browsers should I install Vantage in?" -ForegroundColor Cyan
+        Write-Host "  Install Vantage in which browsers?" -ForegroundColor Cyan
     }
-    Write-Host "  Enter numbers (e.g. 1,3) or A for all, then press Enter:" -ForegroundColor Cyan -NoNewline
+    Write-Host "  Enter numbers (e.g. 1,3) or A for all:" -ForegroundColor Cyan -NoNewline
     Write-Host " " -NoNewline
     return Read-Host
 }
@@ -212,281 +233,122 @@ function Resolve-Selection {
     return ,$picked
 }
 
-function Install-VantagePolicy {
-    param([Parameter(Mandatory)]$Browser)
-
-    $key = $Browser.PolicyKey
-    if (-not (Test-Path $key)) {
-        New-Item -Path $key -Force | Out-Null
-    }
-
-    $value     = "$ExtensionId;$UpdateUrl"
-    $existing  = (Get-Item $key).Property
-
-    foreach ($name in $existing) {
-        $current = (Get-ItemProperty -Path $key -Name $name).$name
-        if ($current -eq $value) {
-            Write-Host ("  [{0,-9}]  already configured (slot {1})" -f $Browser.Name, $name) -ForegroundColor DarkGray
-            return
-        }
-        if ($current -like "$ExtensionId;*") {
-            # Same extension, different update URL -> overwrite
-            Set-ItemProperty -Path $key -Name $name -Value $value -Type String
-            Write-Host ("  [{0,-9}]  policy refreshed (slot {1})" -f $Browser.Name, $name) -ForegroundColor Green
-            return
-        }
-    }
-
-    $idx = 1
-    while ($existing -contains "$idx") { $idx++ }
-    Set-ItemProperty -Path $key -Name "$idx" -Value $value -Type String
-
-    # Read it back to prove it landed
-    $readback = (Get-ItemProperty -Path $key -Name "$idx").$idx
-    if ($readback -ne $value) {
-        Write-Host ("  [{0,-9}]  WROTE BUT MISMATCH: {1}" -f $Browser.Name, $readback) -ForegroundColor Red
-    } else {
-        Write-Host ("  [{0,-9}]  policy written (slot {1})" -f $Browser.Name, $idx) -ForegroundColor Green
-        Write-Host ("              {0}\{1} = {2}" -f $key, $idx, $value) -ForegroundColor DarkGray
-    }
-}
-
-function Invoke-Diagnose {
-    param([Parameter(Mandatory)]$Browser)
-
-    $name   = $Browser.Name
-    $key    = $Browser.PolicyKey
-    $scheme = $Browser.UrlScheme
-
-    Write-Host ("  [{0}]" -f $name) -ForegroundColor White
-    Write-Host ("  " + ('-' * 50)) -ForegroundColor DarkGray
-
-    # 1. Registry check
-    if (-not (Test-Path $key)) {
-        Write-Host "    REGISTRY     FAIL  no ExtensionInstallForcelist key (run installer first)" -ForegroundColor Red
-        Write-Host ""
-        return
-    }
-    $existing = (Get-Item $key).Property
-    $vantageVal = $null
-    foreach ($n in $existing) {
-        $val = (Get-ItemProperty -Path $key -Name $n).$n
-        if ($val -like "$ExtensionId;*") { $vantageVal = $val; break }
-    }
-    if (-not $vantageVal) {
-        Write-Host "    REGISTRY     FAIL  Vantage entry MISSING from policy key" -ForegroundColor Red
-        Write-Host ("                       run: install.ps1 (default mode)") -ForegroundColor DarkGray
-        Write-Host ""
-        return
-    }
-    Write-Host "    REGISTRY     OK    $vantageVal" -ForegroundColor Green
-
-    $regUrl = ($vantageVal -split ';', 2)[1]
-
-    # 2. Update URL fetch + parse
-    try {
-        $resp = Invoke-WebRequest -Uri $regUrl -UseBasicParsing -ErrorAction Stop -TimeoutSec 15
-        Write-Host "    UPDATE URL   OK    HTTP $($resp.StatusCode), $($resp.RawContentLength) bytes" -ForegroundColor Green
-    } catch {
-        Write-Host "    UPDATE URL   FAIL  $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host ("                       URL: $regUrl") -ForegroundColor DarkGray
-        Write-Host ""
-        return
-    }
-
-    try {
-        [xml]$xml = $resp.Content
-        $app   = $xml.gupdate.app
-        $check = $app.updatecheck
-        if ($app.appid -ne $ExtensionId) {
-            Write-Host "    XML PARSE    FAIL  appid mismatch -- expected $ExtensionId, got $($app.appid)" -ForegroundColor Red
-            Write-Host ""
-            return
-        }
-        Write-Host "    XML PARSE    OK    appid=$($app.appid) version=$($check.version)" -ForegroundColor Green
-        Write-Host ("                       codebase = $($check.codebase)") -ForegroundColor DarkGray
-    } catch {
-        Write-Host "    XML PARSE    FAIL  $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host ""
-        return
-    }
-
-    # 3. CRX fetch + hash
-    $tempCrx = Join-Path $env:TEMP "vantage-diagnose-$($PID).crx"
-    try {
-        Invoke-WebRequest -Uri $check.codebase -OutFile $tempCrx -UseBasicParsing -ErrorAction Stop -TimeoutSec 30
-        $size  = (Get-Item $tempCrx).Length
-        $hash  = (Get-FileHash -Path $tempCrx -Algorithm SHA256).Hash.ToLower()
-        $magic = [System.IO.File]::ReadAllBytes($tempCrx)[0..3] | ForEach-Object { [char]$_ } | Join-String
-
-        if ($hash -ne $check.hash_sha256.ToLower()) {
-            Write-Host "    CRX FETCH    FAIL  $size bytes, hash MISMATCH" -ForegroundColor Red
-            Write-Host ("                       expected: $($check.hash_sha256)") -ForegroundColor DarkGray
-            Write-Host ("                       actual:   $hash") -ForegroundColor DarkGray
-        } elseif ($magic -ne 'Cr24') {
-            Write-Host "    CRX FETCH    FAIL  $size bytes, hash OK, but magic header is '$magic' (expected Cr24)" -ForegroundColor Red
-        } else {
-            Write-Host "    CRX FETCH    OK    $size bytes, magic=Cr24, sha256 matches XML" -ForegroundColor Green
-        }
-    } catch {
-        Write-Host "    CRX FETCH    FAIL  $($_.Exception.Message)" -ForegroundColor Red
-    } finally {
-        if (Test-Path $tempCrx) { Remove-Item $tempCrx -Force -ErrorAction SilentlyContinue }
-    }
-
-    Write-Host ""
-    Write-Host "    Next steps in $name`:" -ForegroundColor Cyan
-    Write-Host "      Open $scheme`://policy" -ForegroundColor DarkGray
-    Write-Host "        - Confirm ExtensionInstallForcelist appears with our entry" -ForegroundColor DarkGray
-    Write-Host "        - Click 'Reload policies' in the top right" -ForegroundColor DarkGray
-    Write-Host "      Open $scheme`://extensions" -ForegroundColor DarkGray
-    Write-Host "        - Toggle Developer mode on (top right)" -ForegroundColor DarkGray
-    Write-Host "        - Click 'Update' (top left). Wait 30 seconds" -ForegroundColor DarkGray
-    Write-Host "      If still missing, open $scheme`://extensions-internals/" -ForegroundColor DarkGray
-    Write-Host "        - Find $ExtensionId, look for 'install error' or 'disable reason'" -ForegroundColor DarkGray
-    Write-Host ""
-}
-
-function Show-VantagePolicy {
-    param([Parameter(Mandatory)]$Browser)
-    $key = $Browser.PolicyKey
-    if (-not (Test-Path $key)) {
-        Write-Host ("  [{0,-9}]  no ExtensionInstallForcelist key" -f $Browser.Name) -ForegroundColor DarkGray
-        return
-    }
-    $existing = (Get-Item $key).Property
-    if (-not $existing -or $existing.Count -eq 0) {
-        Write-Host ("  [{0,-9}]  key exists but is empty" -f $Browser.Name) -ForegroundColor DarkGray
-        return
-    }
-    $hit = $false
-    foreach ($name in $existing) {
-        $current = (Get-ItemProperty -Path $key -Name $name).$name
-        $isVantage = $current -like "$ExtensionId;*"
-        if ($isVantage) { $hit = $true }
-        $tag   = if ($isVantage) { '[VANTAGE]' } else { '         ' }
-        $color = if ($isVantage) { 'Green' }     else { 'DarkGray' }
-        Write-Host ("  [{0,-9}]  {1} slot {2,-2} = {3}" -f $Browser.Name, $tag, $name, $current) -ForegroundColor $color
-    }
-    if (-not $hit) {
-        Write-Host ("  [{0,-9}]  Vantage entry NOT present" -f $Browser.Name) -ForegroundColor Yellow
-    }
-}
-
-function Uninstall-VantagePolicy {
-    param([Parameter(Mandatory)]$Browser)
-
-    $key = $Browser.PolicyKey
-    if (-not (Test-Path $key)) {
-        Write-Host ("  [{0,-9}]  no policy present" -f $Browser.Name) -ForegroundColor DarkGray
-        return
-    }
-    $existing = (Get-Item $key).Property
-    $removed  = 0
-    foreach ($name in $existing) {
-        $current = (Get-ItemProperty -Path $key -Name $name).$name
-        if ($current -like "$ExtensionId;*") {
-            Remove-ItemProperty -Path $key -Name $name
-            $removed++
-        }
-    }
-    if ($removed -gt 0) {
-        Write-Host ("  [{0,-9}]  policy removed ({1} entr{2})" -f $Browser.Name, $removed, $(if ($removed -eq 1){'y'}else{'ies'})) -ForegroundColor Yellow
-    } else {
-        Write-Host ("  [{0,-9}]  no Vantage entry to remove" -f $Browser.Name) -ForegroundColor DarkGray
-    }
-}
-
 # ---- Main ---------------------------------------------------------------
 
 Invoke-Elevation
 Clear-Host
-Write-Header
+Show-Header
 
 $detected = Find-InstalledBrowsers
 if (-not $detected -or $detected.Count -eq 0) {
     Write-Host "  No supported Chromium browsers detected." -ForegroundColor Red
-    Write-Host ""
-    Write-Host "  Looked for:" -ForegroundColor DarkGray
-    foreach ($b in $BrowserPolicies) {
-        Write-Host ("    - {0,-9}  {1}" -f $b.Name, ($b.ExePaths -join ' | ')) -ForegroundColor DarkGray
-    }
-    Write-Host ""
-    Read-Host "  Press Enter to close"
+    Read-Host "  Press Enter to close" | Out-Null
     exit 1
 }
 
 if ($Verify) {
-    Write-Host "  Verify mode -- reading current ExtensionInstallForcelist contents:" -ForegroundColor Cyan
+    Write-Host "  Verify mode -- which shortcuts carry the load-extension flag:" -ForegroundColor Cyan
     Write-Host ""
-    foreach ($b in $detected) { Show-VantagePolicy -Browser $b }
+    $flag = '--load-extension="' + $script:ExtensionDir + '"'
+    foreach ($b in $detected) {
+        Write-Host "  [$($b.Name)]" -ForegroundColor White
+        $shortcuts = Find-Shortcuts -ExeName $b.Exe
+        if (-not $shortcuts -or $shortcuts.Count -eq 0) {
+            Write-Host "    (no shortcuts found)" -ForegroundColor DarkGray
+            continue
+        }
+        foreach ($sc in $shortcuts) {
+            $present = if ($sc.Args -match [regex]::Escape($flag)) { 'YES' } else { 'no ' }
+            Write-Host "    [$present]  $($sc.Path)" -ForegroundColor $(if ($present -eq 'YES') {'Green'} else {'DarkGray'})
+        }
+    }
     Write-Host ""
-    if (-not $NoPrompt) { Read-Host "  Press Enter to close" }
-    exit 0
-}
-
-if ($Diagnose) {
-    Write-Host "  Diagnose mode -- testing the full install pipeline" -ForegroundColor Cyan
-    Write-Host "  (registry -> update XML -> CRX integrity)" -ForegroundColor DarkGray
+    Write-Host "  Extension folder present: " -NoNewline
+    if (Test-Path $script:ExtensionDir) {
+        Write-Host "yes ($script:ExtensionDir)" -ForegroundColor Green
+    } else {
+        Write-Host "NO -- extension files are missing" -ForegroundColor Red
+    }
     Write-Host ""
-    foreach ($b in $detected) { Invoke-Diagnose -Browser $b }
-    Write-Host ""
-    Write-Host "  If everything above is OK but the extension still doesn't appear:" -ForegroundColor Yellow
-    Write-Host "    1. Open <browser>://policy and click Reload policies" -ForegroundColor DarkGray
-    Write-Host "    2. Open <browser>://extensions, toggle Developer mode, click Update" -ForegroundColor DarkGray
-    Write-Host "    3. If still nothing, open <browser>://extensions-internals/ and search for the extension ID" -ForegroundColor DarkGray
-    Write-Host ""
-    if (-not $NoPrompt) { Read-Host "  Press Enter to close" }
+    if (-not $NoPrompt) { Read-Host "  Press Enter to close" | Out-Null }
     exit 0
 }
 
 if ($NoPrompt -and $Browsers) {
     $targets = $detected | Where-Object { $Browsers -contains $_.Name }
-    if ($targets.Count -eq 0) {
-        Write-Host "  None of the requested browsers ($($Browsers -join ', ')) were detected." -ForegroundColor Red
-        exit 1
-    }
 } else {
-    $selection = Show-Menu -Detected $detected -Uninstall:$Uninstall
-    $targets   = Resolve-Selection -Selection $selection -Detected $detected
+    $sel = Show-Menu -Detected $detected -Uninstall:$Uninstall
+    $targets = Resolve-Selection -Selection $sel -Detected $detected
 }
 
-if ($targets.Count -eq 0) {
+if (-not $targets -or $targets.Count -eq 0) {
     Write-Host ""
     Write-Host "  Nothing selected. Exiting." -ForegroundColor DarkGray
     exit 0
 }
 
 Write-Host ""
-Write-Host ("  {0}:" -f $(if ($Uninstall) {'Removing policy'} else {'Writing policy'})) -ForegroundColor Cyan
-Write-Host ""
+
+if ($Uninstall) {
+    Write-Host "  Removing the load-extension flag from selected browsers..." -ForegroundColor Cyan
+    foreach ($b in $targets) {
+        $shortcuts = Find-Shortcuts -ExeName $b.Exe
+        Write-Host "  [$($b.Name)]" -ForegroundColor White
+        foreach ($sc in $shortcuts) {
+            $r = Update-ShortcutRemoveFlag -Shortcut $sc -ExtPath $script:ExtensionDir
+            $color = switch ($r) { 'cleaned' { 'Yellow' } 'absent' { 'DarkGray' } 'no-args' { 'DarkGray' } default { 'Red' } }
+            Write-Host "    [$r]  $($sc.Path)" -ForegroundColor $color
+        }
+    }
+    Write-Host ""
+    Write-Host "  Removing extension files at $script:ExtensionDir" -ForegroundColor Cyan
+    if (Test-Path $script:ExtensionDir) {
+        Remove-Item -Path $script:ExtensionDir -Recurse -Force
+        # also try parent if empty
+        try { Remove-Item -Path (Split-Path $script:ExtensionDir) -ErrorAction SilentlyContinue } catch {}
+        Write-Host "    removed" -ForegroundColor Yellow
+    } else {
+        Write-Host "    (already gone)" -ForegroundColor DarkGray
+    }
+    Write-Host ""
+    Write-Host "  Done. Restart your browser to drop Vantage." -ForegroundColor Green
+    if (-not $NoPrompt) { Read-Host "  Press Enter to close" | Out-Null }
+    exit 0
+}
+
+# Install path
+Install-VantageExtension
+
+$flag = '--load-extension="' + $script:ExtensionDir + '"'
+
 foreach ($b in $targets) {
-    if ($Uninstall) { Uninstall-VantagePolicy -Browser $b } else { Install-VantagePolicy -Browser $b }
+    Write-Host ""
+    Write-Host "  [$($b.Name)] modifying shortcuts" -ForegroundColor Cyan
+    $shortcuts = Find-Shortcuts -ExeName $b.Exe
+    if (-not $shortcuts -or $shortcuts.Count -eq 0) {
+        Write-Host "    (no shortcuts found -- nothing to modify)" -ForegroundColor DarkGray
+        Write-Host "    you can still launch '$($b.Exe) $flag' manually" -ForegroundColor DarkGray
+        continue
+    }
+    foreach ($sc in $shortcuts) {
+        $r = Update-ShortcutAddFlag -Shortcut $sc -Flag $flag
+        $color = switch ($r) { 'modified' {'Green'} 'already' {'DarkGray'} default {'Red'} }
+        Write-Host "    [$r]  $($sc.Path)" -ForegroundColor $color
+    }
 }
 
 Write-Host ""
 Write-Host "  Done." -ForegroundColor Green
 Write-Host ""
-
-if (-not $Uninstall) {
-    Write-Host "  Next steps:" -ForegroundColor Cyan
-    Write-Host "    1. Quit ALL windows of the browser(s) you just configured."
-    Write-Host "    2. Re-open the browser."
-    Write-Host "    3. Open a new tab. Vantage installs automatically within ~30 seconds."
-    Write-Host ""
-    Write-Host "  Notes:" -ForegroundColor Cyan
-    Write-Host "    - The extension is force-managed while the policy exists." -ForegroundColor DarkGray
-    Write-Host "    - It cannot be disabled or removed via the Extensions page" -ForegroundColor DarkGray
-    Write-Host "      until you re-run this script with -Uninstall."             -ForegroundColor DarkGray
-    Write-Host "    - Future Vantage releases auto-update via the same policy." -ForegroundColor DarkGray
-} else {
-    Write-Host "  Notes:" -ForegroundColor Cyan
-    Write-Host "    - Restart the browser to pick up the policy removal."  -ForegroundColor DarkGray
-    Write-Host "    - The extension is no longer force-managed; you can"   -ForegroundColor DarkGray
-    Write-Host "      disable or remove it manually from chrome://extensions." -ForegroundColor DarkGray
-}
-
+Write-Host "  Next steps:" -ForegroundColor Cyan
+Write-Host "    1. Fully quit your browser (close ALL windows + check Task Manager)" -ForegroundColor DarkGray
+Write-Host "    2. Re-open it from a Start Menu / Taskbar / Desktop shortcut"        -ForegroundColor DarkGray
+Write-Host "    3. Open a new tab -- Vantage is the new-tab page"                    -ForegroundColor DarkGray
 Write-Host ""
-if (-not $NoPrompt) {
-    Read-Host "  Press Enter to close"
-}
+Write-Host "  Notes:" -ForegroundColor Cyan
+Write-Host "    - The extension shows as 'Loaded unpacked' in chrome://extensions" -ForegroundColor DarkGray
+Write-Host "    - To update, re-run this script. It downloads the latest release"  -ForegroundColor DarkGray
+Write-Host "      and replaces the extension files in place"                       -ForegroundColor DarkGray
+Write-Host "    - To remove, re-run with -Uninstall"                               -ForegroundColor DarkGray
+Write-Host ""
+if (-not $NoPrompt) { Read-Host "  Press Enter to close" | Out-Null }

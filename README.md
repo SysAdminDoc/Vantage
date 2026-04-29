@@ -42,39 +42,34 @@ Beyond that, Vantage gives you the dashboard staples — clock, weather, RSS, ne
 
 ## Install
 
-Pick the path that matches what you want.
+Two paths. Both work. Pick the one that fits.
 
-### Option A — Enterprise Policy auto-install (Windows · recommended)
+### Option A — One-line PowerShell installer (Windows, recommended)
 
-One PowerShell command. Detects every Chromium browser on your machine, asks which to wire up, writes the `ExtensionInstallForcelist` registry policy, and the browser auto-installs Vantage on next launch. Auto-updates on every future release. Cannot be accidentally removed by the user (good for shared machines / kiosks / your own peace of mind).
+Downloads the latest release, extracts to `%LOCALAPPDATA%\Vantage\extension`, and adds `--load-extension="<that path>"` to every Brave / Chrome / Edge / Vivaldi / Opera shortcut on the system (Start Menu, Desktop, Taskbar pin — user-level and system-wide). Relaunch the browser from any of those shortcuts and Vantage loads.
 
-**Run from any PowerShell window** (admin or not — the script auto-elevates):
+**Run from any PowerShell window** (auto-elevates to write system shortcuts):
 
 ```powershell
 irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex
 ```
 
-You'll see a UAC prompt; approve it. A new admin PowerShell window opens, detects your browsers, and asks which to enroll. Restart your browser after it finishes — Vantage appears within ~30 seconds.
-
-**To verify the registry policy actually landed:**
+UAC prompts → approve → menu lists detected browsers → pick which ones → done. Fully quit and re-open the browser.
 
 ```powershell
+# Verify which shortcuts carry the flag
 $f="$env:TEMP\vantage-install.ps1"; iwr https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 -OutFile $f -UseBasicParsing; & $f -Verify
-```
 
-This dumps the current `ExtensionInstallForcelist` entries for every detected browser, marking the Vantage row with `[VANTAGE]`.
+# Update to a newer release (re-runs the download + extract)
+irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex
 
-**To remove the policy** (extension stops being force-managed; you can disable/remove it normally):
-
-```powershell
+# Uninstall (strips the flag, deletes the extension files)
 $f="$env:TEMP\vantage-install.ps1"; iwr https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 -OutFile $f -UseBasicParsing; & $f -Uninstall
 ```
 
-### Option B — Load unpacked from the ZIP (any OS, no admin needed)
+### Option B — Load unpacked from the ZIP (any OS, no admin)
 
-> **Don't drag the `.crx` onto your extensions page.** Stock Chrome / Brave / Edge reject every self-signed CRX with `Package is invalid: 'CRX_REQUIRED_PROOF_MISSING'` — it's an upstream Chromium policy (since version 75, 2019) that no signing key can satisfy. **Use the ZIP.**
-
-1. Download the latest **`Vantage-vX.Y.Z.zip`** from [Releases](https://github.com/SysAdminDoc/Vantage/releases) (or clone this repo).
+1. Download the latest **`Vantage-vX.Y.Z.zip`** from [Releases](https://github.com/SysAdminDoc/Vantage/releases).
 2. Right-click → **Extract All** to a permanent folder (e.g. `C:\Tools\Vantage\`). **Don't delete this folder** — your browser reads from it on every startup.
 3. Open `chrome://extensions` (or `brave://extensions`, `edge://extensions`, `vivaldi://extensions`).
 4. Toggle **Developer mode** on (top-right corner).
@@ -83,9 +78,13 @@ $f="$env:TEMP\vantage-install.ps1"; iwr https://raw.githubusercontent.com/SysAdm
 
 When the browser asks for location permission (for weather), allow it — or skip and set a city manually in settings. To update: download the new ZIP, extract over the same folder, hit the refresh icon on the extension card.
 
-### About the `.crx` asset
+### Why no Enterprise Policy install?
 
-Provided for niche flows: Vivaldi (still accepts self-signed CRX in some versions), browsers launched with `--load-extension=path/to/crx`, or enterprise endpoints that whitelist GitHub releases via `ExtensionInstallSources`. If none of those apply, ignore the CRX.
+I tried. Modern Chromium browsers (Chrome 137+, Brave 147+) now silently filter self-hosted CRX URLs out of `ExtensionInstallForcelist` — the registry policy is accepted but never propagates to the extension service. The only update_urls that actually install through that policy are Chrome Web Store entries. The launch-flag path above is the reliable alternative.
+
+### Why no `.crx` drag-install?
+
+Stock Chrome / Brave / Edge reject every self-signed CRX dragged onto the extensions page with `CRX_REQUIRED_PROOF_MISSING` — upstream Chromium policy since version 75 (2019). The `.crx` asset on the release exists only for Vivaldi and browsers launched with `--load-extension`; everyone else uses the installer or ZIP path above.
 
 ## Customize
 
