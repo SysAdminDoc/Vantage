@@ -4,7 +4,14 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 
 ## v0.3.0 — 2026-04-29
 
-Layout, feed depth, and interaction polish.
+Layout, feed depth, interaction polish, and a one-command Enterprise Policy installer.
+
+### Added — install path
+- **Enterprise Policy auto-installer** (`scripts/install.ps1`). Detects Chrome / Brave / Edge / Vivaldi / Opera / Chromium on Windows, asks which to wire up, writes the `HKLM\Software\Policies\<vendor>\<browser>\ExtensionInstallForcelist` registry value, browser auto-installs Vantage on next launch. One-liner: `irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex`. Auto-elevates if not run as admin. `-Uninstall` removes the policy entry.
+- **Self-hosted Omaha update feed** at `updates.xml` — served via raw.githubusercontent.com, points at the latest release CRX with SHA-256 pinning. Browsers configured via the policy fetch this and auto-update on every future release.
+- **Release workflow regenerates `updates.xml`** after each release is created (correct order — release first, then update the feed).
+
+
 
 ### Added
 - **Drag-to-reorder quick links.** Drag any pill to a new position; the order is persisted to settings and survives a page reload.

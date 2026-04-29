@@ -42,7 +42,29 @@ Beyond that, Vantage gives you the dashboard staples — clock, weather, RSS, ne
 
 ## Install
 
-> **Don't drag the `.crx` onto your extensions page.** Stock Chrome / Brave / Edge reject every self-signed CRX with `Package is invalid: 'CRX_REQUIRED_PROOF_MISSING'` — it's an upstream Chromium policy (since version 75, 2019) that no signing key can satisfy. The CRX in the release is provided only for niche flows (Vivaldi, browsers launched with `--load-extension`, enterprise `ExtensionInstallSources` policy). **Everyone else uses the ZIP.**
+Pick the path that matches what you want.
+
+### Option A — Enterprise Policy auto-install (Windows · recommended)
+
+One PowerShell command. Detects every Chromium browser on your machine, asks which to wire up, writes the `ExtensionInstallForcelist` registry policy, and the browser auto-installs Vantage on next launch. Auto-updates on every future release. Cannot be accidentally removed by the user (good for shared machines / kiosks / your own peace of mind).
+
+**Run in an elevated PowerShell:**
+
+```powershell
+irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex
+```
+
+The script auto-elevates if you forget to start it as admin. Restart your browser after it finishes; Vantage installs within ~30 seconds. To remove the policy:
+
+```powershell
+irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex -Args -Uninstall
+```
+
+(or download `scripts\install.ps1` from the repo and run `powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Uninstall`).
+
+### Option B — Load unpacked from the ZIP (any OS, no admin needed)
+
+> **Don't drag the `.crx` onto your extensions page.** Stock Chrome / Brave / Edge reject every self-signed CRX with `Package is invalid: 'CRX_REQUIRED_PROOF_MISSING'` — it's an upstream Chromium policy (since version 75, 2019) that no signing key can satisfy. **Use the ZIP.**
 
 1. Download the latest **`Vantage-vX.Y.Z.zip`** from [Releases](https://github.com/SysAdminDoc/Vantage/releases) (or clone this repo).
 2. Right-click → **Extract All** to a permanent folder (e.g. `C:\Tools\Vantage\`). **Don't delete this folder** — your browser reads from it on every startup.
@@ -52,6 +74,10 @@ Beyond that, Vantage gives you the dashboard staples — clock, weather, RSS, ne
 6. Open a new tab. Welcome to Vantage.
 
 When the browser asks for location permission (for weather), allow it — or skip and set a city manually in settings. To update: download the new ZIP, extract over the same folder, hit the refresh icon on the extension card.
+
+### About the `.crx` asset
+
+Provided for niche flows: Vivaldi (still accepts self-signed CRX in some versions), browsers launched with `--load-extension=path/to/crx`, or enterprise endpoints that whitelist GitHub releases via `ExtensionInstallSources`. If none of those apply, ignore the CRX.
 
 ## Customize
 
