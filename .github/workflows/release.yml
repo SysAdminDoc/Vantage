@@ -1,0 +1,139 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 0.3.0). Tag will be vX.Y.Z. Must match manifest.json."
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify version in manifest matches input
+        run: |
+          MANIFEST_VER=$(python -c "import json; print(json.load(open('manifest.json'))['version'])")
+          if [ "$MANIFEST_VER" != "${{ inputs.version }}" ]; then
+            echo "manifest.json says $MANIFEST_VER but workflow input is ${{ inputs.version }}"
+            exit 1
+          fi
+
+      - name: Decode signing key
+        env:
+          EXTENSION_PEM: ${{ secrets.EXTENSION_PEM }}
+        run: |
+          if [ -z "$EXTENSION_PEM" ]; then
+            echo "::error::EXTENSION_PEM secret is required for CRX signing"
+            exit 1
+          fi
+          echo "$EXTENSION_PEM" | base64 -d > Vantage-selfhost.pem
+          chmod 600 Vantage-selfhost.pem
+
+      - name: Build ZIP
+        run: |
+          mkdir -p dist
+          python -c "
+          import zipfile, os
+          from pathlib import Path
+          src = Path('.')
+          excludes = {'.git', '.github', 'scripts', 'dist', '.claude', 'node_modules'}
+          exclude_files = {'CLAUDE.md', 'CODEX_CHANGELOG.md', 'Vantage-selfhost.pem'}
+          exclude_suffix = ('.bak', '.pem', '.zip', '.crx', '.log')
+          out = 'dist/Vantage-v${{ inputs.version }}.zip'
+          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+              for root, dirs, files in os.walk(src):
+                  dirs[:] = [d for d in dirs if d not in excludes and not d.startswith('.')]
+                  for f in files:
+                      if f in exclude_files: continue
+                      if f.endswith(exclude_suffix): continue
+                      if f.startswith('.') and f != '.gitignore': continue
+                      p = Path(root) / f
+                      rel = p.relative_to(src).as_posix()
+                      zf.write(p, rel)
+          print(f'wrote {out} ({os.path.getsize(out):,} bytes)')
+          "
+
+      - name: Pack CRX
+        run: |
+          python scripts/build-crx.py \
+            dist/Vantage-v${{ inputs.version }}.zip \
+            Vantage-selfhost.pem \
+            dist/Vantage-v${{ inputs.version }}.crx
+
+      - name: Verify CRX header
+        run: |
+          python -c "
+          import struct
+          with open('dist/Vantage-v${{ inputs.version }}.crx', 'rb') as f:
+              data = f.read()
+          assert data[:4] == b'Cr24', 'CRX magic mismatch'
+          assert struct.unpack('<I', data[4:8])[0] == 3, 'CRX version mismatch'
+          hs = struct.unpack('<I', data[8:12])[0]
+          assert data[12 + hs:12 + hs + 2] == b'PK', 'embedded ZIP missing'
+          print('CRX OK')
+          "
+
+      - name: Generate checksums
+        working-directory: dist
+        run: sha256sum Vantage-v${{ inputs.version }}.zip Vantage-v${{ inputs.version }}.crx > SHA256SUMS.txt
+
+      - name: Generate release notes
+        run: |
+          python -c "
+          import re, sys
+          version = '${{ inputs.version }}'
+          src = open('CHANGELOG.md').read()
+          # Find the section for this version, stop at the next ## heading
+          m = re.search(rf'## v{re.escape(version)}\b.*?(?=\n## v|\Z)', src, re.S)
+          if not m:
+              sys.exit(f'CHANGELOG section for v{version} not found')
+          notes = m.group(0).strip()
+          install = '''
+          ## Install
+
+          1. Download **\`Vantage-v''' + version + '''.zip\`** below.
+          2. Extract to a permanent folder.
+          3. \`chrome://extensions\` → enable Developer mode → **Load unpacked** → pick the folder.
+
+          The \`.crx\` is provided as a secondary asset for Chromium forks that still accept self-signed packages.
+
+          ## Verify integrity
+
+          \`\`\`bash
+          sha256sum -c SHA256SUMS.txt
+          \`\`\`
+          '''
+          open('dist/release-notes.md', 'w').write(notes + '\n' + install)
+          print(notes)
+          "
+
+      - name: Wipe signing key from runner
+        if: always()
+        run: rm -f Vantage-selfhost.pem
+
+      - name: Tag and create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ inputs.version }}"
+          # Create tag if it doesn't already exist
+          git tag --list | grep -qx "$TAG" || git tag "$TAG"
+          git push origin "$TAG"
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes-file dist/release-notes.md \
+            dist/Vantage-v${{ inputs.version }}.zip \
+            dist/Vantage-v${{ inputs.version }}.crx \
+            dist/SHA256SUMS.txt
