@@ -48,19 +48,27 @@ Pick the path that matches what you want.
 
 One PowerShell command. Detects every Chromium browser on your machine, asks which to wire up, writes the `ExtensionInstallForcelist` registry policy, and the browser auto-installs Vantage on next launch. Auto-updates on every future release. Cannot be accidentally removed by the user (good for shared machines / kiosks / your own peace of mind).
 
-**Run in an elevated PowerShell:**
+**Run from any PowerShell window** (admin or not — the script auto-elevates):
 
 ```powershell
 irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex
 ```
 
-The script auto-elevates if you forget to start it as admin. Restart your browser after it finishes; Vantage installs within ~30 seconds. To remove the policy:
+You'll see a UAC prompt; approve it. A new admin PowerShell window opens, detects your browsers, and asks which to enroll. Restart your browser after it finishes — Vantage appears within ~30 seconds.
+
+**To verify the registry policy actually landed:**
 
 ```powershell
-irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex -Args -Uninstall
+$f="$env:TEMP\vantage-install.ps1"; iwr https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 -OutFile $f -UseBasicParsing; & $f -Verify
 ```
 
-(or download `scripts\install.ps1` from the repo and run `powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Uninstall`).
+This dumps the current `ExtensionInstallForcelist` entries for every detected browser, marking the Vantage row with `[VANTAGE]`.
+
+**To remove the policy** (extension stops being force-managed; you can disable/remove it normally):
+
+```powershell
+$f="$env:TEMP\vantage-install.ps1"; iwr https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 -OutFile $f -UseBasicParsing; & $f -Uninstall
+```
 
 ### Option B — Load unpacked from the ZIP (any OS, no admin needed)
 

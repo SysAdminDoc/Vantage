@@ -1,4 +1,4 @@
-# Vantage v0.3.0 — Enterprise Policy installer for Chromium browsers (Windows)
+# Vantage v0.3.0 -- Enterprise Policy installer for Chromium browsers (Windows)
 #
 # Wires up HKLM\Software\Policies\<vendor>\<browser>\ExtensionInstallForcelist
 # so the browser auto-installs Vantage on next launch by fetching the
@@ -15,22 +15,24 @@
 #   # Remove the policy entry only (extension stops being force-managed)
 #   powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Uninstall
 #
-# Run from anywhere — the script knows the extension ID and update URL itself.
+# Run from anywhere -- the script knows the extension ID and update URL itself.
 
 #Requires -Version 5.1
 [CmdletBinding()]
 param(
     [switch]$Uninstall,
     [string[]]$Browsers,
-    [switch]$NoPrompt
+    [switch]$NoPrompt,
+    [switch]$Verify
 )
 
 $ErrorActionPreference = 'Stop'
 
 # Pinned for the lifetime of the project. Do NOT change without re-signing
 # every release with a new key (the extension ID is derived from the key).
-$ExtensionId = 'hkfepknnglonkidihcoicdfkjkjfnejn'
-$UpdateUrl   = 'https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/updates.xml'
+$script:ExtensionId = 'hkfepknnglonkidihcoicdfkjkjfnejn'
+$script:UpdateUrl   = 'https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/updates.xml'
+$script:SelfUrl     = 'https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1'
 
 $BrowserPolicies = @(
     [PSCustomObject]@{
@@ -88,6 +90,31 @@ function Test-Admin {
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
+function Get-SelfPath {
+    # Resolve a usable .ps1 path for re-launching. When invoked via `irm | iex`
+    # both $PSCommandPath and $MyInvocation.MyCommand.Path are empty, so we
+    # download a fresh copy of ourselves into TEMP and use that.
+    if ($PSCommandPath -and (Test-Path -LiteralPath $PSCommandPath)) {
+        return $PSCommandPath
+    }
+    $candidate = $MyInvocation.MyCommand.Path
+    if ($candidate -and (Test-Path -LiteralPath $candidate)) {
+        return $candidate
+    }
+
+    $temp = Join-Path $env:TEMP 'vantage-install.ps1'
+    Write-Host "  Bootstrapping installer to $temp ..." -ForegroundColor DarkGray
+    try {
+        Invoke-WebRequest -Uri $script:SelfUrl -OutFile $temp -UseBasicParsing -ErrorAction Stop
+    } catch {
+        Write-Host ""
+        Write-Host "  Failed to download installer from $($script:SelfUrl)" -ForegroundColor Red
+        Write-Host "  $($_.Exception.Message)"                              -ForegroundColor Red
+        exit 1
+    }
+    return $temp
+}
+
 function Invoke-Elevation {
     if (Test-Admin) { return }
 
@@ -96,12 +123,21 @@ function Invoke-Elevation {
     Write-Host "  Re-launching with elevation..."                              -ForegroundColor Yellow
     Write-Host ""
 
-    $argList = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"")
+    $scriptPath = Get-SelfPath
+
+    $argList = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$scriptPath`"")
     if ($Uninstall) { $argList += '-Uninstall' }
     if ($NoPrompt)  { $argList += '-NoPrompt' }
+    if ($Verify)    { $argList += '-Verify' }
     if ($Browsers)  { $argList += @('-Browsers') + $Browsers }
 
-    Start-Process -FilePath 'powershell.exe' -ArgumentList $argList -Verb RunAs | Out-Null
+    try {
+        Start-Process -FilePath 'powershell.exe' -ArgumentList $argList -Verb RunAs -ErrorAction Stop | Out-Null
+    } catch {
+        Write-Host "  UAC was declined or elevation failed. Cannot continue without admin rights." -ForegroundColor Red
+        Write-Host "  $($_.Exception.Message)"                                                     -ForegroundColor Red
+        exit 1
+    }
     exit
 }
 
@@ -134,26 +170,28 @@ function Write-Header {
 function Show-Menu {
     param([Parameter(Mandatory)][object[]]$Detected, [switch]$Uninstall)
 
-    $verb = if ($Uninstall) { 'remove the policy from' } else { 'install Vantage in' }
-
     Write-Host "  Detected Chromium browsers:" -ForegroundColor Cyan
     Write-Host ""
     for ($i = 0; $i -lt $Detected.Count; $i++) {
-        $marker = '  '
-        Write-Host "   [$($i + 1)]  $($Detected[$i].Name)" -ForegroundColor White
+        $num = $i + 1
+        Write-Host "   [$num]  $($Detected[$i].Name)" -ForegroundColor White
     }
     Write-Host "   [A]  All of the above"
     Write-Host "   [Q]  Quit"
     Write-Host ""
-    Write-Host "  Which browsers should I $verb?" -ForegroundColor Cyan
+    if ($Uninstall) {
+        Write-Host "  Which browsers should I remove the policy from?" -ForegroundColor Cyan
+    } else {
+        Write-Host "  Which browsers should I install Vantage in?" -ForegroundColor Cyan
+    }
     Write-Host "  Enter numbers (e.g. 1,3) or A for all, then press Enter:" -ForegroundColor Cyan -NoNewline
     Write-Host " " -NoNewline
     return Read-Host
 }
 
 function Resolve-Selection {
-    param([string]$Input, [object[]]$Detected)
-    $clean = ($Input | ForEach-Object { $_.ToString().Trim().ToUpper() })
+    param([string]$Selection, [object[]]$Detected)
+    $clean = ($Selection | ForEach-Object { $_.ToString().Trim().ToUpper() })
     if ([string]::IsNullOrWhiteSpace($clean) -or $clean -eq 'Q') { return @() }
     if ($clean -eq 'A') { return $Detected }
     $tokens = $clean -split '[,\s]+' | Where-Object { $_ -match '^\d+$' }
@@ -178,7 +216,7 @@ function Install-VantagePolicy {
     foreach ($name in $existing) {
         $current = (Get-ItemProperty -Path $key -Name $name).$name
         if ($current -eq $value) {
-            Write-Host ("  [{0,-9}]  already configured" -f $Browser.Name) -ForegroundColor DarkGray
+            Write-Host ("  [{0,-9}]  already configured (slot {1})" -f $Browser.Name, $name) -ForegroundColor DarkGray
             return
         }
         if ($current -like "$ExtensionId;*") {
@@ -192,7 +230,41 @@ function Install-VantagePolicy {
     $idx = 1
     while ($existing -contains "$idx") { $idx++ }
     Set-ItemProperty -Path $key -Name "$idx" -Value $value -Type String
-    Write-Host ("  [{0,-9}]  policy written (slot {1})" -f $Browser.Name, $idx) -ForegroundColor Green
+
+    # Read it back to prove it landed
+    $readback = (Get-ItemProperty -Path $key -Name "$idx").$idx
+    if ($readback -ne $value) {
+        Write-Host ("  [{0,-9}]  WROTE BUT MISMATCH: {1}" -f $Browser.Name, $readback) -ForegroundColor Red
+    } else {
+        Write-Host ("  [{0,-9}]  policy written (slot {1})" -f $Browser.Name, $idx) -ForegroundColor Green
+        Write-Host ("              {0}\{1} = {2}" -f $key, $idx, $value) -ForegroundColor DarkGray
+    }
+}
+
+function Show-VantagePolicy {
+    param([Parameter(Mandatory)]$Browser)
+    $key = $Browser.PolicyKey
+    if (-not (Test-Path $key)) {
+        Write-Host ("  [{0,-9}]  no ExtensionInstallForcelist key" -f $Browser.Name) -ForegroundColor DarkGray
+        return
+    }
+    $existing = (Get-Item $key).Property
+    if (-not $existing -or $existing.Count -eq 0) {
+        Write-Host ("  [{0,-9}]  key exists but is empty" -f $Browser.Name) -ForegroundColor DarkGray
+        return
+    }
+    $hit = $false
+    foreach ($name in $existing) {
+        $current = (Get-ItemProperty -Path $key -Name $name).$name
+        $isVantage = $current -like "$ExtensionId;*"
+        if ($isVantage) { $hit = $true }
+        $tag   = if ($isVantage) { '[VANTAGE]' } else { '         ' }
+        $color = if ($isVantage) { 'Green' }     else { 'DarkGray' }
+        Write-Host ("  [{0,-9}]  {1} slot {2,-2} = {3}" -f $Browser.Name, $tag, $name, $current) -ForegroundColor $color
+    }
+    if (-not $hit) {
+        Write-Host ("  [{0,-9}]  Vantage entry NOT present" -f $Browser.Name) -ForegroundColor Yellow
+    }
 }
 
 function Uninstall-VantagePolicy {
@@ -238,6 +310,15 @@ if (-not $detected -or $detected.Count -eq 0) {
     exit 1
 }
 
+if ($Verify) {
+    Write-Host "  Verify mode -- reading current ExtensionInstallForcelist contents:" -ForegroundColor Cyan
+    Write-Host ""
+    foreach ($b in $detected) { Show-VantagePolicy -Browser $b }
+    Write-Host ""
+    if (-not $NoPrompt) { Read-Host "  Press Enter to close" }
+    exit 0
+}
+
 if ($NoPrompt -and $Browsers) {
     $targets = $detected | Where-Object { $Browsers -contains $_.Name }
     if ($targets.Count -eq 0) {
@@ -246,7 +327,7 @@ if ($NoPrompt -and $Browsers) {
     }
 } else {
     $selection = Show-Menu -Detected $detected -Uninstall:$Uninstall
-    $targets   = Resolve-Selection -Input $selection -Detected $detected
+    $targets   = Resolve-Selection -Selection $selection -Detected $detected
 }
 
 if ($targets.Count -eq 0) {
