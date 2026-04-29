@@ -314,17 +314,31 @@ a {
 .bg[data-phase="sunset"]       { --sky-top: #311530; --sky-mid: #a8344c; --sky-bottom: #ed4f30; --sun-color: #ff9658; --sun-glow: rgba(220,80,40,0.9); }
 .bg[data-phase="dusk"]         { --sky-top: #0e1230; --sky-mid: #2c2447; --sky-bottom: #5b386a; --sun-color: #d4d4f0; --sun-glow: rgba(180,180,220,0.5); }
 
-/* Weather variant: overcast / storm darkens & desaturates the sky.
-   Storm/heavy-rain need a much heavier hand than overcast so the sky
-   actually reads as a downpour instead of a slightly muted sunset. */
+/* Weather variant: cloudy/rainy weather darkens & desaturates the sky.
+   Tiered so the sky strength matches the precipitation level — "rain"
+   needs to read like a real overcast rainstorm, not "rain streaks falling
+   on a sunny scene." Open-Meteo's most common precip code in temperate
+   climates is 61/63 ("rain", not "heavy-rain"), so this tier matters most. */
+.bg[data-weather="drizzle"] {
+  filter: saturate(0.75) brightness(0.85);
+}
 .bg[data-weather="overcast"] {
   filter: saturate(0.65) brightness(0.78);
+}
+.bg[data-weather="rain"] {
+  filter: saturate(0.50) brightness(0.55);
 }
 .bg[data-weather="heavy-rain"] {
   filter: saturate(0.35) brightness(0.45);
 }
 .bg[data-weather="storm"] {
   filter: saturate(0.25) brightness(0.32);
+}
+.bg[data-weather="snow"] {
+  filter: saturate(0.70) brightness(0.92);
+}
+.bg[data-weather="heavy-snow"] {
+  filter: saturate(0.55) brightness(0.85);
 }
 .bg[data-weather="fog"] {
   filter: saturate(0.55) brightness(0.92);
@@ -440,7 +454,7 @@ a {
    which is why storms looked like clear sunsets. */
 .bg[data-weather="cloudy"]     .bg-cloud { opacity: 0.55; }
 .bg[data-weather="overcast"]   .bg-cloud { opacity: 0.85; filter: blur(36px); }
-.bg[data-weather="rain"]       .bg-cloud { opacity: 0.78; filter: blur(34px) brightness(0.65); }
+.bg[data-weather="rain"]       .bg-cloud { opacity: 0.88; filter: blur(36px) brightness(0.55); }
 .bg[data-weather="heavy-rain"] .bg-cloud { opacity: 0.95; filter: blur(40px) brightness(0.45); }
 .bg[data-weather="storm"]      .bg-cloud { opacity: 1;    filter: blur(42px) brightness(0.35); }
 .bg[data-weather="snow"]       .bg-cloud { opacity: 0.7;  filter: blur(34px) brightness(0.85); }
@@ -580,10 +594,12 @@ a {
   transform: translateY(0);
 }
 
-/* Stormy weather hides the palm — a beachy silhouette undercuts the
-   "torrential downpour" mood we're trying to sell. */
+/* Rainy / heavy weather hides the palm — a beachy silhouette undercuts
+   the wet-sky mood. Drizzle keeps the palm because it's light rain. */
 .bg[data-weather="storm"]      .bg-palm,
-.bg[data-weather="heavy-rain"] .bg-palm {
+.bg[data-weather="heavy-rain"] .bg-palm,
+.bg[data-weather="rain"]       .bg-palm,
+.bg[data-weather="heavy-snow"] .bg-palm {
   opacity: 0 !important;
 }
 

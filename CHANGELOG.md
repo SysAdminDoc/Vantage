@@ -2,6 +2,11 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.8 — 2026-04-29
+
+### Fixed
+- **Plain "rain" still rendered as a sunny sunset.** v0.4.7 darkened the sky and hid the sun/palm only for `storm` and `heavy-rain`. But Open-Meteo's most common precip code in temperate climates is **63 ("rain")**, not 65 ("heavy-rain") or 95+ ("thunderstorm"). Verified live against Monroeville, AL: API returned `weather_code: 63` while the user expected stormy visuals. Extended the dark-sky / no-sun / no-palm treatment to `rain` (sky `saturate(0.5) brightness(0.55)`, sun opacity 0, palm hidden, cloud opacity bumped 0.78→0.88). Tiered the rest: drizzle gets a gentle `brightness(0.85)` with a faint sun (it's light rain); overcast and heavy-snow get a 0.3-opacity diffuse cool disc. Now any precipitation reads as overcast wet-sky, not "raindrops on a bright sunset."
+
 ## v0.4.7 — 2026-04-29
 
 ### Fixed

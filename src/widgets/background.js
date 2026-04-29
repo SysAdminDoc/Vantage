@@ -265,26 +265,27 @@ function updateScene(mount, weather, sunrise, sunset) {
     mount.style.setProperty("--sun-color",  colors.sun);
     mount.style.setProperty("--sun-glow",   colors.glow);
 
-    // Heavy weather hides the sun behind the cloud deck. We dim hard rather
-    // than full-zero so a faint glow still leaks through, which reads more
-    // naturally than a flat sky.
-    const stormyHide = weather === "storm" || weather === "heavy-rain";
-    const overcastDim = weather === "overcast" || weather === "heavy-snow";
+    // Wet/heavy weather hides or dims the sun behind the cloud deck. Rain
+    // gets full hide because a visible warm sun behind rain streaks reads
+    // unnatural. Drizzle keeps a faint sun (it's light rain). Overcast and
+    // heavy-snow dim heavily but leave a cool diffuse disc.
+    const sunHide = weather === "storm" || weather === "heavy-rain" || weather === "rain";
+    const sunDim  = weather === "overcast" || weather === "heavy-snow" || weather === "drizzle";
 
     const sun = mount.querySelector(".bg-sun");
     if (sun) {
       if (sunPos) {
         sun.style.left = `${(sunPos.x * 100).toFixed(2)}%`;
         sun.style.top  = `${(sunPos.y * 100).toFixed(2)}%`;
-        if (stormyHide)        sun.style.opacity = "0";
-        else if (overcastDim)  sun.style.opacity = "0.35";
-        else                   sun.style.opacity = "1";
+        if (sunHide)      sun.style.opacity = "0";
+        else if (sunDim)  sun.style.opacity = "0.3";
+        else              sun.style.opacity = "1";
       } else {
         sun.style.left = "82%";
         sun.style.top  = "16%";
-        if (stormyHide)        sun.style.opacity = "0";
+        if (sunHide)                sun.style.opacity = "0";
         else if (phase === "night") sun.style.opacity = "1";
-        else                   sun.style.opacity = "0.4";
+        else                        sun.style.opacity = "0.4";
       }
     }
   };
