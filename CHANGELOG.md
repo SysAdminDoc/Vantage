@@ -2,6 +2,11 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.5 — 2026-04-29
+
+### Fixed
+- **Trunk banding rings poked out past the trunk silhouette near the base.** Codex's v0.4.4 trunk path widens significantly at the base (root flare from x≈78 to x≈143 at y=320, narrowing to x≈111-137 at y≈305) — but the banding paths kept the same x-range across the height, so the lowest three bands extended up to 24px past the trunk on the left, showing as horizontal dashes coming off the trunk. Re-derived each band's x-range against the actual trunk width at its y-level: now every ring sits with a 1-2px inset on both sides.
+
 ## v0.4.4 — 2026-04-29
 
 ### Changed
