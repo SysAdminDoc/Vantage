@@ -42,16 +42,16 @@ Beyond that, Vantage gives you the dashboard staples — clock, weather, RSS, ne
 
 ## Install
 
-> Chromium 75+ rejects self-signed CRX files dragged onto the extensions page (`CRX_REQUIRED_PROOF_MISSING`). The recommended install path is **Load unpacked** from the ZIP.
+> **Don't drag the `.crx` onto your extensions page.** Stock Chrome / Brave / Edge reject every self-signed CRX with `Package is invalid: 'CRX_REQUIRED_PROOF_MISSING'` — it's an upstream Chromium policy (since version 75, 2019) that no signing key can satisfy. The CRX in the release is provided only for niche flows (Vivaldi, browsers launched with `--load-extension`, enterprise `ExtensionInstallSources` policy). **Everyone else uses the ZIP.**
 
-1. Download the latest `Vantage-vX.Y.Z.zip` from [Releases](https://github.com/SysAdminDoc/Vantage/releases) (or clone this repo).
-2. Extract to a permanent folder. **Do not delete this folder** — Chrome loads from it on every browser start.
-3. Open `chrome://extensions` (or `brave://extensions`, `edge://extensions`, etc.).
-4. Enable **Developer mode** (top right toggle).
+1. Download the latest **`Vantage-vX.Y.Z.zip`** from [Releases](https://github.com/SysAdminDoc/Vantage/releases) (or clone this repo).
+2. Right-click → **Extract All** to a permanent folder (e.g. `C:\Tools\Vantage\`). **Don't delete this folder** — your browser reads from it on every startup.
+3. Open `chrome://extensions` (or `brave://extensions`, `edge://extensions`, `vivaldi://extensions`).
+4. Toggle **Developer mode** on (top-right corner).
 5. Click **Load unpacked** and select the extracted folder.
 6. Open a new tab. Welcome to Vantage.
 
-When the browser asks for location permission (for weather), allow it — or skip and set a city manually in settings.
+When the browser asks for location permission (for weather), allow it — or skip and set a city manually in settings. To update: download the new ZIP, extract over the same folder, hit the refresh icon on the extension card.
 
 ## Customize
 
