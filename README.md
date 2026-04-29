@@ -6,7 +6,7 @@
 
 **A privacy-first new tab dashboard for Chromium browsers — bring your search engine, your feeds, your weather, your links.**
 
-[![Version](https://img.shields.io/badge/version-0.1.0-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
+[![Version](https://img.shields.io/badge/version-0.2.0-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
 [![License](https://img.shields.io/badge/license-MIT-89b4fa?style=flat-square)](LICENSE)
 [![Manifest](https://img.shields.io/badge/manifest-V3-a6e3a1?style=flat-square)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![Platform](https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave%20%7C%20Vivaldi-94e2d5?style=flat-square)](#install)
@@ -23,15 +23,18 @@ Beyond that, Vantage gives you the dashboard staples — clock, weather, RSS, ne
 
 ## Features
 
-- **10 search engines built-in + custom URL** — Google · Bing · DuckDuckGo · Startpage · Brave · Kagi · Ecosia · SearXNG · Qwant · Perplexity · custom (use `%s` for the query).
-- **Open-Meteo weather** — no API key required. Geolocation auto-detect or manual city. °F / °C.
-- **Live clock** — 12 / 24 hr, optional seconds, full date.
-- **Multi-feed RSS reader** — add any RSS or Atom feed. Sorted by date across all feeds, deduplicated, fetched in parallel with graceful per-feed failure handling.
-- **News widget** — same engine as RSS, separate config so you can keep "general news" and "personal subscriptions" in their own panes.
-- **Quick links** — favicon-backed bookmark grid. Add / remove from settings.
-- **Catppuccin Mocha by default · Latte for light mode** — no `backdrop-filter`, no glassmorphism performance traps.
+- **10 search engines built-in + custom URL** — Google · Bing · DuckDuckGo · Startpage · Brave · Kagi · Ecosia · SearXNG · Qwant · Perplexity · custom (use `%s` for the query). Custom dropdown picker, not a native `<select>`.
+- **Open-Meteo weather** — no API key required. Geolocation auto-detect or manual city. °F / °C. Compact pill in the utility bar.
+- **Time-aware greeting + clock** — “Good morning, Matthew” with a soft accent gradient. Optional name, optional 24-hour, optional seconds.
+- **Multi-feed RSS reader** — add any RSS or Atom feed. Sorted by date across all feeds, fetched in parallel with graceful per-feed failure handling. Skeleton loading, last-updated timestamp, refresh-with-spinner.
+- **News panel** — same engine as RSS, separate config and category accent. BBC + Ars Technica + The Verge by default.
+- **Quick links** — clean pill row with favicons. Add / remove from settings.
+- **Custom UI primitives** — toggle switches, segmented controls, icon buttons. No native checkboxes or selects on the primary surface.
+- **Catppuccin Mocha (dark) + Latte (light)** with full design-token system, careful tonal layering, refined shadows, and ambient gradient backdrop.
+- **`/` to focus search** — keyboard shortcut hint shown inline; Esc closes any open panel.
 - **All local** — `chrome.storage.local` only. No analytics, no telemetry, no remote config server. The only outbound calls are: Open-Meteo (weather), the RSS feeds you configure, and (fallback only) a public CORS proxy for feeds that block direct fetches.
 - **Cross-tab sync** — change a setting in one tab, every other open new tab updates instantly.
+- **Accessibility-aware** — visible focus rings, ARIA-labelled controls, `prefers-reduced-motion` support, semantic landmarks, dialog-pattern settings panel with focus trap and Esc-to-close.
 
 ## Install
 
@@ -65,24 +68,25 @@ Pure vanilla JS modules. No build step. No bundler. No framework. Ships exactly 
 ```
 Vantage/
 ├── manifest.json              MV3 manifest (chrome_url_overrides → newtab.html)
-├── newtab.html                Static HTML shell with mount points
+├── newtab.html                Static HTML shell — utility bar, hero, reading panels
 ├── src/
-│   ├── main.js                Entry — loads settings, mounts widgets, wires settings panel
+│   ├── main.js                Entry — loads settings, mounts widgets, wires UI + keyboard
 │   ├── background.js          Service worker (toolbar action → open new tab)
-│   ├── style.css              Catppuccin Mocha + Latte themes, all UI styles
+│   ├── style.css              Design tokens, typography, motion, all UI styles
 │   ├── storage.js             chrome.storage.local wrapper with deep-merged defaults
 │   ├── search-engines.js      Engine catalog + URL builder
-│   ├── settings.js            Settings panel renderer
+│   ├── settings.js            Settings panel — composed from primitives below
+│   ├── icons.js               Inline SVG icon library (Lucide-style stroke set)
 │   ├── widgets/
-│   │   ├── search.js          Search bar (engine selector + input)
-│   │   ├── clock.js           Live clock + date
-│   │   ├── weather.js         Open-Meteo current conditions
-│   │   ├── quicklinks.js      Bookmark grid
-│   │   ├── feed-list.js       Shared multi-feed renderer (used by RSS + News)
-│   │   ├── rss.js             RSS panel
+│   │   ├── search.js          Hero search bar with custom engine picker dropdown
+│   │   ├── clock.js           Time-aware greeting + datetime line
+│   │   ├── weather.js         Open-Meteo pill with skeleton loading
+│   │   ├── quicklinks.js      Pill-row link list
+│   │   ├── feed-list.js       Shared multi-feed renderer with skeleton, last-updated, refresh
+│   │   ├── rss.js             RSS / Reading-list panel
 │   │   └── news.js            News panel
 │   └── utils/
-│       ├── dom.js             Tiny `el()` builder + toast helper
+│       ├── dom.js             el() builder + toggle / segmented primitives + toast + helpers
 │       └── rss-parser.js      RSS / Atom parser via DOMParser, with CORS fallback
 └── icons/                     16/48/128/256/512 PNGs + master SVG
 ```

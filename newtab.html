@@ -7,29 +7,44 @@
   <link rel="stylesheet" href="src/style.css" />
 </head>
 <body>
-  <main id="vantage-root" class="vantage">
-    <header class="vantage-header">
-      <div id="clock-mount" class="widget widget--clock" data-widget="clock"></div>
-      <div id="weather-mount" class="widget widget--weather" data-widget="weather"></div>
-      <button id="settings-toggle" class="settings-toggle" title="Settings" aria-label="Open settings">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-        </svg>
-      </button>
+  <main id="vantage-root" class="vantage" role="main">
+
+    <header class="utility-bar">
+      <div id="weather-mount" class="weather-mount" aria-live="polite"></div>
+      <button
+        id="settings-toggle"
+        class="icon-button"
+        type="button"
+        title="Open settings"
+        aria-label="Open settings"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        data-rotate="hover"
+      ></button>
     </header>
 
-    <section id="search-mount" class="widget widget--search" data-widget="search"></section>
+    <section class="hero" aria-label="Search and quick links">
+      <div id="greeting-mount" class="greeting"></div>
+      <div id="search-mount" class="search" role="search"></div>
+      <div id="quicklinks-mount" class="quicklinks"></div>
+    </section>
 
-    <section id="quicklinks-mount" class="widget widget--quicklinks" data-widget="quicklinks"></section>
-
-    <section class="widget-grid">
-      <div id="news-mount" class="widget widget--news" data-widget="news"></div>
-      <div id="rss-mount" class="widget widget--rss" data-widget="rss"></div>
+    <section class="reading" aria-label="Reading panels">
+      <div id="news-mount" class="panel" data-widget="news"></div>
+      <div id="rss-mount" class="panel" data-widget="rss"></div>
     </section>
 
     <div id="toast-host" class="toast-host" aria-live="polite"></div>
-    <aside id="settings-panel" class="settings-panel" aria-hidden="true"></aside>
+    <div id="settings-backdrop" class="settings-backdrop" hidden></div>
+    <aside
+      id="settings-panel"
+      class="settings-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Vantage settings"
+      aria-hidden="true"
+      tabindex="-1"
+    ></aside>
   </main>
 
   <script type="module" src="src/main.js"></script>

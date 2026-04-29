@@ -1,7 +1,11 @@
-// Vantage v0.1.0 — chrome.storage.local wrapper with defaults
+// Vantage v0.2.0 — chrome.storage.local wrapper with deep-merged defaults.
 
 const DEFAULTS = {
   theme: "mocha",
+  greeting: {
+    enabled: true,
+    name: ""
+  },
   search: {
     engine: "google",
     customUrl: "https://example.com/search?q=%s"

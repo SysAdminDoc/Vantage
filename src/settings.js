@@ -1,366 +1,546 @@
-// Vantage v0.1.0 — settings panel renderer
+// Vantage v0.2.0 — settings panel built with primitives (toggle, segmented, icon-button).
+// Sections render as grouped rows with hints and icons. Sticky header with close button.
 
-import { el, clear, toast } from "./utils/dom.js";
+import { el, clear, toggle, segmented, toast, hostnameLabel } from "./utils/dom.js";
+import { iconNode } from "./icons.js";
 import { SEARCH_ENGINES } from "./search-engines.js";
 import { geocodeCity } from "./widgets/weather.js";
 import { saveSettings, getDefaults } from "./storage.js";
 
 export function renderSettingsPanel(panel, settings, onChange) {
   clear(panel);
-  panel.appendChild(el("div", { class: "settings-header" }, [
-    el("h2", {}, ["Settings"]),
+
+  // Sticky header
+  panel.appendChild(el("header", { class: "settings-panel__header" }, [
+    el("h2", { class: "settings-panel__title" }, ["Settings"]),
     el("button", {
-      class: "settings-close",
+      type: "button",
+      class: "icon-button icon-button--ghost",
       "aria-label": "Close settings",
+      title: "Close",
       onClick: () => closePanel(panel)
-    }, ["×"])
+    }, [iconNode("close", { size: 18 })])
   ]));
 
-  panel.appendChild(buildAppearanceSection(settings, onChange));
-  panel.appendChild(buildSearchSection(settings, onChange));
-  panel.appendChild(buildWeatherSection(settings, onChange));
-  panel.appendChild(buildClockSection(settings, onChange));
-  panel.appendChild(buildLinksSection(settings, onChange));
-  panel.appendChild(buildFeedsSection(settings, onChange, "rss", "RSS Feeds"));
-  panel.appendChild(buildFeedsSection(settings, onChange, "news", "News Feeds"));
-  panel.appendChild(buildResetSection(onChange));
+  const body = el("div", { class: "settings-panel__body" });
+  panel.appendChild(body);
+
+  body.appendChild(buildAppearance(settings, onChange));
+  body.appendChild(buildGreeting(settings, onChange));
+  body.appendChild(buildSearchSection(settings, onChange));
+  body.appendChild(buildWeatherSection(settings, onChange));
+  body.appendChild(buildClockSection(settings, onChange));
+  body.appendChild(buildLinksSection(settings, onChange));
+  body.appendChild(buildFeedsSection(settings, onChange, "rss", "Reading list", "rss",
+    "URLs you want to follow personally — RSS or Atom."));
+  body.appendChild(buildFeedsSection(settings, onChange, "news", "News", "newspaper",
+    "Curated headlines and news sources."));
+  body.appendChild(buildResetSection(onChange));
 }
 
 export function openPanel(panel) {
   panel.dataset.open = "true";
   panel.setAttribute("aria-hidden", "false");
+  const backdrop = document.getElementById("settings-backdrop");
+  if (backdrop) {
+    backdrop.hidden = false;
+    requestAnimationFrame(() => { backdrop.dataset.open = "true"; });
+  }
+  document.body.style.overflow = "hidden";
+  // Focus first interactive element after transition.
+  setTimeout(() => {
+    const first = panel.querySelector(".settings-panel__body button, .settings-panel__body input, .settings-panel__body [tabindex]:not([tabindex='-1'])");
+    if (first) first.focus({ preventScroll: true });
+  }, 280);
 }
 
 export function closePanel(panel) {
   panel.dataset.open = "false";
   panel.setAttribute("aria-hidden", "true");
+  const backdrop = document.getElementById("settings-backdrop");
+  if (backdrop) {
+    backdrop.dataset.open = "false";
+    setTimeout(() => { backdrop.hidden = true; }, 280);
+  }
+  document.body.style.overflow = "";
+  document.getElementById("settings-toggle")?.focus({ preventScroll: true });
 }
 
-function section(title) {
-  return el("section", { class: "settings-section" }, [el("h3", {}, [title])]);
-}
+/* ---- Section builders -------------------------------------------------- */
 
-function buildAppearanceSection(settings, onChange) {
-  const sec = section("Appearance");
-  const themeSelect = el("select", {
-    onChange: () => {
-      settings.theme = themeSelect.value;
-      document.documentElement.setAttribute("data-theme", settings.theme);
-      onChange(settings);
-    }
-  }, [
-    el("option", { value: "mocha", selected: settings.theme === "mocha" }, ["Catppuccin Mocha (dark)"]),
-    el("option", { value: "latte", selected: settings.theme === "latte" }, ["Catppuccin Latte (light)"])
-  ]);
-  sec.appendChild(el("div", { class: "settings-row" }, [
-    el("label", {}, ["Theme"]),
-    themeSelect
+function section(title, iconName) {
+  const sec = el("section", { class: "settings-section" });
+  sec.appendChild(el("h3", { class: "settings-section__title" }, [
+    iconName ? iconNode(iconName, { size: 14 }) : null,
+    title
   ]));
   return sec;
 }
 
+function group() {
+  return el("div", { class: "settings-section__group" });
+}
+
+function row(title, hint, control) {
+  return el("div", { class: "settings-row" }, [
+    el("div", { class: "settings-row__label" }, [
+      el("span", { class: "settings-row__title" }, [title]),
+      hint ? el("span", { class: "settings-row__hint" }, [hint]) : null
+    ]),
+    el("div", { class: "settings-row__control" }, [control])
+  ]);
+}
+
+function rowColumn(title, control, hint) {
+  return el("div", { class: "settings-row settings-row--column" }, [
+    el("div", { class: "settings-row__label" }, [
+      el("span", { class: "settings-row__title" }, [title]),
+      hint ? el("span", { class: "settings-row__hint" }, [hint]) : null
+    ]),
+    control
+  ]);
+}
+
+/* ---- Appearance -------------------------------------------------------- */
+
+function buildAppearance(settings, onChange) {
+  const sec = section("Appearance", "palette");
+  const g = group();
+  g.appendChild(row(
+    "Theme",
+    "Catppuccin palette in dark or light.",
+    segmented({
+      ariaLabel: "Theme",
+      value: settings.theme,
+      options: [
+        { value: "mocha", label: "Mocha" },
+        { value: "latte", label: "Latte" }
+      ],
+      onChange: (v) => {
+        settings.theme = v;
+        document.documentElement.setAttribute("data-theme", v);
+        onChange(settings);
+      }
+    })
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Greeting ---------------------------------------------------------- */
+
+function buildGreeting(settings, onChange) {
+  const sec = section("Greeting", "info");
+  const g = group();
+  g.appendChild(row(
+    "Show greeting",
+    "Time-aware “Good morning / evening” above the search bar.",
+    toggle({
+      checked: settings.greeting.enabled,
+      ariaLabel: "Show greeting",
+      onChange: (v) => { settings.greeting.enabled = v; onChange(settings); }
+    })
+  ));
+
+  const nameInput = el("input", {
+    type: "text",
+    class: "text-input text-input--inline",
+    placeholder: "Your name",
+    value: settings.greeting.name || "",
+    "aria-label": "Display name in greeting",
+    onChange: (e) => { settings.greeting.name = e.target.value.trim(); onChange(settings); }
+  });
+  g.appendChild(row(
+    "Display name",
+    "Optional — appears as “Good evening, Matthew”.",
+    nameInput
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Search ------------------------------------------------------------ */
+
 function buildSearchSection(settings, onChange) {
-  const sec = section("Search");
-  const engineSelect = el("select", {
-    onChange: () => {
-      settings.search.engine = engineSelect.value;
+  const sec = section("Search", "search");
+  const g = group();
+
+  const select = el("select", {
+    class: "text-input text-input--inline",
+    "aria-label": "Default search engine",
+    onChange: (e) => {
+      settings.search.engine = e.target.value;
       onChange(settings);
       customRow.style.display = settings.search.engine === "custom" ? "" : "none";
     }
   });
   for (const [key, eng] of Object.entries(SEARCH_ENGINES)) {
-    engineSelect.appendChild(el("option", {
-      value: key,
-      selected: settings.search.engine === key
-    }, [eng.name]));
+    const opt = el("option", { value: key, selected: settings.search.engine === key }, [eng.name]);
+    select.appendChild(opt);
   }
-
-  sec.appendChild(el("div", { class: "settings-row" }, [
-    el("label", {}, ["Default engine"]),
-    engineSelect
-  ]));
+  g.appendChild(row(
+    "Default engine",
+    "Used when you press Enter or hit the search button.",
+    select
+  ));
 
   const customInput = el("input", {
     type: "text",
+    class: "text-input",
     placeholder: "https://example.com/search?q=%s",
     value: settings.search.customUrl || "",
-    onInput: () => {
-      settings.search.customUrl = customInput.value;
-      onChange(settings);
-    }
+    onChange: (e) => { settings.search.customUrl = e.target.value; onChange(settings); }
   });
-  const customRow = el("div", { class: "settings-input-block" }, [
-    el("label", {}, ["Custom search URL (use %s for query)"]),
-    customInput
-  ]);
+  const customRow = rowColumn(
+    "Custom URL",
+    customInput,
+    "Use %s where the query goes. Falls back to DuckDuckGo if missing."
+  );
   customRow.style.display = settings.search.engine === "custom" ? "" : "none";
-  sec.appendChild(customRow);
+  g.appendChild(customRow);
+
+  sec.appendChild(g);
   return sec;
 }
 
+/* ---- Weather ----------------------------------------------------------- */
+
 function buildWeatherSection(settings, onChange) {
-  const sec = section("Weather");
+  const sec = section("Weather", "cloud");
+  const g = group();
 
-  const enabled = el("input", {
-    type: "checkbox",
-    checked: settings.weather.enabled,
-    onChange: () => {
-      settings.weather.enabled = enabled.checked;
-      onChange(settings);
+  g.appendChild(row(
+    "Show weather",
+    "Open-Meteo data — no account or API key needed.",
+    toggle({
+      checked: settings.weather.enabled,
+      ariaLabel: "Show weather",
+      onChange: (v) => { settings.weather.enabled = v; onChange(settings); }
+    })
+  ));
+
+  g.appendChild(row(
+    "Units",
+    null,
+    segmented({
+      ariaLabel: "Units",
+      value: settings.weather.units,
+      options: [
+        { value: "fahrenheit", label: "°F" },
+        { value: "celsius", label: "°C" }
+      ],
+      onChange: (v) => { settings.weather.units = v; onChange(settings); }
+    })
+  ));
+
+  // Current location chip
+  const chipHost = el("div", { class: "settings-row__control", style: { flexWrap: "wrap" } });
+  const refreshChip = () => {
+    clear(chipHost);
+    const locName = settings.weather.location?.name || "Auto";
+    const chip = el("div", { class: "chip" }, [
+      iconNode("globe", { size: 14 }),
+      el("span", {}, [locName])
+    ]);
+    if (settings.weather.location) {
+      const close = el("button", {
+        type: "button",
+        class: "chip__close",
+        "aria-label": "Reset to auto-detect",
+        title: "Reset to auto-detect",
+        onClick: () => {
+          settings.weather.location = null;
+          onChange(settings);
+          refreshChip();
+          toast("Will auto-detect on next load.", "success");
+        }
+      }, [iconNode("close", { size: 12 })]);
+      chip.appendChild(close);
     }
-  });
-  sec.appendChild(el("div", { class: "settings-row" }, [
-    el("label", {}, ["Enabled"]),
-    enabled
+    chipHost.appendChild(chip);
+  };
+  refreshChip();
+
+  g.appendChild(el("div", { class: "settings-row" }, [
+    el("div", { class: "settings-row__label" }, [
+      el("span", { class: "settings-row__title" }, ["Location"]),
+      el("span", { class: "settings-row__hint" }, ["Auto-detected on first load. Override below."])
+    ]),
+    chipHost
   ]));
 
-  const unitsSelect = el("select", {
-    onChange: () => {
-      settings.weather.units = unitsSelect.value;
-      onChange(settings);
-    }
-  }, [
-    el("option", { value: "fahrenheit", selected: settings.weather.units === "fahrenheit" }, ["Fahrenheit (°F)"]),
-    el("option", { value: "celsius", selected: settings.weather.units === "celsius" }, ["Celsius (°C)"])
-  ]);
-  sec.appendChild(el("div", { class: "settings-row" }, [
-    el("label", {}, ["Units"]),
-    unitsSelect
-  ]));
-
+  // Inline geocode form
   const cityInput = el("input", {
     type: "text",
-    placeholder: "City name (e.g. Phoenix, AZ)"
+    class: "text-input",
+    placeholder: "e.g. Phoenix, AZ",
+    "aria-label": "City name"
   });
   const cityBtn = el("button", {
-    class: "settings-add-btn",
+    type: "button",
+    class: "button button--primary",
     onClick: async () => {
       const q = cityInput.value.trim();
       if (!q) return;
+      cityBtn.disabled = true;
       try {
         const loc = await geocodeCity(q);
         settings.weather.location = loc;
         onChange(settings);
-        toast(`Location set: ${loc.name}`, "success");
         cityInput.value = "";
+        refreshChip();
+        toast(`Location set to ${loc.name}.`, "success");
       } catch (err) {
-        toast(`Geocode failed: ${err.message}`, "error");
+        toast(`Couldn’t find "${q}".`, "error");
+      } finally {
+        cityBtn.disabled = false;
       }
     }
-  }, ["Set city"]);
+  }, ["Set"]);
 
-  sec.appendChild(el("div", { class: "settings-input-block" }, [
-    el("label", {}, [`Location: ${settings.weather.location?.name || "(auto-detect)"}`]),
-    cityInput,
-    cityBtn
-  ]));
+  const compose = el("div", { class: "compose" }, [
+    el("div", { class: "compose__row" }, [cityInput, cityBtn])
+  ]);
+  g.appendChild(rowColumn("Set location", compose));
 
-  const autoBtn = el("button", {
-    class: "settings-secondary-btn",
-    onClick: () => {
-      settings.weather.location = null;
-      onChange(settings);
-      toast("Will auto-detect on next load", "success");
-    }
-  }, ["Reset to auto-detect"]);
-  sec.appendChild(autoBtn);
-
+  sec.appendChild(g);
   return sec;
 }
+
+/* ---- Clock ------------------------------------------------------------- */
 
 function buildClockSection(settings, onChange) {
-  const sec = section("Clock");
-  const enabled = el("input", {
-    type: "checkbox",
-    checked: settings.clock.enabled,
-    onChange: () => {
-      settings.clock.enabled = enabled.checked;
-      onChange(settings);
-    }
-  });
-  sec.appendChild(el("div", { class: "settings-row" }, [el("label", {}, ["Enabled"]), enabled]));
+  const sec = section("Clock", "clock");
+  const g = group();
+  g.appendChild(row(
+    "Show clock",
+    null,
+    toggle({
+      checked: settings.clock.enabled,
+      ariaLabel: "Show clock",
+      onChange: (v) => { settings.clock.enabled = v; onChange(settings); }
+    })
+  ));
 
-  const fmt24 = el("input", {
-    type: "checkbox",
-    checked: settings.clock.format24,
-    onChange: () => {
-      settings.clock.format24 = fmt24.checked;
-      onChange(settings);
-    }
-  });
-  sec.appendChild(el("div", { class: "settings-row" }, [el("label", {}, ["24-hour format"]), fmt24]));
+  g.appendChild(row(
+    "Time format",
+    null,
+    segmented({
+      ariaLabel: "Time format",
+      value: settings.clock.format24 ? "24" : "12",
+      options: [
+        { value: "12", label: "12-hour" },
+        { value: "24", label: "24-hour" }
+      ],
+      onChange: (v) => { settings.clock.format24 = (v === "24"); onChange(settings); }
+    })
+  ));
 
-  const showSeconds = el("input", {
-    type: "checkbox",
-    checked: settings.clock.showSeconds,
-    onChange: () => {
-      settings.clock.showSeconds = showSeconds.checked;
-      onChange(settings);
-    }
-  });
-  sec.appendChild(el("div", { class: "settings-row" }, [el("label", {}, ["Show seconds"]), showSeconds]));
-
+  g.appendChild(row(
+    "Show seconds",
+    "Slightly more battery-intensive — clock ticks once per second.",
+    toggle({
+      checked: settings.clock.showSeconds,
+      ariaLabel: "Show seconds",
+      onChange: (v) => { settings.clock.showSeconds = v; onChange(settings); }
+    })
+  ));
+  sec.appendChild(g);
   return sec;
 }
 
+/* ---- Quick links ------------------------------------------------------- */
+
 function buildLinksSection(settings, onChange) {
-  const sec = section("Quick Links");
+  const sec = section("Quick links", "link");
+  const g = group();
+  g.appendChild(row(
+    "Show quick links",
+    null,
+    toggle({
+      checked: settings.quicklinks.enabled,
+      ariaLabel: "Show quick links",
+      onChange: (v) => { settings.quicklinks.enabled = v; onChange(settings); }
+    })
+  ));
+  sec.appendChild(g);
 
-  const enabled = el("input", {
-    type: "checkbox",
-    checked: settings.quicklinks.enabled,
-    onChange: () => {
-      settings.quicklinks.enabled = enabled.checked;
-      onChange(settings);
-    }
-  });
-  sec.appendChild(el("div", { class: "settings-row" }, [el("label", {}, ["Enabled"]), enabled]));
-
-  const list = el("ul", { class: "settings-list" });
+  const list = el("ul", { class: "item-list" });
   const refreshList = () => {
     clear(list);
+    if (!settings.quicklinks.items.length) {
+      list.appendChild(el("li", { class: "item-list__empty" }, ["No links yet."]));
+      return;
+    }
     settings.quicklinks.items.forEach((item, idx) => {
-      list.appendChild(el("li", {}, [
-        el("span", { title: item.url }, [item.title]),
+      list.appendChild(el("li", { class: "item-list__row" }, [
+        el("div", { class: "item-list__row-content" }, [
+          el("span", { class: "item-list__title" }, [item.title]),
+          el("span", { class: "item-list__hint" }, [hostnameLabel(item.url)])
+        ]),
         el("button", {
+          type: "button",
+          class: "icon-button icon-button--ghost icon-button--small",
+          "aria-label": `Remove ${item.title}`,
+          title: `Remove ${item.title}`,
           onClick: () => {
             settings.quicklinks.items.splice(idx, 1);
             onChange(settings);
             refreshList();
           }
-        }, ["Remove"])
+        }, [iconNode("trash", { size: 14 })])
       ]));
     });
   };
   refreshList();
   sec.appendChild(list);
 
-  const titleInput = el("input", { type: "text", placeholder: "Title (e.g. GitHub)" });
-  const urlInput = el("input", { type: "text", placeholder: "https://github.com" });
+  const titleInput = el("input", { type: "text", class: "text-input", placeholder: "Label, e.g. GitHub" });
+  const urlInput = el("input", { type: "text", class: "text-input", placeholder: "https://github.com" });
   const addBtn = el("button", {
-    class: "settings-add-btn",
+    type: "button",
+    class: "button button--primary",
     onClick: () => {
-      const title = titleInput.value.trim();
-      const url = urlInput.value.trim();
-      if (!title || !url) {
-        toast("Title and URL required", "error");
+      const t = titleInput.value.trim();
+      const u = urlInput.value.trim();
+      if (!t || !u) {
+        toast("Label and URL are both required.", "error");
         return;
       }
-      try { new URL(url); } catch {
-        toast("Invalid URL", "error");
+      try { new URL(u); } catch {
+        toast("That doesn’t look like a valid URL.", "error");
         return;
       }
-      settings.quicklinks.items.push({ title, url });
+      settings.quicklinks.items.push({ title: t, url: u });
       onChange(settings);
       titleInput.value = "";
       urlInput.value = "";
       refreshList();
+      toast(`${t} added.`, "success");
     }
-  }, ["Add link"]);
+  }, [iconNode("plus", { size: 14 }), "Add link"]);
 
-  sec.appendChild(el("div", { class: "settings-input-block" }, [
-    el("label", {}, ["Add link"]),
+  sec.appendChild(el("div", { class: "compose" }, [
     titleInput,
-    urlInput,
-    addBtn
+    el("div", { class: "compose__row" }, [urlInput, addBtn])
   ]));
 
   return sec;
 }
 
-function buildFeedsSection(settings, onChange, key, title) {
-  const sec = section(title);
-  const cfg = settings[key];
+/* ---- Feeds (RSS / News share this) ------------------------------------ */
 
-  const enabled = el("input", {
-    type: "checkbox",
-    checked: cfg.enabled,
-    onChange: () => {
-      cfg.enabled = enabled.checked;
-      onChange(settings);
-    }
-  });
-  sec.appendChild(el("div", { class: "settings-row" }, [el("label", {}, ["Enabled"]), enabled]));
+function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
+  const cfg = settings[key];
+  const sec = section(title, iconName);
+  const g = group();
+
+  g.appendChild(row(
+    "Show panel",
+    hint,
+    toggle({
+      checked: cfg.enabled,
+      ariaLabel: `Show ${title}`,
+      onChange: (v) => { cfg.enabled = v; onChange(settings); }
+    })
+  ));
 
   const maxInput = el("input", {
     type: "number",
     min: "5",
     max: "50",
-    value: cfg.maxItems,
-    onChange: () => {
-      const v = parseInt(maxInput.value, 10);
+    value: String(cfg.maxItems),
+    class: "text-input number-input",
+    "aria-label": "Maximum items",
+    onChange: (e) => {
+      const v = parseInt(e.target.value, 10);
       if (!isNaN(v) && v >= 5 && v <= 50) {
         cfg.maxItems = v;
         onChange(settings);
       }
     }
   });
-  sec.appendChild(el("div", { class: "settings-row" }, [el("label", {}, ["Max items"]), maxInput]));
+  g.appendChild(row("Max items", "Between 5 and 50.", maxInput));
+  sec.appendChild(g);
 
-  const list = el("ul", { class: "settings-list" });
+  const list = el("ul", { class: "item-list" });
   const refreshList = () => {
     clear(list);
+    if (!cfg.feeds.length) {
+      list.appendChild(el("li", { class: "item-list__empty" }, ["No feeds yet."]));
+      return;
+    }
     cfg.feeds.forEach((feed, idx) => {
-      list.appendChild(el("li", {}, [
-        el("span", { title: feed.url }, [feed.title || feed.url]),
+      list.appendChild(el("li", { class: "item-list__row" }, [
+        el("div", { class: "item-list__row-content" }, [
+          el("span", { class: "item-list__title" }, [feed.title || feed.url]),
+          el("span", { class: "item-list__hint" }, [hostnameLabel(feed.url)])
+        ]),
         el("button", {
+          type: "button",
+          class: "icon-button icon-button--ghost icon-button--small",
+          "aria-label": `Remove ${feed.title || feed.url}`,
+          title: "Remove",
           onClick: () => {
             cfg.feeds.splice(idx, 1);
             onChange(settings);
             refreshList();
           }
-        }, ["Remove"])
+        }, [iconNode("trash", { size: 14 })])
       ]));
     });
   };
   refreshList();
   sec.appendChild(list);
 
-  const titleInput = el("input", { type: "text", placeholder: "Feed title (e.g. BBC)" });
-  const urlInput = el("input", { type: "text", placeholder: "https://example.com/feed.xml" });
+  const titleInput = el("input", { type: "text", class: "text-input", placeholder: "Label, e.g. BBC" });
+  const urlInput = el("input", { type: "text", class: "text-input", placeholder: "https://example.com/feed.xml" });
   const addBtn = el("button", {
-    class: "settings-add-btn",
+    type: "button",
+    class: "button button--primary",
     onClick: () => {
       const t = titleInput.value.trim();
       const u = urlInput.value.trim();
       if (!u) {
-        toast("Feed URL required", "error");
+        toast("Feed URL is required.", "error");
         return;
       }
       try { new URL(u); } catch {
-        toast("Invalid URL", "error");
+        toast("That doesn’t look like a valid URL.", "error");
         return;
       }
-      cfg.feeds.push({ title: t || u, url: u });
+      cfg.feeds.push({ title: t || hostnameLabel(u), url: u });
       onChange(settings);
       titleInput.value = "";
       urlInput.value = "";
       refreshList();
+      toast(`Feed added.`, "success");
     }
-  }, ["Add feed"]);
+  }, [iconNode("plus", { size: 14 }), "Add feed"]);
 
-  sec.appendChild(el("div", { class: "settings-input-block" }, [
-    el("label", {}, ["Add feed"]),
+  sec.appendChild(el("div", { class: "compose" }, [
     titleInput,
-    urlInput,
-    addBtn
+    el("div", { class: "compose__row" }, [urlInput, addBtn])
   ]));
 
   return sec;
 }
 
+/* ---- Reset ------------------------------------------------------------- */
+
 function buildResetSection(onChange) {
-  const sec = section("Reset");
+  const sec = section("Reset", "alert");
   const btn = el("button", {
-    class: "settings-secondary-btn",
+    type: "button",
+    class: "button button--danger button--block",
     onClick: async () => {
-      if (!confirm("Reset Vantage to defaults? Your custom feeds and links will be lost.")) return;
+      if (!confirm("Reset Vantage to defaults? Your custom feeds, quick links, and location will be lost.")) return;
       const fresh = getDefaults();
       await saveSettings(fresh);
       onChange(fresh);
-      toast("Settings reset to defaults", "success");
+      toast("Settings reset to defaults.", "success");
     }
-  }, ["Reset to defaults"]);
+  }, [iconNode("trash", { size: 14 }), "Reset everything"]);
   sec.appendChild(btn);
   return sec;
 }

@@ -2,28 +2,39 @@
 
 Items checked off as they ship. Versions are aspirational targets, not commitments.
 
-## v0.2.0 — Layout & polish
+## v0.2.0 — Premium polish — ✅ shipped 2026-04-29
+- [x] Design system: tokens for color, type, spacing, radii, shadows, motion.
+- [x] Custom engine picker dropdown replacing native `<select>`.
+- [x] UI primitives: toggle switch, segmented control, icon button, chip.
+- [x] Skeleton loading + last-updated timestamps + refresh-with-spinner on feeds.
+- [x] Time-aware greeting hero with optional name.
+- [x] Settings panel as a proper modal dialog (sticky header, backdrop, scroll lock, focus management).
+- [x] Inline SVG icon library across the app.
+- [x] `/` keyboard shortcut to focus search.
+- [x] `prefers-reduced-motion` support, focus rings, ARIA pass.
+
+## v0.3.0 — Layout & feed depth
 - [ ] Drag-to-reposition widget grid with persisted layout per profile.
-- [ ] Unread-count badges on RSS / News panels (delta since last seen).
+- [ ] Unread-count badges on Reading list / News panels (delta since last seen).
 - [ ] Click-to-mark-read on feed items.
 - [ ] Per-feed favicon next to each headline.
 - [ ] Search history dropdown with `chrome.history` integration (opt-in).
-- [ ] Keyboard navigation for search engine switching (e.g. `g` for Google, `d` for DuckDuckGo).
+- [ ] Keyboard navigation for engine switching inside the picker (arrow keys + type-ahead).
 
-## v0.3.0 — Wallpapers & vibe
+## v0.4.0 — Wallpapers & vibe
 - [ ] Wallpaper backgrounds — Unsplash topic feeds, local upload, solid color.
 - [ ] Bing daily image option (no auth).
 - [ ] Greeting widget ("Good morning, Matt").
 - [ ] Quote-of-the-day widget (offline-bundled quote pack, refreshes daily).
 - [ ] Custom accent color picker beyond Mocha/Latte.
 
-## v0.4.0 — Productivity widgets
+## v0.5.0 — Productivity widgets
 - [ ] Todo widget with `chrome.storage.local` persistence + drag-to-reorder.
 - [ ] Notes widget with markdown rendering (no remote sync — local only).
 - [ ] Pomodoro timer.
 - [ ] Calendar widget (read-only `.ics` URL feed).
 
-## v0.5.0 — Power-user features
+## v0.6.0 — Power-user features
 - [ ] Import / export settings JSON.
 - [ ] OPML import for RSS feeds (drop-in from Feedly, Inoreader, NetNewsWire).
 - [ ] Keyboard shortcut configuration screen.

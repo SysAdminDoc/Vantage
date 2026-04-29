@@ -1,37 +1,49 @@
-// Vantage v0.1.0 — clock widget
+// Vantage v0.2.0 — greeting + datetime hero (replaces standalone clock card)
 
-import { el, clear } from "../utils/dom.js";
+import { el, clear, timeOfDayGreeting } from "../utils/dom.js";
 
-export function renderClock(mount, settings) {
+export function renderGreeting(mount, settings) {
   clear(mount);
-  if (!settings.clock.enabled) {
+  if (!settings.greeting?.enabled && !settings.clock.enabled) {
     mount.style.display = "none";
     return () => {};
   }
   mount.style.display = "";
 
-  const time = el("div", { class: "clock-time" });
-  const date = el("div", { class: "clock-date" });
-  mount.appendChild(time);
-  mount.appendChild(date);
+  const hello = el("h1", { class: "greeting__hello" });
+  const meta = el("p", { class: "greeting__meta" });
+  if (settings.greeting?.enabled !== false) mount.appendChild(hello);
+  if (settings.clock.enabled) mount.appendChild(meta);
 
   const tick = () => {
     const now = new Date();
-    const hours24 = now.getHours();
-    const hours = settings.clock.format24 ? hours24 : ((hours24 % 12) || 12);
-    const mins = String(now.getMinutes()).padStart(2, "0");
-    const secs = String(now.getSeconds()).padStart(2, "0");
-    const suffix = settings.clock.format24 ? "" : (hours24 >= 12 ? " PM" : " AM");
-    const timeStr = settings.clock.showSeconds
-      ? `${hours}:${mins}:${secs}${suffix}`
-      : `${hours}:${mins}${suffix}`;
-    time.textContent = timeStr;
-    date.textContent = now.toLocaleDateString(undefined, {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    });
+    if (settings.greeting?.enabled !== false) {
+      const greet = timeOfDayGreeting(now.getHours());
+      const name = (settings.greeting?.name || "").trim();
+      clear(hello);
+      if (name) {
+        hello.append(`${greet}, `, el("em", {}, [name]));
+      } else {
+        hello.append(greet);
+      }
+    }
+
+    if (settings.clock.enabled) {
+      const dateStr = now.toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "long",
+        day: "numeric"
+      });
+      const hours24 = now.getHours();
+      const hours = settings.clock.format24 ? hours24 : ((hours24 % 12) || 12);
+      const mins = String(now.getMinutes()).padStart(2, "0");
+      const secs = String(now.getSeconds()).padStart(2, "0");
+      const suffix = settings.clock.format24 ? "" : (hours24 >= 12 ? " PM" : " AM");
+      const timeStr = settings.clock.showSeconds
+        ? `${hours}:${mins}:${secs}${suffix}`
+        : `${hours}:${mins}${suffix}`;
+      meta.textContent = `${dateStr} · ${timeStr}`;
+    }
   };
 
   tick();

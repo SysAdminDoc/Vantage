@@ -1,4 +1,4 @@
-// Vantage v0.1.0 — Open-Meteo weather widget (no API key required)
+// Vantage v0.2.0 — Open-Meteo weather chip (compact pill in the utility bar)
 
 import { el, clear } from "../utils/dom.js";
 
@@ -37,22 +37,23 @@ export async function renderWeather(mount, settings, saveSettings) {
   }
   mount.style.display = "";
 
-  const loading = el("div", { class: "feed-loading" }, ["Loading weather…"]);
-  mount.appendChild(loading);
+  // Skeleton chip while we load
+  const skeleton = el("div", { class: "weather weather--skeleton", "aria-label": "Loading weather" });
+  mount.appendChild(skeleton);
 
   let location = settings.weather.location;
-
-  // Auto-detect location on first run via IP-based fallback (Open-Meteo doesn't provide IP geo).
-  // We use the browser geolocation API. If the user denies, fall back to a default.
   if (!location) {
     try {
       location = await detectLocation();
       settings.weather.location = location;
       await saveSettings(settings);
-    } catch (err) {
-      mount.innerHTML = "";
-      mount.appendChild(el("div", { class: "weather-error" }, [
-        "Weather: location unavailable. Set a city in settings."
+    } catch {
+      clear(mount);
+      mount.appendChild(el("div", {
+        class: "weather weather--error",
+        title: "Set a city in settings to enable weather"
+      }, [
+        "Weather unavailable"
       ]));
       return;
     }
@@ -64,19 +65,25 @@ export async function renderWeather(mount, settings, saveSettings) {
     const code = data.current.weather_code;
     const meta = WMO_CODES[code] || { label: "Unknown", icon: "❓" };
     const unit = settings.weather.units === "celsius" ? "°C" : "°F";
+    const locName = location.name || "Current location";
 
-    const icon = el("div", { class: "weather-icon" }, [meta.icon]);
-    const body = el("div", {}, [
-      el("div", { class: "weather-temp" }, [`${Math.round(data.current.temperature_2m)}${unit}`]),
-      el("div", { class: "weather-meta" }, [`${meta.label} · feels ${Math.round(data.current.apparent_temperature)}${unit}`]),
-      el("div", { class: "weather-loc" }, [location.name || "Current location"])
+    const chip = el("div", {
+      class: "weather",
+      title: `${meta.label} · feels like ${Math.round(data.current.apparent_temperature)}${unit}`,
+      "aria-label": `${Math.round(data.current.temperature_2m)} degrees ${unit}, ${meta.label}, ${locName}`
+    }, [
+      el("span", { class: "weather__icon", "aria-hidden": "true" }, [meta.icon]),
+      el("span", { class: "weather__temp" }, [`${Math.round(data.current.temperature_2m)}${unit}`]),
+      el("span", { class: "weather__loc" }, [locName])
     ]);
-    mount.appendChild(icon);
-    mount.appendChild(body);
+    mount.appendChild(chip);
   } catch (err) {
     clear(mount);
-    mount.appendChild(el("div", { class: "weather-error" }, [
-      `Weather error: ${err.message || "fetch failed"}`
+    mount.appendChild(el("div", {
+      class: "weather weather--error",
+      title: err.message || "Could not load weather"
+    }, [
+      "Weather offline"
     ]));
   }
 }

@@ -2,6 +2,40 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.2.0 — 2026-04-29
+
+Premium polish pass — design system, primitives, motion, and microcopy refinement.
+
+### Added
+- **Design system in CSS** — explicit token layer for color, typography, spacing, radii, shadows, and motion. Catppuccin Mocha + Latte both refined. Ambient radial-gradient backdrop tuned per theme.
+- **Greeting hero** — time-aware salutation (“Good morning / afternoon / evening / night”) with optional name (`greeting.name` setting) and accent-gradient highlight on the name.
+- **Custom search engine picker** — replaces the native `<select>`. Avatar + label trigger pill, popover listbox with `aria-selected` state and check icon, outside-click and Esc dismissal.
+- **UI primitives library** — toggle switch, segmented control, icon button (with ghost / small variants), chip, button (default / primary / danger / block). All used consistently across settings.
+- **Skeleton loading** for RSS / News panels (shimmer animation) replaces italic “Loading…” text. Weather pill shows a shimmering placeholder before data arrives.
+- **Last-updated timestamps** on feed panels (live, ticks every 30s).
+- **Refresh button with spinner state** — feeds button shows a spinning refresh icon during fetch.
+- **Keyboard shortcut** — press `/` to focus the search input (with inline `kbd` hint inside the search bar).
+- **Settings panel polish** — sticky header with backdrop blur, dim backdrop with click-to-close, body scroll lock when open, focus moves into panel on open and back to toggle on close, structured sections with category icons, grouped rows with title + hint.
+- **SVG icon library** (`src/icons.js`) — Lucide-style stroke set used everywhere (search, refresh, settings, palette, cloud, clock, link, etc.).
+- **Empty states** — proper iconified empty / error layouts on feed panels with explanatory hint text.
+- **Toast redesign** — top-right slot, animated entrance / exit, semantic icon + accent stripe, success / error / warning variants.
+- **`prefers-reduced-motion` support** — animations and transitions disabled cleanly.
+- **Better focus rings** — visible 2-ring offset using accent token; consistent across all interactive elements.
+
+### Changed
+- **Layout restructured** — top utility bar (weather chip + settings) → hero (greeting / search / quick links) → reading grid (news + RSS). Search is visually elevated as the primary action.
+- **Quick links** are now a horizontal pill row with subtle favicons instead of a card-with-grid.
+- **Weather** moved from a header card to a compact pill in the utility bar — no longer competes with the greeting.
+- **Microcopy refresh** — “RSS” → “Reading list”, “Reset to defaults” → “Reset everything”, friendlier error messages, helper text under every settings row.
+- **Settings panel sections** all use the same row pattern (title + hint + control) for consistency. Toggles replace native checkboxes; segmented controls replace dropdowns where there are 2 options.
+- **Feed item design** — title clamped to 2 lines, source rendered as a small uppercase pill in accent-secondary color, separator dot before the relative time.
+- **Typography scale** — explicit 11–56px scale, `font-variant-numeric: tabular-nums` on time displays, `-webkit-font-smoothing: antialiased`, `text-rendering: optimizeLegibility`.
+
+### Fixed
+- Toast no longer competed with quick links (now top-right).
+- Engine picker is reachable without a mouse and announces itself as a listbox.
+- Settings panel is now a proper modal dialog (`role="dialog"`, `aria-modal`, focus moves into the panel on open).
+
 ## v0.1.0 — 2026-04-29
 
 Initial release.

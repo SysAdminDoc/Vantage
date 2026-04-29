@@ -1,8 +1,9 @@
-// Vantage v0.1.0 — entry point. Loads settings, mounts widgets, wires the settings panel.
+// Vantage v0.2.0 — entry point. Loads settings, mounts widgets, wires UI.
 
 import { loadSettings, saveSettings, onSettingsChanged } from "./storage.js";
+import { iconNode } from "./icons.js";
 import { renderSearch } from "./widgets/search.js";
-import { renderClock } from "./widgets/clock.js";
+import { renderGreeting } from "./widgets/clock.js";
 import { renderWeather } from "./widgets/weather.js";
 import { renderQuickLinks } from "./widgets/quicklinks.js";
 import { renderRss } from "./widgets/rss.js";
@@ -10,14 +11,15 @@ import { renderNews } from "./widgets/news.js";
 import { renderSettingsPanel, openPanel, closePanel } from "./settings.js";
 
 let currentSettings;
-let clockTeardown = null;
+let greetingTeardown = null;
 
 async function init() {
   currentSettings = await loadSettings();
   document.documentElement.setAttribute("data-theme", currentSettings.theme);
+  injectStaticIcons();
   mountAll();
-  wireSettingsToggle();
-  // Cross-tab sync: if another tab updates storage, re-render here.
+  wireSettings();
+  wireKeyboard();
   onSettingsChanged((next) => {
     if (!next) return;
     currentSettings = next;
@@ -26,41 +28,69 @@ async function init() {
   });
 }
 
-function mountAll() {
-  if (clockTeardown) { clockTeardown(); clockTeardown = null; }
+function injectStaticIcons() {
+  const settingsBtn = document.getElementById("settings-toggle");
+  if (settingsBtn && !settingsBtn.firstChild) {
+    settingsBtn.appendChild(iconNode("settings", { size: 18 }));
+  }
+}
 
+function mountAll() {
+  if (greetingTeardown) { greetingTeardown(); greetingTeardown = null; }
+
+  greetingTeardown = renderGreeting(document.getElementById("greeting-mount"), currentSettings);
   renderSearch(document.getElementById("search-mount"), currentSettings, persist);
-  clockTeardown = renderClock(document.getElementById("clock-mount"), currentSettings);
   renderWeather(document.getElementById("weather-mount"), currentSettings, saveSettings);
   renderQuickLinks(document.getElementById("quicklinks-mount"), currentSettings);
   renderRss(document.getElementById("rss-mount"), currentSettings);
   renderNews(document.getElementById("news-mount"), currentSettings);
 }
 
-function wireSettingsToggle() {
+function wireSettings() {
   const toggle = document.getElementById("settings-toggle");
   const panel = document.getElementById("settings-panel");
-  toggle.addEventListener("click", () => {
+  const backdrop = document.getElementById("settings-backdrop");
+
+  const open = () => {
     renderSettingsPanel(panel, currentSettings, async (next) => {
       currentSettings = next;
       await saveSettings(currentSettings);
       mountAll();
     });
+    toggle.setAttribute("aria-expanded", "true");
     openPanel(panel);
-  });
-
-  // Click-outside-to-close
-  document.addEventListener("click", (e) => {
-    if (panel.dataset.open !== "true") return;
-    if (panel.contains(e.target) || toggle.contains(e.target)) return;
+  };
+  const close = () => {
+    toggle.setAttribute("aria-expanded", "false");
     closePanel(panel);
+  };
+
+  toggle.addEventListener("click", () => {
+    panel.dataset.open === "true" ? close() : open();
   });
 
-  // Esc-to-close
+  backdrop.addEventListener("click", close);
+
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && panel.dataset.open === "true") {
-      closePanel(panel);
+      // Let the engine picker handle Escape first if it's open inside settings.
+      const popoverOpen = panel.querySelector('.engine-picker__popover:not([hidden])');
+      if (!popoverOpen) close();
     }
+  });
+}
+
+function wireKeyboard() {
+  // Press / to focus the search input (only when not already typing into a field).
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
+    const target = e.target;
+    const tag = target?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) return;
+    if (document.getElementById("settings-panel")?.dataset.open === "true") return;
+    e.preventDefault();
+    const input = document.querySelector(".search-input");
+    input?.focus();
   });
 }
 

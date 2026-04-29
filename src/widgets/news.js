@@ -1,4 +1,4 @@
-// Vantage v0.1.0 — News widget (re-uses shared feed-list renderer)
+// Vantage v0.2.0 — News panel
 
 import { renderFeedList } from "./feed-list.js";
 
@@ -9,12 +9,14 @@ export function renderNews(mount, settings) {
   }
   mount.style.display = "";
 
-  const draw = () => renderFeedList(
-    mount,
-    "News",
-    settings.news.feeds,
-    settings.news.maxItems,
-    draw
-  );
+  const draw = (initiator) => renderFeedList(mount, {
+    title: "News",
+    iconName: "newspaper",
+    feeds: settings.news.feeds,
+    maxItems: settings.news.maxItems,
+    emptyHint: "Add a news feed URL in settings.",
+    initiator,
+    onRefresh: () => draw("refresh")
+  });
   draw();
 }
