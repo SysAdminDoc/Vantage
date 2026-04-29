@@ -1,5 +1,6 @@
-// Vantage v0.2.0 — shared multi-feed renderer with skeleton, last-updated,
-// graceful per-feed failure, and a refresh button that shows progress.
+// Vantage v0.3.0 — shared multi-feed renderer.
+// Adds: per-item favicons, click-to-mark-read state (with cross-tab persistence),
+// unread count badge, "mark all read" button, skeleton loading, last-updated stamp.
 
 import { el, clear, relativeTime, hostnameLabel } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
@@ -11,30 +12,55 @@ export async function renderFeedList(mount, options) {
     iconName,
     feeds,
     maxItems,
+    readItems = [],
     onRefresh,
+    onMarkRead,           // (urls: string[]) => Promise<void>
+    onDragHandleAttach,   // (handleEl) => void; lets caller wire panel-level drag
     emptyHint = "Add a feed in settings to get started.",
     initiator
   } = options;
 
-  // Build static shell once per render call.
   clear(mount);
 
+  // ---- Header ----
   const titleNode = el("h2", { class: "panel__title" }, [
     el("span", { class: "panel__title-dot", "aria-hidden": "true" }),
     title
   ]);
+  const unreadBadge = el("span", { class: "panel__badge", hidden: true, "aria-live": "polite" });
+  titleNode.appendChild(unreadBadge);
 
-  const updatedNode = el("span", { class: "panel__updated", "data-updated": "" });
+  const updatedNode = el("span", { class: "panel__updated" });
+
+  // Drag handle (caller wires it).
+  const dragHandle = el("button", {
+    type: "button",
+    class: "icon-button icon-button--ghost icon-button--small panel__drag",
+    "aria-label": `Reorder ${title}`,
+    title: "Drag to reorder",
+    tabindex: "-1"
+  }, [iconNode("grip", { size: 14 })]);
+  dragHandle.addEventListener("click", (e) => e.preventDefault()); // handle is for drag, not click
+
+  const markAllBtn = el("button", {
+    type: "button",
+    class: "icon-button icon-button--ghost icon-button--small",
+    "aria-label": `Mark all ${title} read`,
+    title: "Mark all as read",
+    onClick: () => markAllVisibleRead()
+  }, [iconNode("check-all", { size: 14 })]);
+
   const refreshBtn = el("button", {
     type: "button",
     class: "icon-button icon-button--ghost icon-button--small",
     "aria-label": `Refresh ${title}`,
-    title: `Refresh ${title}`,
+    title: "Refresh",
     onClick: () => onRefresh?.()
   }, [iconNode("refresh", { size: 14 })]);
 
-  const meta = el("div", { class: "panel__meta" }, [updatedNode, refreshBtn]);
+  const meta = el("div", { class: "panel__meta" }, [updatedNode, dragHandle, markAllBtn, refreshBtn]);
   mount.appendChild(el("header", { class: "panel__header" }, [titleNode, meta]));
+  onDragHandleAttach?.(dragHandle);
 
   const listHost = el("div", { class: "panel__list" });
   mount.appendChild(listHost);
@@ -46,18 +72,22 @@ export async function renderFeedList(mount, options) {
   if (!feeds.length) {
     listHost.appendChild(buildEmpty(iconName, "No feeds yet", emptyHint));
     updatedNode.textContent = "";
+    markAllBtn.disabled = true;
     return;
   }
 
-  // Show skeleton while we fetch.
+  // ---- Skeleton while we fetch ----
   listHost.appendChild(buildSkeleton(Math.min(5, maxItems || 5)));
 
   const results = await Promise.allSettled(
     feeds.map(async (cfg) => {
       const feed = await fetchFeed(cfg.url);
+      const sourceTitle = cfg.title || feed.title || hostnameLabel(cfg.url);
+      const sourceHost = hostnameLabel(cfg.url);
       return feed.items.slice(0, maxItems).map((item) => ({
         ...item,
-        sourceTitle: cfg.title || feed.title || hostnameLabel(cfg.url)
+        sourceTitle,
+        sourceHost
       }));
     })
   );
@@ -88,24 +118,54 @@ export async function renderFeedList(mount, options) {
         : emptyHint
     ));
     updatedNode.textContent = "";
+    markAllBtn.disabled = true;
     return;
   }
 
+  const visible = merged.slice(0, maxItems);
+  const readSet = new Set(readItems);
+
   const list = el("ul", { class: "feed-list" });
-  for (const item of merged.slice(0, maxItems)) {
-    const li = el("li", { class: "feed-item" }, [
-      el("a", {
-        href: item.link,
-        target: "_blank",
-        rel: "noopener noreferrer"
-      }, [
-        el("p", { class: "feed-item__title" }, [item.title]),
-        el("div", { class: "feed-item__meta" }, [
-          el("span", { class: "feed-item__source" }, [item.sourceTitle]),
-          item.published ? el("span", { class: "feed-item__separator" }, [relativeTime(item.published)]) : null
-        ])
+  let unreadCount = 0;
+
+  for (const item of visible) {
+    const isRead = readSet.has(item.link);
+    if (!isRead) unreadCount++;
+
+    const titleEl = el("p", { class: "feed-item__title" }, [item.title]);
+    const favicon = el("img", {
+      class: "feed-item__favicon",
+      src: faviconUrl(item.link),
+      alt: "",
+      loading: "lazy",
+      referrerpolicy: "no-referrer",
+      onError: (e) => { e.target.style.display = "none"; }
+    });
+    const link = el("a", {
+      href: item.link,
+      target: "_blank",
+      rel: "noopener noreferrer"
+    }, [
+      titleEl,
+      el("div", { class: "feed-item__meta" }, [
+        favicon,
+        el("span", { class: "feed-item__source" }, [item.sourceTitle]),
+        item.published ? el("span", { class: "feed-item__separator" }, ["·"]) : null,
+        item.published ? el("span", {}, [relativeTime(item.published)]) : null
       ])
     ]);
+    const li = el("li", {
+      class: `feed-item${isRead ? " feed-item--read" : ""}`,
+      "data-url": item.link
+    }, [link]);
+
+    link.addEventListener("click", () => {
+      if (li.classList.contains("feed-item--read")) return;
+      li.classList.add("feed-item--read");
+      decrementBadge();
+      onMarkRead?.([item.link]);
+    });
+
     list.appendChild(li);
   }
   listHost.appendChild(list);
@@ -116,12 +176,43 @@ export async function renderFeedList(mount, options) {
     ]));
   }
 
-  // Updated timestamp ticks live for the lifetime of this panel render.
+  updateBadge();
+  markAllBtn.disabled = unreadCount === 0;
+
+  function decrementBadge() {
+    unreadCount = Math.max(0, unreadCount - 1);
+    updateBadge();
+    markAllBtn.disabled = unreadCount === 0;
+  }
+  function updateBadge() {
+    if (unreadCount > 0) {
+      unreadBadge.hidden = false;
+      unreadBadge.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
+      unreadBadge.setAttribute("aria-label", `${unreadCount} unread`);
+    } else {
+      unreadBadge.hidden = true;
+      unreadBadge.textContent = "";
+    }
+  }
+
+  function markAllVisibleRead() {
+    const urls = [];
+    for (const liEl of list.querySelectorAll(".feed-item:not(.feed-item--read)")) {
+      liEl.classList.add("feed-item--read");
+      urls.push(liEl.dataset.url);
+    }
+    if (!urls.length) return;
+    unreadCount = 0;
+    updateBadge();
+    markAllBtn.disabled = true;
+    onMarkRead?.(urls);
+  }
+
+  // ---- Live timestamp ----
   const stamp = new Date();
   const updateStamp = () => { updatedNode.textContent = `Updated ${relativeTime(stamp)}`; };
   updateStamp();
   const interval = setInterval(updateStamp, 30_000);
-  // Clean up if mount is removed/cleared by next render.
   const observer = new MutationObserver(() => {
     if (!document.body.contains(updatedNode)) {
       clearInterval(interval);
@@ -148,4 +239,13 @@ function buildEmpty(iconName, title, hint) {
     el("p", { class: "empty__title" }, [title]),
     el("p", { class: "empty__hint" }, [hint])
   ]);
+}
+
+function faviconUrl(url) {
+  try {
+    const u = new URL(url);
+    return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=32`;
+  } catch {
+    return "";
+  }
 }

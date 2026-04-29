@@ -1,8 +1,9 @@
-// Vantage v0.2.0 — quick links as a horizontal pill row
+// Vantage v0.3.0 — quick-link pills with drag-to-reorder
 
 import { el, clear, hostnameLabel } from "../utils/dom.js";
+import { makeReorderable, arrayMove } from "../utils/drag.js";
 
-export function renderQuickLinks(mount, settings) {
+export function renderQuickLinks(mount, settings, { onChange } = {}) {
   clear(mount);
   if (!settings.quicklinks.enabled || !settings.quicklinks.items.length) {
     mount.style.display = "none";
@@ -10,11 +11,11 @@ export function renderQuickLinks(mount, settings) {
   }
   mount.style.display = "";
 
-  for (const item of settings.quicklinks.items) {
+  const pills = settings.quicklinks.items.map((item) => {
     const link = el("a", {
       class: "quicklink",
       href: item.url,
-      title: item.url,
+      title: `${item.title} — ${hostnameLabel(item.url)}\nDrag to reorder`,
       "aria-label": `${item.title} (${hostnameLabel(item.url)})`
     }, [
       el("img", {
@@ -27,8 +28,20 @@ export function renderQuickLinks(mount, settings) {
       }),
       el("span", {}, [item.title])
     ]);
-    mount.appendChild(link);
-  }
+    // Suppress click during drag operations.
+    link.addEventListener("dragstart", () => link.classList.add("quicklink--dragging-self"));
+    return link;
+  });
+
+  pills.forEach((p) => mount.appendChild(p));
+
+  makeReorderable({
+    items: pills,
+    onReorder: (from, to) => {
+      settings.quicklinks.items = arrayMove(settings.quicklinks.items, from, to);
+      onChange?.(settings);
+    }
+  });
 }
 
 function faviconFor(url) {

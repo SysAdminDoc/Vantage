@@ -1,8 +1,9 @@
-// Vantage v0.2.0 — RSS panel
+// Vantage v0.3.0 — RSS / Reading list panel
 
 import { renderFeedList } from "./feed-list.js";
+import { saveSettings, pushRead } from "../storage.js";
 
-export function renderRss(mount, settings) {
+export function renderRss(mount, settings, { onAttachDragHandle } = {}) {
   if (!settings.rss.enabled) {
     mount.style.display = "none";
     return;
@@ -14,9 +15,15 @@ export function renderRss(mount, settings) {
     iconName: "rss",
     feeds: settings.rss.feeds,
     maxItems: settings.rss.maxItems,
+    readItems: settings.rss.readItems || [],
     emptyHint: "Add an RSS or Atom feed URL in settings.",
     initiator,
-    onRefresh: () => draw("refresh")
+    onRefresh: () => draw("refresh"),
+    onMarkRead: async (urls) => {
+      settings.rss.readItems = pushRead(settings.rss.readItems || [], urls);
+      await saveSettings(settings);
+    },
+    onDragHandleAttach: onAttachDragHandle
   });
   draw();
 }

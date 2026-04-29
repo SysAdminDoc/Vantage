@@ -6,7 +6,7 @@
 
 **A privacy-first new tab dashboard for Chromium browsers — bring your search engine, your feeds, your weather, your links.**
 
-[![Version](https://img.shields.io/badge/version-0.2.0-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
+[![Version](https://img.shields.io/badge/version-0.3.0-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
 [![License](https://img.shields.io/badge/license-MIT-89b4fa?style=flat-square)](LICENSE)
 [![Manifest](https://img.shields.io/badge/manifest-V3-a6e3a1?style=flat-square)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![Platform](https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave%20%7C%20Vivaldi-94e2d5?style=flat-square)](#install)
@@ -34,6 +34,10 @@ Beyond that, Vantage gives you the dashboard staples — clock, weather, RSS, ne
 - **`/` to focus search** — keyboard shortcut hint shown inline; Esc closes any open panel.
 - **All local** — `chrome.storage.local` only. No analytics, no telemetry, no remote config server. The only outbound calls are: Open-Meteo (weather), the RSS feeds you configure, and (fallback only) a public CORS proxy for feeds that block direct fetches.
 - **Cross-tab sync** — change a setting in one tab, every other open new tab updates instantly.
+- **Drag-to-reorder** — quick-link pills and the news / reading-list panels remember the order you arrange them in.
+- **Click-to-mark-read** — read articles dim out, panel header shows an unread-count badge, one-click "mark all read" per panel. State persists across tabs.
+- **Per-feed favicons** in headline rows.
+- **Full keyboard navigation on the engine picker** — `↑/↓/Home/End/Enter/Esc` plus type-ahead (`d` jumps to DuckDuckGo, `b` to Bing, etc.).
 - **Accessibility-aware** — visible focus rings, ARIA-labelled controls, `prefers-reduced-motion` support, semantic landmarks, dialog-pattern settings panel with focus trap and Esc-to-close.
 
 ## Install

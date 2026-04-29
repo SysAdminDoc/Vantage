@@ -20,6 +20,9 @@ const DEFAULTS = {
     format24: false,
     showSeconds: false
   },
+  layout: {
+    panels: ["news", "rss"]
+  },
   quicklinks: {
     enabled: true,
     items: [
@@ -36,7 +39,8 @@ const DEFAULTS = {
     feeds: [
       { title: "Hacker News", url: "https://hnrss.org/frontpage" }
     ],
-    maxItems: 15
+    maxItems: 15,
+    readItems: []
   },
   news: {
     enabled: true,
@@ -45,9 +49,21 @@ const DEFAULTS = {
       { title: "Ars Technica", url: "https://feeds.arstechnica.com/arstechnica/index" },
       { title: "The Verge", url: "https://www.theverge.com/rss/index.xml" }
     ],
-    maxItems: 15
+    maxItems: 15,
+    readItems: []
   }
 };
+
+// Cap on per-panel read-items to prevent unbounded growth.
+// 500 URLs ≈ 250KB worst case. chrome.storage.local quota is 10MB.
+export const READ_CAP = 500;
+
+export function pushRead(existingArr, urls) {
+  const set = new Set(existingArr);
+  for (const u of urls) set.add(u);
+  const out = [...set];
+  return out.length > READ_CAP ? out.slice(out.length - READ_CAP) : out;
+}
 
 export async function loadSettings() {
   if (!chrome?.storage?.local) {

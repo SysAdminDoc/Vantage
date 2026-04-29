@@ -1,4 +1,5 @@
-// Vantage v0.2.0 — hero search bar with custom engine picker
+// Vantage v0.3.0 — hero search bar with custom engine picker.
+// Picker supports full keyboard navigation: ↑/↓/Home/End/Enter/Esc plus type-ahead.
 
 import { el, clear } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
@@ -62,59 +63,83 @@ function buildEnginePicker(settings, onChange, refocusInput) {
   const popover = el("div", {
     class: "engine-picker__popover",
     role: "listbox",
+    tabindex: "-1",
     hidden: true
   });
+
+  // Type-ahead state
+  let typeAheadBuffer = "";
+  let typeAheadTimer = null;
 
   const closePopover = () => {
     if (popover.hidden) return;
     popover.hidden = true;
     trigger.setAttribute("aria-expanded", "false");
     document.removeEventListener("pointerdown", outsideHandler, true);
-    document.removeEventListener("keydown", keyHandler, true);
   };
 
   const outsideHandler = (e) => {
     if (!picker.contains(e.target)) closePopover();
   };
 
-  const keyHandler = (e) => {
-    if (e.key === "Escape") {
-      closePopover();
-      refocusInput?.();
-    }
-  };
-
-  const openPopover = () => {
+  const openPopover = ({ focusFirst = false, focusLast = false } = {}) => {
     if (!popover.hidden) return;
     popover.hidden = false;
     trigger.setAttribute("aria-expanded", "true");
     document.addEventListener("pointerdown", outsideHandler, true);
-    document.addEventListener("keydown", keyHandler, true);
+    requestAnimationFrame(() => {
+      const opts = popover.querySelectorAll(".engine-option");
+      if (focusFirst) opts[0]?.focus();
+      else if (focusLast) opts[opts.length - 1]?.focus();
+      else {
+        // Focus the currently-selected option if visible, else first.
+        const selected = popover.querySelector('.engine-option[aria-selected="true"]') || opts[0];
+        selected?.focus();
+      }
+    });
   };
 
   trigger.addEventListener("click", () => {
     popover.hidden ? openPopover() : closePopover();
   });
 
-  // Build options once
-  for (const [key, eng] of Object.entries(SEARCH_ENGINES)) {
+  trigger.addEventListener("keydown", (e) => {
+    if (popover.hidden) {
+      if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openPopover({ focusFirst: true });
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        openPopover({ focusLast: true });
+      }
+    }
+  });
+
+  const selectEngine = (key) => {
+    settings.search.engine = key;
+    onChange?.(settings);
+    updateTrigger();
+    for (const child of popover.children) {
+      child.setAttribute("aria-selected", String(child.dataset.engine === key));
+    }
+    closePopover();
+    refocusInput?.();
+  };
+
+  // Build options once.
+  const allKeys = Object.keys(SEARCH_ENGINES);
+  for (const key of allKeys) {
+    const eng = SEARCH_ENGINES[key];
     const initial = eng.name[0].toUpperCase();
     const opt = el("button", {
       type: "button",
       class: "engine-option",
       role: "option",
       "data-engine": key,
+      "data-name": eng.name.toLowerCase(),
+      tabindex: "-1",
       "aria-selected": String(key === settings.search.engine),
-      onClick: () => {
-        settings.search.engine = key;
-        onChange?.(settings);
-        updateTrigger();
-        for (const child of popover.children) {
-          child.setAttribute("aria-selected", String(child.dataset.engine === key));
-        }
-        closePopover();
-        refocusInput?.();
-      }
+      onClick: () => selectEngine(key)
     }, [
       el("span", { class: "engine-avatar", "aria-hidden": "true" }, [initial]),
       el("span", { class: "engine-option__name" }, [eng.name]),
@@ -122,6 +147,72 @@ function buildEnginePicker(settings, onChange, refocusInput) {
     ]);
     popover.appendChild(opt);
   }
+
+  popover.addEventListener("keydown", (e) => {
+    const opts = [...popover.querySelectorAll(".engine-option")];
+    if (!opts.length) return;
+    const activeIdx = opts.indexOf(document.activeElement);
+
+    switch (e.key) {
+      case "ArrowDown": {
+        e.preventDefault();
+        const next = activeIdx < opts.length - 1 ? activeIdx + 1 : 0;
+        opts[next].focus();
+        break;
+      }
+      case "ArrowUp": {
+        e.preventDefault();
+        const prev = activeIdx > 0 ? activeIdx - 1 : opts.length - 1;
+        opts[prev].focus();
+        break;
+      }
+      case "Home":
+        e.preventDefault();
+        opts[0].focus();
+        break;
+      case "End":
+        e.preventDefault();
+        opts[opts.length - 1].focus();
+        break;
+      case "Escape":
+        e.preventDefault();
+        closePopover();
+        trigger.focus();
+        break;
+      case "Tab":
+        // Tab leaves the popover; close it and let the focus go where it goes.
+        closePopover();
+        break;
+      case "Enter":
+      case " ": {
+        // Default click behavior on the focused button — but ensure it fires.
+        e.preventDefault();
+        const focused = opts[activeIdx];
+        if (focused) focused.click();
+        break;
+      }
+      default:
+        // Type-ahead: single printable characters
+        if (e.key.length === 1 && /\S/.test(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          typeAheadBuffer += e.key.toLowerCase();
+          clearTimeout(typeAheadTimer);
+          typeAheadTimer = setTimeout(() => { typeAheadBuffer = ""; }, 600);
+          // Find first option whose name starts with the buffer (after current focus).
+          const startIdx = activeIdx >= 0 ? activeIdx : 0;
+          const ordered = [...opts.slice(startIdx + 1), ...opts.slice(0, startIdx + 1)];
+          let match = ordered.find((o) => o.dataset.name.startsWith(typeAheadBuffer));
+          if (!match && typeAheadBuffer.length === 1) {
+            // single-char repeat: cycle to next match instead of staying
+            match = ordered.find((o) => o.dataset.name.startsWith(typeAheadBuffer));
+          }
+          if (match) {
+            e.preventDefault();
+            match.focus();
+          }
+        }
+        break;
+    }
+  });
 
   function updateTrigger() {
     const eng = SEARCH_ENGINES[settings.search.engine] || SEARCH_ENGINES.google;

@@ -1,4 +1,4 @@
-// Vantage v0.2.0 — entry point. Loads settings, mounts widgets, wires UI.
+// Vantage v0.3.0 — entry point. Loads settings, mounts widgets, wires UI.
 
 import { loadSettings, saveSettings, onSettingsChanged } from "./storage.js";
 import { iconNode } from "./icons.js";
@@ -9,9 +9,13 @@ import { renderQuickLinks } from "./widgets/quicklinks.js";
 import { renderRss } from "./widgets/rss.js";
 import { renderNews } from "./widgets/news.js";
 import { renderSettingsPanel, openPanel, closePanel } from "./settings.js";
+import { makeReorderable, arrayMove } from "./utils/drag.js";
 
 let currentSettings;
 let greetingTeardown = null;
+let panelDragCleanup = null;
+
+const PANEL_KINDS = ["news", "rss"];
 
 async function init() {
   currentSettings = await loadSettings();
@@ -37,13 +41,62 @@ function injectStaticIcons() {
 
 function mountAll() {
   if (greetingTeardown) { greetingTeardown(); greetingTeardown = null; }
+  if (panelDragCleanup) { panelDragCleanup(); panelDragCleanup = null; }
 
   greetingTeardown = renderGreeting(document.getElementById("greeting-mount"), currentSettings);
   renderSearch(document.getElementById("search-mount"), currentSettings, persist);
   renderWeather(document.getElementById("weather-mount"), currentSettings, saveSettings);
-  renderQuickLinks(document.getElementById("quicklinks-mount"), currentSettings);
-  renderRss(document.getElementById("rss-mount"), currentSettings);
-  renderNews(document.getElementById("news-mount"), currentSettings);
+  renderQuickLinks(
+    document.getElementById("quicklinks-mount"),
+    currentSettings,
+    { onChange: persist }
+  );
+
+  // Apply persisted panel order via CSS `order` so we don't move DOM nodes.
+  applyPanelOrder();
+
+  // Each panel's renderer hands its drag handle back to us so we can wire reorder.
+  const panelHandles = {};
+  const onAttach = (kind) => (handle) => {
+    panelHandles[kind] = handle;
+    if (Object.keys(panelHandles).length === PANEL_KINDS.length) {
+      wirePanelReorder(panelHandles);
+    }
+  };
+
+  renderNews(document.getElementById("news-mount"), currentSettings, { onAttachDragHandle: onAttach("news") });
+  renderRss(document.getElementById("rss-mount"), currentSettings, { onAttachDragHandle: onAttach("rss") });
+}
+
+function applyPanelOrder() {
+  const order = (currentSettings.layout?.panels || PANEL_KINDS).filter((k) => PANEL_KINDS.includes(k));
+  // ensure both panels appear even if storage is partial
+  for (const k of PANEL_KINDS) if (!order.includes(k)) order.push(k);
+  order.forEach((kind, i) => {
+    const mount = document.getElementById(`${kind}-mount`);
+    if (mount) mount.style.order = String(i);
+  });
+}
+
+function wirePanelReorder(handles) {
+  const items = PANEL_KINDS.map((k) => document.getElementById(`${k}-mount`));
+  if (items.some((el) => !el)) return;
+
+  panelDragCleanup = makeReorderable({
+    items,
+    handle: (panelEl) => {
+      const kind = panelEl.id.replace("-mount", "");
+      return handles[kind];
+    },
+    onReorder: async (from, to) => {
+      const order = (currentSettings.layout?.panels || PANEL_KINDS).slice();
+      const ordered = arrayMove(items, from, to);
+      const newKinds = ordered.map((el) => el.id.replace("-mount", ""));
+      currentSettings.layout = { ...(currentSettings.layout || {}), panels: newKinds };
+      applyPanelOrder();
+      await saveSettings(currentSettings);
+    }
+  });
 }
 
 function wireSettings() {
@@ -73,7 +126,7 @@ function wireSettings() {
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && panel.dataset.open === "true") {
-      // Let the engine picker handle Escape first if it's open inside settings.
+      // Let popovers inside settings handle Escape first.
       const popoverOpen = panel.querySelector('.engine-picker__popover:not([hidden])');
       if (!popoverOpen) close();
     }

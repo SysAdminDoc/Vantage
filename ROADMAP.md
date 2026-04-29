@@ -13,13 +13,17 @@ Items checked off as they ship. Versions are aspirational targets, not commitmen
 - [x] `/` keyboard shortcut to focus search.
 - [x] `prefers-reduced-motion` support, focus rings, ARIA pass.
 
-## v0.3.0 — Layout & feed depth
-- [ ] Drag-to-reposition widget grid with persisted layout per profile.
-- [ ] Unread-count badges on Reading list / News panels (delta since last seen).
-- [ ] Click-to-mark-read on feed items.
-- [ ] Per-feed favicon next to each headline.
-- [ ] Search history dropdown with `chrome.history` integration (opt-in).
-- [ ] Keyboard navigation for engine switching inside the picker (arrow keys + type-ahead).
+## v0.3.0 — Layout & feed depth — ✅ shipped 2026-04-29
+- [x] Drag-to-reorder quick links.
+- [x] Drag-to-reorder reading panels (grip handle in each panel header).
+- [x] Click-to-mark-read on feed items, with cross-tab persistence + LRU cap.
+- [x] Unread-count badges on Reading list / News panels.
+- [x] "Mark all read" button per panel.
+- [x] Per-feed favicon next to each headline.
+- [x] Keyboard navigation on the engine picker — arrow keys, Home/End, Enter, Esc, plus type-ahead.
+
+Deferred to a later milestone:
+- [ ] Search history dropdown with `chrome.history` integration (opt-in) — needs new permission + privacy review.
 
 ## v0.4.0 — Wallpapers & vibe
 - [ ] Wallpaper backgrounds — Unsplash topic feeds, local upload, solid color.

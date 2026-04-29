@@ -2,6 +2,31 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.0 — 2026-04-29
+
+Layout, feed depth, and interaction polish.
+
+### Added
+- **Drag-to-reorder quick links.** Drag any pill to a new position; the order is persisted to settings and survives a page reload.
+- **Drag-to-reorder reading panels.** A small grip handle in each panel header (visible on hover) lets you swap the news and reading-list panels. Order persists in `settings.layout.panels` and is applied via CSS `order` so DOM nodes stay stable.
+- **Click-to-mark-read** on every feed item. Read items dim out (`feed-item--read` class) — the title shifts to the secondary text color, the favicon and meta dim. Read state is stored per-panel (`rss.readItems`, `news.readItems`), capped at 500 URLs each (LRU eviction via `pushRead()`), and syncs across tabs.
+- **Unread-count badge** in each panel header, hidden when zero. Caps display at "99+".
+- **"Mark all read" button** in panel headers (icon-button next to refresh). Disabled when nothing unread.
+- **Per-feed favicon** next to the source name in each headline's meta row, lazy-loaded with graceful failure (errored favicons hide cleanly).
+- **Engine picker keyboard navigation** — `↓` / `↑` / `Home` / `End` / `Enter` / `Space` / `Esc` plus type-ahead (e.g. `d` jumps to DuckDuckGo, `s` to Startpage). `Tab` closes the popover and lets focus continue naturally. Pressing `↓` on the trigger when closed opens the popover with first option focused; `↑` opens with last focused.
+- **Reusable drag-reorder helper** at `src/utils/drag.js` — used by both quick-links and panels.
+- **Two new icons** — `circle-check`, `check-all`, `grip`.
+
+### Changed
+- **Feed item meta line** redesigned. Source is plain text (no longer a pill) preceded by the favicon, with a separator dot before the relative timestamp. Less visual noise, more scannable.
+- **Panel header layout** — drag handle | mark-all-read | refresh — all in the meta cluster. Drag handle is opacity 0.35 at rest, full opacity on panel hover.
+- **Storage schema** — added `layout.panels`, `rss.readItems`, `news.readItems`. Existing v0.2 users deep-merge transparently.
+
+### A11y / UX
+- Keyboard popover focus is fully managed: no focus trap leak, focus returns to trigger on Esc.
+- Drop-target states have a visible accent ring (not color-only).
+- Drag handle has `aria-label` and is reachable by tooltip but excluded from the click flow.
+
 ## v0.2.0 — 2026-04-29
 
 Premium polish pass — design system, primitives, motion, and microcopy refinement.
