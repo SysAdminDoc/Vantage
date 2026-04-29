@@ -23,7 +23,8 @@ param(
     [switch]$Uninstall,
     [string[]]$Browsers,
     [switch]$NoPrompt,
-    [switch]$Verify
+    [switch]$Verify,
+    [switch]$Diagnose
 )
 
 $ErrorActionPreference = 'Stop'
@@ -42,6 +43,7 @@ $BrowserPolicies = @(
             'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
         )
         PolicyKey  = 'HKLM:\Software\Policies\Google\Chrome\ExtensionInstallForcelist'
+        UrlScheme  = 'chrome'
     },
     [PSCustomObject]@{
         Name       = 'Brave'
@@ -50,6 +52,7 @@ $BrowserPolicies = @(
             'C:\Program Files (x86)\BraveSoftware\Brave-Browser\Application\brave.exe'
         )
         PolicyKey  = 'HKLM:\Software\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'
+        UrlScheme  = 'brave'
     },
     [PSCustomObject]@{
         Name       = 'Edge'
@@ -58,6 +61,7 @@ $BrowserPolicies = @(
             'C:\Program Files\Microsoft\Edge\Application\msedge.exe'
         )
         PolicyKey  = 'HKLM:\Software\Policies\Microsoft\Edge\ExtensionInstallForcelist'
+        UrlScheme  = 'edge'
     },
     [PSCustomObject]@{
         Name       = 'Vivaldi'
@@ -66,6 +70,7 @@ $BrowserPolicies = @(
             'C:\Program Files (x86)\Vivaldi\Application\vivaldi.exe'
         )
         PolicyKey  = 'HKLM:\Software\Policies\Vivaldi\ExtensionInstallForcelist'
+        UrlScheme  = 'vivaldi'
     },
     [PSCustomObject]@{
         Name       = 'Opera'
@@ -74,6 +79,7 @@ $BrowserPolicies = @(
             'C:\Program Files\Opera\opera.exe'
         )
         PolicyKey  = 'HKLM:\Software\Policies\Opera Software\Opera Stable\ExtensionInstallForcelist'
+        UrlScheme  = 'opera'
     },
     [PSCustomObject]@{
         Name       = 'Chromium'
@@ -81,6 +87,7 @@ $BrowserPolicies = @(
             'C:\Program Files\Chromium\Application\chrome.exe'
         )
         PolicyKey  = 'HKLM:\Software\Policies\Chromium\ExtensionInstallForcelist'
+        UrlScheme  = 'chrome'
     }
 )
 
@@ -116,6 +123,8 @@ function Get-SelfPath {
 }
 
 function Invoke-Elevation {
+    # Read-only modes can run as a normal user; HKLM\Software\Policies is world-readable.
+    if ($Verify -or $Diagnose) { return }
     if (Test-Admin) { return }
 
     Write-Host ""
@@ -129,6 +138,7 @@ function Invoke-Elevation {
     if ($Uninstall) { $argList += '-Uninstall' }
     if ($NoPrompt)  { $argList += '-NoPrompt' }
     if ($Verify)    { $argList += '-Verify' }
+    if ($Diagnose)  { $argList += '-Diagnose' }
     if ($Browsers)  { $argList += @('-Browsers') + $Browsers }
 
     try {
@@ -241,6 +251,102 @@ function Install-VantagePolicy {
     }
 }
 
+function Invoke-Diagnose {
+    param([Parameter(Mandatory)]$Browser)
+
+    $name   = $Browser.Name
+    $key    = $Browser.PolicyKey
+    $scheme = $Browser.UrlScheme
+
+    Write-Host ("  [{0}]" -f $name) -ForegroundColor White
+    Write-Host ("  " + ('-' * 50)) -ForegroundColor DarkGray
+
+    # 1. Registry check
+    if (-not (Test-Path $key)) {
+        Write-Host "    REGISTRY     FAIL  no ExtensionInstallForcelist key (run installer first)" -ForegroundColor Red
+        Write-Host ""
+        return
+    }
+    $existing = (Get-Item $key).Property
+    $vantageVal = $null
+    foreach ($n in $existing) {
+        $val = (Get-ItemProperty -Path $key -Name $n).$n
+        if ($val -like "$ExtensionId;*") { $vantageVal = $val; break }
+    }
+    if (-not $vantageVal) {
+        Write-Host "    REGISTRY     FAIL  Vantage entry MISSING from policy key" -ForegroundColor Red
+        Write-Host ("                       run: install.ps1 (default mode)") -ForegroundColor DarkGray
+        Write-Host ""
+        return
+    }
+    Write-Host "    REGISTRY     OK    $vantageVal" -ForegroundColor Green
+
+    $regUrl = ($vantageVal -split ';', 2)[1]
+
+    # 2. Update URL fetch + parse
+    try {
+        $resp = Invoke-WebRequest -Uri $regUrl -UseBasicParsing -ErrorAction Stop -TimeoutSec 15
+        Write-Host "    UPDATE URL   OK    HTTP $($resp.StatusCode), $($resp.RawContentLength) bytes" -ForegroundColor Green
+    } catch {
+        Write-Host "    UPDATE URL   FAIL  $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host ("                       URL: $regUrl") -ForegroundColor DarkGray
+        Write-Host ""
+        return
+    }
+
+    try {
+        [xml]$xml = $resp.Content
+        $app   = $xml.gupdate.app
+        $check = $app.updatecheck
+        if ($app.appid -ne $ExtensionId) {
+            Write-Host "    XML PARSE    FAIL  appid mismatch -- expected $ExtensionId, got $($app.appid)" -ForegroundColor Red
+            Write-Host ""
+            return
+        }
+        Write-Host "    XML PARSE    OK    appid=$($app.appid) version=$($check.version)" -ForegroundColor Green
+        Write-Host ("                       codebase = $($check.codebase)") -ForegroundColor DarkGray
+    } catch {
+        Write-Host "    XML PARSE    FAIL  $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host ""
+        return
+    }
+
+    # 3. CRX fetch + hash
+    $tempCrx = Join-Path $env:TEMP "vantage-diagnose-$($PID).crx"
+    try {
+        Invoke-WebRequest -Uri $check.codebase -OutFile $tempCrx -UseBasicParsing -ErrorAction Stop -TimeoutSec 30
+        $size  = (Get-Item $tempCrx).Length
+        $hash  = (Get-FileHash -Path $tempCrx -Algorithm SHA256).Hash.ToLower()
+        $magic = [System.IO.File]::ReadAllBytes($tempCrx)[0..3] | ForEach-Object { [char]$_ } | Join-String
+
+        if ($hash -ne $check.hash_sha256.ToLower()) {
+            Write-Host "    CRX FETCH    FAIL  $size bytes, hash MISMATCH" -ForegroundColor Red
+            Write-Host ("                       expected: $($check.hash_sha256)") -ForegroundColor DarkGray
+            Write-Host ("                       actual:   $hash") -ForegroundColor DarkGray
+        } elseif ($magic -ne 'Cr24') {
+            Write-Host "    CRX FETCH    FAIL  $size bytes, hash OK, but magic header is '$magic' (expected Cr24)" -ForegroundColor Red
+        } else {
+            Write-Host "    CRX FETCH    OK    $size bytes, magic=Cr24, sha256 matches XML" -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "    CRX FETCH    FAIL  $($_.Exception.Message)" -ForegroundColor Red
+    } finally {
+        if (Test-Path $tempCrx) { Remove-Item $tempCrx -Force -ErrorAction SilentlyContinue }
+    }
+
+    Write-Host ""
+    Write-Host "    Next steps in $name`:" -ForegroundColor Cyan
+    Write-Host "      Open $scheme`://policy" -ForegroundColor DarkGray
+    Write-Host "        - Confirm ExtensionInstallForcelist appears with our entry" -ForegroundColor DarkGray
+    Write-Host "        - Click 'Reload policies' in the top right" -ForegroundColor DarkGray
+    Write-Host "      Open $scheme`://extensions" -ForegroundColor DarkGray
+    Write-Host "        - Toggle Developer mode on (top right)" -ForegroundColor DarkGray
+    Write-Host "        - Click 'Update' (top left). Wait 30 seconds" -ForegroundColor DarkGray
+    Write-Host "      If still missing, open $scheme`://extensions-internals/" -ForegroundColor DarkGray
+    Write-Host "        - Find $ExtensionId, look for 'install error' or 'disable reason'" -ForegroundColor DarkGray
+    Write-Host ""
+}
+
 function Show-VantagePolicy {
     param([Parameter(Mandatory)]$Browser)
     $key = $Browser.PolicyKey
@@ -314,6 +420,21 @@ if ($Verify) {
     Write-Host "  Verify mode -- reading current ExtensionInstallForcelist contents:" -ForegroundColor Cyan
     Write-Host ""
     foreach ($b in $detected) { Show-VantagePolicy -Browser $b }
+    Write-Host ""
+    if (-not $NoPrompt) { Read-Host "  Press Enter to close" }
+    exit 0
+}
+
+if ($Diagnose) {
+    Write-Host "  Diagnose mode -- testing the full install pipeline" -ForegroundColor Cyan
+    Write-Host "  (registry -> update XML -> CRX integrity)" -ForegroundColor DarkGray
+    Write-Host ""
+    foreach ($b in $detected) { Invoke-Diagnose -Browser $b }
+    Write-Host ""
+    Write-Host "  If everything above is OK but the extension still doesn't appear:" -ForegroundColor Yellow
+    Write-Host "    1. Open <browser>://policy and click Reload policies" -ForegroundColor DarkGray
+    Write-Host "    2. Open <browser>://extensions, toggle Developer mode, click Update" -ForegroundColor DarkGray
+    Write-Host "    3. If still nothing, open <browser>://extensions-internals/ and search for the extension ID" -ForegroundColor DarkGray
     Write-Host ""
     if (-not $NoPrompt) { Read-Host "  Press Enter to close" }
     exit 0
