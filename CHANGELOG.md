@@ -2,6 +2,14 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.1 — 2026-04-29
+
+Hotfix on top of v0.4.0 — the animated background was rendering correctly at the data layer but was invisible to the user.
+
+### Fixed
+- **Animated background was hidden behind the body's solid color.** The `.bg` layer is `position: fixed; z-index: -1` so it paints below body content. v0.4.0 also left the body's background as a solid `var(--bg-canvas)`, which paints *above* a negative-z fixed element. Result: the sky gradient was correct in the DOM (verified — `data-phase="golden-hour"`, `--sky-top: rgb(75, 45, 82)`, etc.) but you couldn't see it because the body was painting over it. **Fix:** body is now transparent; the static fallback gradient (used when the animated background is off) now lives on the HTML root via `html:has(.bg:empty)`.
+- **First scene render took ~6 seconds.** The widget waited for the geolocation timeout before drawing anything. **Fix:** the widget now paints an immediate scene using time-of-day defaults (6:30am sunrise / 7:30pm sunset, "clear" weather) and refines in place once the real Open-Meteo response arrives.
+
 ## v0.4.0 — 2026-04-29
 
 ### Added

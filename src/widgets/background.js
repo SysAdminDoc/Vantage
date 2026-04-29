@@ -82,9 +82,16 @@ export async function renderBackground(mount, settings, saveSettings) {
     <div class="bg-palm" aria-hidden="true">${PALM_SVG}</div>
   `;
 
-  // Try to get location + sunrise/sunset + weather. Fall back gracefully.
+  // ---- Render IMMEDIATELY with sensible defaults so the user never sees
+  // a dark void while we wait on geolocation (~6s) and the weather fetch.
+  // We refine in place once real data arrives.
   let weather = "clear";
-  let sunrise = null, sunset = null;
+  const today = new Date();
+  let sunrise = new Date(today); sunrise.setHours(6, 30, 0, 0);
+  let sunset  = new Date(today); sunset.setHours(19, 30, 0, 0);
+  updateScene(mount, weather, sunrise, sunset);
+
+  // ---- Now resolve real location + weather in the background.
   let location = settings.weather?.location || null;
 
   if (!location) {
@@ -94,7 +101,7 @@ export async function renderBackground(mount, settings, saveSettings) {
         settings.weather.location = location;
         await saveSettings?.(settings);
       }
-    } catch { /* fall through to defaults */ }
+    } catch { /* defaults stay */ }
   }
 
   if (location) {
@@ -103,18 +110,12 @@ export async function renderBackground(mount, settings, saveSettings) {
       weather = CODE_TO_WEATHER[data.current?.weather_code] || "clear";
       if (data.daily?.sunrise?.[0]) sunrise = new Date(data.daily.sunrise[0]);
       if (data.daily?.sunset?.[0])  sunset  = new Date(data.daily.sunset[0]);
-    } catch { /* fall through */ }
-  }
-
-  // Default sunrise/sunset if still unknown — assume 6:30am / 7:30pm local
-  if (!sunrise || !sunset) {
-    const t = new Date();
-    sunrise = new Date(t); sunrise.setHours(6, 30, 0, 0);
-    sunset  = new Date(t); sunset.setHours(19, 30, 0, 0);
+      // Refine the scene now that we have real sunrise/sunset/weather.
+      updateScene(mount, weather, sunrise, sunset);
+    } catch { /* keep current scene */ }
   }
 
   const tick = () => updateScene(mount, weather, sunrise, sunset);
-  tick();
   // Update every minute to keep sun position + phase fresh.
   const interval = setInterval(tick, 60_000);
 

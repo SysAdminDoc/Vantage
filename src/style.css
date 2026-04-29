@@ -211,26 +211,31 @@ body {
   font-feature-settings: "ss01", "cv11";
 }
 
-body {
+/* The animated background layer is position:fixed with z-index:-1, which
+   places it BELOW body's painted background. So body must stay transparent
+   for the .bg layer to be visible. The HTML root holds the canvas color as
+   a safety fallback in case the .bg layer fails to render (broken JS, no
+   network, etc.) so the page is never pure white. */
+html {
   background: var(--bg-canvas);
+}
+
+body {
+  background: transparent;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* When the animated background is OFF, restore the static ambient gradient. */
-.bg:empty + .vantage,
-body:not(:has(.bg:not(:empty))) {
-  /* no-op; the .bg layer takes over when present */
-}
-
-body:has(.bg:empty) {
+/* When the animated background is OFF (.bg empty), paint the static
+   Catppuccin gradient on the HTML root instead. */
+html:has(.bg:empty) {
   background:
     radial-gradient(1100px 520px at 12% -10%, color-mix(in srgb, var(--mauve) 10%, transparent), transparent 60%),
     radial-gradient(900px 480px at 110% 110%, color-mix(in srgb, var(--blue) 9%, transparent), transparent 60%),
     var(--bg-canvas);
 }
 
-[data-theme="latte"] body:has(.bg:empty) {
+[data-theme="latte"] html:has(.bg:empty) {
   background:
     radial-gradient(1100px 520px at 12% -10%, color-mix(in srgb, var(--mauve) 14%, transparent), transparent 60%),
     radial-gradient(900px 480px at 110% 110%, color-mix(in srgb, var(--blue) 12%, transparent), transparent 60%),
