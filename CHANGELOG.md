@@ -2,6 +2,11 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.4 — 2026-04-29
+
+### Changed
+- **Palm tree silhouette rebuilt as a classic coconut-palm icon.** Replaced the repeated crescent frond with nine broad arched SVG plume fronds using irregular leaflet edges, closer to the supplied palm reference silhouettes. The trunk keeps a stronger S-curve taper with secondary frond-scar banding, and the coconut bunch is visible under the crown. Verified by extracting `PALM_SVG` from `src/widgets/background.js` and rasterizing it to `dist/palm-preview.png`.
+
 ## v0.4.3 — 2026-04-29
 
 ### Changed

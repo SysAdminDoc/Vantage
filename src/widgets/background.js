@@ -32,48 +32,54 @@ const CODE_TO_WEATHER = {
   95: "storm", 96: "storm", 99: "storm"
 };
 
-// Stylized coconut palm. The frond shape is one path defined pointing along
-// +x from the origin; we stamp it 10 times around the crown anchor at varied
-// rotations and scales (back layer at 85-90% for depth, front layer full
-// size, drooping pair just below horizontal). The leaflet zigzag along the
-// path uses non-uniform heights so it reads as organic instead of mechanical.
-// One palm frond as a wide arched leaf, pointing along +x. The top edge
-// arches UP and the bottom edge dips DOWN through the middle so the leaf
-// has real width (~25 viewBox units at the bow) — without that splay it
-// reads as a thin whip, not a leaf. Length ~150, tapered at base and tip.
-const PALM_FROND_D = "M 0,-2 C 18,-13 42,-24 75,-29 C 105,-31 130,-29 148,-26 Q 152,-23 149,-19 C 130,-14 105,-9 75,-3 C 42,2 18,1 0,2 Z";
-const PALM_FROND_PLACEMENTS = [
-  { rot: -155, sc: 0.95 },
-  { rot: -125, sc: 1.10 }, // upper-left prominent
-  { rot:  -95, sc: 1.05 }, // straight up
-  { rot:  -65, sc: 1.15 }, // upper-right prominent
-  { rot:  -35, sc: 1.00 },
-  { rot:  -10, sc: 0.85 },
-  { rot:  170, sc: 0.85 },
-  { rot:    8, sc: 0.85 }
-];
-const PALM_FRONDS = PALM_FROND_PLACEMENTS
-  .map(({ rot, sc }) => `<path transform="translate(120 112) rotate(${rot}) scale(${sc})" d="${PALM_FROND_D}"/>`)
-  .join("");
+// Stylized coconut palm. Static inline SVG only: no reusable SVG references,
+// so the silhouette survives offline rasterizers as well as Chromium. The crown
+// uses broad arched plume fronds with irregular leaflet edges, matching a
+// classic palm icon silhouette rather than a comb-like feather.
 const PALM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" preserveAspectRatio="xMidYEnd meet">
-<g fill="#0a0a0d">
-  <path d="M 100 320 C 95 280, 96 240, 102 196 C 108 160, 114 130, 117 110 L 124 110 C 127 130, 122 160, 119 196 C 117 240, 121 280, 130 320 Z"/>
-  <g fill="#1a1a22">
-    <path d="M 98 312 Q 115 314 132 312 L 132 308 Q 115 310 98 308 Z"/>
-    <path d="M 96 286 Q 114 288 129 286 L 129 282 Q 114 284 96 282 Z"/>
-    <path d="M 96 256 Q 113 258 126 256 L 126 252 Q 113 254 96 252 Z"/>
-    <path d="M 98 226 Q 113 228 124 226 L 124 222 Q 113 224 98 222 Z"/>
-    <path d="M 102 196 Q 113 198 122 196 L 122 192 Q 113 194 102 192 Z"/>
-    <path d="M 106 168 Q 114 170 121 168 L 121 164 Q 114 166 106 164 Z"/>
-    <path d="M 110 140 Q 116 142 121 140 L 121 136 Q 116 138 110 136 Z"/>
+  <g fill="#0a0a0d">
+    <g transform="translate(109 130) rotate(-154) scale(0.62)">
+      <path d="M 0 0 C 22 -22 58 -36 98 -34 C 122 -32 139 -24 151 -10 C 130 -14 113 -13 96 -8 L 116 6 C 96 -4 80 -3 66 4 L 83 18 C 66 9 52 11 38 19 L 52 31 C 36 23 20 20 7 23 L 19 34 C 9 25 3 13 0 0 Z"/>
+    </g>
+    <g transform="translate(109 126) rotate(-126) scale(0.72)">
+      <path d="M 0 0 C 24 -25 64 -41 107 -36 C 131 -34 149 -25 160 -12 C 138 -16 120 -15 103 -10 L 126 4 C 104 -6 88 -5 72 1 L 91 16 C 72 6 57 8 42 16 L 57 29 C 39 20 23 17 8 21 L 22 33 C 10 24 3 12 0 0 Z"/>
+    </g>
+    <g transform="translate(111 124) rotate(-92) scale(0.68)">
+      <path d="M 0 0 C 20 -19 52 -30 86 -29 C 109 -28 126 -20 138 -8 C 119 -12 103 -11 88 -7 L 107 6 C 88 -3 73 -1 59 6 L 75 19 C 59 11 45 13 32 20 L 45 32 C 31 25 18 23 6 25 L 17 35 C 8 26 2 14 0 0 Z"/>
+    </g>
+    <g transform="translate(112 126) rotate(-62) scale(0.74)">
+      <path d="M 0 0 C 24 -25 64 -41 107 -36 C 131 -34 149 -25 160 -12 C 138 -16 120 -15 103 -10 L 126 4 C 104 -6 88 -5 72 1 L 91 16 C 72 6 57 8 42 16 L 57 29 C 39 20 23 17 8 21 L 22 33 C 10 24 3 12 0 0 Z"/>
+    </g>
+    <g transform="translate(112 130) rotate(-24) scale(0.68)">
+      <path d="M 0 0 C 22 -22 58 -36 98 -34 C 122 -32 139 -24 151 -10 C 130 -14 113 -13 96 -8 L 116 6 C 96 -4 80 -3 66 4 L 83 18 C 66 9 52 11 38 19 L 52 31 C 36 23 20 20 7 23 L 19 34 C 9 25 3 13 0 0 Z"/>
+    </g>
+    <g transform="translate(110 134) rotate(18) scale(0.64)">
+      <path d="M 0 0 C 20 -19 52 -30 86 -29 C 109 -28 126 -20 138 -8 C 119 -12 103 -11 88 -7 L 107 6 C 88 -3 73 -1 59 6 L 75 19 C 59 11 45 13 32 20 L 45 32 C 31 25 18 23 6 25 L 17 35 C 8 26 2 14 0 0 Z"/>
+    </g>
+    <g transform="translate(109 138) rotate(62) scale(0.58)">
+      <path d="M 0 0 C 20 -19 52 -30 86 -29 C 109 -28 126 -20 138 -8 C 119 -12 103 -11 88 -7 L 107 6 C 88 -3 73 -1 59 6 L 75 19 C 59 11 45 13 32 20 L 45 32 C 31 25 18 23 6 25 L 17 35 C 8 26 2 14 0 0 Z"/>
+    </g>
+    <g transform="translate(106 138) rotate(124) scale(0.58)">
+      <path d="M 0 0 C 20 -19 52 -30 86 -29 C 109 -28 126 -20 138 -8 C 119 -12 103 -11 88 -7 L 107 6 C 88 -3 73 -1 59 6 L 75 19 C 59 11 45 13 32 20 L 45 32 C 31 25 18 23 6 25 L 17 35 C 8 26 2 14 0 0 Z"/>
+    </g>
+    <g transform="translate(106 134) rotate(162) scale(0.64)">
+      <path d="M 0 0 C 22 -22 58 -36 98 -34 C 122 -32 139 -24 151 -10 C 130 -14 113 -13 96 -8 L 116 6 C 96 -4 80 -3 66 4 L 83 18 C 66 9 52 11 38 19 L 52 31 C 36 23 20 20 7 23 L 19 34 C 9 25 3 13 0 0 Z"/>
+    </g>
+    <path d="M 78 320 C 89 314 102 310 113 313 C 102 274 99 237 101 198 C 104 162 109 137 116 128 L 128 128 C 124 151 121 177 121 210 C 121 248 127 286 143 320 Z"/>
+    <g fill="#1a1a22">
+      <path d="M 87 306 Q 107 313 131 307 L 130 302 Q 108 307 88 301 Z"/>
+      <path d="M 93 276 Q 109 282 126 277 L 126 272 Q 110 277 94 271 Z"/>
+      <path d="M 98 248 Q 110 253 123 250 L 123 245 Q 110 248 99 243 Z"/>
+      <path d="M 101 220 Q 111 225 121 222 L 121 217 Q 111 220 102 215 Z"/>
+      <path d="M 103 192 Q 112 196 121 194 L 121 189 Q 112 192 104 188 Z"/>
+      <path d="M 108 164 Q 115 168 123 166 L 123 161 Q 115 164 109 160 Z"/>
+      <path d="M 112 140 Q 118 144 126 142 L 126 138 Q 118 140 113 136 Z"/>
+    </g>
+    <ellipse cx="111" cy="134" rx="5.3" ry="6.2" stroke="#1a1a22" stroke-width="1"/>
+    <ellipse cx="120" cy="134" rx="5" ry="6" stroke="#1a1a22" stroke-width="1"/>
+    <ellipse cx="116" cy="142" rx="4.6" ry="5.5" stroke="#1a1a22" stroke-width="1"/>
+    <ellipse cx="125" cy="142" rx="4.4" ry="5.2" stroke="#1a1a22" stroke-width="1"/>
   </g>
-  <ellipse cx="118" cy="124" rx="5"   ry="6"/>
-  <ellipse cx="111" cy="123" rx="4.5" ry="5"/>
-  <ellipse cx="125" cy="123" rx="4.5" ry="5"/>
-  <ellipse cx="115" cy="130" rx="4"   ry="5"/>
-  <ellipse cx="123" cy="130" rx="4"   ry="5"/>
-  ${PALM_FRONDS}
-</g>
 </svg>`;
 
 export async function renderBackground(mount, settings, saveSettings) {
