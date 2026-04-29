@@ -265,16 +265,26 @@ function updateScene(mount, weather, sunrise, sunset) {
     mount.style.setProperty("--sun-color",  colors.sun);
     mount.style.setProperty("--sun-glow",   colors.glow);
 
+    // Heavy weather hides the sun behind the cloud deck. We dim hard rather
+    // than full-zero so a faint glow still leaks through, which reads more
+    // naturally than a flat sky.
+    const stormyHide = weather === "storm" || weather === "heavy-rain";
+    const overcastDim = weather === "overcast" || weather === "heavy-snow";
+
     const sun = mount.querySelector(".bg-sun");
     if (sun) {
       if (sunPos) {
         sun.style.left = `${(sunPos.x * 100).toFixed(2)}%`;
         sun.style.top  = `${(sunPos.y * 100).toFixed(2)}%`;
-        sun.style.opacity = "1";
+        if (stormyHide)        sun.style.opacity = "0";
+        else if (overcastDim)  sun.style.opacity = "0.35";
+        else                   sun.style.opacity = "1";
       } else {
         sun.style.left = "82%";
         sun.style.top  = "16%";
-        sun.style.opacity = phase === "night" ? "1" : "0.4";
+        if (stormyHide)        sun.style.opacity = "0";
+        else if (phase === "night") sun.style.opacity = "1";
+        else                   sun.style.opacity = "0.4";
       }
     }
   };

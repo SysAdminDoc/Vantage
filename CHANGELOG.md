@@ -2,6 +2,11 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.7 — 2026-04-29
+
+### Fixed
+- **Storms and heavy rain rendered as clear sunsets.** Three bugs stacked: (1) the `.bg[data-weather="heavy-rain"].bg-cloud` and `.bg[data-weather="heavy-snow"].bg-cloud` selectors were missing the descendant-combinator space — written as compound selectors that could never match, since `.bg-cloud` is a child of `.bg`. So heavy rain showed zero cloud cover. (2) The `saturate(0.65) brightness(0.78)` filter on storm/heavy-rain was too gentle to overcome warm sunset gradient colors, leaving the sky reading "muted sunset" instead of "downpour." (3) The sun stayed at full opacity during heavy weather and the palm-tree silhouette stayed visible during golden-hour/sunset phases even when the location was actively storming. **Fix:** restored space in cloud selectors; bumped storm filter to `saturate(0.25) brightness(0.32)` and heavy-rain to `saturate(0.35) brightness(0.45)`; sun opacity is forced to 0 in JS when weather is `storm`/`heavy-rain` (and 0.35 for `overcast`/`heavy-snow`); palm is hidden via CSS for stormy weather. Reproduced live against Monroeville, AL during code 65 (heavy rain) — sky now reads as a properly leaden downpour with rain streaks and dense cloud deck.
+
 ## v0.4.6 — 2026-04-29
 
 ### Changed
