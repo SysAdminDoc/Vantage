@@ -2,6 +2,15 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.6 — 2026-04-29
+
+### Changed
+- **Sky colors are now a continuous function of time of day** instead of nine static phase palettes. Replaced the per-phase `.bg[data-phase="X"] { --sky-top: ... }` snapshots with a 15-keyframe timeline keyed to the user's actual sunrise/sunset times; every minute, JS computes the lerp between surrounding keyframes and writes inline `--sky-top` / `--sky-mid` / `--sky-bottom` / `--sun-color` / `--sun-glow` on `.bg`. The CSS @property transition smooths the change between ticks (now 60s, matching the update interval). Within a single phase the sky now actually progresses — sunset starts at golden-hour brightness and progressively darkens through deep red into dusk into night, instead of holding one color for 30 minutes.
+- **First paint snaps to the correct colors** instead of cross-fading from the @property dark-gray initial values. Adding `.bg--no-transition` for one frame around the first JS color application kills the 60s "starting dark, getting brighter" sweep on page load — which was reading like a sunrise even when it was actually evening.
+
+### Fixed
+- Trunk frond-scar bands sized against the actual trunk silhouette width at each y so they no longer overshoot near the base. (was v0.4.5; folded into the v0.4.6 description above for completeness)
+
 ## v0.4.5 — 2026-04-29
 
 ### Fixed

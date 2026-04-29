@@ -17,6 +17,86 @@ import { getWeatherData, detectLocation } from "../utils/weather-source.js";
 
 const HOUR = 60 * 60 * 1000;
 
+// Sky + sun color keyframes anchored to a fractional-day timeline:
+//   t = 0   -> sunrise
+//   t = 1   -> sunset
+//   t < 0   -> before sunrise (negative numbers = fraction of day length)
+//   t > 1   -> after sunset
+// Between any two keyframes we lerp every channel, so the sky moves
+// continuously through the day instead of snapping at phase boundaries.
+// This is what makes sunset actually feel like a sunset (starts at golden-
+// hour brightness, progressively darkens) rather than holding one static
+// color for 30 minutes.
+const SKY_KEYFRAMES = [
+  { t: -0.40, top:'#02030f', mid:'#070a22', bot:'#01020a', sun:'#e8e8f0', glow:'rgba(220,220,240,0.30)' },
+  { t: -0.08, top:'#0c1230', mid:'#3a2a55', bot:'#7a4258', sun:'#f0c4a0', glow:'rgba(255,180,140,0.45)' },
+  { t: -0.02, top:'#3b2855', mid:'#a85a5e', bot:'#ec8e5a', sun:'#fff0c2', glow:'rgba(255,180,120,0.60)' },
+  { t:  0.02, top:'#7faecf', mid:'#f0a888', bot:'#fcd99a', sun:'#fff7c0', glow:'rgba(255,220,160,0.70)' },
+  { t:  0.10, top:'#5fa4d8', mid:'#9cc9ed', bot:'#cbe4f1', sun:'#fff7c8', glow:'rgba(255,240,180,0.65)' },
+  { t:  0.30, top:'#3e84d2', mid:'#79bee6', bot:'#bce2f3', sun:'#fff8d8', glow:'rgba(255,250,200,0.62)' },
+  { t:  0.50, top:'#3478c8', mid:'#74bdec', bot:'#bbe0f5', sun:'#fffce0', glow:'rgba(255,252,210,0.60)' },
+  { t:  0.70, top:'#4385c8', mid:'#80c0e0', bot:'#cdd0d8', sun:'#fff0b0', glow:'rgba(255,235,160,0.65)' },
+  { t:  0.85, top:'#5b6a9c', mid:'#c08570', bot:'#f5b878', sun:'#ffd485', glow:'rgba(255,160,90,0.78)'  },
+  { t:  0.93, top:'#5e3461', mid:'#ed7651', bot:'#fab86b', sun:'#ffc070', glow:'rgba(255,120,60,0.85)'  },
+  { t:  0.98, top:'#48214e', mid:'#cf5050', bot:'#f06a3a', sun:'#ff8a4c', glow:'rgba(245,90,40,0.90)'   },
+  { t:  1.02, top:'#1f0f30', mid:'#7a2a48', bot:'#b03c30', sun:'#d75030', glow:'rgba(180,50,30,0.75)'   },
+  { t:  1.06, top:'#0d1130', mid:'#2c2147', bot:'#5b366a', sun:'#a8a0c8', glow:'rgba(150,150,200,0.45)' },
+  { t:  1.15, top:'#06091e', mid:'#10122e', bot:'#1a1838', sun:'#d8d8e8', glow:'rgba(200,200,220,0.30)' },
+  { t:  1.40, top:'#02030f', mid:'#070a22', bot:'#01020a', sun:'#e8e8f0', glow:'rgba(220,220,240,0.30)' }
+];
+
+function parseColor(s) {
+  s = s.trim();
+  if (s.startsWith('#')) {
+    return [parseInt(s.substr(1,2),16), parseInt(s.substr(3,2),16), parseInt(s.substr(5,2),16), 1];
+  }
+  const m = s.match(/rgba?\s*\(([^)]+)\)/);
+  if (m) {
+    const p = m[1].split(',').map(x => parseFloat(x));
+    return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+  }
+  return [0, 0, 0, 1];
+}
+
+function lerpColor(a, b, t) {
+  return [
+    Math.round(a[0] + (b[0] - a[0]) * t),
+    Math.round(a[1] + (b[1] - a[1]) * t),
+    Math.round(a[2] + (b[2] - a[2]) * t),
+    a[3] + (b[3] - a[3]) * t
+  ];
+}
+
+function colorToCss(c) {
+  if (c[3] >= 0.999) return `rgb(${c[0]},${c[1]},${c[2]})`;
+  return `rgba(${c[0]},${c[1]},${c[2]},${c[3].toFixed(2)})`;
+}
+
+function computeSkyColors(t) {
+  // Clamp t to the keyframe range so we always have something to interpolate.
+  if (t <= SKY_KEYFRAMES[0].t) {
+    const k = SKY_KEYFRAMES[0];
+    return { top: k.top, mid: k.mid, bot: k.bot, sun: k.sun, glow: k.glow };
+  }
+  if (t >= SKY_KEYFRAMES[SKY_KEYFRAMES.length - 1].t) {
+    const k = SKY_KEYFRAMES[SKY_KEYFRAMES.length - 1];
+    return { top: k.top, mid: k.mid, bot: k.bot, sun: k.sun, glow: k.glow };
+  }
+  let i = 0;
+  while (i < SKY_KEYFRAMES.length - 1 && SKY_KEYFRAMES[i + 1].t <= t) i++;
+  const k0 = SKY_KEYFRAMES[i];
+  const k1 = SKY_KEYFRAMES[i + 1];
+  const span = k1.t - k0.t;
+  const u = span === 0 ? 0 : (t - k0.t) / span;
+  return {
+    top:  colorToCss(lerpColor(parseColor(k0.top),  parseColor(k1.top),  u)),
+    mid:  colorToCss(lerpColor(parseColor(k0.mid),  parseColor(k1.mid),  u)),
+    bot:  colorToCss(lerpColor(parseColor(k0.bot),  parseColor(k1.bot),  u)),
+    sun:  colorToCss(lerpColor(parseColor(k0.sun),  parseColor(k1.sun),  u)),
+    glow: colorToCss(lerpColor(parseColor(k0.glow), parseColor(k1.glow), u))
+  };
+}
+
 const CODE_TO_WEATHER = {
   0: "clear", 1: "clear",
   2: "cloudy",
@@ -161,26 +241,55 @@ export async function renderBackground(mount, settings, saveSettings) {
   };
 }
 
+// Tracks whether we've painted yet, so the very first call snaps to the
+// correct colors instead of CSS-interpolating from the @property dark-gray
+// initial values (which made early-evening loads feel like a sunrise).
+let firstScenePainted = false;
+
 function updateScene(mount, weather, sunrise, sunset) {
   const now = new Date();
   const phase = computePhase(now, sunrise, sunset);
   const sunPos = computeSunPosition(now, sunrise, sunset);
 
-  mount.dataset.phase = phase;
-  mount.dataset.weather = weather;
+  // Time as fraction of day-length: 0 at sunrise, 1 at sunset. <0 before, >1 after.
+  const dayMs = sunset - sunrise;
+  const t = dayMs > 0 ? (now - sunrise) / dayMs : 0;
+  const colors = computeSkyColors(t);
 
-  const sun = mount.querySelector(".bg-sun");
-  if (sun) {
-    if (sunPos) {
-      sun.style.left = `${(sunPos.x * 100).toFixed(2)}%`;
-      sun.style.top  = `${(sunPos.y * 100).toFixed(2)}%`;
-      sun.style.opacity = "1";
-    } else {
-      // Night: place a moon high-right.
-      sun.style.left = "82%";
-      sun.style.top  = "16%";
-      sun.style.opacity = phase === "night" ? "1" : "0.4";
+  const apply = () => {
+    mount.dataset.phase = phase;
+    mount.dataset.weather = weather;
+    mount.style.setProperty("--sky-top",    colors.top);
+    mount.style.setProperty("--sky-mid",    colors.mid);
+    mount.style.setProperty("--sky-bottom", colors.bot);
+    mount.style.setProperty("--sun-color",  colors.sun);
+    mount.style.setProperty("--sun-glow",   colors.glow);
+
+    const sun = mount.querySelector(".bg-sun");
+    if (sun) {
+      if (sunPos) {
+        sun.style.left = `${(sunPos.x * 100).toFixed(2)}%`;
+        sun.style.top  = `${(sunPos.y * 100).toFixed(2)}%`;
+        sun.style.opacity = "1";
+      } else {
+        sun.style.left = "82%";
+        sun.style.top  = "16%";
+        sun.style.opacity = phase === "night" ? "1" : "0.4";
+      }
     }
+  };
+
+  if (!firstScenePainted) {
+    // Snap the first paint to the correct colors so we never visibly
+    // transition from the @property dark-gray initial values.
+    mount.classList.add("bg--no-transition");
+    apply();
+    // Force a reflow before re-enabling transitions.
+    void mount.offsetWidth;
+    mount.classList.remove("bg--no-transition");
+    firstScenePainted = true;
+  } else {
+    apply();
   }
 }
 

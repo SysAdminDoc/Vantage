@@ -286,12 +286,21 @@ a {
     var(--sky-mid) 55%,
     var(--sky-bottom) 100%);
   transition:
-    --sky-top    20s linear,
-    --sky-mid    20s linear,
-    --sky-bottom 20s linear,
-    --sun-color  20s linear,
-    --sun-glow   20s linear;
+    --sky-top    60s linear,
+    --sky-mid    60s linear,
+    --sky-bottom 60s linear,
+    --sun-color  60s linear,
+    --sun-glow   60s linear;
   contain: strict;
+}
+
+/* Used on the very first paint so the inline-style assignment doesn't
+   cross-fade from the dark-gray @property initial values into the right
+   colors over 60s — that flash made evening loads feel like a sunrise.
+   We snap once, force a reflow in JS, then drop the class. */
+.bg.bg--no-transition,
+.bg.bg--no-transition * {
+  transition: none !important;
 }
 
 /* --- Phase color palettes --- */
