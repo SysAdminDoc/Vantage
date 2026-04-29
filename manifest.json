@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Vantage",
+  "version": "0.1.0",
+  "description": "Customizable new tab dashboard — search engines, RSS, news, weather, and quick links. Privacy-first. No API keys required.",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Vantage settings",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://api.open-meteo.com/*",
+    "https://geocoding-api.open-meteo.com/*",
+    "https://api.allorigins.win/*",
+    "*://*/*"
+  ]
+}

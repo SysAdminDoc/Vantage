@@ -1,0 +1,31 @@
+# Vantage — Chrome extension repo
+
+# Build output
+dist/
+*.zip
+*.crx
+
+# Self-host signing key (NEVER commit)
+*-selfhost.pem
+*.pem
+
+# AI agent working files (local only)
+CLAUDE.md
+CODEX_CHANGELOG.md
+.claude/
+
+# OS noise
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.bak
+
+# Node (in case build tooling is added later)
+node_modules/
+package-lock.json
+.npm/
