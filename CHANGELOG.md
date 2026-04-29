@@ -2,6 +2,17 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.9 — 2026-04-29
+
+### Fixed
+- **Rain streaks were invisible against the darkened storm sky.** v0.4.7/v0.4.8 darkened the sky by applying `filter: saturate(...) brightness(...)` to the `.bg` container — but CSS filters cascade to every descendant, including the `.bg-rain` streak overlays. Result: streaks at 0.65–1.0 opacity were getting their luminance halved by the parent filter, leaving a muddy gray wash with no visible rain. Researched how OSS rain-effect libraries (Aaron Rickle's CSS rain pen, MillerTime's canvas rain, Apple Weather's icon palette) handle this: the canonical pattern is **change the sky's color tokens directly per weather, never filter the parent**. Bright blue-white rain streaks at 60–90% opacity then render correctly on top of an already-slate sky.
+
+### Changed
+- **Per-weather sky palette overrides**, applied inline by JS in `updateScene()`. New `STORMY_SKY` map carries flat slate gradients for each wet/overcast condition (drizzle / overcast / rain / heavy-rain / storm / snow / heavy-snow), keyed off Apple Weather + community storm-weather palettes. `darkenForNight()` helper folds in a nighttime darkening factor so a 2am storm is darker than a noon storm.
+- **Rain streak color shifted from white → cool blue-white** (`rgba(190,210,240,0.55)` → `rgba(220,235,255,0.85)` in the gradient stops), matching the rain-on-stormy-sky reference palette. Streaks visibly read as water now instead of a gray haze.
+- **Rain opacity bumped per tier:** rain 0.78→0.80, heavy-rain 0.85→0.95, storm 0.90→1.0, plus the back layer for parallax depth.
+- **Removed `filter:` rules on `.bg[data-weather="rain"|"heavy-rain"|"storm"|"overcast"|...]`.** Fog still gets a filter (it's a haze layer, not raindrops). Drizzle keeps cloud filter dimming but not parent darkening.
+
 ## v0.4.8 — 2026-04-29
 
 ### Fixed

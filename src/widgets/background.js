@@ -112,6 +112,37 @@ const CODE_TO_WEATHER = {
   95: "storm", 96: "storm", 99: "storm"
 };
 
+// Per-weather sky palette overrides. We replace the keyframe-computed
+// time-of-day colors with these flat slate gradients when the weather is
+// wet or overcast — this is the canonical pattern from open-source
+// rain-effect references (e.g. css-rain demos): dark sky gradient + bright
+// blue-white rain streaks read as actual water. Critically we do NOT use a
+// CSS `filter:` on the .bg container, because it cascades to the rain
+// overlays and makes them invisible. Override stays slightly time-of-day
+// aware via the `nightShift` helper below: storm at noon vs storm at
+// midnight should still differ.
+const STORMY_SKY = {
+  drizzle:      { top: '#6e7c8c', mid: '#7c8a9a', bot: '#8c98a6', cloud: 0.7 },
+  overcast:     { top: '#7f9ba6', mid: '#94a4ae', bot: '#a8b5bd', cloud: 0.85 },
+  rain:         { top: '#4a5a6a', mid: '#566879', bot: '#6c757d', cloud: 0.88 },
+  'heavy-rain': { top: '#3a4452', mid: '#48535f', bot: '#5a6478', cloud: 0.95 },
+  storm:        { top: '#1f2933', mid: '#2b3540', bot: '#4e5969', cloud: 1.00 },
+  snow:         { top: '#b8c5d1', mid: '#cdd5dc', bot: '#e0e6ec', cloud: 0.7 },
+  'heavy-snow': { top: '#9ba8b6', mid: '#b0bbc5', bot: '#c5ced8', cloud: 0.85 }
+};
+
+// At night we further darken stormy palettes so a storm at 2am isn't a
+// gray daytime sky. `nightFactor` 0=day, 1=full night.
+function darkenForNight(hex, factor) {
+  const c = parseColor(hex);
+  return colorToCss([
+    Math.round(c[0] * (1 - factor * 0.7)),
+    Math.round(c[1] * (1 - factor * 0.7)),
+    Math.round(c[2] * (1 - factor * 0.65)),
+    1
+  ]);
+}
+
 // Stylized coconut palm. Static inline SVG only: no reusable SVG references,
 // so the silhouette survives offline rasterizers as well as Chromium. The crown
 // uses broad arched plume fronds with irregular leaflet edges, matching a
@@ -254,7 +285,25 @@ function updateScene(mount, weather, sunrise, sunset) {
   // Time as fraction of day-length: 0 at sunrise, 1 at sunset. <0 before, >1 after.
   const dayMs = sunset - sunrise;
   const t = dayMs > 0 ? (now - sunrise) / dayMs : 0;
-  const colors = computeSkyColors(t);
+  let colors = computeSkyColors(t);
+
+  // Wet/overcast weather overrides the time-of-day gradient with a flat
+  // stormy palette — see STORMY_SKY above for the rationale. We still
+  // apply a night-darkening factor so a storm at 2am is darker than a
+  // storm at noon.
+  const stormy = STORMY_SKY[weather];
+  if (stormy) {
+    let nightFactor = 0;
+    if (t < 0)        nightFactor = Math.min(1, -t * 2);   // before sunrise
+    else if (t > 1)   nightFactor = Math.min(1, (t - 1) * 2); // after sunset
+    colors = {
+      top:  darkenForNight(stormy.top, nightFactor),
+      mid:  darkenForNight(stormy.mid, nightFactor),
+      bot:  darkenForNight(stormy.bot, nightFactor),
+      sun:  colors.sun,    // sun gets hidden anyway via opacity
+      glow: colors.glow
+    };
+  }
 
   const apply = () => {
     mount.dataset.phase = phase;

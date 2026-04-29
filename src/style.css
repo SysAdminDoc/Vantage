@@ -314,32 +314,15 @@ a {
 .bg[data-phase="sunset"]       { --sky-top: #311530; --sky-mid: #a8344c; --sky-bottom: #ed4f30; --sun-color: #ff9658; --sun-glow: rgba(220,80,40,0.9); }
 .bg[data-phase="dusk"]         { --sky-top: #0e1230; --sky-mid: #2c2447; --sky-bottom: #5b386a; --sun-color: #d4d4f0; --sun-glow: rgba(180,180,220,0.5); }
 
-/* Weather variant: cloudy/rainy weather darkens & desaturates the sky.
-   Tiered so the sky strength matches the precipitation level — "rain"
-   needs to read like a real overcast rainstorm, not "rain streaks falling
-   on a sunny scene." Open-Meteo's most common precip code in temperate
-   climates is 61/63 ("rain", not "heavy-rain"), so this tier matters most. */
-.bg[data-weather="drizzle"] {
-  filter: saturate(0.75) brightness(0.85);
-}
-.bg[data-weather="overcast"] {
-  filter: saturate(0.65) brightness(0.78);
-}
-.bg[data-weather="rain"] {
-  filter: saturate(0.50) brightness(0.55);
-}
-.bg[data-weather="heavy-rain"] {
-  filter: saturate(0.35) brightness(0.45);
-}
-.bg[data-weather="storm"] {
-  filter: saturate(0.25) brightness(0.32);
-}
-.bg[data-weather="snow"] {
-  filter: saturate(0.70) brightness(0.92);
-}
-.bg[data-weather="heavy-snow"] {
-  filter: saturate(0.55) brightness(0.85);
-}
+/* IMPORTANT: do NOT apply `filter:` to .bg as a whole for wet weather.
+   filter cascades to every descendant, including the rain streak overlays —
+   which dims the streaks against an already-dim sky and makes rain
+   invisible (a muddy gray wash). Instead, JS overrides the inline
+   --sky-top / --sky-mid / --sky-bottom variables directly when weather
+   is wet/overcast, using a stormy sky palette. Rain streaks then render
+   bright on top, the way actual rain reads against an actual storm.
+   Pattern adopted from CSS-rain reference implementations: dark sky
+   gradient + blue-white rain streaks at 60-80% opacity. */
 .bg[data-weather="fog"] {
   filter: saturate(0.55) brightness(0.92);
 }
@@ -476,39 +459,42 @@ a {
 .bg[data-weather="fog"] .bg-fog { opacity: 1; }
 
 /* --- Rain --- */
+/* Rain streaks — cool blue-white per OSS rain-effect references
+   (rgba(174,194,224,...) reads as actual water against a slate sky).
+   Two layers at different speeds for parallax depth. */
 .bg-rain {
   position: absolute;
   inset: -10% 0 0 0;
   background-image: linear-gradient(180deg,
     transparent 0%,
-    rgba(255,255,255,0.22) 45%,
-    rgba(255,255,255,0.45) 55%,
+    rgba(190,210,240,0.55) 45%,
+    rgba(220,235,255,0.85) 55%,
     transparent 100%);
-  background-size: 1px 70px;
+  background-size: 1px 80px;
   background-repeat: repeat;
   opacity: 0;
   transition: opacity 8s linear;
-  animation: rain-fall 0.55s linear infinite;
+  animation: rain-fall 0.45s linear infinite;
   will-change: background-position;
 }
 
 .bg-rain--2 {
-  background-size: 1.5px 90px;
-  animation-duration: 0.75s;
+  background-size: 1.5px 110px;
+  animation-duration: 0.65s;
   background-image: linear-gradient(180deg,
     transparent 0%,
-    rgba(200,220,255,0.30) 50%,
+    rgba(174,194,224,0.40) 50%,
     transparent 100%);
 }
 
-.bg[data-weather="drizzle"]    .bg-rain    { opacity: 0.40; }
-.bg[data-weather="drizzle"]    .bg-rain--2 { opacity: 0.25; }
-.bg[data-weather="rain"]       .bg-rain    { opacity: 0.65; }
-.bg[data-weather="rain"]       .bg-rain--2 { opacity: 0.45; }
-.bg[data-weather="heavy-rain"] .bg-rain    { opacity: 0.85; }
-.bg[data-weather="heavy-rain"] .bg-rain--2 { opacity: 0.65; }
-.bg[data-weather="storm"]      .bg-rain    { opacity: 0.90; }
-.bg[data-weather="storm"]      .bg-rain--2 { opacity: 0.7; }
+.bg[data-weather="drizzle"]    .bg-rain    { opacity: 0.45; }
+.bg[data-weather="drizzle"]    .bg-rain--2 { opacity: 0.30; }
+.bg[data-weather="rain"]       .bg-rain    { opacity: 0.80; }
+.bg[data-weather="rain"]       .bg-rain--2 { opacity: 0.55; }
+.bg[data-weather="heavy-rain"] .bg-rain    { opacity: 0.95; }
+.bg[data-weather="heavy-rain"] .bg-rain--2 { opacity: 0.75; }
+.bg[data-weather="storm"]      .bg-rain    { opacity: 1;    }
+.bg[data-weather="storm"]      .bg-rain--2 { opacity: 0.85; }
 
 @keyframes rain-fall {
   0%   { background-position: 0 0; }
