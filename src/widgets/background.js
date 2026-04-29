@@ -32,34 +32,32 @@ const CODE_TO_WEATHER = {
   95: "storm", 96: "storm", 99: "storm"
 };
 
-// Stylized coconut palm. Frond is a single feathered path defined pointing
-// along +x from the origin; each <use> rotates it to its place around the
-// crown anchor. Leaflet heights vary slightly along the path so the zigzag
-// reads as organic instead of pixel-art.
+// Stylized coconut palm. The frond shape is one path defined pointing along
+// +x from the origin; we stamp it 10 times around the crown anchor at varied
+// rotations and scales (back layer at 85-90% for depth, front layer full
+// size, drooping pair just below horizontal). The leaflet zigzag along the
+// path uses non-uniform heights so it reads as organic instead of mechanical.
+// One palm frond as a wide arched leaf, pointing along +x. The top edge
+// arches UP and the bottom edge dips DOWN through the middle so the leaf
+// has real width (~25 viewBox units at the bow) — without that splay it
+// reads as a thin whip, not a leaf. Length ~150, tapered at base and tip.
+const PALM_FROND_D = "M 0,-2 C 18,-13 42,-24 75,-29 C 105,-31 130,-29 148,-26 Q 152,-23 149,-19 C 130,-14 105,-9 75,-3 C 42,2 18,1 0,2 Z";
+const PALM_FROND_PLACEMENTS = [
+  { rot: -155, sc: 0.95 },
+  { rot: -125, sc: 1.10 }, // upper-left prominent
+  { rot:  -95, sc: 1.05 }, // straight up
+  { rot:  -65, sc: 1.15 }, // upper-right prominent
+  { rot:  -35, sc: 1.00 },
+  { rot:  -10, sc: 0.85 },
+  { rot:  170, sc: 0.85 },
+  { rot:    8, sc: 0.85 }
+];
+const PALM_FRONDS = PALM_FROND_PLACEMENTS
+  .map(({ rot, sc }) => `<path transform="translate(120 112) rotate(${rot}) scale(${sc})" d="${PALM_FROND_D}"/>`)
+  .join("");
 const PALM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" preserveAspectRatio="xMidYEnd meet">
-<defs>
-  <path id="vp-frond" d="
-    M 0,-2 L 4,-7 L 8,-3 L 14,-12 L 19,-3 L 27,-14 L 32,-3 L 42,-13 L 47,-3
-    L 58,-11 L 63,-3 L 75,-9 L 80,-3 L 91,-6 L 96,-2 L 102,-1 L 105,0
-    L 102,1 L 96,2 L 91,6 L 80,3 L 75,9 L 63,3 L 58,11 L 47,3
-    L 42,13 L 32,3 L 27,14 L 19,3 L 14,12 L 8,3 L 4,7 L 0,2 Z"/>
-  <g id="vp-coconuts">
-    <ellipse cx="0"  cy="0"  rx="5"   ry="6"/>
-    <ellipse cx="-7" cy="-1" rx="4.5" ry="5"/>
-    <ellipse cx="7"  cy="-1" rx="4.5" ry="5"/>
-    <ellipse cx="-3" cy="6"  rx="4"   ry="5"/>
-    <ellipse cx="5"  cy="6"  rx="4"   ry="5"/>
-  </g>
-</defs>
 <g fill="#0a0a0d">
-  <!-- Trunk: tapers from a wide base to a slim crown, with a slight S-curve. -->
-  <path d="M 100 320
-           C 95 280,  96 240, 102 196
-           C 108 160, 114 130, 117 110
-           L 124 110
-           C 127 130, 122 160, 119 196
-           C 117 240, 121 280, 130 320 Z"/>
-  <!-- Frond-scar banding (the horizontal rings left by shed fronds). -->
+  <path d="M 100 320 C 95 280, 96 240, 102 196 C 108 160, 114 130, 117 110 L 124 110 C 127 130, 122 160, 119 196 C 117 240, 121 280, 130 320 Z"/>
   <g fill="#1a1a22">
     <path d="M 98 312 Q 115 314 132 312 L 132 308 Q 115 310 98 308 Z"/>
     <path d="M 96 286 Q 114 288 129 286 L 129 282 Q 114 284 96 282 Z"/>
@@ -69,26 +67,12 @@ const PALM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" 
     <path d="M 106 168 Q 114 170 121 168 L 121 164 Q 114 166 106 164 Z"/>
     <path d="M 110 140 Q 116 142 121 140 L 121 136 Q 116 138 110 136 Z"/>
   </g>
-  <!-- Coconut cluster, tucked under the crown. -->
-  <use href="#vp-coconuts" transform="translate(118 124)"/>
-  <!-- Crown of 10 fronds radiating from the top of the trunk.
-       Back layer is scaled down ~85-90% so it reads as depth, front at full size,
-       and the pair around 170°/10° droops slightly below horizontal. -->
-  <g transform="translate(120 112)">
-    <!-- back layer -->
-    <use href="#vp-frond" transform="rotate(-100) scale(0.85)"/>
-    <use href="#vp-frond" transform="rotate(-80)  scale(0.85)"/>
-    <use href="#vp-frond" transform="rotate(-60)  scale(0.9)"/>
-    <use href="#vp-frond" transform="rotate(-120) scale(0.9)"/>
-    <!-- front layer -->
-    <use href="#vp-frond" transform="rotate(-150)"/>
-    <use href="#vp-frond" transform="rotate(-30)"/>
-    <use href="#vp-frond" transform="rotate(-170) scale(0.95)"/>
-    <use href="#vp-frond" transform="rotate(-10)  scale(0.95)"/>
-    <!-- drooping pair -->
-    <use href="#vp-frond" transform="rotate(170)  scale(0.9)"/>
-    <use href="#vp-frond" transform="rotate(10)   scale(0.9)"/>
-  </g>
+  <ellipse cx="118" cy="124" rx="5"   ry="6"/>
+  <ellipse cx="111" cy="123" rx="4.5" ry="5"/>
+  <ellipse cx="125" cy="123" rx="4.5" ry="5"/>
+  <ellipse cx="115" cy="130" rx="4"   ry="5"/>
+  <ellipse cx="123" cy="130" rx="4"   ry="5"/>
+  ${PALM_FRONDS}
 </g>
 </svg>`;
 

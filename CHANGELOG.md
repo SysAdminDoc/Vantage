@@ -2,6 +2,11 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.3 — 2026-04-29
+
+### Changed
+- **Palm tree redesigned again — this time it actually looks like a palm tree.** v0.4.2's "feathered" leaflet zigzag was too aggressive and made fronds look like sun rays. v0.4.3 uses wide leaf-shaped fronds — top edge arches UP, bottom edge dips DOWN through the middle, so each frond has real ~25-unit bow width instead of the v0.4.2 7-unit whip. 8 fronds at varied scales (0.85–1.15) for a layered crown. Verified by rasterizing the SVG to PNG offline before shipping.
+
 ## v0.4.2 — 2026-04-29
 
 Cosmetic refresh.
