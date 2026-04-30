@@ -1,4 +1,4 @@
-// Vantage v0.7.1 — inline SVG icon library.
+// Vantage v0.8.0 — inline SVG icon library.
 // All icons are 24x24 viewBox, currentColor stroked, designed to match Lucide's visual weight.
 
 const ICONS = {
