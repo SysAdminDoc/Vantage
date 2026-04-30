@@ -83,6 +83,21 @@ export function showOnboarding(settings, onComplete) {
   document.body.appendChild(overlay);
   requestAnimationFrame(() => card.focus());
 
+  // Focus trap + Escape-to-finish for modal a11y conformance
+  const onKeydown = (e) => {
+    if (e.key === "Escape") { e.preventDefault(); finish(); return; }
+    if (e.key !== "Tab") return;
+    const focusable = card.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last  = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
+  document.addEventListener("keydown", onKeydown);
+
   function stepNames() {
     return preset.needsPersonalize
       ? ["layout", "personalize", "done"]
@@ -279,6 +294,7 @@ export function showOnboarding(settings, onComplete) {
     if (pendingName)     s.greeting.name      = pendingName;
     if (pendingLocation) s.weather.location   = pendingLocation;
     s.onboardingComplete = true;
+    document.removeEventListener("keydown", onKeydown);
     overlay.remove();
     onComplete(s);
   }
