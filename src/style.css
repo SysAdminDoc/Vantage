@@ -3784,7 +3784,7 @@ a {
 }
 .quicklink--group:hover { background: var(--surface1); }
 
-.quicklink__folder-icon { font-style: normal; }
+.quicklink__folder-icon { display: inline-flex; align-items: center; }
 
 .ql-group-popover {
   position: absolute;
