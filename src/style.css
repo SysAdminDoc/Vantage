@@ -727,6 +727,15 @@ a {
   outline: none;
 }
 
+/* The wrapper .search-form already shows a focus ring on :focus-within,
+   so suppress the input's own focus-visible ring (otherwise we get a
+   purple box-inside-a-box). */
+.search-input:focus,
+.search-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 .search-input::placeholder {
   color: var(--subtext0);
 }

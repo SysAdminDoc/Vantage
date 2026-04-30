@@ -2,6 +2,11 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.14 — 2026-04-29
+
+### Fixed
+- **Purple inner outline on focused search input ("box inside a box").** The global `:focus-visible { box-shadow: var(--ring) }` rule was applying the focus ring to `.search-input` *and* the wrapper `.search-form` was already showing its own ring via `:focus-within`. Result: two concentric purple rectangles. Suppressed the inner input's `:focus-visible` ring so only the wrapper highlights.
+
 ## v0.4.13 — 2026-04-29
 
 ### Fixed
