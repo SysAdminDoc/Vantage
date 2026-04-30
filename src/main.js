@@ -1,25 +1,42 @@
-// Vantage v0.3.0 — entry point. Loads settings, mounts widgets, wires UI.
+// Vantage v0.6.0 — entry point. Loads settings, mounts widgets, wires UI.
 
 import { loadSettings, saveSettings, onSettingsChanged } from "./storage.js";
 import { iconNode } from "./icons.js";
-import { renderSearch } from "./widgets/search.js";
-import { renderGreeting } from "./widgets/clock.js";
-import { renderWeather } from "./widgets/weather.js";
+import { renderSearch }     from "./widgets/search.js";
+import { renderGreeting }   from "./widgets/clock.js";
+import { renderWeather }    from "./widgets/weather.js";
 import { renderQuickLinks } from "./widgets/quicklinks.js";
-import { renderRss } from "./widgets/rss.js";
-import { renderNews } from "./widgets/news.js";
+import { renderRss }        from "./widgets/rss.js";
+import { renderNews }       from "./widgets/news.js";
 import { renderBackground } from "./widgets/background.js";
+import { renderAirQuality } from "./widgets/airquality.js";
+import { renderCalendar }   from "./widgets/calendar.js";
+import { renderPomodoro }   from "./widgets/pomodoro.js";
 import { renderSettingsPanel, openPanel, closePanel } from "./settings.js";
 import { makeReorderable, arrayMove } from "./utils/drag.js";
 
 let currentSettings;
-let greetingTeardown = null;
-let panelDragCleanup = null;
+let greetingTeardown  = null;
+let panelDragCleanup  = null;
 let backgroundTeardown = null;
+let pomodoroTeardown  = null;
 
-const PANEL_KINDS = ["news", "rss"];
+const PANEL_KINDS = ["news", "rss", "calendar"];
 
 async function init() {
+  // Handle shared-config URL fragment (#import=<base64-json>)
+  const hash = location.hash;
+  if (hash.startsWith("#import=")) {
+    try {
+      const encoded = hash.slice(8);
+      const imported = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+      await saveSettings(imported);
+      history.replaceState(null, "", location.pathname);
+    } catch {
+      console.warn("[Vantage] Failed to import shared config from URL hash");
+    }
+  }
+
   currentSettings = await loadSettings();
   document.documentElement.setAttribute("data-theme", currentSettings.theme);
   injectStaticIcons();
@@ -42,11 +59,12 @@ function injectStaticIcons() {
 }
 
 function mountAll() {
-  if (greetingTeardown)   { greetingTeardown();   greetingTeardown = null; }
-  if (panelDragCleanup)   { panelDragCleanup();   panelDragCleanup = null; }
+  if (greetingTeardown)   { greetingTeardown();   greetingTeardown  = null; }
+  if (panelDragCleanup)   { panelDragCleanup();   panelDragCleanup  = null; }
   if (backgroundTeardown) { backgroundTeardown(); backgroundTeardown = null; }
+  if (pomodoroTeardown)   { pomodoroTeardown();   pomodoroTeardown  = null; }
 
-  // Kick off the animated background asynchronously — don't block the rest.
+  // Kick off animated background asynchronously — don't block the rest.
   renderBackground(
     document.getElementById("background-mount"),
     currentSettings,
@@ -57,10 +75,17 @@ function mountAll() {
   greetingTeardown = renderGreeting(document.getElementById("greeting-mount"), currentSettings);
   renderSearch(document.getElementById("search-mount"), currentSettings, persist);
   renderWeather(document.getElementById("weather-mount"), currentSettings, saveSettings);
+  renderAirQuality(document.getElementById("airquality-mount"), currentSettings);
   renderQuickLinks(
     document.getElementById("quicklinks-mount"),
     currentSettings,
     { onChange: persist }
+  );
+
+  // Pomodoro — returns a teardown fn
+  pomodoroTeardown = renderPomodoro(
+    document.getElementById("pomodoro-mount"),
+    currentSettings
   );
 
   // Apply persisted panel order via CSS `order` so we don't move DOM nodes.
@@ -76,12 +101,12 @@ function mountAll() {
   };
 
   renderNews(document.getElementById("news-mount"), currentSettings, { onAttachDragHandle: onAttach("news") });
-  renderRss(document.getElementById("rss-mount"), currentSettings, { onAttachDragHandle: onAttach("rss") });
+  renderRss(document.getElementById("rss-mount"),  currentSettings, { onAttachDragHandle: onAttach("rss") });
+  renderCalendar(document.getElementById("calendar-mount"), currentSettings, { onAttachDragHandle: onAttach("calendar") });
 }
 
 function applyPanelOrder() {
   const order = (currentSettings.layout?.panels || PANEL_KINDS).filter((k) => PANEL_KINDS.includes(k));
-  // ensure both panels appear even if storage is partial
   for (const k of PANEL_KINDS) if (!order.includes(k)) order.push(k);
   order.forEach((kind, i) => {
     const mount = document.getElementById(`${kind}-mount`);
@@ -100,7 +125,6 @@ function wirePanelReorder(handles) {
       return handles[kind];
     },
     onReorder: async (from, to) => {
-      const order = (currentSettings.layout?.panels || PANEL_KINDS).slice();
       const ordered = arrayMove(items, from, to);
       const newKinds = ordered.map((el) => el.id.replace("-mount", ""));
       currentSettings.layout = { ...(currentSettings.layout || {}), panels: newKinds };
@@ -111,8 +135,8 @@ function wirePanelReorder(handles) {
 }
 
 function wireSettings() {
-  const toggle = document.getElementById("settings-toggle");
-  const panel = document.getElementById("settings-panel");
+  const toggle   = document.getElementById("settings-toggle");
+  const panel    = document.getElementById("settings-panel");
   const backdrop = document.getElementById("settings-backdrop");
 
   const open = () => {
@@ -137,15 +161,13 @@ function wireSettings() {
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && panel.dataset.open === "true") {
-      // Let popovers inside settings handle Escape first.
-      const popoverOpen = panel.querySelector('.engine-picker__popover:not([hidden])');
+      const popoverOpen = panel.querySelector(".engine-picker__popover:not([hidden])");
       if (!popoverOpen) close();
     }
   });
 }
 
 function wireKeyboard() {
-  // Press / to focus the search input (only when not already typing into a field).
   document.addEventListener("keydown", (e) => {
     if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
     const target = e.target;
@@ -153,8 +175,7 @@ function wireKeyboard() {
     if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) return;
     if (document.getElementById("settings-panel")?.dataset.open === "true") return;
     e.preventDefault();
-    const input = document.querySelector(".search-input");
-    input?.focus();
+    document.querySelector(".search-input")?.focus();
   });
 }
 

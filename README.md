@@ -6,7 +6,7 @@
 
 **A new tab dashboard for Chromium browsers — bring your search engine, your feeds, your weather, your links.**
 
-[![Version](https://img.shields.io/badge/version-0.5.0-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
+[![Version](https://img.shields.io/badge/version-0.6.0-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
 [![License](https://img.shields.io/badge/license-MIT-89b4fa?style=flat-square)](LICENSE)
 [![Manifest](https://img.shields.io/badge/manifest-V3-a6e3a1?style=flat-square)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![Platform](https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave%20%7C%20Vivaldi-94e2d5?style=flat-square)](#install)
@@ -24,6 +24,14 @@ Beyond that, Vantage gives you the dashboard staples — clock, weather, RSS, ne
 ## Features
 
 - **10 search engines built-in + custom URL** — Google · Bing · DuckDuckGo · Startpage · Brave · Kagi · Ecosia · SearXNG · Qwant · Perplexity · custom (use `%s` for the query). Custom dropdown picker, not a native `<select>`.
+- **Air quality panel** — live AQI, PM2.5, PM10, and pollen levels (alder, birch, grass, mugwort, olive, ragweed) from Open-Meteo Air Quality API. No API key. Reuses your weather location.
+- **iCal / calendar widget** — add any `.ics` URL (Google Calendar, Outlook, standard feed). Shows upcoming events grouped by day. No OAuth required.
+- **Pomodoro timer** — focus / break / long-break cycles with tab-blur auto-pause, cross-tab `navigator.locks` single-completion guarantee, Web Notifications on phase change, and live `<title>` countdown.
+- **OPML import + export** — one-click export of all RSS + News feeds; merge-import from any OPML file (Feedly, Inoreader, NetNewsWire compatible).
+- **Settings JSON export / import** — download your full config as JSON, restore it on any device.
+- **Config share link** — copy a URL that encodes your entire settings as a base64 fragment; open it on any Chromium device with Vantage installed.
+- **Multi-proxy CORS fallback** — RSS and calendar feeds now try allorigins.win → corsproxy.io before giving up.
+- **Full twilight phases** — background now tracks civil (-6°), nautical (-12°), and astronomical (-18°) twilight plus golden hour (+6°) using your local sun-calc for pixel-accurate phase transitions anywhere on Earth.
 - **Open-Meteo weather** — no API key required. Geolocation auto-detect or manual city. °F / °C. Compact pill in the utility bar.
 - **Time-aware greeting + clock** — “Good morning, Matthew” with a soft accent gradient. Optional name, optional 24-hour, optional seconds.
 - **Multi-feed RSS reader** — add any RSS or Atom feed. Sorted by date across all feeds, fetched in parallel with graceful per-feed failure handling. Skeleton loading, last-updated timestamp, refresh-with-spinner.

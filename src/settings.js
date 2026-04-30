@@ -1,4 +1,4 @@
-// Vantage v0.2.0 — settings panel built with primitives (toggle, segmented, icon-button).
+// Vantage v0.6.0 — settings panel built with primitives (toggle, segmented, icon-button).
 // Sections render as grouped rows with hints and icons. Sticky header with close button.
 
 import { el, clear, toggle, segmented, toast, hostnameLabel } from "./utils/dom.js";
@@ -6,6 +6,7 @@ import { iconNode } from "./icons.js";
 import { SEARCH_ENGINES } from "./search-engines.js";
 import { geocodeCity } from "./widgets/weather.js";
 import { saveSettings, getDefaults } from "./storage.js";
+import { exportOPML, importOPML } from "./utils/opml.js";
 
 export function renderSettingsPanel(panel, settings, onChange) {
   clear(panel);
@@ -36,6 +37,10 @@ export function renderSettingsPanel(panel, settings, onChange) {
     "URLs you want to follow personally — RSS or Atom."));
   body.appendChild(buildFeedsSection(settings, onChange, "news", "News", "newspaper",
     "Curated headlines and news sources."));
+  body.appendChild(buildAirQualitySection(settings, onChange));
+  body.appendChild(buildCalendarSection(settings, onChange));
+  body.appendChild(buildPomodoroSection(settings, onChange));
+  body.appendChild(buildDataSection(settings, onChange));
   body.appendChild(buildResetSection(onChange));
 }
 
@@ -543,6 +548,283 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
   ]));
 
   return sec;
+}
+
+/* ---- Air quality ------------------------------------------------------- */
+
+function buildAirQualitySection(settings, onChange) {
+  const sec = section("Air quality", "wind");
+  const g = group();
+  g.appendChild(row(
+    "Show air quality",
+    "Live AQI + PM2.5, PM10, and pollen levels via Open-Meteo. Uses your weather location.",
+    toggle({
+      checked: settings.airquality?.enabled || false,
+      ariaLabel: "Show air quality",
+      onChange: (v) => {
+        if (!settings.airquality) settings.airquality = {};
+        settings.airquality.enabled = v;
+        onChange(settings);
+      }
+    })
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Calendar ---------------------------------------------------------- */
+
+function buildCalendarSection(settings, onChange) {
+  const cfg = settings.calendar || {};
+  const sec = section("Calendar", "calendar");
+  const g = group();
+
+  g.appendChild(row(
+    "Show calendar",
+    "Upcoming events from iCal (.ics) URLs — Google Calendar, Outlook, or any standard feed.",
+    toggle({
+      checked: cfg.enabled || false,
+      ariaLabel: "Show calendar",
+      onChange: (v) => {
+        if (!settings.calendar) settings.calendar = { enabled: false, feeds: [], maxItems: 10, daysAhead: 7 };
+        settings.calendar.enabled = v;
+        onChange(settings);
+      }
+    })
+  ));
+
+  const daysInput = el("input", {
+    type: "number", min: "1", max: "30",
+    value: String(cfg.daysAhead ?? 7),
+    class: "text-input number-input",
+    "aria-label": "Days ahead to show",
+    onChange: (e) => {
+      const v = parseInt(e.target.value, 10);
+      if (!isNaN(v) && v >= 1 && v <= 30) { settings.calendar.daysAhead = v; onChange(settings); }
+    }
+  });
+  g.appendChild(row("Days ahead", "How many days of upcoming events to show (1–30).", daysInput));
+  sec.appendChild(g);
+
+  const list = el("ul", { class: "item-list" });
+  const refreshList = () => {
+    clear(list);
+    const feeds = settings.calendar?.feeds || [];
+    if (!feeds.length) { list.appendChild(el("li", { class: "item-list__empty" }, ["No calendars yet."])); return; }
+    feeds.forEach((feed, idx) => {
+      list.appendChild(el("li", { class: "item-list__row" }, [
+        el("div", { class: "item-list__row-content" }, [
+          el("span", { class: "item-list__title" }, [feed.title || feed.url]),
+          el("span", { class: "item-list__hint" }, [hostnameLabel(feed.url)])
+        ]),
+        el("button", {
+          type: "button", class: "icon-button icon-button--ghost icon-button--small",
+          "aria-label": `Remove ${feed.title || feed.url}`, title: "Remove",
+          onClick: () => { settings.calendar.feeds.splice(idx, 1); onChange(settings); refreshList(); }
+        }, [iconNode("trash", { size: 14 })])
+      ]));
+    });
+  };
+  refreshList();
+  sec.appendChild(list);
+
+  const titleInput = el("input", { type: "text", class: "text-input", placeholder: "Label, e.g. Work" });
+  const urlInput   = el("input", { type: "text", class: "text-input", placeholder: "https://calendar.google.com/…/basic.ics" });
+  const addBtn = el("button", {
+    type: "button", class: "button button--primary",
+    onClick: () => {
+      const t = titleInput.value.trim(), u = urlInput.value.trim();
+      if (!u) { toast("iCal URL is required.", "error"); return; }
+      try { new URL(u); } catch { toast("That doesn't look like a valid URL.", "error"); return; }
+      if (!settings.calendar) settings.calendar = { enabled: false, feeds: [], maxItems: 10, daysAhead: 7 };
+      settings.calendar.feeds.push({ title: t || hostnameLabel(u), url: u });
+      onChange(settings);
+      titleInput.value = ""; urlInput.value = "";
+      refreshList();
+      toast("Calendar added.", "success");
+    }
+  }, [iconNode("plus", { size: 14 }), "Add calendar"]);
+
+  sec.appendChild(el("div", { class: "compose" }, [
+    titleInput,
+    el("div", { class: "compose__row" }, [urlInput, addBtn])
+  ]));
+  return sec;
+}
+
+/* ---- Pomodoro ---------------------------------------------------------- */
+
+function buildPomodoroSection(settings, onChange) {
+  const cfg = settings.pomodoro || {};
+  const sec = section("Pomodoro", "timer");
+  const g = group();
+
+  g.appendChild(row(
+    "Show Pomodoro timer",
+    "Focus timer with work / break cycles. Pauses when you leave the tab. Notifies on completion.",
+    toggle({
+      checked: cfg.enabled || false,
+      ariaLabel: "Show Pomodoro timer",
+      onChange: (v) => {
+        if (!settings.pomodoro) settings.pomodoro = { enabled: false, workMinutes: 25, breakMinutes: 5, longBreakMinutes: 15, sessionsBeforeLongBreak: 4 };
+        settings.pomodoro.enabled = v;
+        onChange(settings);
+      }
+    })
+  ));
+
+  const numRow = (title, key, min, max) => {
+    const inp = el("input", {
+      type: "number", min: String(min), max: String(max),
+      value: String(cfg[key] ?? 25),
+      class: "text-input number-input",
+      "aria-label": title,
+      onChange: (e) => {
+        const v = parseInt(e.target.value, 10);
+        if (!isNaN(v) && v >= min && v <= max) { settings.pomodoro[key] = v; onChange(settings); }
+      }
+    });
+    return row(title, null, inp);
+  };
+
+  g.appendChild(numRow("Work (minutes)", "workMinutes", 1, 120));
+  g.appendChild(numRow("Short break (minutes)", "breakMinutes", 1, 60));
+  g.appendChild(numRow("Long break (minutes)", "longBreakMinutes", 5, 120));
+  g.appendChild(numRow("Sessions before long break", "sessionsBeforeLongBreak", 1, 10));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Data (export / import / share) ----------------------------------- */
+
+function buildDataSection(settings, onChange) {
+  const sec = section("Data", "download");
+  const g = group();
+
+  // JSON export
+  g.appendChild(row(
+    "Export settings",
+    "Download all settings as a JSON file.",
+    el("button", {
+      type: "button", class: "button button--primary",
+      onClick: () => {
+        const json = JSON.stringify(settings, null, 2);
+        triggerDownload(json, `vantage-settings-${isoDate()}.json`, "application/json");
+        toast("Settings exported.", "success");
+      }
+    }, [iconNode("download", { size: 14 }), "Export JSON"])
+  ));
+
+  // JSON import
+  const jsonImportInput = el("input", {
+    type: "file", accept: ".json,application/json",
+    style: { display: "none" },
+    onChange: async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        await saveSettings(parsed);
+        onChange(parsed);
+        toast("Settings imported.", "success");
+      } catch { toast("Invalid JSON file.", "error"); }
+      jsonImportInput.value = "";
+    }
+  });
+  g.appendChild(jsonImportInput);
+  g.appendChild(row(
+    "Import settings",
+    "Load a previously exported JSON file.",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: () => jsonImportInput.click()
+    }, [iconNode("upload", { size: 14 }), "Import JSON"])
+  ));
+
+  // OPML export
+  g.appendChild(row(
+    "Export feeds",
+    "Download RSS + News feeds as an OPML file (compatible with Feedly, Inoreader, NetNewsWire).",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: () => {
+        const opml = exportOPML(settings);
+        triggerDownload(opml, `vantage-feeds-${isoDate()}.opml`, "text/x-opml");
+        toast("Feeds exported as OPML.", "success");
+      }
+    }, [iconNode("download", { size: 14 }), "Export OPML"])
+  ));
+
+  // OPML import
+  const opmlImportInput = el("input", {
+    type: "file", accept: ".opml,.xml,text/x-opml,application/xml",
+    style: { display: "none" },
+    onChange: async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const { rss, news } = importOPML(text);
+        if (!settings.rss)  settings.rss  = { enabled: true, feeds: [], maxItems: 15, readItems: [] };
+        if (!settings.news) settings.news = { enabled: true, feeds: [], maxItems: 15, readItems: [] };
+        // Merge by URL (no duplicates)
+        const mergeFeeds = (existing, incoming) => {
+          const seen = new Set(existing.map(f => f.url));
+          return [...existing, ...incoming.filter(f => !seen.has(f.url))];
+        };
+        settings.rss.feeds  = mergeFeeds(settings.rss.feeds,  rss);
+        settings.news.feeds = mergeFeeds(settings.news.feeds, news);
+        await saveSettings(settings);
+        onChange(settings);
+        toast(`Imported ${rss.length + news.length} feed(s) from OPML.`, "success");
+      } catch (err) { toast(err.message || "Invalid OPML file.", "error"); }
+      opmlImportInput.value = "";
+    }
+  });
+  g.appendChild(opmlImportInput);
+  g.appendChild(row(
+    "Import feeds",
+    "Merge feeds from an OPML file (your existing feeds are kept).",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: () => opmlImportInput.click()
+    }, [iconNode("upload", { size: 14 }), "Import OPML"])
+  ));
+
+  // Share config URL
+  g.appendChild(row(
+    "Share config",
+    "Copy a link that loads your settings into Vantage on any device where the extension is installed.",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: () => {
+        try {
+          const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(settings))));
+          const url = new URL(location.href);
+          url.hash = `import=${encoded}`;
+          navigator.clipboard.writeText(url.href).then(() => {
+            toast("Share link copied to clipboard.", "success");
+          }).catch(() => { toast("Clipboard access denied.", "error"); });
+        } catch { toast("Could not generate share link.", "error"); }
+      }
+    }, [iconNode("share", { size: 14 }), "Copy share link"])
+  ));
+
+  sec.appendChild(g);
+  return sec;
+}
+
+function triggerDownload(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement("a"), { href: url, download: filename });
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function isoDate() {
+  return new Date().toISOString().slice(0, 10);
 }
 
 /* ---- Reset ------------------------------------------------------------- */
