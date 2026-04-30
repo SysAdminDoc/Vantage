@@ -1,6 +1,10 @@
-// Vantage v0.1.0 — service worker. Currently only handles the toolbar action click
-// (opens a fresh new tab so the user lands on Vantage with the settings ready to open).
+// Vantage — service worker. Opens a new tab when the toolbar action is clicked.
+// Firefox exposes `browser` as a global; Chrome does not. We use whichever is present.
+// Chrome navigates to chrome://newtab so the override fires; Firefox opens a blank tab
+// which Firefox itself routes to our overridden newtab page.
+const isFirefox = typeof browser !== "undefined";
+const ext = isFirefox ? browser : chrome;
 
-chrome.action.onClicked.addListener(() => {
-  chrome.tabs.create({ url: "chrome://newtab" });
+ext.action.onClicked.addListener(() => {
+  isFirefox ? ext.tabs.create({}) : ext.tabs.create({ url: "chrome://newtab" });
 });
