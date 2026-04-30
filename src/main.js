@@ -327,7 +327,7 @@ function wirePanelReorder(handles) {
       const ordered  = arrayMove(items, from, to);
       const newKinds = ordered.map(el => el.id.replace("-mount", ""));
       currentSettings.layout = { ...(currentSettings.layout || {}), panels: newKinds };
-      applyPanelOrder();
+      applyPanelOrder(currentSettings);
       await saveSettings(currentSettings);
     }
   });
