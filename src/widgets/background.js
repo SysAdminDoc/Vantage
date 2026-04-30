@@ -19,6 +19,7 @@
 //   .bg-sun           sun or moon disc, positioned along an arc
 //   .bg-birds         V-formation flock crossing sky (clear daylight)
 //   .bg-mountains     distant atmospheric mountain ridges (3-layer parallax)
+//   .bg-scene-depth   locality-aware haze and ground atmosphere
 //   .bg-ocean         coastal water plane with subtle wave drift
 //   .bg-meadow        low meadow foreground for inland temperate scenes
 //   .bg-forestline    distant tree line for forest/boreal scenes
@@ -828,6 +829,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     <div class="bg-moon" aria-hidden="true"></div>
     <div class="bg-birds-host" aria-hidden="true"></div>
     <div class="bg-bats-host" aria-hidden="true">${BATS_SVG}</div>
+    <div class="bg-scene-depth" aria-hidden="true"></div>
     <div class="bg-mountains bg-mountains--far"  aria-hidden="true">${MOUNTAINS_FAR_SVG}</div>
     <div class="bg-mountains bg-mountains--mid"  aria-hidden="true">${MOUNTAINS_MID_SVG}</div>
     <div class="bg-mountains bg-mountains--near" aria-hidden="true">${MOUNTAINS_NEAR_SVG}</div>
@@ -857,6 +859,18 @@ export async function renderBackground(mount, settings, saveSettings) {
   const qaParams = new URLSearchParams(globalThis.location?.search || "");
   const forcedWeather = normalizeWeatherOverride(qaParams.get("qaWeather"));
   let weather = forcedWeather || "clear";
+  let location = settings.weather?.location || null;
+  const qaDate = qaParams.get("qaDate");
+
+  // Seed saved scene context before the first paint. Without this, the
+  // immediate render defaults to generic meadow/default scenery and the real
+  // locality then fades in over the long atmospheric transition.
+  mount._bgLat          = location?.latitude  ?? null;
+  mount._bgLon          = location?.longitude ?? null;
+  mount._bgBirthday     = settings.greeting?.birthday || null; // "MM-DD"
+  mount._bgLocality     = settings.appearance?.locality || "auto";
+  mount._bgDateOverride = parseSceneDateOverride(qaDate || settings.background?.qaDate);
+
   // Sun-event times for the location, recomputed daily. Default values
   // are placeholder times for "today, somewhere temperate" — they get
   // overwritten by getSunTimes(...) as soon as we know the lat/lon.
@@ -879,8 +893,6 @@ export async function renderBackground(mount, settings, saveSettings) {
   updateScene(mount, weather, sunTimes);
 
   // ---- Now resolve real location + weather in the background.
-  let location = settings.weather?.location || null;
-
   if (!location) {
     try {
       location = await detectLocation();
@@ -899,7 +911,6 @@ export async function renderBackground(mount, settings, saveSettings) {
   mount._bgLocality  = settings.appearance?.locality || "auto";
   // Hidden QA hook for screenshots: ?qaDate=YYYY-MM-DD forces seasonal and
   // holiday evaluation without changing the user's clock.
-  const qaDate = qaParams.get("qaDate");
   mount._bgDateOverride = parseSceneDateOverride(qaDate || settings.background?.qaDate);
 
   // Compute sun-event times. Strategy:
