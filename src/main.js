@@ -1,4 +1,4 @@
-// Vantage v0.7.1 — entry point. Loads settings, mounts widgets, wires UI.
+// Vantage v0.8.0 — entry point. Loads settings, mounts widgets, wires UI.
 
 import { loadSettings, saveSettings, onSettingsChanged, hasStoredSettings } from "./storage.js";
 import { iconNode } from "./icons.js";
@@ -24,10 +24,13 @@ import { renderQuote }      from "./widgets/quote.js";
 import { renderPhoto }      from "./widgets/photo.js";
 import { renderCountdown }  from "./widgets/countdown.js";
 import { renderConverter }  from "./widgets/converter.js";
+import { renderTopsites }   from "./widgets/topsites.js";
 import { renderSettingsPanel, openPanel, closePanel } from "./settings.js";
 import { showOnboarding } from "./onboarding.js";
 import { renderWidgetPicker } from "./widget-picker.js";
 import { makeReorderable, arrayMove } from "./utils/drag.js";
+import { applyWorkspace, getActiveWorkspace, captureSnapshot } from "./utils/workspace.js";
+window._vantageWorkspaceHelpers = { captureSnapshot: () => captureSnapshot(currentSettings) };
 
 let currentSettings;
 let greetingTeardown   = null;
@@ -63,6 +66,10 @@ async function init() {
   }
 
   currentSettings = await loadSettings();
+
+  // Firefox container mapping — detect active container, apply workspace
+  await applyContainerWorkspace();
+
   document.documentElement.setAttribute("data-theme", currentSettings.theme);
   applyAccent(currentSettings);
   applyCustomCSS(currentSettings.customCSS);
@@ -94,6 +101,22 @@ async function init() {
   });
 }
 
+async function applyContainerWorkspace() {
+  try {
+    if (typeof browser === "undefined" || !browser.tabs?.getCurrent) return;
+    const tab = await browser.tabs.getCurrent();
+    const storeId = tab?.cookieStoreId;
+    if (!storeId || storeId === "firefox-default") return;
+    const wsId = currentSettings.containerMap?.[storeId];
+    if (!wsId) return;
+    const ws = currentSettings.workspaces?.list?.find(w => w.id === wsId);
+    if (ws) {
+      currentSettings = applyWorkspace(currentSettings, ws);
+      currentSettings.workspaces = { ...currentSettings.workspaces, active: wsId };
+    }
+  } catch { /* not Firefox or no tab API */ }
+}
+
 function injectStaticIcons() {
   const settingsBtn = document.getElementById("settings-toggle");
   if (settingsBtn && !settingsBtn.firstChild) {
@@ -118,47 +141,55 @@ function mountAll() {
   const cryptoMount = document.getElementById("crypto-mount");
   if (cryptoMount?._cryptoCleanup) { cryptoMount._cryptoCleanup(); cryptoMount._cryptoCleanup = null; }
 
+  // Apply active workspace snapshot once; reused for all mounts below
+  const activeWs = getActiveWorkspace(currentSettings);
+  const effectiveSettings = activeWs ? applyWorkspace({ ...currentSettings }, activeWs) : currentSettings;
+
   // Background
   renderBackground(
     document.getElementById("background-mount"),
-    currentSettings,
+    effectiveSettings,
     saveSettings
   ).then((teardown) => { backgroundTeardown = teardown; })
    .catch((err) => console.error("[Vantage] background failed", err));
 
+  // Workspace bar
+  renderWorkspaceBar(effectiveSettings);
+
   // Hero
-  greetingTeardown = renderGreeting(document.getElementById("greeting-mount"), currentSettings);
-  renderSearch(document.getElementById("search-mount"), currentSettings, persist);
-  renderWeather(document.getElementById("weather-mount"), currentSettings, saveSettings);
-  renderAirQuality(document.getElementById("airquality-mount"), currentSettings);
+  greetingTeardown = renderGreeting(document.getElementById("greeting-mount"), effectiveSettings);
+  renderSearch(document.getElementById("search-mount"), effectiveSettings, persist);
+  renderWeather(document.getElementById("weather-mount"), effectiveSettings, saveSettings);
+  renderAirQuality(document.getElementById("airquality-mount"), effectiveSettings);
+  renderTopsites(document.getElementById("topsites-mount"), effectiveSettings);
   renderQuickLinks(
     document.getElementById("quicklinks-mount"),
-    currentSettings,
+    effectiveSettings,
     { onChange: persist }
   );
 
   // World clock strip
   worldclockTeardown = renderWorldClock(
     document.getElementById("worldclock-mount"),
-    currentSettings
+    effectiveSettings
   );
 
   // Quote banner
   renderQuote(
     document.getElementById("quote-mount"),
-    currentSettings,
+    effectiveSettings,
     { onSave: persist }
   );
 
   // Pomodoro
   pomodoroTeardown = renderPomodoro(
     document.getElementById("pomodoro-mount"),
-    currentSettings
+    effectiveSettings
   );
 
   // Sync dynamic embed mounts before applying order
-  syncEmbedMounts();
-  applyPanelOrder();
+  syncEmbedMounts(effectiveSettings);
+  applyPanelOrder(effectiveSettings);
 
   // Collect drag handles; wire reorder after all renders complete
   const panelHandles = {};
@@ -167,21 +198,21 @@ function mountAll() {
   };
 
   // Fixed panels
-  renderNews(document.getElementById("news-mount"), currentSettings, { onAttachDragHandle: onAttach("news") });
-  renderRss(document.getElementById("rss-mount"),  currentSettings, { onAttachDragHandle: onAttach("rss") });
-  renderCalendar(document.getElementById("calendar-mount"), currentSettings, { onAttachDragHandle: onAttach("calendar") });
-  renderWindy(document.getElementById("windy-mount"), currentSettings, { onAttachDragHandle: onAttach("windy") });
-  renderTodo(document.getElementById("todo-mount"), currentSettings, { onChange: persist, onAttachDragHandle: onAttach("todo") });
-  renderNotes(document.getElementById("notes-mount"), currentSettings, { onChange: persist, onAttachDragHandle: onAttach("notes") });
-  renderBookmarks(document.getElementById("bookmarks-mount"), currentSettings, { onAttachDragHandle: onAttach("bookmarks") });
-  renderCrypto(document.getElementById("crypto-mount"), currentSettings, { onAttachDragHandle: onAttach("crypto") });
-  renderGithub(document.getElementById("github-mount"), currentSettings, { onAttachDragHandle: onAttach("github") });
-  renderPhoto(document.getElementById("photo-mount"), currentSettings, { onAttachDragHandle: onAttach("photo") });
-  countdownTeardown = renderCountdown(document.getElementById("countdown-mount"), currentSettings, { onChange: persist, onAttachDragHandle: onAttach("countdown") });
-  renderConverter(document.getElementById("converter-mount"), currentSettings, { onAttachDragHandle: onAttach("converter") });
+  renderNews(document.getElementById("news-mount"), effectiveSettings, { onAttachDragHandle: onAttach("news") });
+  renderRss(document.getElementById("rss-mount"),  effectiveSettings, { onAttachDragHandle: onAttach("rss") });
+  renderCalendar(document.getElementById("calendar-mount"), effectiveSettings, { onAttachDragHandle: onAttach("calendar") });
+  renderWindy(document.getElementById("windy-mount"), effectiveSettings, { onAttachDragHandle: onAttach("windy") });
+  renderTodo(document.getElementById("todo-mount"), effectiveSettings, { onChange: persist, onAttachDragHandle: onAttach("todo") });
+  renderNotes(document.getElementById("notes-mount"), effectiveSettings, { onChange: persist, onAttachDragHandle: onAttach("notes") });
+  renderBookmarks(document.getElementById("bookmarks-mount"), effectiveSettings, { onAttachDragHandle: onAttach("bookmarks") });
+  renderCrypto(document.getElementById("crypto-mount"), effectiveSettings, { onAttachDragHandle: onAttach("crypto") });
+  renderGithub(document.getElementById("github-mount"), effectiveSettings, { onAttachDragHandle: onAttach("github") });
+  renderPhoto(document.getElementById("photo-mount"), effectiveSettings, { onAttachDragHandle: onAttach("photo") });
+  countdownTeardown = renderCountdown(document.getElementById("countdown-mount"), effectiveSettings, { onChange: persist, onAttachDragHandle: onAttach("countdown") });
+  renderConverter(document.getElementById("converter-mount"), effectiveSettings, { onAttachDragHandle: onAttach("converter") });
 
   // Dynamic embed panels
-  for (const embed of (currentSettings.embeds || [])) {
+  for (const embed of (effectiveSettings.embeds || [])) {
     const kind  = `embed-${embed.id}`;
     const mount = document.getElementById(`${kind}-mount`);
     if (mount) renderEmbed(mount, embed, { onAttachDragHandle: onAttach(kind) });
@@ -191,12 +222,63 @@ function mountAll() {
   requestAnimationFrame(() => wirePanelReorder(panelHandles));
 }
 
+function renderWorkspaceBar(settings) {
+  const bar = document.getElementById("workspace-bar");
+  if (!bar) return;
+  const list = settings.workspaces?.list || [];
+  if (list.length === 0) {
+    bar.hidden = true;
+    bar.innerHTML = "";
+    return;
+  }
+  bar.hidden = false;
+  bar.innerHTML = "";
+
+  const activeId = settings.workspaces.active;
+
+  const baseBtn = document.createElement("button");
+  baseBtn.type = "button";
+  baseBtn.className = `workspace-pill${!activeId ? " workspace-pill--active" : ""}`;
+  baseBtn.textContent = "Base";
+  baseBtn.setAttribute("aria-pressed", String(!activeId));
+  baseBtn.addEventListener("click", async () => {
+    await switchWorkspace(null);
+  });
+  bar.appendChild(baseBtn);
+
+  for (const ws of list) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `workspace-pill${ws.id === activeId ? " workspace-pill--active" : ""}`;
+    btn.textContent = ws.name;
+    btn.setAttribute("aria-pressed", String(ws.id === activeId));
+    btn.addEventListener("click", async () => {
+      await switchWorkspace(ws.id);
+    });
+    bar.appendChild(btn);
+  }
+}
+
+async function switchWorkspace(id) {
+  if (typeof document.startViewTransition === "function") {
+    document.startViewTransition(async () => {
+      currentSettings.workspaces = { ...currentSettings.workspaces, active: id };
+      await saveSettings(currentSettings);
+      mountAll();
+    });
+  } else {
+    currentSettings.workspaces = { ...currentSettings.workspaces, active: id };
+    await saveSettings(currentSettings);
+    mountAll();
+  }
+}
+
 /** Create or remove embed mount divs to match settings.embeds. */
-function syncEmbedMounts() {
+function syncEmbedMounts(effectiveSettings) {
   const section = document.querySelector(".reading");
   if (!section) return;
 
-  const neededIds = new Set((currentSettings.embeds || []).map(e => `embed-${e.id}-mount`));
+  const neededIds = new Set((effectiveSettings.embeds || []).map(e => `embed-${e.id}-mount`));
 
   // Remove stale embed mounts
   section.querySelectorAll(".embed-dynamic-mount").forEach((el) => {
@@ -204,7 +286,7 @@ function syncEmbedMounts() {
   });
 
   // Add missing embed mounts
-  for (const embed of (currentSettings.embeds || [])) {
+  for (const embed of (effectiveSettings.embeds || [])) {
     const id = `embed-${embed.id}-mount`;
     if (!document.getElementById(id)) {
       const div = document.createElement("div");
@@ -216,9 +298,9 @@ function syncEmbedMounts() {
   }
 }
 
-function applyPanelOrder() {
+function applyPanelOrder(effectiveSettings) {
   const panelKinds = getPanelKinds();
-  const saved  = (currentSettings.layout?.panels || []).filter(k => panelKinds.includes(k));
+  const saved  = (effectiveSettings.layout?.panels || []).filter(k => panelKinds.includes(k));
   const order  = [...saved];
   for (const k of panelKinds) if (!order.includes(k)) order.push(k);
   order.forEach((kind, i) => {
@@ -340,12 +422,19 @@ function wireKeyboard() {
   });
 }
 
-function applyAccent(settings) {
+function applyAccent(settings, animate = false) {
   const accent = settings.accent || "mauve";
-  if (accent === "mauve") {
-    document.documentElement.removeAttribute("data-accent");
+  const apply = () => {
+    if (accent === "mauve") {
+      document.documentElement.removeAttribute("data-accent");
+    } else {
+      document.documentElement.setAttribute("data-accent", accent);
+    }
+  };
+  if (animate && typeof document.startViewTransition === "function") {
+    document.startViewTransition(apply);
   } else {
-    document.documentElement.setAttribute("data-accent", accent);
+    apply();
   }
 }
 

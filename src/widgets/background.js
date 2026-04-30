@@ -1,6 +1,7 @@
-// Vantage v0.4.0 — animated weather + time-of-day background.
+// Vantage v0.8.0 — background subsystem.
+// background.kind dispatch: "animated" | "solid" | "gradient" | "image-url" | "image-upload" | "bing-daily"
 //
-// Layers (z-index inside the mount, low to high):
+// Animated-mode layers (z-index inside the mount, low to high):
 //   .bg-stars       night-sky stars (twinkle)
 //   .bg-cloud-N     drifting cloud blobs (weather-driven)
 //   .bg-fog         fog/haze overlay (foggy weather)
@@ -195,14 +196,84 @@ const PALM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" 
   </g>
 </svg>`;
 
+const BING_ENDPOINT = "https://www.bing.com/HPImageArchive.aspx?format=js&n=1&mkt=en-US";
+
 export async function renderBackground(mount, settings, saveSettings) {
-  const enabled = settings.background?.enabled !== false;
+  const bg = settings.background || {};
+  const enabled = bg.enabled !== false;
   if (!enabled) {
     mount.innerHTML = "";
+    mount.style.cssText = "";
     delete mount.dataset.phase;
     delete mount.dataset.weather;
     return () => {};
   }
+
+  const kind = bg.kind || "animated";
+
+  // ---- Static background kinds (no animation loop needed) ----
+  if (kind === "solid") {
+    mount.innerHTML = "";
+    delete mount.dataset.phase;
+    delete mount.dataset.weather;
+    mount.style.background = bg.solid || "#1e1e2e";
+    return () => {};
+  }
+
+  if (kind === "gradient") {
+    mount.innerHTML = "";
+    delete mount.dataset.phase;
+    delete mount.dataset.weather;
+    const g = bg.gradient || { from: "#1e1e2e", to: "#313244", angle: 135 };
+    mount.style.background = `linear-gradient(${g.angle}deg, ${g.from}, ${g.to})`;
+    return () => {};
+  }
+
+  if (kind === "image-url" || kind === "image-upload") {
+    const src = kind === "image-url" ? bg.imageUrl : bg.imageData;
+    if (!src) {
+      mount.innerHTML = "";
+      mount.style.background = "#1e1e2e";
+      return () => {};
+    }
+    applyImageBackground(mount, src, bg);
+    return () => {};
+  }
+
+  if (kind === "bing-daily") {
+    mount.innerHTML = "";
+    delete mount.dataset.phase;
+    delete mount.dataset.weather;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const cached = bg.bingDailyCache;
+
+    const applyBing = (url) => {
+      applyImageBackground(mount, url, bg);
+    };
+
+    if (cached?.date === today && cached.url) {
+      applyBing(cached.url);
+    } else {
+      if (cached?.url) applyBing(cached.url);
+      try {
+        const res  = await fetch(BING_ENDPOINT);
+        const data = await res.json();
+        const path = data?.images?.[0]?.url;
+        if (path) {
+          const url = `https://www.bing.com${path}`;
+          if (typeof saveSettings === "function") {
+            settings.background.bingDailyCache = { url, date: today };
+            await saveSettings(settings);
+          }
+          applyBing(url);
+        }
+      } catch { /* keep cached or blank */ }
+    }
+    return () => {};
+  }
+
+  // ---- Animated (default) ----
 
   // Build the scaffold once
   mount.innerHTML = `
@@ -356,6 +427,21 @@ export async function renderBackground(mount, settings, saveSettings) {
     clearInterval(refreshInterval);
     if (rolloverTimeout) clearTimeout(rolloverTimeout);
   };
+}
+
+function applyImageBackground(mount, src, bg) {
+  mount.innerHTML = "";
+  delete mount.dataset.phase;
+  delete mount.dataset.weather;
+  const blur = Math.min(20, Math.max(0, bg.blur ?? 0));
+  const brightness = Math.min(150, Math.max(50, bg.brightness ?? 100));
+  mount.style.backgroundImage    = `url(${CSS.escape ? src : JSON.stringify(src)})`;
+  mount.style.backgroundSize     = "cover";
+  mount.style.backgroundPosition = "center";
+  mount.style.backgroundRepeat   = "no-repeat";
+  mount.style.filter = (blur > 0 || brightness !== 100)
+    ? `blur(${blur}px) brightness(${brightness / 100})`
+    : "";
 }
 
 // Tracks whether we've painted yet, so the very first call snaps to the

@@ -50,10 +50,12 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildWeatherSection(settings, onChange));
   body.appendChild(buildClockSection(settings, onChange));
   body.appendChild(buildLinksSection(settings, onChange));
+  body.appendChild(buildTopSitesSection(settings, onChange));
   body.appendChild(buildFeedsSection(settings, onChange, "rss", "Reading list", "rss",
     "URLs you want to follow personally — RSS or Atom."));
   body.appendChild(buildFeedsSection(settings, onChange, "news", "News", "newspaper",
     "Curated headlines and news sources."));
+  body.appendChild(buildFeedFiltersSection(settings, onChange));
   body.appendChild(buildAirQualitySection(settings, onChange));
   body.appendChild(buildWindySection(settings, onChange));
   body.appendChild(buildEmbedsSection(settings, onChange));
@@ -69,7 +71,11 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildPhotoSection(settings, onChange));
   body.appendChild(buildCountdownSection(settings, onChange));
   body.appendChild(buildConverterSection(settings, onChange));
+  body.appendChild(buildWorkspacesSection(settings, onChange));
+  const containerSec = buildContainerMapSection(settings, onChange);
+  if (containerSec) body.appendChild(containerSec);
   body.appendChild(buildCustomCSSSection(settings, onChange));
+  body.appendChild(buildStorageQuotaSection(settings));
   body.appendChild(buildDataSection(settings, onChange, showWizard));
   body.appendChild(buildResetSection(onChange));
 }
@@ -230,18 +236,437 @@ function buildAppearance(settings, onChange) {
 /* ---- Background -------------------------------------------------------- */
 
 function buildBackground(settings, onChange) {
-  const sec = section("Background", "cloud");
-  const g = group();
+  const sec = section("Background", "image");
+  const bg  = settings.background || {};
+  const g   = group();
+
   g.appendChild(row(
-    "Animated background",
-    "Sky color, sun arc, weather, and time-of-day scenery driven by your live weather. Off uses a static gradient.",
+    "Show background",
+    "Enables the background subsystem.",
     toggle({
-      checked: settings.background.enabled,
-      ariaLabel: "Animated background",
-      onChange: (v) => { settings.background.enabled = v; onChange(settings); }
+      checked: bg.enabled !== false,
+      ariaLabel: "Show background",
+      onChange: (v) => { settings.background.enabled = v; onChange(settings); renderKindRows(); }
     })
   ));
+
+  // Kind selector
+  const kindSeg = segmented({
+    ariaLabel: "Background style",
+    value: bg.kind || "animated",
+    options: [
+      { value: "animated",      label: "Live" },
+      { value: "solid",         label: "Solid" },
+      { value: "gradient",      label: "Gradient" },
+      { value: "image-url",     label: "URL" },
+      { value: "image-upload",  label: "Upload" },
+      { value: "bing-daily",    label: "Bing Daily" },
+    ],
+    onChange: (v) => {
+      settings.background.kind = v;
+      onChange(settings);
+      renderKindRows();
+    }
+  });
+  g.appendChild(row("Style", null, kindSeg));
   sec.appendChild(g);
+
+  // Dynamic sub-options container
+  const kindHost = el("div", { class: "settings-bg-kind-host" });
+  sec.appendChild(kindHost);
+
+  function renderKindRows() {
+    clear(kindHost);
+    const kind = settings.background.kind || "animated";
+
+    if (kind === "solid") {
+      const inp = el("input", {
+        type: "color", class: "color-input",
+        value: settings.background.solid || "#1e1e2e",
+        "aria-label": "Background color",
+        onInput: (e) => { settings.background.solid = e.target.value; onChange(settings); }
+      });
+      kindHost.appendChild(row("Color", null, inp));
+    }
+
+    if (kind === "gradient") {
+      const gd = settings.background.gradient || { from: "#1e1e2e", to: "#313244", angle: 135 };
+      const fromIn = el("input", {
+        type: "color", class: "color-input",
+        value: gd.from,
+        "aria-label": "Gradient start color",
+        onInput: (e) => { settings.background.gradient = { ...gd, from: e.target.value }; onChange(settings); }
+      });
+      const toIn = el("input", {
+        type: "color", class: "color-input",
+        value: gd.to,
+        "aria-label": "Gradient end color",
+        onInput: (e) => { settings.background.gradient = { ...gd, to: e.target.value }; onChange(settings); }
+      });
+      const angleIn = el("input", {
+        type: "number", class: "text-input number-input",
+        min: "0", max: "360", value: String(gd.angle ?? 135),
+        "aria-label": "Gradient angle",
+        onChange: (e) => {
+          const v = parseInt(e.target.value, 10);
+          if (!isNaN(v)) { settings.background.gradient = { ...gd, angle: v }; onChange(settings); }
+        }
+      });
+      kindHost.appendChild(row("From color", null, fromIn));
+      kindHost.appendChild(row("To color", null, toIn));
+      kindHost.appendChild(row("Angle (deg)", "0–360°", angleIn));
+    }
+
+    if (kind === "image-url") {
+      const inp = el("input", {
+        type: "url", class: "text-input",
+        placeholder: "https://…/wallpaper.jpg",
+        value: settings.background.imageUrl || "",
+        "aria-label": "Image URL",
+        onChange: (e) => { settings.background.imageUrl = e.target.value.trim(); onChange(settings); }
+      });
+      kindHost.appendChild(rowColumn("Image URL", inp));
+    }
+
+    if (kind === "image-upload") {
+      const fileIn = el("input", {
+        type: "file", accept: "image/*",
+        style: { display: "none" },
+        onChange: (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            settings.background.imageData = ev.target.result;
+            onChange(settings);
+            toast("Image set.", "success");
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      const uploadBtn = el("button", {
+        type: "button", class: "button button--ghost",
+        onClick: () => fileIn.click()
+      }, [iconNode("upload", { size: 14 }), " Choose image"]);
+      kindHost.appendChild(fileIn);
+      kindHost.appendChild(row("Upload image", "Stored locally in your browser.", uploadBtn));
+      if (settings.background.imageData) {
+        const clearBtn = el("button", {
+          type: "button", class: "button button--ghost",
+          onClick: () => { settings.background.imageData = null; onChange(settings); renderKindRows(); }
+        }, [iconNode("trash", { size: 14 }), " Clear image"]);
+        kindHost.appendChild(row("", null, clearBtn));
+      }
+    }
+
+    if (kind === "image-url" || kind === "image-upload" || kind === "bing-daily") {
+      const blurIn = el("input", {
+        type: "range", min: "0", max: "20", step: "1",
+        value: String(settings.background.blur ?? 0),
+        "aria-label": "Blur",
+        onInput: (e) => { settings.background.blur = parseInt(e.target.value, 10); onChange(settings); }
+      });
+      const brightIn = el("input", {
+        type: "range", min: "50", max: "150", step: "5",
+        value: String(settings.background.brightness ?? 100),
+        "aria-label": "Brightness",
+        onInput: (e) => { settings.background.brightness = parseInt(e.target.value, 10); onChange(settings); }
+      });
+      kindHost.appendChild(row("Blur", "0–20 px", blurIn));
+      kindHost.appendChild(row("Brightness", "50–150%", brightIn));
+    }
+
+    if (kind === "bing-daily") {
+      const cache = settings.background.bingDailyCache;
+      const hint = cache?.date
+        ? `Cached from ${cache.date}. Refreshes daily.`
+        : "Fetches from Bing on first load.";
+      kindHost.appendChild(el("p", { class: "settings-section__hint" }, [hint]));
+    }
+  }
+
+  renderKindRows();
+  return sec;
+}
+
+/* ---- Top Sites --------------------------------------------------------- */
+
+function buildTopSitesSection(settings, onChange) {
+  const cfg = settings.topsites || {};
+  const sec = section("Top Sites", "star");
+  const g   = group();
+  g.appendChild(row(
+    "Show top sites",
+    "Your most-visited pages from Chrome / Firefox history, displayed as a favicon row.",
+    toggle({
+      checked: cfg.enabled || false,
+      ariaLabel: "Show top sites",
+      onChange: (v) => { settings.topsites = { ...cfg, enabled: v }; onChange(settings); }
+    })
+  ));
+  const maxIn = el("input", {
+    type: "number", min: "4", max: "20",
+    value: String(cfg.maxItems ?? 8), class: "text-input number-input",
+    "aria-label": "Max top sites",
+    onChange: (e) => {
+      const v = parseInt(e.target.value, 10);
+      if (!isNaN(v) && v >= 4 && v <= 20) { settings.topsites = { ...cfg, maxItems: v }; onChange(settings); }
+    }
+  });
+  g.appendChild(row("Max items", "4–20 sites shown.", maxIn));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Feed Filters ------------------------------------------------------ */
+
+function buildFeedFiltersSection(settings, onChange) {
+  const sec   = section("Feed Filters", "filter");
+  const rules = settings.feedFilters?.rules ?? [];
+
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    "Mute or highlight feed items by title or URL regex. Applied to both RSS and News panels."
+  ]));
+
+  const listEl = el("div", { class: "item-list" });
+
+  function refreshRules() {
+    clear(listEl);
+    const current = settings.feedFilters?.rules ?? [];
+    if (!current.length) {
+      listEl.appendChild(el("div", { class: "item-list__empty" }, ["No filter rules yet."]));
+      return;
+    }
+    current.forEach((rule, idx) => {
+      const patIn = el("input", {
+        type: "text", class: "text-input", value: rule.pattern || "",
+        placeholder: "Pattern (regex)", "aria-label": "Filter pattern",
+        onChange: (e) => { rule.pattern = e.target.value; onChange(settings); }
+      });
+      const fieldSel = el("select", { class: "text-input", "aria-label": "Match field" }, [
+        el("option", { value: "title", selected: rule.field !== "url" }, ["Title"]),
+        el("option", { value: "url",   selected: rule.field === "url"  }, ["URL"])
+      ]);
+      fieldSel.addEventListener("change", () => { rule.field = fieldSel.value; onChange(settings); });
+
+      const actionSel = el("select", { class: "text-input", "aria-label": "Filter action" }, [
+        el("option", { value: "mute",      selected: rule.action !== "highlight" }, ["Mute"]),
+        el("option", { value: "highlight", selected: rule.action === "highlight" }, ["Highlight"])
+      ]);
+      actionSel.addEventListener("change", () => {
+        rule.action = actionSel.value;
+        onChange(settings);
+        refreshRules();
+      });
+
+      const del = el("button", {
+        type: "button", class: "icon-button icon-button--ghost icon-button--small",
+        "aria-label": "Remove rule", title: "Remove",
+        onClick: () => {
+          settings.feedFilters.rules.splice(idx, 1);
+          onChange(settings);
+          refreshRules();
+        }
+      }, [iconNode("trash", { size: 14 })]);
+
+      const row1 = el("div", { class: "filter-rule-row" }, [patIn, fieldSel, actionSel]);
+      if (rule.action === "highlight") {
+        const colorIn = el("input", {
+          type: "color", class: "color-input",
+          value: rule.color || "#f9e2af",
+          "aria-label": "Highlight color",
+          onInput: (e) => { rule.color = e.target.value; onChange(settings); }
+        });
+        row1.appendChild(colorIn);
+      }
+      row1.appendChild(del);
+      listEl.appendChild(row1);
+    });
+  }
+
+  refreshRules();
+  sec.appendChild(listEl);
+
+  const addBtn = el("button", {
+    type: "button", class: "button button--ghost",
+    onClick: () => {
+      if (!settings.feedFilters) settings.feedFilters = { rules: [] };
+      settings.feedFilters.rules.push({ id: String(Date.now()), pattern: "", field: "title", action: "mute", color: null });
+      onChange(settings);
+      refreshRules();
+    }
+  }, [iconNode("plus", { size: 14 }), " Add rule"]);
+  sec.appendChild(addBtn);
+  return sec;
+}
+
+/* ---- Workspaces -------------------------------------------------------- */
+
+function buildWorkspacesSection(settings, onChange) {
+  const sec = section("Workspaces", "layers2");
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    "Named layout profiles — each can override accent, background, layout, quick links, and per-widget toggles."
+  ]));
+
+  const list = settings.workspaces?.list ?? [];
+  const listEl = el("div", { class: "item-list" });
+
+  function refreshWorkspaceList() {
+    clear(listEl);
+    const current = settings.workspaces?.list ?? [];
+    if (!current.length) {
+      listEl.appendChild(el("div", { class: "item-list__empty" }, ["No workspaces yet."]));
+      return;
+    }
+    current.forEach((ws, idx) => {
+      const nameIn = el("input", {
+        type: "text", class: "text-input",
+        value: ws.name, placeholder: "Workspace name",
+        "aria-label": "Workspace name",
+        onChange: (e) => { ws.name = e.target.value.trim() || "Workspace"; onChange(settings); }
+      });
+      const captureBtn = el("button", {
+        type: "button", class: "button button--ghost button--small",
+        title: "Save current layout to this workspace",
+        onClick: () => {
+          const { captureSnapshot } = window._vantageWorkspaceHelpers || {};
+          if (captureSnapshot) {
+            ws.snapshot = captureSnapshot(settings);
+            onChange(settings);
+            toast(`Snapshot saved for "${ws.name}".`, "success");
+          }
+        }
+      }, [iconNode("download", { size: 12 }), " Capture"]);
+      const del = el("button", {
+        type: "button", class: "icon-button icon-button--ghost icon-button--small",
+        "aria-label": "Remove workspace", title: "Remove",
+        onClick: () => {
+          settings.workspaces.list.splice(idx, 1);
+          if (settings.workspaces.active === ws.id) settings.workspaces.active = null;
+          onChange(settings);
+          refreshWorkspaceList();
+        }
+      }, [iconNode("trash", { size: 14 })]);
+      listEl.appendChild(el("div", { class: "workspace-item" }, [nameIn, captureBtn, del]));
+    });
+  }
+  refreshWorkspaceList();
+  sec.appendChild(listEl);
+
+  const addBtn = el("button", {
+    type: "button", class: "button button--ghost",
+    onClick: () => {
+      if (!settings.workspaces) settings.workspaces = { active: null, list: [] };
+      settings.workspaces.list.push({ id: String(Date.now()), name: "Workspace", snapshot: null });
+      onChange(settings);
+      refreshWorkspaceList();
+    }
+  }, [iconNode("plus", { size: 14 }), " Add workspace"]);
+  sec.appendChild(addBtn);
+  return sec;
+}
+
+/* ---- Storage Quota ----------------------------------------------------- */
+
+function buildStorageQuotaSection(settings) {
+  const sec = section("Storage", "hard-drive");
+  const g   = group();
+
+  const barWrap = el("div", { class: "quota-bar-wrap" });
+  const bar     = el("div", { class: "quota-bar", role: "progressbar", "aria-label": "Storage used", "aria-valuemin": "0", "aria-valuemax": "100" });
+  const label   = el("span", { class: "quota-label" }, ["Loading…"]);
+  barWrap.appendChild(bar);
+  barWrap.appendChild(label);
+  g.appendChild(el("div", { class: "settings-row settings-row--column" }, [
+    el("div", { class: "settings-row__label" }, [
+      el("span", { class: "settings-row__title" }, ["Storage used"]),
+      el("span", { class: "settings-row__hint" }, ["Chrome extension storage (chrome.storage.local)"])
+    ]),
+    barWrap
+  ]));
+
+  if (navigator.storage?.estimate) {
+    navigator.storage.estimate().then(({ usage, quota }) => {
+      if (!quota) return;
+      const pct = Math.round((usage / quota) * 100);
+      bar.style.width = `${pct}%`;
+      bar.setAttribute("aria-valuenow", String(pct));
+      bar.classList.toggle("quota-bar--warn", pct > 80);
+      const fmt = (b) => b > 1e6 ? `${(b / 1e6).toFixed(1)} MB` : `${(b / 1024).toFixed(0)} KB`;
+      label.textContent = `${fmt(usage)} of ${fmt(quota)} (${pct}%)`;
+    }).catch(() => { label.textContent = "Estimate unavailable."; });
+  } else {
+    label.textContent = "Not available in this browser.";
+  }
+
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Container Map (Firefox-only) -------------------------------------- */
+
+function buildContainerMapSection(settings, onChange) {
+  const isFirefox = typeof browser !== "undefined";
+  if (!isFirefox) return null;
+
+  const sec = section("Container Workspaces", "folder");
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    "Map Firefox container tabs to workspaces. When you open a new tab in the selected container, that workspace will activate automatically."
+  ]));
+
+  const workspaces = settings.workspaces?.list ?? [];
+  if (!workspaces.length) {
+    sec.appendChild(el("p", { class: "settings-section__hint" }, [
+      "No workspaces configured. Add workspaces above first."
+    ]));
+    return sec;
+  }
+
+  const mapHost = el("div", { class: "item-list" });
+  const mapEl = settings.containerMap || {};
+
+  let containers = [];
+  const renderMap = () => {
+    clear(mapHost);
+    if (!containers.length) {
+      mapHost.appendChild(el("div", { class: "item-list__empty" }, [
+        "No Firefox containers found. Create containers in Firefox settings."
+      ]));
+      return;
+    }
+    for (const c of containers) {
+      const sel = el("select", { class: "text-input", "aria-label": `Workspace for ${c.name}` }, [
+        el("option", { value: "", selected: !mapEl[c.cookieStoreId] }, ["(none)"]),
+        ...workspaces.map(ws =>
+          el("option", { value: ws.id, selected: mapEl[c.cookieStoreId] === ws.id }, [ws.name])
+        )
+      ]);
+      sel.addEventListener("change", () => {
+        if (!settings.containerMap) settings.containerMap = {};
+        if (sel.value) settings.containerMap[c.cookieStoreId] = sel.value;
+        else delete settings.containerMap[c.cookieStoreId];
+        onChange(settings);
+      });
+      const dot = el("span", {
+        class: "container-dot",
+        style: `background:${c.colorCode || "#aaa"}`,
+        "aria-hidden": "true"
+      });
+      mapHost.appendChild(el("div", { class: "item-list__row" }, [
+        el("div", { class: "item-list__row-content" }, [dot, el("span", { class: "item-list__title" }, [c.name])]),
+        sel
+      ]));
+    }
+  };
+
+  try {
+    browser.contextualIdentities?.query({}).then(result => {
+      containers = result || [];
+      renderMap();
+    }).catch(() => renderMap());
+  } catch { renderMap(); }
+
+  sec.appendChild(mapHost);
   return sec;
 }
 
@@ -640,6 +1065,37 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
     titleInput,
     el("div", { class: "compose__row" }, [urlInput, addBtn])
   ]));
+
+  // Reddit presets
+  const REDDIT_PRESETS = [
+    { title: "Reddit — All",           url: "https://www.reddit.com/r/all/.rss" },
+    { title: "Reddit — Popular",       url: "https://www.reddit.com/r/popular/.rss" },
+    { title: "Reddit — Technology",    url: "https://www.reddit.com/r/technology/.rss" },
+    { title: "Reddit — World News",    url: "https://www.reddit.com/r/worldnews/.rss" },
+    { title: "Reddit — Programming",   url: "https://www.reddit.com/r/programming/.rss" },
+    { title: "Reddit — Science",       url: "https://www.reddit.com/r/science/.rss" },
+  ];
+
+  const presetWrap = el("details", { class: "feed-presets" }, [
+    el("summary", { class: "feed-presets__toggle" }, ["Reddit presets"])
+  ]);
+  for (const p of REDDIT_PRESETS) {
+    const already = cfg.feeds.some(f => f.url === p.url);
+    const btn = el("button", {
+      type: "button",
+      class: `button button--ghost button--small${already ? " button--muted" : ""}`,
+      disabled: already,
+      onClick: () => {
+        if (already) return;
+        cfg.feeds.push({ title: p.title, url: p.url });
+        onChange(settings);
+        refreshList();
+        toast(`${p.title} added.`, "success");
+      }
+    }, [already ? iconNode("check", { size: 12 }) : iconNode("plus", { size: 12 }), ` ${p.title}`]);
+    presetWrap.appendChild(btn);
+  }
+  sec.appendChild(presetWrap);
 
   return sec;
 }
