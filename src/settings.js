@@ -14,7 +14,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
 
   // Sticky header
   panel.appendChild(el("header", { class: "settings-panel__header" }, [
-    el("h2", { class: "settings-panel__title" }, ["Settings"]),
+    el("h2", { id: "settings-panel-title", class: "settings-panel__title" }, ["Settings"]),
     el("button", {
       type: "button",
       class: "icon-button icon-button--ghost",
@@ -39,9 +39,12 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
       let visibleCount = 0;
       body.querySelectorAll(".settings-section").forEach(sec => {
         const matches = !q || sec.textContent.toLowerCase().includes(q);
+        const title = sec.querySelector(".settings-section__title");
+        const region = sec.querySelector(".settings-section__body");
         sec.style.display = matches ? "" : "none";
         if (q && matches) sec.dataset.filterMatch = "true";
         else delete sec.dataset.filterMatch;
+        region?.setAttribute("aria-hidden", String(!(q && matches) && title?.getAttribute("aria-expanded") !== "true"));
         if (matches) visibleCount++;
       });
       panel.dataset.filtering = q ? "true" : "false";
@@ -96,10 +99,19 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
 }
 
 let _panelTrapHandler = null;
+let _panelFocusTimer = null;
+let _backdropHideTimer = null;
 
 export function openPanel(panel) {
+  clearTimeout(_panelFocusTimer);
+  clearTimeout(_backdropHideTimer);
+  if (_panelTrapHandler) {
+    document.removeEventListener("keydown", _panelTrapHandler);
+    _panelTrapHandler = null;
+  }
   panel.dataset.open = "true";
   panel.setAttribute("aria-hidden", "false");
+  document.getElementById("settings-toggle")?.setAttribute("aria-expanded", "true");
   const backdrop = document.getElementById("settings-backdrop");
   if (backdrop) {
     backdrop.hidden = false;
@@ -107,7 +119,8 @@ export function openPanel(panel) {
   }
   document.body.style.overflow = "hidden";
   // Focus first interactive element after transition.
-  setTimeout(() => {
+  _panelFocusTimer = setTimeout(() => {
+    if (panel.dataset.open !== "true") return;
     const first = panel.querySelector(".settings-panel__body button, .settings-panel__body input, .settings-panel__body [tabindex]:not([tabindex='-1'])");
     if (first) first.focus({ preventScroll: true });
   }, 280);
@@ -129,12 +142,16 @@ export function openPanel(panel) {
 }
 
 export function closePanel(panel) {
+  clearTimeout(_panelFocusTimer);
   panel.dataset.open = "false";
   panel.setAttribute("aria-hidden", "true");
+  document.getElementById("settings-toggle")?.setAttribute("aria-expanded", "false");
   const backdrop = document.getElementById("settings-backdrop");
   if (backdrop) {
     backdrop.dataset.open = "false";
-    setTimeout(() => { backdrop.hidden = true; }, 280);
+    _backdropHideTimer = setTimeout(() => {
+      if (panel.dataset.open !== "true") backdrop.hidden = true;
+    }, 280);
   }
   document.body.style.overflow = "";
   if (_panelTrapHandler) {
@@ -147,9 +164,12 @@ export function closePanel(panel) {
 /* ---- Section builders -------------------------------------------------- */
 
 function section(title, iconName, { defaultOpen = false } = {}) {
-  const key = `v-sec-${title.replace(/\W+/g, "")}`;
+  const slug = title.replace(/\W+/g, "").toLowerCase();
+  const key = `v-sec-${slug}`;
   const saved = sessionStorage.getItem(key);
   const isOpen = saved !== null ? saved === "1" : defaultOpen;
+  const titleId = `${key}-title`;
+  const bodyId = `${key}-body`;
 
   const shell = el("section", {
     class: `settings-section${isOpen ? " settings-section--open" : ""}`
@@ -158,11 +178,14 @@ function section(title, iconName, { defaultOpen = false } = {}) {
   const titleEl = el("button", {
     type: "button",
     class: "settings-section__title",
+    id: titleId,
     "aria-expanded": String(isOpen),
+    "aria-controls": bodyId,
     onClick: () => {
       const nowOpen = !shell.classList.contains("settings-section--open");
       shell.classList.toggle("settings-section--open", nowOpen);
       titleEl.setAttribute("aria-expanded", String(nowOpen));
+      body.setAttribute("aria-hidden", String(!nowOpen));
       sessionStorage.setItem(key, nowOpen ? "1" : "0");
     }
   }, [
@@ -174,7 +197,13 @@ function section(title, iconName, { defaultOpen = false } = {}) {
 
   shell.appendChild(titleEl);
 
-  const body = el("div", { class: "settings-section__body" });
+  const body = el("div", {
+    id: bodyId,
+    class: "settings-section__body",
+    role: "region",
+    "aria-labelledby": titleId,
+    "aria-hidden": String(!isOpen)
+  });
   shell.appendChild(body);
 
   // Route all subsequent appendChild calls to body so callers don't need to change
