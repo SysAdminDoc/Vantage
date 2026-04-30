@@ -31,12 +31,16 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
 
   const activityBtn = el("button", {
     type: "button",
+    role: "tab",
+    "aria-selected": activeTab === "activity" ? "true" : "false",
     class: `panel-tab${activeTab === "activity" ? " panel-tab--active" : ""}`,
     onClick: () => switchTab("activity")
   }, ["Activity"]);
 
   const trendingBtn = el("button", {
     type: "button",
+    role: "tab",
+    "aria-selected": activeTab === "trending" ? "true" : "false",
     class: `panel-tab${activeTab === "trending" ? " panel-tab--active" : ""}`,
     onClick: () => switchTab("trending")
   }, ["Trending"]);
@@ -46,10 +50,10 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
       el("span", { class: "panel-header__drag", "aria-hidden": "true", innerHTML: iconString("grip", 14) }),
       el("h2", { class: "panel-header__title" }, [iconNode("github", { size: 14 }), " GitHub"])
     ]),
-    el("div", { class: "panel-header__right panel-tabs" }, [activityBtn, trendingBtn])
+    el("div", { class: "panel-header__right panel-tabs", role: "tablist", "aria-label": "GitHub view" }, [activityBtn, trendingBtn])
   ]);
 
-  const body = el("div", { class: "panel-body github-body" });
+  const body = el("div", { class: "panel-body github-body", role: "tabpanel" });
   mount.appendChild(header);
   mount.appendChild(body);
 
@@ -58,7 +62,9 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
   function switchTab(tab) {
     activeTab = tab;
     activityBtn.className = `panel-tab${tab === "activity" ? " panel-tab--active" : ""}`;
+    activityBtn.setAttribute("aria-selected", tab === "activity" ? "true" : "false");
     trendingBtn.className = `panel-tab${tab === "trending" ? " panel-tab--active" : ""}`;
+    trendingBtn.setAttribute("aria-selected", tab === "trending" ? "true" : "false");
     loadTab();
   }
 
