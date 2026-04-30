@@ -2103,17 +2103,21 @@ a {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  padding: 6px var(--s-3) 6px 8px;
+  padding: var(--s-1) var(--s-3) var(--s-1) var(--s-2);
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-pill);
   font-size: var(--text-sm);
-  cursor: default;
+  cursor: pointer;
   user-select: none;
-  transition: border-color var(--t-fast);
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
 }
 
 .aq-pill:hover { border-color: var(--border-default); }
+.aq-pill:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
 
 .aq-pill--skeleton {
   width: 80px;
@@ -2392,7 +2396,7 @@ a {
 .onboard-dots {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: var(--s-2);
 }
 
 .onboard-dot {
