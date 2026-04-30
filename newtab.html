@@ -17,6 +17,15 @@
       <div id="weather-mount" class="weather-mount" aria-live="polite"></div>
       <div id="airquality-mount" class="airquality-mount" aria-live="polite"></div>
       <button
+        id="widget-picker-toggle"
+        class="icon-button"
+        type="button"
+        title="Customize widgets"
+        aria-label="Customize widgets"
+        aria-haspopup="listbox"
+        aria-expanded="false"
+      ></button>
+      <button
         id="settings-toggle"
         class="icon-button"
         type="button"
@@ -28,20 +37,33 @@
       ></button>
     </header>
 
+    <div id="widget-picker" class="widget-picker" hidden aria-label="Widget picker"></div>
+
     <section class="hero" aria-label="Search and quick links">
       <div id="greeting-mount" class="greeting"></div>
       <div id="search-mount" class="search" role="search"></div>
       <div id="quicklinks-mount" class="quicklinks"></div>
     </section>
 
+    <div id="worldclock-mount" class="worldclock-mount" aria-live="off"></div>
+    <div id="quote-mount" class="quote-mount" aria-live="polite"></div>
+
     <div id="pomodoro-mount" class="pomodoro-mount"></div>
 
     <section class="reading" aria-label="Reading panels">
-      <div id="news-mount" class="panel" data-widget="news"></div>
-      <div id="rss-mount" class="panel" data-widget="rss"></div>
-      <div id="calendar-mount" class="panel" data-widget="calendar"></div>
-      <div id="windy-mount" class="panel panel--map" data-widget="windy"></div>
-      <div id="embed-mount" class="panel panel--map" data-widget="embed"></div>
+      <div id="news-mount"      class="panel" data-widget="news"></div>
+      <div id="rss-mount"       class="panel" data-widget="rss"></div>
+      <div id="calendar-mount"  class="panel" data-widget="calendar"></div>
+      <div id="windy-mount"     class="panel panel--map" data-widget="windy"></div>
+      <div id="todo-mount"      class="panel" data-widget="todo"></div>
+      <div id="notes-mount"     class="panel" data-widget="notes"></div>
+      <div id="bookmarks-mount" class="panel" data-widget="bookmarks"></div>
+      <div id="crypto-mount"    class="panel" data-widget="crypto"></div>
+      <div id="github-mount"    class="panel" data-widget="github"></div>
+      <div id="photo-mount"     class="panel" data-widget="photo"></div>
+      <div id="countdown-mount" class="panel" data-widget="countdown"></div>
+      <div id="converter-mount" class="panel" data-widget="converter"></div>
+      <!-- Embed mounts are created dynamically by main.js for each entry in settings.embeds -->
     </section>
 
     <div
