@@ -1,18 +1,29 @@
-// Vantage v0.8.0 — background subsystem.
+// Vantage — background subsystem.
 // background.kind dispatch: "animated" | "solid" | "gradient" | "image-url" | "image-upload" | "bing-daily"
 //
 // Animated-mode layers (z-index inside the mount, low to high):
-//   .bg-stars       night-sky stars (twinkle)
-//   .bg-cloud-N     drifting cloud blobs (weather-driven)
-//   .bg-fog         fog/haze overlay (foggy weather)
-//   .bg-rain        rain streaks (rain / drizzle / storm)
-//   .bg-snow        snow flakes (snow)
-//   .bg-flash       lightning flash (storm)
-//   .bg-sun         sun or moon disc, positioned along an arc
-//   .bg-palm        palm-tree silhouette (golden hour / sunset)
+//   .bg-stars         night-sky stars (twinkle)
+//   .bg-aurora        aurora borealis (high latitude, clear night)
+//   .bg-constellation constellation outlines (deep night, hemisphere-aware)
+//   .bg-shooting-star transient streak across the sky (night phases)
+//   .bg-cloud-N       drifting cloud blobs (weather-driven)
+//   .bg-rays          crepuscular sun rays (golden hour through cloud breaks)
+//   .bg-fog           fog/haze overlay (foggy weather)
+//   .bg-rain          rain streaks (rain / drizzle / storm)
+//   .bg-snow          snow flakes (snow)
+//   .bg-petals        spring cherry-blossom drift (temperate, spring)
+//   .bg-leaves        autumn falling leaves (temperate, autumn)
+//   .bg-fireflies     summer twilight fireflies (temperate, summer)
+//   .bg-flash         full lightning flash (storm)
+//   .bg-horizon-flash distant lightning at horizon (rain without storm)
+//   .bg-sun           sun or moon disc, positioned along an arc
+//   .bg-birds         V-formation flock crossing sky (clear daylight)
+//   .bg-mountains     distant mountain silhouettes (3-layer parallax)
+//   .bg-tree          biome-aware foreground tree (palm/pine/oak)
 //
-// The mount carries data-phase + data-weather attributes so all visual
-// styling lives in CSS. JS only sets state and positions the sun.
+// The mount carries data-phase + data-weather + data-biome + data-season
+// + data-hemisphere attributes so all visual styling lives in CSS.
+// JS only sets state and positions the sun + spawns transient particles.
 
 import { getWeatherData, detectLocation } from "../utils/weather-source.js";
 import { getSunTimes } from "../utils/sun-calc.js";
@@ -196,6 +207,114 @@ const PALM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" 
   </g>
 </svg>`;
 
+// Stylized pine tree silhouette — boreal latitudes (50–66°).
+// Stacked triangular crown layers narrow toward the top; thin trunk.
+const PINE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 320" preserveAspectRatio="xMidYEnd meet">
+  <g fill="#0a0a0d">
+    <path d="M80 14 L52 78 L62 78 L40 132 L54 132 L28 192 L48 192 L18 252 L72 252 L72 320 L88 320 L88 252 L142 252 L112 192 L132 192 L106 132 L120 132 L98 78 L108 78 Z"/>
+  </g>
+</svg>`;
+
+// Stylized deciduous (oak/maple) silhouette — temperate latitudes (23–50°).
+// Bushy multi-lobed crown over a tapered trunk with a couple of low branches.
+const OAK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" preserveAspectRatio="xMidYEnd meet">
+  <g fill="#0a0a0d">
+    <path d="M110 30 C 70 30 36 56 36 100 C 16 110 6 132 14 156 C 4 178 14 204 38 212 C 28 232 44 254 70 252 C 76 270 102 278 122 268 C 144 280 174 264 178 240 C 200 236 216 212 208 190 C 220 170 218 144 200 132 C 206 102 184 70 150 64 C 144 42 128 30 110 30 Z"/>
+    <path d="M104 200 L98 320 L122 320 L116 200 Z"/>
+    <path d="M104 240 Q 78 252 60 246 L 76 256 Q 96 264 104 256 Z"/>
+    <path d="M116 232 Q 142 240 158 230 L 144 246 Q 124 254 116 244 Z"/>
+  </g>
+</svg>`;
+
+// Distant mountain ranges — three layers for parallax. Each layer is its
+// own SVG so it can be opacity/blur tuned independently in CSS.
+const MOUNTAINS_FAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" preserveAspectRatio="xMidYEnd slice">
+  <path fill="#0a0a0d" d="M0 200 L0 140 L80 110 L160 130 L240 80 L320 110 L420 60 L500 100 L580 70 L680 110 L760 50 L860 90 L940 70 L1040 100 L1120 60 L1200 90 L1200 200 Z"/>
+</svg>`;
+const MOUNTAINS_MID_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" preserveAspectRatio="xMidYEnd slice">
+  <path fill="#0a0a0d" d="M0 220 L0 160 L100 120 L200 150 L300 90 L420 130 L540 80 L660 120 L780 70 L880 110 L980 80 L1080 120 L1200 90 L1200 220 Z"/>
+</svg>`;
+const MOUNTAINS_NEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" preserveAspectRatio="xMidYEnd slice">
+  <path fill="#0a0a0d" d="M0 240 L0 200 L120 130 L260 180 L400 100 L540 160 L680 110 L820 170 L960 120 L1080 180 L1200 140 L1200 240 Z"/>
+</svg>`;
+
+// V-formation bird flock. Each bird is two arcs forming the wing-flap shape.
+// CSS animates the flock translation across the sky.
+const BIRDS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" preserveAspectRatio="xMidYMid meet">
+  <g fill="none" stroke="#0a0a0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path class="bird bird-1" d="M50 20 Q 56 14 62 20 Q 68 14 74 20"/>
+    <path class="bird bird-2" d="M70 32 Q 76 26 82 32 Q 88 26 94 32"/>
+    <path class="bird bird-3" d="M90 18 Q 96 12 102 18 Q 108 12 114 18"/>
+    <path class="bird bird-4" d="M110 28 Q 116 22 122 28 Q 128 22 134 28"/>
+    <path class="bird bird-5" d="M130 14 Q 136 8 142 14 Q 148 8 154 14"/>
+  </g>
+</svg>`;
+
+// Big Dipper (Ursa Major) — visible in northern hemisphere mid-latitudes.
+// Seven stars connected by faint lines at canonical relative positions.
+const BIG_DIPPER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 120">
+  <g fill="white" stroke="rgba(255,255,255,0.18)" stroke-width="0.8">
+    <line x1="40" y1="50" x2="90" y2="58"/>
+    <line x1="90" y1="58" x2="135" y2="50"/>
+    <line x1="135" y1="50" x2="170" y2="56"/>
+    <line x1="170" y1="56" x2="210" y2="42"/>
+    <line x1="210" y1="42" x2="240" y2="28"/>
+    <line x1="170" y1="56" x2="200" y2="78"/>
+    <line x1="135" y1="50" x2="155" y2="80"/>
+    <line x1="155" y1="80" x2="200" y2="78"/>
+    <circle cx="40"  cy="50" r="2.8"/>
+    <circle cx="90"  cy="58" r="2.4"/>
+    <circle cx="135" cy="50" r="2.6"/>
+    <circle cx="170" cy="56" r="2.4"/>
+    <circle cx="210" cy="42" r="3.2"/>
+    <circle cx="240" cy="28" r="2.5"/>
+    <circle cx="200" cy="78" r="2.6"/>
+    <circle cx="155" cy="80" r="2.2"/>
+  </g>
+</svg>`;
+
+// Southern Cross (Crux) — visible in southern hemisphere.
+const SOUTHERN_CROSS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 200">
+  <g fill="white" stroke="rgba(255,255,255,0.18)" stroke-width="0.8">
+    <line x1="80" y1="20" x2="80" y2="170"/>
+    <line x1="30" y1="100" x2="125" y2="90"/>
+    <circle cx="80"  cy="20"  r="3"/>
+    <circle cx="80"  cy="170" r="3.4"/>
+    <circle cx="30"  cy="100" r="2.6"/>
+    <circle cx="125" cy="90"  r="2.8"/>
+    <circle cx="60"  cy="120" r="1.8"/>
+  </g>
+</svg>`;
+
+// ---- Locality + season helpers ----
+
+/** Returns the biome name for a given latitude. */
+function getBiome(lat) {
+  if (lat == null) return "temperate";
+  const abs = Math.abs(lat);
+  if (abs < 23.5) return "tropical";
+  if (abs < 50)   return "temperate";
+  if (abs < 66.5) return "boreal";
+  return "polar";
+}
+
+/** Returns "N" or "S" hemisphere from a latitude. */
+function getHemisphere(lat) {
+  return lat == null ? "N" : (lat >= 0 ? "N" : "S");
+}
+
+/** Returns season for a given date + hemisphere. Northern: Mar-May spring,
+ *  Jun-Aug summer, Sep-Nov autumn, Dec-Feb winter. Southern: shifted 6 mo. */
+function getSeason(date, hemisphere) {
+  const m = date.getMonth(); // 0..11
+  const offset = hemisphere === "S" ? 6 : 0;
+  const a = (m + offset) % 12;
+  if (a >= 2 && a <= 4) return "spring";
+  if (a >= 5 && a <= 7) return "summer";
+  if (a >= 8 && a <= 10) return "autumn";
+  return "winter";
+}
+
 const BING_ENDPOINT = "https://www.bing.com/HPImageArchive.aspx?format=js&n=1&mkt=en-US";
 
 export async function renderBackground(mount, settings, saveSettings) {
@@ -275,19 +394,35 @@ export async function renderBackground(mount, settings, saveSettings) {
 
   // ---- Animated (default) ----
 
-  // Build the scaffold once
+  // Build the scaffold once. Layers are ordered low-to-high so cascade
+  // matches z-stacking — sky-tinted background first, foreground last.
   mount.innerHTML = `
     <div class="bg-stars" aria-hidden="true"></div>
+    <div class="bg-aurora" aria-hidden="true"></div>
+    <div class="bg-constellation bg-constellation--north" aria-hidden="true">${BIG_DIPPER_SVG}</div>
+    <div class="bg-constellation bg-constellation--south" aria-hidden="true">${SOUTHERN_CROSS_SVG}</div>
+    <div class="bg-shooting-star-host" aria-hidden="true"></div>
     <div class="bg-cloud bg-cloud--1" aria-hidden="true"></div>
     <div class="bg-cloud bg-cloud--2" aria-hidden="true"></div>
     <div class="bg-cloud bg-cloud--3" aria-hidden="true"></div>
+    <div class="bg-rays" aria-hidden="true"></div>
     <div class="bg-fog" aria-hidden="true"></div>
     <div class="bg-rain" aria-hidden="true"></div>
     <div class="bg-rain bg-rain--2" aria-hidden="true"></div>
     <div class="bg-snow" aria-hidden="true"></div>
+    <div class="bg-petals" aria-hidden="true"></div>
+    <div class="bg-leaves" aria-hidden="true"></div>
+    <div class="bg-fireflies" aria-hidden="true"></div>
     <div class="bg-flash" aria-hidden="true"></div>
+    <div class="bg-horizon-flash" aria-hidden="true"></div>
     <div class="bg-sun" aria-hidden="true"></div>
-    <div class="bg-palm" aria-hidden="true">${PALM_SVG}</div>
+    <div class="bg-birds-host" aria-hidden="true"></div>
+    <div class="bg-mountains bg-mountains--far"  aria-hidden="true">${MOUNTAINS_FAR_SVG}</div>
+    <div class="bg-mountains bg-mountains--mid"  aria-hidden="true">${MOUNTAINS_MID_SVG}</div>
+    <div class="bg-mountains bg-mountains--near" aria-hidden="true">${MOUNTAINS_NEAR_SVG}</div>
+    <div class="bg-tree bg-tree--palm" aria-hidden="true">${PALM_SVG}</div>
+    <div class="bg-tree bg-tree--pine" aria-hidden="true">${PINE_SVG}</div>
+    <div class="bg-tree bg-tree--oak"  aria-hidden="true">${OAK_SVG}</div>
   `;
 
   // ---- Render IMMEDIATELY with sensible defaults so the user never sees
@@ -327,6 +462,10 @@ export async function renderBackground(mount, settings, saveSettings) {
       }
     } catch { /* defaults stay */ }
   }
+
+  // Stash latitude on the mount so updateScene + spawners can derive
+  // biome/season/hemisphere without re-threading the value through args.
+  mount._bgLat = location?.latitude ?? null;
 
   // Compute sun-event times. Strategy:
   //   1) Open-Meteo's `daily.sunrise[0]` / `daily.sunset[0]` (requested
@@ -422,10 +561,79 @@ export async function renderBackground(mount, settings, saveSettings) {
   };
   scheduleRollover();
 
+  // ---- Shooting stars: random transient streaks during night phases.
+  // A new streak appears every 30-90 seconds. We append a div, animate
+  // it via CSS keyframes, then remove on animationend.
+  const shootingHost = mount.querySelector(".bg-shooting-star-host");
+  const isNightPhase = (p) =>
+    p === "night" || p === "astronomical-night" ||
+    p === "astronomical-dusk" || p === "astronomical-dawn" ||
+    p === "nautical-dusk" || p === "nautical-dawn";
+
+  let shootingTimer = null;
+  function scheduleShootingStar() {
+    const delay = 30000 + Math.random() * 60000; // 30-90s
+    shootingTimer = setTimeout(() => {
+      if (shootingHost && isNightPhase(mount.dataset.phase) &&
+          weather !== "storm" && weather !== "rain" && weather !== "heavy-rain" &&
+          weather !== "fog" && weather !== "overcast") {
+        const star = document.createElement("div");
+        star.className = "bg-shooting-star";
+        // Random position in the upper half of the sky.
+        star.style.setProperty("--ss-x", `${5 + Math.random() * 60}%`);
+        star.style.setProperty("--ss-y", `${5 + Math.random() * 35}%`);
+        // Vary streak angle slightly so they don't all look identical.
+        star.style.setProperty("--ss-angle", `${20 + Math.random() * 25}deg`);
+        shootingHost.appendChild(star);
+        star.addEventListener("animationend", () => star.remove());
+      }
+      scheduleShootingStar();
+    }, delay);
+  }
+  scheduleShootingStar();
+
+  // ---- Bird flock: V-formation crossing the sky during clear daytime.
+  // Reuses a single hosted SVG; we trigger a CSS animation by toggling
+  // a class for one full cross-sky pass every few minutes.
+  const birdsHost = mount.querySelector(".bg-birds-host");
+  if (birdsHost) birdsHost.innerHTML = BIRDS_SVG;
+  let birdTimer = null;
+  function scheduleBirdFlock() {
+    const delay = 90000 + Math.random() * 180000; // 1.5-4.5min between flyovers
+    birdTimer = setTimeout(() => {
+      const dayPhase = ["morning", "midday", "afternoon", "golden-hour", "sunrise"].includes(mount.dataset.phase);
+      const calm = weather === "clear" || weather === "cloudy";
+      if (birdsHost && dayPhase && calm) {
+        // Vary altitude per pass.
+        birdsHost.style.setProperty("--bird-y", `${15 + Math.random() * 30}%`);
+        // Re-trigger the keyframe by removing/adding the active class.
+        birdsHost.classList.remove("bg-birds-host--flying");
+        // Force reflow so the animation actually restarts.
+        void birdsHost.offsetWidth;
+        birdsHost.classList.add("bg-birds-host--flying");
+      }
+      scheduleBirdFlock();
+    }, delay);
+  }
+  // Trigger one flyover ~5s after first paint so users see the feature
+  // sooner than the 1.5-min cadence would otherwise allow.
+  const initialBirdTimer = setTimeout(() => {
+    const dayPhase = ["morning", "midday", "afternoon", "golden-hour", "sunrise"].includes(mount.dataset.phase);
+    const calm = weather === "clear" || weather === "cloudy";
+    if (birdsHost && dayPhase && calm) {
+      birdsHost.style.setProperty("--bird-y", `${15 + Math.random() * 30}%`);
+      birdsHost.classList.add("bg-birds-host--flying");
+    }
+  }, 5000);
+  scheduleBirdFlock();
+
   return () => {
     clearInterval(interval);
     clearInterval(refreshInterval);
     if (rolloverTimeout) clearTimeout(rolloverTimeout);
+    if (shootingTimer) clearTimeout(shootingTimer);
+    if (birdTimer) clearTimeout(birdTimer);
+    if (initialBirdTimer) clearTimeout(initialBirdTimer);
   };
 }
 
@@ -486,6 +694,27 @@ function updateScene(mount, weather, sunTimes) {
     mount.style.setProperty("--sky-bottom", colors.bot);
     mount.style.setProperty("--sun-color",  colors.sun);
     mount.style.setProperty("--sun-glow",   colors.glow);
+
+    // Locality-driven attributes — read by CSS to choose tree/mountains/aurora/season particles.
+    // We attach the latitude on the mount as a closure-shared field so the
+    // spawners can read it without needing to thread it through arguments.
+    const lat = mount._bgLat;
+    if (lat != null) {
+      mount.dataset.biome      = getBiome(lat);
+      mount.dataset.hemisphere = getHemisphere(lat);
+      mount.dataset.season     = getSeason(now, getHemisphere(lat));
+      // Aurora eligibility: high latitude (|lat|>=55°) AND clear-ish night.
+      const auroraEligible = Math.abs(lat) >= 55 &&
+        (weather === "clear" || weather === "cloudy") &&
+        (phase === "night" || phase === "astronomical-night" ||
+         phase === "astronomical-dusk" || phase === "astronomical-dawn");
+      mount.dataset.aurora = auroraEligible ? "on" : "off";
+    } else {
+      mount.dataset.biome      = "temperate";
+      mount.dataset.hemisphere = "N";
+      mount.dataset.season     = getSeason(now, "N");
+      mount.dataset.aurora     = "off";
+    }
 
     // Wet/heavy weather hides or dims the sun behind the cloud deck. Rain
     // gets full hide because a visible warm sun behind rain streaks reads
