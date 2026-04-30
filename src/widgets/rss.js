@@ -17,7 +17,7 @@ export function renderRss(mount, settings, { onAttachDragHandle } = {}) {
     maxItems: settings.rss.maxItems,
     readItems: settings.rss.readItems || [],
     filterRules: settings.feedFilters?.rules || [],
-    emptyHint: "Add an RSS or Atom feed URL in settings.",
+    emptyHint: "Add an RSS or Atom feed URL in Settings → Reading list.",
     initiator,
     onRefresh: () => draw("refresh"),
     onMarkRead: async (urls) => {

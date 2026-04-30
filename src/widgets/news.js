@@ -17,7 +17,7 @@ export function renderNews(mount, settings, { onAttachDragHandle } = {}) {
     maxItems: settings.news.maxItems,
     readItems: settings.news.readItems || [],
     filterRules: settings.feedFilters?.rules || [],
-    emptyHint: "Add a news feed URL in settings.",
+    emptyHint: "Add a news feed URL in Settings → News.",
     initiator,
     onRefresh: () => draw("refresh"),
     onMarkRead: async (urls) => {
