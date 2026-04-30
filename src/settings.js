@@ -865,7 +865,7 @@ function buildWeatherSection(settings, onChange) {
         refreshChip();
         toast(`Location set to ${loc.name}.`, "success");
       } catch (err) {
-        toast(`Couldn’t find "${q}".`, "error");
+        toast(`Couldn't find "${q}".`, "error");
       } finally {
         cityBtn.disabled = false;
       }
@@ -982,7 +982,7 @@ function buildLinksSection(settings, onChange) {
         return;
       }
       try { new URL(u); } catch {
-        toast("That doesn’t look like a valid URL.", "error");
+        toast("That doesn't look like a valid URL.", "error");
         return;
       }
       settings.quicklinks.items.push({ title: t, url: u });
@@ -1080,7 +1080,7 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
         return;
       }
       try { new URL(u); } catch {
-        toast("That doesn’t look like a valid URL.", "error");
+        toast("That doesn't look like a valid URL.", "error");
         return;
       }
       cfg.feeds.push({ title: t || hostnameLabel(u), url: u });
@@ -1544,7 +1544,7 @@ function buildDataSection(settings, onChange, showWizard) {
           navigator.clipboard.writeText(url.href).then(() => {
             toast("Share link copied to clipboard.", "success");
           }).catch(() => { toast("Clipboard access denied.", "error"); });
-        } catch { toast("Could not generate share link.", "error"); }
+        } catch { toast("Couldn't generate share link.", "error"); }
       }
     }, [iconNode("share", { size: 14 }), " Copy share link"])
   ));
