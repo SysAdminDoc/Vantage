@@ -71,6 +71,8 @@ export function showOnboarding(settings, onComplete) {
   let pendingLocation = null;
   let pendingName = "";
   let step = 0;
+  const previousBodyOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
 
   const overlay = el("div", {
     class: "onboard-overlay",
@@ -83,9 +85,8 @@ export function showOnboarding(settings, onComplete) {
   document.body.appendChild(overlay);
   requestAnimationFrame(() => card.focus());
 
-  // Focus trap + Escape-to-finish for modal a11y conformance
+  // Focus trap for modal a11y conformance.
   const onKeydown = (e) => {
-    if (e.key === "Escape") { e.preventDefault(); finish(); return; }
     if (e.key !== "Tab") return;
     const focusable = card.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -141,17 +142,30 @@ export function showOnboarding(settings, onComplete) {
       ])
     ]));
 
-    const grid = el("div", { class: "onboard-presets" });
+    const grid = el("div", {
+      class: "onboard-presets",
+      role: "radiogroup",
+      "aria-label": "Choose a starting layout"
+    });
     for (const p of PRESETS) {
       const selected = p === preset;
-      const presetCard = el("div", {
+      const presetCard = el("button", {
+        type: "button",
         class: `onboard-preset${selected ? " onboard-preset--selected" : ""}`,
-        role: "button",
-        tabindex: "0",
-        "aria-pressed": String(selected),
+        role: "radio",
+        "aria-checked": String(selected),
+        "data-preset": p.id,
         onClick: () => selectPreset(p),
         onKeydown: (e) => {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectPreset(p); }
+          if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+          e.preventDefault();
+          const delta = e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 1;
+          const current = PRESETS.indexOf(preset);
+          preset = PRESETS[(current + delta + PRESETS.length) % PRESETS.length];
+          render();
+          requestAnimationFrame(() => {
+            card.querySelector(`.onboard-preset[data-preset="${preset.id}"]`)?.focus({ preventScroll: true });
+          });
         }
       }, [
         el("div", { class: "onboard-preset__label" }, [p.label]),
@@ -204,7 +218,7 @@ export function showOnboarding(settings, onComplete) {
     ]));
 
     // Location field
-    const statusEl = el("div", { class: "onboard-location-status" });
+    const statusEl = el("div", { class: "onboard-location-status", role: "status", "aria-live": "polite" });
     const cityInput = el("input", {
       type: "text",
       placeholder: "City — e.g. Chicago",
@@ -243,6 +257,7 @@ export function showOnboarding(settings, onComplete) {
     async function geocodeFromInput(input, status) {
       const q = input.value.trim();
       if (!q) return;
+      setLocationBusy(true, "Looking up...");
       status.textContent = "Looking up\u2026";
       status.className = "onboard-location-status";
       try {
@@ -253,10 +268,13 @@ export function showOnboarding(settings, onComplete) {
       } catch (err) {
         status.textContent = err.message;
         status.className = "onboard-location-status onboard-location-status--err";
+      } finally {
+        setLocationBusy(false);
       }
     }
 
     async function detectFromGeo(input, status) {
+      setLocationBusy(true, "Detecting...");
       status.textContent = "Detecting\u2026";
       status.className = "onboard-location-status";
       try {
@@ -267,7 +285,16 @@ export function showOnboarding(settings, onComplete) {
       } catch (err) {
         status.textContent = err.message;
         status.className = "onboard-location-status onboard-location-status--err";
+      } finally {
+        setLocationBusy(false);
       }
+    }
+
+    function setLocationBusy(isBusy, label = "") {
+      setBtn.disabled = isBusy;
+      detectBtn.disabled = isBusy;
+      cityInput.setAttribute("aria-busy", String(isBusy));
+      if (isBusy) statusEl.textContent = label;
     }
   }
 
@@ -295,6 +322,7 @@ export function showOnboarding(settings, onComplete) {
     if (pendingLocation) s.weather.location   = pendingLocation;
     s.onboardingComplete = true;
     document.removeEventListener("keydown", onKeydown);
+    document.body.style.overflow = previousBodyOverflow;
     overlay.remove();
     onComplete(s);
   }
