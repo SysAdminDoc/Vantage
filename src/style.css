@@ -1003,7 +1003,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  padding: 6px var(--s-3) 6px 8px;
+  padding: var(--s-1) var(--s-3) var(--s-1) var(--s-2);
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-pill);
@@ -1524,6 +1524,12 @@ a {
   width: 100%;
 }
 
+.settings-filter-empty {
+  flex: 0 0 auto;
+  padding: var(--s-3);
+  margin: 0;
+}
+
 /* Settings sections — collapsible */
 
 .settings-section {
@@ -1796,6 +1802,67 @@ a {
   box-shadow: 0 0 0 1000px var(--bg-input) inset;
   transition: background-color 99999s ease-in-out 0s;
 }
+
+/* Range slider — themed for both Chrome/Edge and Firefox.
+   Native browser sliders look wildly inconsistent and dated. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  max-width: 180px;
+  height: 20px;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+  margin: 0;
+}
+input[type="range"]:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  border-radius: var(--r-pill);
+}
+/* Track */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--surface1);
+  border-radius: var(--r-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: var(--surface1);
+  border-radius: var(--r-pill);
+}
+/* Thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg-elevated);
+  box-shadow: var(--shadow-sm);
+  margin-top: -6px;
+  cursor: grab;
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg-elevated);
+  box-shadow: var(--shadow-sm);
+  cursor: grab;
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.1);
+}
+input[type="range"]:hover::-moz-range-thumb {
+  transform: scale(1.1);
+}
+input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
+input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 
 .number-input {
   width: 80px;
@@ -4079,12 +4146,23 @@ a {
 .color-input {
   width: 48px;
   height: 32px;
-  border: none;
-  border-radius: var(--r-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-2);
   cursor: pointer;
-  background: none;
-  padding: 0;
+  background: var(--bg-elevated);
+  padding: 2px;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
 }
+
+.color-input:hover { border-color: var(--border-default); }
+.color-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.color-input::-webkit-color-swatch-wrapper { padding: 0; }
+.color-input::-webkit-color-swatch { border: none; border-radius: var(--r-1); }
+.color-input::-moz-color-swatch { border: none; border-radius: var(--r-1); }
 
 /* ---- Feed Filters ------------------------------------------------------ */
 
