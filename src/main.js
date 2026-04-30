@@ -382,6 +382,9 @@ function wireSettings() {
 
   const onChange = async (next) => {
     currentSettings = next;
+    document.documentElement.setAttribute("data-theme", currentSettings.theme);
+    applyAccent(currentSettings);
+    applyCustomCSS(currentSettings.customCSS);
     await saveSettings(currentSettings);
     mountAll();
   };
