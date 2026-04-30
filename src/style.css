@@ -1126,14 +1126,735 @@ a {
   opacity: 0.85;
 }
 
+/* ============================================================
+   Moon — phased disc, replaces the generic .bg-sun at night.
+   Position uses the same arc as the sun with a horizontal offset
+   so they don't overlap during sunrise/sunset crossover.
+   ============================================================ */
+
+.bg-moon {
+  position: absolute;
+  top: 14%;
+  left: 14%;
+  width: 90px;
+  height: 90px;
+  pointer-events: none;
+  opacity: 0;
+  filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.35));
+  transition: opacity 12s linear;
+}
+
+.bg-moon svg { width: 100%; height: 100%; }
+
+.bg[data-phase="dusk"]              .bg-moon,
+.bg[data-phase="nautical-dusk"]     .bg-moon,
+.bg[data-phase="astronomical-dusk"] .bg-moon,
+.bg[data-phase="night"]             .bg-moon,
+.bg[data-phase="astronomical-night"] .bg-moon,
+.bg[data-phase="astronomical-dawn"] .bg-moon,
+.bg[data-phase="nautical-dawn"]     .bg-moon {
+  opacity: 0.95;
+}
+
+.bg[data-weather="storm"]      .bg-moon,
+.bg[data-weather="heavy-rain"] .bg-moon,
+.bg[data-weather="rain"]       .bg-moon,
+.bg[data-weather="overcast"]   .bg-moon,
+.bg[data-weather="fog"]        .bg-moon {
+  opacity: 0 !important;
+}
+
+/* ============================================================
+   Milky Way — diagonal galactic-band gradient across deep night.
+   Active when data-milky-way="on".
+   ============================================================ */
+
+.bg-milky-way {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(220, 220, 250, 0.0) 38%,
+    rgba(230, 220, 255, 0.18) 50%,
+    rgba(255, 240, 220, 0.10) 56%,
+    rgba(220, 220, 250, 0.0) 65%,
+    transparent 75%
+  );
+  mix-blend-mode: screen;
+  filter: blur(3px);
+  opacity: 0;
+  transition: opacity 30s linear;
+  pointer-events: none;
+}
+
+.bg[data-milky-way="on"] .bg-milky-way {
+  opacity: 0.55;
+}
+
+/* ============================================================
+   Venus — bright "morning star" / "evening star" near horizon.
+   Visible during pre-dawn / dusk phases under clear skies.
+   Position is a simplification — fixed left/right of horizon.
+   ============================================================ */
+
+.bg-venus {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: white;
+  box-shadow:
+    0 0 6px rgba(255,255,255,0.95),
+    0 0 14px rgba(200,220,255,0.7);
+  opacity: 0;
+  transition: opacity 14s linear;
+  pointer-events: none;
+}
+
+.bg[data-phase="dusk"]              .bg-venus,
+.bg[data-phase="nautical-dusk"]     .bg-venus { opacity: 0.95; left: 86%; top: 65%; }
+.bg[data-phase="pre-dawn"]          .bg-venus,
+.bg[data-phase="nautical-dawn"]     .bg-venus { opacity: 0.95; left: 14%; top: 65%; }
+
+.bg[data-weather="overcast"]   .bg-venus,
+.bg[data-weather="rain"]       .bg-venus,
+.bg[data-weather="heavy-rain"] .bg-venus,
+.bg[data-weather="storm"]      .bg-venus,
+.bg[data-weather="fog"]        .bg-venus {
+  opacity: 0 !important;
+}
+
+/* ============================================================
+   Rainbow — fades in for ~3 min after rain → clear transition.
+   Half-arc anchored to bottom-center.
+   ============================================================ */
+
+.bg-rainbow {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80vw;
+  max-width: 1100px;
+  aspect-ratio: 2 / 1;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  background: radial-gradient(
+    ellipse 100% 100% at 50% 100%,
+    transparent 60%,
+    rgba(170,80,200,0.5) 62%,
+    rgba(80,140,230,0.5) 64%,
+    rgba(120,210,200,0.5) 66%,
+    rgba(160,220,120,0.5) 68%,
+    rgba(255,230,140,0.5) 70%,
+    rgba(255,160,80,0.5) 72%,
+    rgba(240,90,90,0.5) 74%,
+    transparent 76%
+  );
+  opacity: 0;
+  transition: opacity 20s linear;
+  pointer-events: none;
+  filter: blur(0.5px);
+  mix-blend-mode: screen;
+}
+
+.bg[data-rainbow="on"] .bg-rainbow {
+  opacity: 0.85;
+}
+
+/* ============================================================
+   Sun / moon halo — soft ring around the disc when high cirrus
+   is present (cloudy weather, day or night).
+   ============================================================ */
+
+.bg-halo {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  left: 82%;
+  top: 16%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 240, 200, 0.0);
+  background: radial-gradient(circle, transparent 48%, rgba(255,240,200,0.18) 50%, transparent 56%);
+  opacity: 0;
+  transition: opacity 20s linear;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.bg[data-weather="cloudy"][data-phase="morning"]   .bg-halo,
+.bg[data-weather="cloudy"][data-phase="midday"]    .bg-halo,
+.bg[data-weather="cloudy"][data-phase="afternoon"] .bg-halo,
+.bg[data-weather="cloudy"][data-phase="night"]     .bg-halo,
+.bg[data-weather="cloudy"][data-phase="astronomical-night"] .bg-halo {
+  opacity: 0.85;
+}
+
+/* ============================================================
+   Sun pillar — vertical light beam through cirrus during
+   sunrise/sunset, anchored at the sun's column.
+   ============================================================ */
+
+.bg-sun-pillar {
+  position: absolute;
+  bottom: 0;
+  left: 82%;
+  width: 28px;
+  height: 70vh;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 200, 130, 0.0) 10%,
+    rgba(255, 200, 130, 0.45) 50%,
+    rgba(255, 220, 160, 0.55) 80%,
+    transparent 100%
+  );
+  filter: blur(6px);
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 20s linear;
+  pointer-events: none;
+}
+
+.bg[data-phase="sunrise"][data-weather="cloudy"]    .bg-sun-pillar,
+.bg[data-phase="golden-hour"][data-weather="cloudy"] .bg-sun-pillar,
+.bg[data-phase="sunset"][data-weather="cloudy"]     .bg-sun-pillar {
+  opacity: 0.7;
+}
+
+/* ============================================================
+   Heat shimmer — wavy SVG turbulence on horizon during summer
+   afternoons in temperate / desert biomes.
+   ============================================================ */
+
+.bg-heat-shimmer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 22%;
+  backdrop-filter: blur(0.5px);
+  -webkit-backdrop-filter: blur(0.5px);
+  background:
+    repeating-linear-gradient(0deg,
+      transparent 0%,
+      rgba(255, 240, 200, 0.04) 50%,
+      transparent 100%);
+  background-size: 100% 8px;
+  opacity: 0;
+  transition: opacity 18s linear;
+  animation: heat-shimmer 4.5s ease-in-out infinite alternate;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+@keyframes heat-shimmer {
+  0%   { transform: translateY(0) skewX(0deg); }
+  100% { transform: translateY(-2px) skewX(0.3deg); }
+}
+
+.bg[data-biome="temperate"][data-season="summer"][data-phase="midday"][data-weather="clear"]    .bg-heat-shimmer,
+.bg[data-biome="temperate"][data-season="summer"][data-phase="afternoon"][data-weather="clear"] .bg-heat-shimmer,
+.bg[data-biome="desert"][data-phase="midday"][data-weather="clear"]    .bg-heat-shimmer,
+.bg[data-biome="desert"][data-phase="afternoon"][data-weather="clear"] .bg-heat-shimmer,
+.bg[data-biome="desert"][data-phase="morning"][data-weather="clear"]   .bg-heat-shimmer {
+  opacity: 0.9;
+}
+
+/* ============================================================
+   Bats — V-formation at dusk, replaces birds.
+   ============================================================ */
+
+.bg-bats-host {
+  position: absolute;
+  top: var(--bat-y, 30%);
+  left: -240px;
+  width: 200px;
+  height: 80px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bg-bats-host--flying {
+  animation: bats-cross 18s linear forwards;
+}
+
+.bg-bats-host svg { width: 100%; height: 100%; }
+
+.bg-bats-host .bat {
+  animation: bat-flap 0.30s ease-in-out infinite alternate;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.bg-bats-host .bat-2 { animation-delay: -0.05s; }
+.bg-bats-host .bat-3 { animation-delay: -0.12s; }
+.bg-bats-host .bat-4 { animation-delay: -0.20s; }
+
+@keyframes bat-flap {
+  0%   { transform: scaleY(1); }
+  100% { transform: scaleY(0.45); }
+}
+
+@keyframes bats-cross {
+  0%   { opacity: 0;   transform: translateX(0)      translateY(0); }
+  6%   { opacity: 0.9; }
+  25%  { transform: translateX(30vw) translateY(8px); }
+  50%  { transform: translateX(60vw) translateY(-12px); }
+  75%  { transform: translateX(90vw) translateY(6px); }
+  94%  { opacity: 0.9; }
+  100% { opacity: 0;   transform: translateX(120vw)  translateY(0); }
+}
+
+/* ============================================================
+   Butterflies — small, fluttering, spring/summer temperate.
+   ============================================================ */
+
+.bg-butterflies-host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-butterfly {
+  position: absolute;
+  top: var(--bf-y, 60%);
+  left: -10%;
+  width: 28px;
+  height: 24px;
+  color: var(--bf-tone, #d97c52);
+  filter: drop-shadow(0 0 4px rgba(0,0,0,0.2));
+  animation: butterfly-cross 30s linear forwards;
+}
+
+.bg-butterfly svg { width: 100%; height: 100%; }
+.bg-butterfly svg g { fill: currentColor; }
+.bg-butterfly .bf-wing-l,
+.bg-butterfly .bf-wing-r {
+  animation: bf-flutter 0.18s ease-in-out infinite alternate;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+@keyframes bf-flutter {
+  0%   { transform: scaleX(1); }
+  100% { transform: scaleX(0.6); }
+}
+
+@keyframes butterfly-cross {
+  0%   { transform: translateX(0)    translateY(0)   rotate(-3deg); opacity: 0; }
+  10%  { opacity: 1; }
+  25%  { transform: translateX(30vw) translateY(-12px) rotate(4deg); }
+  50%  { transform: translateX(60vw) translateY(8px)  rotate(-2deg); }
+  75%  { transform: translateX(90vw) translateY(-8px) rotate(3deg); }
+  90%  { opacity: 1; }
+  100% { transform: translateX(120vw) translateY(0)   rotate(-3deg); opacity: 0; }
+}
+
+/* ============================================================
+   Whale fluke — coastal locality, rare breach.
+   ============================================================ */
+
+.bg-whale-host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-whale {
+  position: absolute;
+  bottom: 8%;
+  left: var(--w-x, 30%);
+  width: 140px;
+  height: 70px;
+  opacity: 0;
+  animation: whale-breach 5.5s ease-out forwards;
+}
+
+.bg-whale svg { width: 100%; height: 100%; }
+
+@keyframes whale-breach {
+  0%   { opacity: 0;   transform: translateY(40px); }
+  20%  { opacity: 1;   transform: translateY(0); }
+  60%  { opacity: 1;   transform: translateY(-4px); }
+  100% { opacity: 0;   transform: translateY(40px); }
+}
+
+/* ============================================================
+   Lighthouse — coastal, with rotating beam at night.
+   ============================================================ */
+
+.bg-lighthouse {
+  position: absolute;
+  bottom: 4%;
+  left: 8%;
+  width: 80px;
+  height: 220px;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 0 16px rgba(0,0,0,0.4));
+  transition: opacity 14s linear;
+}
+
+.bg-lighthouse svg { width: 100%; height: 100%; }
+.bg-lighthouse svg .lighthouse-bulb {
+  animation: lighthouse-blink 1.4s ease-in-out infinite;
+}
+
+@keyframes lighthouse-blink {
+  0%, 100% { fill-opacity: 0.4; }
+  50%      { fill-opacity: 1; }
+}
+
+.bg-lighthouse::after {
+  content: "";
+  position: absolute;
+  left: 40px;
+  top: 32px;
+  width: 60vw;
+  height: 80px;
+  background: linear-gradient(90deg, rgba(255,235,180,0.45), transparent 70%);
+  transform-origin: 0 50%;
+  animation: lighthouse-sweep 9s linear infinite;
+  filter: blur(8px);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.bg[data-locality="coastal"][data-phase="dusk"]              .bg-lighthouse,
+.bg[data-locality="coastal"][data-phase="nautical-dusk"]     .bg-lighthouse,
+.bg[data-locality="coastal"][data-phase="astronomical-dusk"] .bg-lighthouse,
+.bg[data-locality="coastal"][data-phase="night"]             .bg-lighthouse,
+.bg[data-locality="coastal"][data-phase="astronomical-night"] .bg-lighthouse,
+.bg[data-locality="coastal"][data-phase="pre-dawn"]          .bg-lighthouse,
+.bg[data-locality="coastal"][data-phase="nautical-dawn"]     .bg-lighthouse {
+  opacity: 0.92;
+}
+
+.bg[data-locality="coastal"][data-phase="night"]             .bg-lighthouse::after,
+.bg[data-locality="coastal"][data-phase="astronomical-night"] .bg-lighthouse::after,
+.bg[data-locality="coastal"][data-phase="dusk"]              .bg-lighthouse::after,
+.bg[data-locality="coastal"][data-phase="astronomical-dusk"] .bg-lighthouse::after,
+.bg[data-locality="coastal"][data-phase="nautical-dusk"]     .bg-lighthouse::after {
+  opacity: 0.85;
+}
+
+@keyframes lighthouse-sweep {
+  0%   { transform: rotate(-25deg); opacity: 0; }
+  10%  { opacity: 0.85; }
+  90%  { opacity: 0.85; }
+  100% { transform: rotate(25deg);  opacity: 0; }
+}
+
+/* ============================================================
+   City skyline — urban locality, distant silhouette + windows.
+   ============================================================ */
+
+.bg-skyline {
+  position: absolute;
+  bottom: 4%;
+  left: 0;
+  right: 0;
+  height: 14%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 22s linear;
+}
+
+.bg-skyline svg { width: 100%; height: 100%; display: block; }
+
+.bg-skyline svg .city-windows {
+  animation: city-twinkle 5s ease-in-out infinite alternate;
+}
+
+@keyframes city-twinkle {
+  0%   { fill-opacity: 0.5; }
+  100% { fill-opacity: 0.95; }
+}
+
+.bg[data-locality="urban"][data-phase="morning"]    .bg-skyline,
+.bg[data-locality="urban"][data-phase="midday"]     .bg-skyline,
+.bg[data-locality="urban"][data-phase="afternoon"]  .bg-skyline,
+.bg[data-locality="urban"][data-phase="golden-hour"] .bg-skyline,
+.bg[data-locality="urban"][data-phase="sunrise"]    .bg-skyline,
+.bg[data-locality="urban"][data-phase="sunset"]     .bg-skyline {
+  opacity: 0.85;
+}
+.bg[data-locality="urban"][data-phase="dusk"]       .bg-skyline,
+.bg[data-locality="urban"][data-phase="nautical-dusk"] .bg-skyline,
+.bg[data-locality="urban"][data-phase="astronomical-dusk"] .bg-skyline,
+.bg[data-locality="urban"][data-phase="night"]      .bg-skyline,
+.bg[data-locality="urban"][data-phase="astronomical-night"] .bg-skyline,
+.bg[data-locality="urban"][data-phase="pre-dawn"]   .bg-skyline {
+  opacity: 0.95;
+}
+.bg[data-locality="urban"][data-phase="midday"]     .bg-skyline svg .city-windows,
+.bg[data-locality="urban"][data-phase="afternoon"]  .bg-skyline svg .city-windows {
+  fill-opacity: 0 !important;
+  animation: none !important;
+}
+
+/* ============================================================
+   Deer — boreal/temperate, dawn only. Standing silhouette.
+   ============================================================ */
+
+.bg-deer {
+  position: absolute;
+  bottom: 5%;
+  left: 14%;
+  width: 110px;
+  height: 130px;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 0 14px rgba(0,0,0,0.35));
+  transition: opacity 16s linear;
+}
+
+.bg-deer svg { width: 100%; height: 100%; }
+
+.bg[data-biome="temperate"][data-phase="pre-dawn"]      .bg-deer,
+.bg[data-biome="temperate"][data-phase="nautical-dawn"] .bg-deer,
+.bg[data-biome="boreal"][data-phase="pre-dawn"]         .bg-deer,
+.bg[data-biome="boreal"][data-phase="nautical-dawn"]    .bg-deer {
+  opacity: 0.85;
+}
+
+/* Hide deer in heavy weather */
+.bg[data-weather="storm"] .bg-deer,
+.bg[data-weather="heavy-rain"] .bg-deer,
+.bg[data-weather="rain"] .bg-deer,
+.bg[data-weather="heavy-snow"] .bg-deer,
+.bg[data-weather="fog"] .bg-deer {
+  opacity: 0 !important;
+}
+
+/* ============================================================
+   Saguaro cactus — desert biome (replaces oak/palm/pine).
+   ============================================================ */
+
+.bg-tree--saguaro svg { animation: tree-sway 11s ease-in-out infinite alternate; }
+
+.bg[data-biome="desert"][data-phase="golden-hour"] .bg-tree--saguaro,
+.bg[data-biome="desert"][data-phase="sunset"]      .bg-tree--saguaro,
+.bg[data-biome="desert"][data-phase="afternoon"]   .bg-tree--saguaro,
+.bg[data-biome="desert"][data-phase="midday"]      .bg-tree--saguaro {
+  opacity: 0.95;
+  transform: translateY(0);
+}
+
+/* Desert biome hides oak/pine/palm — only saguaro shows. */
+.bg[data-biome="desert"] .bg-tree--palm,
+.bg[data-biome="desert"] .bg-tree--pine,
+.bg[data-biome="desert"] .bg-tree--oak {
+  display: none;
+}
+
+/* ============================================================
+   Pumpkins — Halloween horizon row.
+   ============================================================ */
+
+.bg-pumpkins {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4%;
+  height: 60px;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  padding: 0 8%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 14s linear;
+}
+
+.bg-pumpkins::before,
+.bg-pumpkins::after,
+.bg-pumpkins {
+  /* The host itself paints three pumpkins via background-image of the
+     SVG. Easier: use multiple background images stacked horizontally. */
+}
+
+.bg-pumpkins {
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50' width='50' height='50'><ellipse cx='25' cy='30' rx='20' ry='17' fill='%23e87b1c'/><ellipse cx='12' cy='30' rx='6' ry='14' fill='%23c25e10' opacity='0.45'/><ellipse cx='38' cy='30' rx='6' ry='14' fill='%23c25e10' opacity='0.45'/><path d='M22 12 Q 22 6 28 6 L 26 12 Z' fill='%233a5e2a'/><path d='M14 27 L 19 23 L 19 30 Z' fill='%23ffc94a'/><path d='M36 27 L 31 23 L 31 30 Z' fill='%23ffc94a'/><path d='M14 38 Q 18 34 22 36 L 22 40 Q 18 38 14 41 Z' fill='%23ffc94a'/><path d='M28 36 Q 32 34 36 38 L 36 41 Q 32 38 28 40 Z' fill='%23ffc94a'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50' width='50' height='50'><ellipse cx='25' cy='30' rx='20' ry='17' fill='%23d96b15'/><path d='M22 12 Q 22 6 28 6 L 26 12 Z' fill='%233a5e2a'/><path d='M16 28 L 22 24 L 22 32 Z' fill='%231a0a0a'/><path d='M34 28 L 28 24 L 28 32 Z' fill='%231a0a0a'/><rect x='22' y='35' width='2' height='5' fill='%231a0a0a'/><rect x='26' y='35' width='2' height='5' fill='%231a0a0a'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50' width='50' height='50'><ellipse cx='25' cy='30' rx='20' ry='17' fill='%23e87b1c'/><path d='M22 12 Q 22 6 28 6 L 26 12 Z' fill='%233a5e2a'/><path d='M16 28 L 22 24 L 22 32 Z' fill='%23ffc94a'/><path d='M34 28 L 28 24 L 28 32 Z' fill='%23ffc94a'/><path d='M14 38 Q 25 32 36 38 L 36 42 Q 25 36 14 42 Z' fill='%23ffc94a'/></svg>");
+  background-repeat: no-repeat;
+  background-position: 12% bottom, 50% bottom, 88% bottom;
+  background-size: 60px 60px, 70px 70px, 60px 60px;
+  filter: drop-shadow(0 0 8px rgba(255,140,30,0.55));
+}
+
+.bg[data-holiday="halloween"] .bg-pumpkins {
+  opacity: 0.95;
+}
+
+/* ============================================================
+   Christmas Eve sleigh — single sleigh crossing the night sky on
+   loop while data-holiday="christmas-eve".
+   ============================================================ */
+
+.bg-sleigh {
+  position: absolute;
+  top: 18%;
+  left: -240px;
+  width: 220px;
+  height: 70px;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 0 18px rgba(220,30,30,0.45));
+  transition: opacity 14s linear;
+}
+
+.bg-sleigh svg { width: 100%; height: 100%; }
+
+.bg[data-holiday="christmas-eve"] .bg-sleigh {
+  opacity: 1;
+  animation: sleigh-cross 60s linear infinite;
+}
+
+@keyframes sleigh-cross {
+  0%   { transform: translateX(0)      translateY(0); }
+  50%  { transform: translateX(60vw)   translateY(-30px); }
+  100% { transform: translateX(120vw)  translateY(0); }
+}
+
+/* Christmas Day keeps the sleigh visible too (sometimes Santa is
+   still on his way in your timezone). */
+.bg[data-holiday="christmas-day"] .bg-sleigh {
+  opacity: 0.7;
+  animation: sleigh-cross 90s linear infinite;
+}
+
+/* ============================================================
+   Fireworks — NYE bursts. JS spawns elements with random color +
+   position. Each element animates a core flash + 24 radial spikes.
+   ============================================================ */
+
+.bg-fireworks-host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-firework {
+  position: absolute;
+  left: var(--fw-x, 50%);
+  top: var(--fw-y, 30%);
+  width: 0;
+  height: 0;
+  color: var(--fw-color, #fefefe);
+  pointer-events: none;
+}
+
+.bg-firework__core {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  box-shadow:
+    0 0 12px white,
+    0 0 24px var(--fw-color, white),
+    0 0 48px var(--fw-color, white);
+  transform: translate(-50%, -50%);
+  animation: fw-core 1.6s ease-out forwards;
+}
+
+@keyframes fw-core {
+  0%   { opacity: 0;   transform: translate(-50%, -50%) scale(0.4); }
+  10%  { opacity: 1;   transform: translate(-50%, -50%) scale(1.4); }
+  100% { opacity: 0;   transform: translate(-50%, -50%) scale(0.6); }
+}
+
+.bg-firework .spike {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 60px;
+  background: linear-gradient(180deg, var(--fw-color, white), transparent);
+  transform-origin: top center;
+  transform: translate(-50%, 0) rotate(var(--spike-angle, 0deg));
+  animation: fw-spike 1.6s ease-out forwards;
+  border-radius: var(--r-pill);
+  filter: blur(0.5px);
+}
+
+@keyframes fw-spike {
+  0%   { opacity: 0;   transform: translate(-50%, 0) rotate(var(--spike-angle, 0deg)) scaleY(0); }
+  20%  { opacity: 1;   transform: translate(-50%, 0) rotate(var(--spike-angle, 0deg)) scaleY(1); }
+  100% { opacity: 0;   transform: translate(-50%, 0) rotate(var(--spike-angle, 0deg)) scaleY(2.4); }
+}
+
+/* New Year's Day still fires a few celebration bursts. */
+.bg[data-holiday="new-year-day"] .bg-fireworks-host {
+  opacity: 0.7;
+}
+
+/* ============================================================
+   Birthday balloons — drift up across the screen.
+   ============================================================ */
+
+.bg-balloons-host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-balloon {
+  position: absolute;
+  left: var(--b-x, 50%);
+  bottom: -100px;
+  width: 50px;
+  height: 80px;
+  filter: drop-shadow(0 0 6px rgba(0,0,0,0.25));
+  animation: balloon-rise 22s linear forwards;
+}
+
+.bg-balloon svg { width: 100%; height: 100%; }
+
+@keyframes balloon-rise {
+  0%   { transform: translateY(0)        translateX(0); opacity: 0; }
+  6%   { opacity: 1; }
+  25%  { transform: translateY(-30vh)    translateX(calc(var(--b-sway, 1) * 12px)); }
+  50%  { transform: translateY(-55vh)    translateX(calc(var(--b-sway, 1) * -10px)); }
+  75%  { transform: translateY(-80vh)    translateX(calc(var(--b-sway, 1) * 8px)); }
+  94%  { opacity: 1; }
+  100% { transform: translateY(-110vh)   translateX(0); opacity: 0; }
+}
+
+/* ============================================================
+   Mouse parallax — mountains shift slightly with cursor X.
+   --parallax-x is set by JS on the .bg mount (-1..1).
+   ============================================================ */
+
+.bg-mountains--far  { transform: translateX(calc(var(--parallax-x, 0) * 4px));  transition: transform 0.6s ease-out; }
+.bg-mountains--mid  { transform: translateX(calc(var(--parallax-x, 0) * 8px));  transition: transform 0.6s ease-out; }
+.bg-mountains--near { transform: translateX(calc(var(--parallax-x, 0) * 14px)); transition: transform 0.6s ease-out; }
+
 /* Honor reduced motion: keep colors + sun position, drop loops */
 @media (prefers-reduced-motion: reduce) {
   .bg-stars, .bg-cloud, .bg-rain, .bg-snow, .bg-flash,
   .bg-tree svg, .bg-aurora, .bg-shooting-star, .bg-birds-host, .bg-birds-host .bird,
-  .bg-petals, .bg-leaves, .bg-fireflies, .bg-horizon-flash, .bg-plane {
+  .bg-petals, .bg-leaves, .bg-fireflies, .bg-horizon-flash, .bg-plane,
+  .bg-bats-host, .bg-bats-host .bat, .bg-butterfly, .bg-whale,
+  .bg-firework__core, .bg-firework .spike, .bg-sleigh, .bg-balloon,
+  .bg-heat-shimmer, .bg-lighthouse svg .lighthouse-bulb, .bg-lighthouse::after,
+  .bg-skyline svg .city-windows {
     animation: none !important;
   }
-  .bg-sun { transition: none !important; }
+  .bg-sun, .bg-mountains--far, .bg-mountains--mid, .bg-mountains--near {
+    transition: none !important;
+  }
 }
 
 /* ============================================================

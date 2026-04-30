@@ -6,7 +6,11 @@ const DEFAULTS = {
   customCSS: "",
   greeting: {
     enabled: true,
-    name: ""
+    name: "",
+    birthday: ""           // "MM-DD" — when set, triggers balloons all day
+  },
+  appearance: {
+    locality: "auto"       // "auto"|"coastal"|"urban"|"desert"|"default"
   },
   search: {
     engine: "google",
