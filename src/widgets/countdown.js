@@ -73,7 +73,7 @@ export function renderCountdown(mount, settings, { onChange, onAttachDragHandle 
       colorPicker.appendChild(el("button", {
         type: "button",
         class: `note-color-btn note-color-btn--${color}${newColor === color ? " note-color-btn--active" : ""}`,
-        "aria-label": color,
+        "aria-label": color.charAt(0).toUpperCase() + color.slice(1),
         onClick: () => {
           newColor = color;
           colorPicker.querySelectorAll(".note-color-btn").forEach((b, i) => {

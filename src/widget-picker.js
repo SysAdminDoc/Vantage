@@ -1,4 +1,4 @@
-// Vantage v0.7.0 — Quick widget picker: toggle any widget on/off from the new tab page.
+// Vantage v0.8.0 — Quick widget picker: toggle any widget on/off from the new tab page.
 
 import { el, clear, toggle, toast } from "./utils/dom.js";
 import { iconNode } from "./icons.js";
