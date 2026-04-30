@@ -171,7 +171,7 @@ export async function renderFeedList(mount, options) {
       el("div", { class: "feed-item__meta" }, [
         favicon,
         el("span", { class: "feed-item__source" }, [item.sourceTitle]),
-        item.published ? el("span", { class: "feed-item__separator" }, ["·"]) : null,
+        item.published ? el("span", { class: "feed-item__separator", "aria-hidden": "true" }, ["·"]) : null,
         item.published ? el("span", {}, [relativeTime(item.published)]) : null
       ])
     ]);
