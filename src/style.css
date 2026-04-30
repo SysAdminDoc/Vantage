@@ -1833,6 +1833,27 @@ a {
 }
 
 /* ============================================================
+   First snow of the season — slow lazy fat flakes for 24h after
+   the first snow weather observation in the new winter.
+   ============================================================ */
+
+.bg[data-first-snow="on"] .bg-snow {
+  background-image:
+    radial-gradient(3.5px 3.5px at 10% 20%, white, transparent 65%),
+    radial-gradient(2.5px 2.5px at 25% 60%, white, transparent 65%),
+    radial-gradient(3.5px 3.5px at 40% 30%, white, transparent 65%),
+    radial-gradient(2px   2px   at 55% 80%, white, transparent 65%),
+    radial-gradient(3px   3px   at 70% 50%, white, transparent 65%),
+    radial-gradient(2.5px 2.5px at 85% 70%, white, transparent 65%),
+    radial-gradient(2px   2px   at 15% 85%, white, transparent 65%),
+    radial-gradient(3.5px 3.5px at 45% 12%, white, transparent 65%),
+    radial-gradient(3px   3px   at 80% 18%, white, transparent 65%),
+    radial-gradient(2px   2px   at 95% 45%, white, transparent 65%);
+  animation-duration: 16s;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.55));
+}
+
+/* ============================================================
    Mouse parallax — mountains shift slightly with cursor X.
    --parallax-x is set by JS on the .bg mount (-1..1).
    ============================================================ */
