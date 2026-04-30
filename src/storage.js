@@ -70,7 +70,8 @@ const DEFAULTS = {
     breakMinutes: 5,
     longBreakMinutes: 15,
     sessionsBeforeLongBreak: 4
-  }
+  },
+  onboardingComplete: false
 };
 
 // Cap on per-panel read-items to prevent unbounded growth.
@@ -82,6 +83,13 @@ export function pushRead(existingArr, urls) {
   for (const u of urls) set.add(u);
   const out = [...set];
   return out.length > READ_CAP ? out.slice(out.length - READ_CAP) : out;
+}
+
+/** Returns true if the user has previously saved settings (i.e. not a first install). */
+export async function hasStoredSettings() {
+  if (!chrome?.storage?.local) return false;
+  const stored = await chrome.storage.local.get("vantageSettings");
+  return !!stored.vantageSettings;
 }
 
 export async function loadSettings() {

@@ -8,7 +8,7 @@ import { geocodeCity } from "./widgets/weather.js";
 import { saveSettings, getDefaults } from "./storage.js";
 import { exportOPML, importOPML } from "./utils/opml.js";
 
-export function renderSettingsPanel(panel, settings, onChange) {
+export function renderSettingsPanel(panel, settings, onChange, { showWizard } = {}) {
   clear(panel);
 
   // Sticky header
@@ -40,7 +40,7 @@ export function renderSettingsPanel(panel, settings, onChange) {
   body.appendChild(buildAirQualitySection(settings, onChange));
   body.appendChild(buildCalendarSection(settings, onChange));
   body.appendChild(buildPomodoroSection(settings, onChange));
-  body.appendChild(buildDataSection(settings, onChange));
+  body.appendChild(buildDataSection(settings, onChange, showWizard));
   body.appendChild(buildResetSection(onChange));
 }
 
@@ -697,9 +697,21 @@ function buildPomodoroSection(settings, onChange) {
 
 /* ---- Data (export / import / share) ----------------------------------- */
 
-function buildDataSection(settings, onChange) {
+function buildDataSection(settings, onChange, showWizard) {
   const sec = section("Data", "download");
   const g = group();
+
+  // Setup wizard re-launch
+  if (showWizard) {
+    g.appendChild(row(
+      "Setup wizard",
+      "Re-run the first-time setup to change your layout preset, name, or weather location.",
+      el("button", {
+        type: "button", class: "button button--ghost",
+        onClick: showWizard
+      }, [iconNode("settings", { size: 14 }), "Run wizard"])
+    ));
+  }
 
   // JSON export
   g.appendChild(row(
