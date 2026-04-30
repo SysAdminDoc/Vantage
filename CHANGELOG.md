@@ -2,6 +2,16 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.6.1 — 2026-04-30
+
+### Fixed
+- Disabled panel widgets (calendar, and alignment of news/rss) now set `display:none` on their mount element so a gray card box never shows when the widget is off.
+- Added missing `button--ghost` CSS modifier (was referenced in settings but not defined, causing ghost buttons to render with the default surface background).
+
+### Added
+- **First-run setup wizard** — shown automatically on new installs. Three layout presets: Minimal (search only), Standard (search + clock + weather + quick links + news), Full (all widgets). Optional personalize step lets you set your name and weather city (geocode or auto-detect). Wizard marks itself complete so it doesn't repeat on reload.
+- **Re-launch wizard from settings** — Settings → Data → "Run wizard" button lets you switch layout presets or update your name/location at any time without manually toggling each widget.
+
 ## v0.6.0 — 2026-04-29
 
 Major feature wave driven by a 96-source research pass: three new widgets (air quality, calendar, Pomodoro), full data portability (JSON + OPML + share link), multi-proxy CORS resilience, storage persistence, extended twilight phases, and a full accessibility skip-link.
