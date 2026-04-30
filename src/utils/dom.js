@@ -75,7 +75,7 @@ export function segmented({ options, value, onChange, ariaLabel } = {}) {
 }
 
 /** Toast notification. */
-export function toast(message, kind = "info", timeoutMs = 3400) {
+export function toast(message, kind = "info", timeoutMs = 3400, action = null) {
   const host = document.getElementById("toast-host");
   if (!host) return;
   const iconName = kind === "error" ? "alert" : kind === "success" ? "check" : kind === "warning" ? "alert" : "info";
@@ -85,11 +85,24 @@ export function toast(message, kind = "info", timeoutMs = 3400) {
     el("span", { class: "toast__icon" }, [iconNode(iconName, { size: 16 })]),
     el("span", { class: "toast__body" }, [message])
   ]);
-  host.appendChild(node);
-  setTimeout(() => {
+  let dismissTimer = null;
+  const dismiss = () => {
     node.classList.add("toast--leaving");
     setTimeout(() => node.remove(), 240);
-  }, timeoutMs);
+  };
+  if (action?.label && typeof action.onClick === "function") {
+    node.appendChild(el("button", {
+      type: "button",
+      class: "toast__action",
+      onClick: () => {
+        clearTimeout(dismissTimer);
+        action.onClick();
+        dismiss();
+      }
+    }, [action.label]));
+  }
+  host.appendChild(node);
+  dismissTimer = setTimeout(dismiss, timeoutMs);
 }
 
 /** Format a Date relative to now ("just now", "2m ago", "3h ago", "Apr 10"). */

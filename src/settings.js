@@ -10,6 +10,7 @@ import { exportOPML, importOPML } from "./utils/opml.js";
 
 export function renderSettingsPanel(panel, settings, onChange, { showWizard } = {}) {
   clear(panel);
+  delete panel.dataset.filtering;
 
   // Sticky header
   panel.appendChild(el("header", { class: "settings-panel__header" }, [
@@ -39,8 +40,11 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
       body.querySelectorAll(".settings-section").forEach(sec => {
         const matches = !q || sec.textContent.toLowerCase().includes(q);
         sec.style.display = matches ? "" : "none";
+        if (q && matches) sec.dataset.filterMatch = "true";
+        else delete sec.dataset.filterMatch;
         if (matches) visibleCount++;
       });
+      panel.dataset.filtering = q ? "true" : "false";
       filterEmpty.hidden = !q || visibleCount > 0;
     }
   });
@@ -203,6 +207,20 @@ function rowColumn(title, control, hint) {
     ]),
     control
   ]);
+}
+
+function cloneValue(value) {
+  return typeof structuredClone === "function"
+    ? structuredClone(value)
+    : JSON.parse(JSON.stringify(value));
+}
+
+function insertAt(list, index, item) {
+  list.splice(Math.max(0, Math.min(index, list.length)), 0, item);
+}
+
+function toastUndo(message, onUndo) {
+  toast(message, "warning", 6500, { label: "Undo", onClick: onUndo });
 }
 
 /* ---- Appearance -------------------------------------------------------- */
@@ -495,9 +513,16 @@ function buildFeedFiltersSection(settings, onChange) {
         type: "button", class: "icon-button icon-button--ghost icon-button--small",
         "aria-label": "Remove rule", title: "Remove",
         onClick: () => {
+          const removed = cloneValue(rule);
           settings.feedFilters.rules.splice(idx, 1);
           onChange(settings);
           refreshRules();
+          toastUndo("Filter rule removed.", () => {
+            if (!settings.feedFilters) settings.feedFilters = { rules: [] };
+            insertAt(settings.feedFilters.rules, idx, removed);
+            onChange(settings);
+            refreshRules();
+          });
         }
       }, [iconNode("trash", { size: 14 })]);
 
@@ -573,10 +598,18 @@ function buildWorkspacesSection(settings, onChange) {
         type: "button", class: "icon-button icon-button--ghost icon-button--small",
         "aria-label": "Remove workspace", title: "Remove",
         onClick: () => {
+          const removed = cloneValue(ws);
+          const activeBefore = settings.workspaces.active;
           settings.workspaces.list.splice(idx, 1);
           if (settings.workspaces.active === ws.id) settings.workspaces.active = null;
           onChange(settings);
           refreshWorkspaceList();
+          toastUndo(`Removed workspace "${removed.name}".`, () => {
+            insertAt(settings.workspaces.list, idx, removed);
+            if (activeBefore === removed.id) settings.workspaces.active = removed.id;
+            onChange(settings);
+            refreshWorkspaceList();
+          });
         }
       }, [iconNode("trash", { size: 14 })]);
       listEl.appendChild(el("div", { class: "workspace-item" }, [nameIn, captureBtn, del]));
@@ -1015,9 +1048,15 @@ function buildLinksSection(settings, onChange) {
           "aria-label": `Remove ${item.title}`,
           title: `Remove ${item.title}`,
           onClick: () => {
+            const removed = cloneValue(item);
             settings.quicklinks.items.splice(idx, 1);
             onChange(settings);
             refreshList();
+            toastUndo(`Removed "${removed.title}".`, () => {
+              insertAt(settings.quicklinks.items, idx, removed);
+              onChange(settings);
+              refreshList();
+            });
           }
         }, [iconNode("trash", { size: 14 })])
       ]));
@@ -1113,9 +1152,15 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
           "aria-label": `Remove ${feed.title || feed.url}`,
           title: "Remove",
           onClick: () => {
+            const removed = cloneValue(feed);
             cfg.feeds.splice(idx, 1);
             onChange(settings);
             refreshList();
+            toastUndo(`Removed "${removed.title || hostnameLabel(removed.url)}".`, () => {
+              insertAt(cfg.feeds, idx, removed);
+              onChange(settings);
+              refreshList();
+            });
           }
         }, [iconNode("trash", { size: 14 })])
       ]));
@@ -1291,7 +1336,7 @@ function buildEmbedsSection(settings, onChange) {
       listEl.appendChild(el("div", { class: "item-list__empty" }, ["No embeds configured yet."]));
       return;
     }
-    for (const embed of current) {
+    current.forEach((embed, idx) => {
       const titleIn = el("input", {
         type: "text", class: "text-input",
         value: embed.title || "",
@@ -1324,9 +1369,16 @@ function buildEmbedsSection(settings, onChange) {
         type: "button", class: "icon-button icon-button--ghost icon-button--small",
         "aria-label": "Remove embed", title: "Remove",
         onClick: () => {
+          const removed = cloneValue(embed);
           settings.embeds = settings.embeds.filter(e => e.id !== embed.id);
           onChange(settings);
           refreshList();
+          toastUndo(`Removed "${removed.title || "Embed"}".`, () => {
+            if (!settings.embeds) settings.embeds = [];
+            insertAt(settings.embeds, idx, removed);
+            onChange(settings);
+            refreshList();
+          });
         }
       }, [iconNode("trash", { size: 14 })]);
 
@@ -1337,7 +1389,7 @@ function buildEmbedsSection(settings, onChange) {
           del
         ])
       ]));
-    }
+    });
   }
   refreshList();
   sec.appendChild(listEl);
@@ -1403,7 +1455,17 @@ function buildCalendarSection(settings, onChange) {
         el("button", {
           type: "button", class: "icon-button icon-button--ghost icon-button--small",
           "aria-label": `Remove ${feed.title || feed.url}`, title: "Remove",
-          onClick: () => { settings.calendar.feeds.splice(idx, 1); onChange(settings); refreshList(); }
+          onClick: () => {
+            const removed = cloneValue(feed);
+            settings.calendar.feeds.splice(idx, 1);
+            onChange(settings);
+            refreshList();
+            toastUndo(`Removed "${removed.title || hostnameLabel(removed.url)}".`, () => {
+              insertAt(settings.calendar.feeds, idx, removed);
+              onChange(settings);
+              refreshList();
+            });
+          }
         }, [iconNode("trash", { size: 14 })])
       ]));
     });
@@ -1711,7 +1773,19 @@ function buildWorldClockSection(settings, onChange) {
       const del = el("button", {
         type: "button", class: "icon-button icon-button--ghost icon-button--small",
         "aria-label": "Remove clock",
-        onClick: () => { clocks.splice(idx, 1); settings.worldclock = { ...cfg, clocks }; onChange(settings); refreshClockList(); }
+        onClick: () => {
+          const removed = cloneValue(clock);
+          clocks.splice(idx, 1);
+          settings.worldclock = { ...cfg, clocks };
+          onChange(settings);
+          refreshClockList();
+          toastUndo(`Removed "${removed.label || "Clock"}".`, () => {
+            insertAt(clocks, idx, removed);
+            settings.worldclock = { ...cfg, clocks };
+            onChange(settings);
+            refreshClockList();
+          });
+        }
       }, [iconNode("trash", { size: 14 })]);
       listEl.appendChild(el("li", { class: "item-list__row" }, [
         el("div", { class: "item-list__row-content" }, [labelIn, tzIn]), del
@@ -1966,14 +2040,34 @@ function buildCustomCSSSection(settings, onChange) {
 
 function buildResetSection(onChange) {
   const sec = section("Reset", "alert");
+  let confirmReset = false;
+  let confirmTimer = null;
   const btn = el("button", {
     type: "button",
     class: "button button--danger button--block",
     onClick: async () => {
-      if (!confirm("Reset Vantage to defaults? Your custom feeds, quick links, and location will be lost.")) return;
+      if (!confirmReset) {
+        confirmReset = true;
+        btn.classList.add("button--confirming");
+        clear(btn);
+        btn.append(iconNode("alert", { size: 14 }), " Confirm reset");
+        clearTimeout(confirmTimer);
+        confirmTimer = setTimeout(() => {
+          confirmReset = false;
+          btn.classList.remove("button--confirming");
+          clear(btn);
+          btn.append(iconNode("trash", { size: 14 }), " Reset everything");
+        }, 6000);
+        toast("Click Confirm reset to erase feeds, links, location, and custom settings.", "warning", 6000);
+        return;
+      }
+      clearTimeout(confirmTimer);
       const fresh = getDefaults();
       await saveSettings(fresh);
       onChange(fresh);
+      document.getElementById("settings-toggle")?.setAttribute("aria-expanded", "false");
+      const settingsPanel = document.getElementById("settings-panel");
+      if (settingsPanel) closePanel(settingsPanel);
       toast("Settings reset to defaults.", "success");
     }
   }, [iconNode("trash", { size: 14 }), " Reset everything"]);

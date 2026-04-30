@@ -1,6 +1,6 @@
 // Vantage — To-Do list panel widget.
 
-import { el, clear } from "../utils/dom.js";
+import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 
 let _uid = Date.now();
@@ -24,6 +24,7 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
 
   // Header
   const undoneCount = items.filter(i => !i.done).length;
+  const completedCount = items.length - undoneCount;
   const badge = undoneCount > 0
     ? el("span", { class: "panel-badge" }, [String(undoneCount)])
     : null;
@@ -33,10 +34,27 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
     class: "icon-button icon-button--ghost icon-button--small",
     title: "Clear completed",
     "aria-label": "Clear completed tasks",
+    disabled: completedCount === 0,
     onClick: () => {
+      const removed = items
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => item.done);
+      if (!removed.length) return;
       items = items.filter(i => !i.done);
       persist();
       renderTodo(mount, { ...settings, todo: { ...cfg, items } }, { onChange, onAttachDragHandle });
+      toast(`Cleared ${removed.length} completed task${removed.length === 1 ? "" : "s"}.`, "warning", 6500, {
+        label: "Undo",
+        onClick: () => {
+          const restored = [...items];
+          for (const { item, index } of removed) {
+            restored.splice(Math.min(index, restored.length), 0, item);
+          }
+          const next = { ...settings, todo: { ...cfg, items: restored } };
+          onChange?.(next);
+          renderTodo(mount, next, { onChange, onAttachDragHandle });
+        }
+      });
     }
   }, [iconNode("check-all", { size: 14 })]);
 
@@ -107,8 +125,6 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
     onAttachDragHandle(header.querySelector(".panel-header__drag"));
   }
 
-  // Focus input on mount
-  requestAnimationFrame(() => input.focus({ preventScroll: true }));
 }
 
 function buildTaskRow(item, items, cfg, settings, onChange, onAttachDragHandle, mount) {
@@ -138,6 +154,16 @@ function buildTaskRow(item, items, cfg, settings, onChange, onAttachDragHandle, 
       const next = { ...settings, todo: { ...cfg, items } };
       onChange?.(next);
       renderTodo(mount, next, { onChange, onAttachDragHandle });
+      toast("Task deleted.", "warning", 6500, {
+        label: "Undo",
+        onClick: () => {
+          const restored = [...items];
+          restored.splice(Math.max(0, idx), 0, item);
+          const restoredNext = { ...settings, todo: { ...cfg, items: restored } };
+          onChange?.(restoredNext);
+          renderTodo(mount, restoredNext, { onChange, onAttachDragHandle });
+        }
+      });
     }
   }, [iconNode("trash", { size: 12 })]);
 
