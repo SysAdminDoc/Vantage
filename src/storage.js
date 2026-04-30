@@ -58,6 +58,16 @@ const DEFAULTS = {
   airquality: {
     enabled: false
   },
+  windy: {
+    enabled: false,
+    overlay: "wind",
+    zoom: 5
+  },
+  embed: {
+    enabled: false,
+    title: "Flight Tracker",
+    url: ""
+  },
   calendar: {
     enabled: false,
     feeds: [],
