@@ -1,4 +1,4 @@
-// Vantage v0.2.0 — chrome.storage.local wrapper with deep-merged defaults.
+// Vantage v0.6.0 — chrome.storage.local wrapper with deep-merged defaults.
 
 const DEFAULTS = {
   theme: "mocha",
@@ -54,6 +54,22 @@ const DEFAULTS = {
     ],
     maxItems: 15,
     readItems: []
+  },
+  airquality: {
+    enabled: false
+  },
+  calendar: {
+    enabled: false,
+    feeds: [],
+    maxItems: 10,
+    daysAhead: 7
+  },
+  pomodoro: {
+    enabled: false,
+    workMinutes: 25,
+    breakMinutes: 5,
+    longBreakMinutes: 15,
+    sessionsBeforeLongBreak: 4
   }
 };
 
@@ -69,6 +85,9 @@ export function pushRead(existingArr, urls) {
 }
 
 export async function loadSettings() {
+  // Ask the browser to retain our data under storage pressure.
+  navigator.storage?.persist?.();
+
   if (!chrome?.storage?.local) {
     return structuredClone(DEFAULTS);
   }

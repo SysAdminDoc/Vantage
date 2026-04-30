@@ -228,11 +228,17 @@ export async function renderBackground(mount, settings, saveSettings) {
   // overwritten by getSunTimes(...) as soon as we know the lat/lon.
   const today = new Date();
   let sunTimes = {
-    sunrise: new Date(today.setHours(6, 30, 0, 0)),
-    sunset:  new Date(new Date().setHours(19, 30, 0, 0)),
-    dawn:    new Date(new Date().setHours(6, 0, 0, 0)),
-    dusk:    new Date(new Date().setHours(20, 0, 0, 0)),
-    noon:    new Date(new Date().setHours(13, 0, 0, 0)),
+    sunrise:          new Date(today.setHours(6, 30, 0, 0)),
+    sunset:           new Date(new Date().setHours(19, 30, 0, 0)),
+    dawn:             new Date(new Date().setHours(6, 0, 0, 0)),
+    dusk:             new Date(new Date().setHours(20, 0, 0, 0)),
+    goldenHourEnd:    new Date(new Date().setHours(7, 15, 0, 0)),
+    goldenHourStart:  new Date(new Date().setHours(18, 45, 0, 0)),
+    nauticalDawn:     new Date(new Date().setHours(5, 30, 0, 0)),
+    nauticalDusk:     new Date(new Date().setHours(20, 30, 0, 0)),
+    astronomicalDawn: new Date(new Date().setHours(5, 0, 0, 0)),
+    astronomicalDusk: new Date(new Date().setHours(21, 0, 0, 0)),
+    noon:             new Date(new Date().setHours(13, 0, 0, 0)),
     alwaysDay: false,
     alwaysNight: false
   };
@@ -435,50 +441,65 @@ function updateScene(mount, weather, sunTimes) {
 }
 
 /**
- * Map "now" relative to the day's astronomical events to a phase name.
+ * Map "now" to a phase name using the full set of astronomical events.
  *
- * Phase boundaries use civil twilight (h = -6°) for the "pre-dawn" /
- * "dusk" cutoffs instead of fixed hour offsets — civil twilight is when
- * the sky genuinely starts brightening / finishes darkening, and its
- * duration varies by latitude and time of year (~30 min near the
- * equator, ~90 min in summer at northern latitudes). This makes the
- * sky transition feel right anywhere on Earth.
+ * Phases (night-to-night):
+ *   astronomical-night → astronomical-dawn → nautical-dawn → pre-dawn
+ *   → sunrise → golden-hour-am → morning → midday → afternoon
+ *   → golden-hour → sunset → dusk → nautical-dusk → astronomical-dusk
+ *   → astronomical-night
  *
- * Polar regions: when the sun never rises (alwaysNight) we hold "night";
- * when it never sets (alwaysDay) we hold "midday".
+ * CSS uses data-phase for star/moon visibility and subtle overlay accents.
+ * The sky gradient is driven by t (fraction of day) independently.
+ *
+ * Polar regions: alwaysNight → "astronomical-night"; alwaysDay → "midday".
  */
 function computePhase(now, sunTimes) {
-  const { sunrise, sunset, dawn, dusk, alwaysDay, alwaysNight } = sunTimes;
+  const {
+    sunrise, sunset, dawn, dusk,
+    goldenHourEnd, goldenHourStart,
+    nauticalDawn, nauticalDusk,
+    astronomicalDawn, astronomicalDusk,
+    alwaysDay, alwaysNight
+  } = sunTimes;
 
-  if (alwaysNight) return "night";
+  if (alwaysNight) return "astronomical-night";
   if (alwaysDay)   return "midday";
 
-  // Before today's civil dawn → fully dark
-  if (dawn && now < dawn) return "night";
+  // ---- Night / pre-dawn progression (ascending) ----
+  if (astronomicalDawn && now < astronomicalDawn) return "astronomical-night";
+  if (nauticalDawn      && now < nauticalDawn)     return "astronomical-dawn";
+  if (dawn              && now < dawn)             return "nautical-dawn";
+  if (sunrise           && now < sunrise)          return "pre-dawn";
 
-  // Civil dawn → sunrise = "pre-dawn" (sky brightening, sun still below)
-  if (sunrise && now < sunrise) return "pre-dawn";
-
-  // After sunset → dusk progression
+  // ---- After sunset descending progression ----
   if (sunset && now > sunset) {
-    if (dusk && now < dusk) {
-      // 0..1 progress from sunset to dusk
+    if (dusk              && now < dusk)             {
       const span = dusk - sunset;
       const k = (now - sunset) / span;
       return k < 0.5 ? "sunset" : "dusk";
     }
-    return "night";
+    if (nauticalDusk      && now < nauticalDusk)     return "nautical-dusk";
+    if (astronomicalDusk  && now < astronomicalDusk) return "astronomical-dusk";
+    return "astronomical-night";
   }
 
-  // Daytime — split by fraction of day length
-  const dayMs = sunset - sunrise;
-  const t = (now - sunrise) / dayMs;     // 0..1
-  if (t < 0.05) return "sunrise";        // first ~5% of day = orange-warm
-  if (t < 0.40) return "morning";
+  // ---- Daytime — driven by actual golden-hour event times ----
+  // Morning golden hour: sunrise → goldenHourEnd (sun at +6°)
+  if (goldenHourEnd && now < goldenHourEnd) return "sunrise";
+
+  // Evening golden hour: goldenHourStart (sun drops to +6°) → sunset
+  if (goldenHourStart && now > goldenHourStart) return "golden-hour";
+
+  // Mid-day split by fraction of the remaining daylight window
+  const dayStart = goldenHourEnd  || sunrise;
+  const dayEnd   = goldenHourStart || sunset;
+  const dayMs    = dayEnd - dayStart;
+  const t        = dayMs > 0 ? (now - dayStart) / dayMs : 0;   // 0..1
+
+  if (t < 0.33) return "morning";
   if (t < 0.60) return "midday";
-  if (t < 0.82) return "afternoon";
-  if (t < 0.95) return "golden-hour";
-  return "sunset";                        // last 5% of day before actual sunset event
+  return "afternoon";
 }
 
 /**
