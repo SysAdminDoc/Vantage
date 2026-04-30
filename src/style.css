@@ -5309,14 +5309,24 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 
 /* ---- Quick Link Groups ------------------------------------------------- */
 
+.quicklink-group {
+  position: relative;
+  display: inline-flex;
+}
+
 .quicklink--group {
   background: var(--surface0);
   border: 1px solid var(--surface1);
   border-radius: var(--r-2);
   cursor: pointer;
-  position: relative;
+  font: inherit;
 }
-.quicklink--group:hover { background: var(--surface1); }
+
+.quicklink--group:hover,
+.quicklink--group[aria-expanded="true"] {
+  background: var(--surface1);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--surface1));
+}
 
 .quicklink__folder-icon { display: inline-flex; align-items: center; }
 

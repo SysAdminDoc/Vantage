@@ -52,10 +52,13 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
 }
 
 function buildGroupButton(group, mount) {
+  const menuId = `ql-group-${group.id || group.name.replace(/\W+/g, "-").toLowerCase()}-${Math.random().toString(36).slice(2)}`;
+  const wrap = el("span", { class: "quicklink-group" });
   const btn = el("button", {
     type: "button",
     class: "quicklink quicklink--group",
-    "aria-haspopup": "true",
+    "aria-haspopup": "menu",
+    "aria-controls": menuId,
     "aria-expanded": "false",
     title: group.name
   }, [
@@ -64,6 +67,8 @@ function buildGroupButton(group, mount) {
   ]);
 
   let popover = null;
+  let closeTimer = null;
+  wrap.appendChild(btn);
 
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -74,20 +79,40 @@ function buildGroupButton(group, mount) {
     openPopover();
   });
 
-  document.addEventListener("click", onDocClick);
-  document.addEventListener("keydown", onDocKey);
+  btn.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      openPopover({ focus: e.key === "ArrowUp" ? "last" : "first" });
+    }
+  });
 
   // Clean up listeners when mount is cleared by observing DOM removal
-  new MutationObserver(() => {
-    if (!document.body.contains(btn)) {
-      document.removeEventListener("click", onDocClick);
-      document.removeEventListener("keydown", onDocKey);
+  const observer = new MutationObserver(() => {
+    if (!document.body.contains(wrap)) {
+      removeDocumentListeners();
+      observer.disconnect();
     }
-  }).observe(mount, { childList: true });
+  });
+  observer.observe(mount, { childList: true });
 
-  function openPopover() {
+  function openPopover({ focus = null } = {}) {
+    if (popover) {
+      clearTimeout(closeTimer);
+      btn.setAttribute("aria-expanded", "true");
+      popover.classList.add("ql-group-popover--open");
+      addDocumentListeners();
+      focusMenuItem(focus);
+      return;
+    }
+    clearTimeout(closeTimer);
     btn.setAttribute("aria-expanded", "true");
-    popover = el("div", { class: "ql-group-popover", role: "menu" });
+    popover = el("div", {
+      id: menuId,
+      class: "ql-group-popover",
+      role: "menu",
+      tabindex: "-1",
+      "aria-label": `${group.name} links`
+    });
 
     for (const item of (group.items || [])) {
       const a = el("a", {
@@ -107,6 +132,8 @@ function buildGroupButton(group, mount) {
         }),
         el("span", {}, [item.title])
       ]);
+      a.addEventListener("click", () => closePopover());
+      a.addEventListener("keydown", onMenuKeydown);
       popover.appendChild(a);
     }
 
@@ -114,25 +141,81 @@ function buildGroupButton(group, mount) {
       popover.appendChild(el("p", { class: "ql-group-empty" }, ["No links in this group."]));
     }
 
-    btn.appendChild(popover);
-    requestAnimationFrame(() => popover?.classList.add("ql-group-popover--open"));
+    wrap.appendChild(popover);
+    addDocumentListeners();
+    requestAnimationFrame(() => {
+      popover?.classList.add("ql-group-popover--open");
+      focusMenuItem(focus);
+    });
   }
 
   function closePopover() {
     if (!popover) return;
     btn.setAttribute("aria-expanded", "false");
+    removeDocumentListeners();
     popover.classList.remove("ql-group-popover--open");
-    setTimeout(() => { popover?.remove(); popover = null; }, 200);
+    closeTimer = setTimeout(() => { popover?.remove(); popover = null; }, 200);
   }
 
-  function onDocClick(e) {
-    if (popover && !btn.contains(e.target)) closePopover();
-  }
-  function onDocKey(e) {
-    if (e.key === "Escape" && popover) { closePopover(); btn.focus(); }
+  function focusMenuItem(position) {
+    if (!position || !popover) return;
+    const items = [...popover.querySelectorAll(".ql-group-item")];
+    if (!items.length) {
+      popover.focus({ preventScroll: true });
+      return;
+    }
+    const target = position === "last" ? items[items.length - 1] : items[0];
+    target.focus({ preventScroll: true });
   }
 
-  return btn;
+  function onMenuKeydown(e) {
+    const items = [...popover.querySelectorAll(".ql-group-item")];
+    const current = items.indexOf(document.activeElement);
+    if (!items.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      items[current < items.length - 1 ? current + 1 : 0].focus();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      items[current > 0 ? current - 1 : items.length - 1].focus();
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      items[0].focus();
+    } else if (e.key === "End") {
+      e.preventDefault();
+      items[items.length - 1].focus();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      closePopover();
+      btn.focus({ preventScroll: true });
+    } else if (e.key === "Tab") {
+      closePopover();
+    }
+  }
+
+  function addDocumentListeners() {
+    document.addEventListener("pointerdown", onDocPointerDown, true);
+    document.addEventListener("keydown", onDocKeydown);
+  }
+
+  function removeDocumentListeners() {
+    document.removeEventListener("pointerdown", onDocPointerDown, true);
+    document.removeEventListener("keydown", onDocKeydown);
+  }
+
+  function onDocPointerDown(e) {
+    if (popover && !wrap.contains(e.target)) closePopover();
+  }
+
+  function onDocKeydown(e) {
+    if (e.key === "Escape" && popover) {
+      closePopover();
+      btn.focus({ preventScroll: true });
+    }
+  }
+
+  return wrap;
 }
 
 function faviconFor(url) {
