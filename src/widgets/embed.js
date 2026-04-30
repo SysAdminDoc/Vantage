@@ -1,19 +1,23 @@
-// Vantage — configurable iframe embed panel (flight tracker, custom URLs, etc.)
+// Vantage — Configurable iframe embed panel (v0.7.0: accepts per-embed config object).
 
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 
-export function renderEmbed(mount, settings, { onAttachDragHandle } = {}) {
+/**
+ * @param {HTMLElement} mount
+ * @param {{ id, title, url, enabled }} embedCfg  — one entry from settings.embeds[]
+ * @param {{ onAttachDragHandle }} opts
+ */
+export function renderEmbed(mount, embedCfg, { onAttachDragHandle } = {}) {
   clear(mount);
-  const cfg = settings.embed;
-  if (!cfg?.enabled) {
+  if (!embedCfg?.enabled) {
     mount.style.display = "none";
     return;
   }
   mount.style.display = "";
 
-  const title = cfg.title || "Embed";
-  const url   = (cfg.url || "").trim();
+  const title = embedCfg.title || "Embed";
+  const url   = (embedCfg.url || "").trim();
 
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
@@ -35,18 +39,16 @@ export function renderEmbed(mount, settings, { onAttachDragHandle } = {}) {
 
   if (!url) {
     body.appendChild(el("p", { class: "panel-empty" }, [
-      "Add a URL in Settings \u2192 Embed."
+      "Add a URL in Settings \u2192 Embeds."
     ]));
   } else {
     const iframe = el("iframe", {
       src: url,
       class: "map-iframe",
-      // Full permissions — user chose this URL explicitly.
       allow: "geolocation; fullscreen",
       "aria-label": title
     });
     iframe.setAttribute("loading", "lazy");
-    // Detect X-Frame-Options block — show fallback link
     iframe.addEventListener("error", () => {
       body.innerHTML = "";
       body.appendChild(el("div", { class: "panel-empty embed-blocked" }, [

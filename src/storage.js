@@ -1,4 +1,4 @@
-// Vantage v0.6.0 — chrome.storage.local wrapper with deep-merged defaults.
+// Vantage v0.7.0 — chrome.storage.local wrapper with deep-merged defaults.
 
 const DEFAULTS = {
   theme: "mocha",
@@ -63,11 +63,7 @@ const DEFAULTS = {
     overlay: "wind",
     zoom: 5
   },
-  embed: {
-    enabled: false,
-    title: "Flight Tracker",
-    url: ""
-  },
+  embeds: [],  // [{ id, title, url, enabled }] — replaces singular embed
   calendar: {
     enabled: false,
     feeds: [],
@@ -80,6 +76,59 @@ const DEFAULTS = {
     breakMinutes: 5,
     longBreakMinutes: 15,
     sessionsBeforeLongBreak: 4
+  },
+  todo: {
+    enabled: false,
+    items: [],
+    showCompleted: true,
+    maxItems: 100
+  },
+  notes: {
+    enabled: false,
+    items: []
+  },
+  bookmarks: {
+    enabled: false,
+    maxItems: 24
+  },
+  worldclock: {
+    enabled: false,
+    clocks: [
+      { label: "UTC",      tz: "UTC" },
+      { label: "New York", tz: "America/New_York" },
+      { label: "London",   tz: "Europe/London" },
+      { label: "Tokyo",    tz: "Asia/Tokyo" }
+    ]
+  },
+  crypto: {
+    enabled: false,
+    coins: ["bitcoin", "ethereum", "solana"],
+    currency: "usd",
+    refreshMinutes: 5
+  },
+  github: {
+    enabled: false,
+    username: "",
+    showTrending: true,
+    language: ""
+  },
+  quote: {
+    enabled: false,
+    category: "random",
+    cached: null
+  },
+  photo: {
+    enabled: false,
+    source: "picsum",
+    nasaKey: ""
+  },
+  countdown: {
+    enabled: false,
+    events: []
+  },
+  converter: {
+    enabled: false,
+    defaultCategory: "length"
   },
   onboardingComplete: false
 };
@@ -111,6 +160,22 @@ export async function loadSettings() {
   }
   const stored = await chrome.storage.local.get("vantageSettings");
   const merged = mergeDeep(structuredClone(DEFAULTS), stored.vantageSettings || {});
+
+  // Migrate singular embed → embeds array (v0.6.x → v0.7.0)
+  if (merged.embed !== undefined) {
+    if (!merged.embeds || merged.embeds.length === 0) {
+      if (merged.embed?.url) {
+        merged.embeds = [{
+          id: "1",
+          title: merged.embed.title || "Embed",
+          url: merged.embed.url,
+          enabled: merged.embed.enabled ?? false
+        }];
+      }
+    }
+    delete merged.embed;
+  }
+
   return merged;
 }
 
