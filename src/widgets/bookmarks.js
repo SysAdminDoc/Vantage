@@ -57,7 +57,7 @@ export function renderBookmarks(mount, settings, { onAttachDragHandle } = {}) {
     }
     body.appendChild(grid);
   }).catch(() => {
-    body.appendChild(el("p", { class: "panel-empty" }, ["Could not load bookmarks."]));
+    body.appendChild(el("p", { class: "panel-error" }, ["Couldn't load bookmarks."]));
   });
 }
 

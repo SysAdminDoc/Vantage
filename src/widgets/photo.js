@@ -46,7 +46,7 @@ function loadPicsum(body, dateStr) {
   img.addEventListener("load", () => { img.dataset.loaded = "true"; });
   img.addEventListener("error", () => {
     body.innerHTML = "";
-    body.appendChild(el("p", { class: "panel-empty" }, ["Could not load photo."]));
+    body.appendChild(el("p", { class: "panel-error" }, ["Couldn't load photo."]));
   });
   const credit = el("div", { class: "photo-credit" }, [
     "Photo via ",
