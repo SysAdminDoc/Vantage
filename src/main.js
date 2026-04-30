@@ -1,6 +1,6 @@
 // Vantage v0.6.0 — entry point. Loads settings, mounts widgets, wires UI.
 
-import { loadSettings, saveSettings, onSettingsChanged } from "./storage.js";
+import { loadSettings, saveSettings, onSettingsChanged, hasStoredSettings } from "./storage.js";
 import { iconNode } from "./icons.js";
 import { renderSearch }     from "./widgets/search.js";
 import { renderGreeting }   from "./widgets/clock.js";
@@ -13,6 +13,7 @@ import { renderAirQuality } from "./widgets/airquality.js";
 import { renderCalendar }   from "./widgets/calendar.js";
 import { renderPomodoro }   from "./widgets/pomodoro.js";
 import { renderSettingsPanel, openPanel, closePanel } from "./settings.js";
+import { showOnboarding } from "./onboarding.js";
 import { makeReorderable, arrayMove } from "./utils/drag.js";
 
 let currentSettings;
@@ -40,6 +41,19 @@ async function init() {
   currentSettings = await loadSettings();
   document.documentElement.setAttribute("data-theme", currentSettings.theme);
   injectStaticIcons();
+
+  const isFirstInstall = !(await hasStoredSettings());
+  if (isFirstInstall && !currentSettings.onboardingComplete) {
+    await new Promise((resolve) => {
+      showOnboarding(currentSettings, async (next) => {
+        currentSettings = next;
+        document.documentElement.setAttribute("data-theme", currentSettings.theme);
+        await saveSettings(currentSettings);
+        resolve();
+      });
+    });
+  }
+
   mountAll();
   wireSettings();
   wireKeyboard();
@@ -139,12 +153,25 @@ function wireSettings() {
   const panel    = document.getElementById("settings-panel");
   const backdrop = document.getElementById("settings-backdrop");
 
-  const open = () => {
-    renderSettingsPanel(panel, currentSettings, async (next) => {
+  const onChange = async (next) => {
+    currentSettings = next;
+    await saveSettings(currentSettings);
+    mountAll();
+  };
+
+  const launchWizard = () => {
+    closePanel(panel);
+    toggle.setAttribute("aria-expanded", "false");
+    showOnboarding(currentSettings, async (next) => {
       currentSettings = next;
+      document.documentElement.setAttribute("data-theme", currentSettings.theme);
       await saveSettings(currentSettings);
       mountAll();
     });
+  };
+
+  const open = () => {
+    renderSettingsPanel(panel, currentSettings, onChange, { showWizard: launchWizard });
     toggle.setAttribute("aria-expanded", "true");
     openPanel(panel);
   };
