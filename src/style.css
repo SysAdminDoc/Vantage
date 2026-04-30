@@ -891,6 +891,46 @@ a {
 }
 
 /* ============================================================
+   Plane lights — small blinking dot slowly crossing the night sky.
+   JS spawns transient .bg-plane elements into the host.
+   ============================================================ */
+
+.bg-plane-host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-plane {
+  position: absolute;
+  top: var(--plane-y, 18%);
+  left: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 235, 200, 0.95);
+  box-shadow: 0 0 6px rgba(255, 200, 120, 0.85),
+              0 0 14px rgba(255, 220, 160, 0.45);
+  opacity: 0;
+  animation:
+    plane-cross 38s linear forwards,
+    plane-blink 2.4s ease-in-out infinite;
+}
+
+@keyframes plane-cross {
+  0%   { opacity: 0; transform: translateX(calc(var(--plane-dir, 1) * -10vw)); }
+  6%   { opacity: 1; }
+  94%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(calc(var(--plane-dir, 1) * 110vw)); }
+}
+
+@keyframes plane-blink {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(0.55); }
+}
+
+/* ============================================================
    Birds — V-formation flock crossing the sky.
    ============================================================ */
 
@@ -1090,7 +1130,7 @@ a {
 @media (prefers-reduced-motion: reduce) {
   .bg-stars, .bg-cloud, .bg-rain, .bg-snow, .bg-flash,
   .bg-tree svg, .bg-aurora, .bg-shooting-star, .bg-birds-host, .bg-birds-host .bird,
-  .bg-petals, .bg-leaves, .bg-fireflies, .bg-horizon-flash {
+  .bg-petals, .bg-leaves, .bg-fireflies, .bg-horizon-flash, .bg-plane {
     animation: none !important;
   }
   .bg-sun { transition: none !important; }
