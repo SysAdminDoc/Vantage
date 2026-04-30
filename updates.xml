@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gupdate xmlns="http://www.google.com/update2/response" protocol="2.0">
+  <app appid="hkfepknnglonkidihcoicdfkjkjfnejn">
+    <updatecheck codebase="https://github.com/SysAdminDoc/Vantage/releases/download/v0.7.2/Vantage-v0.7.2.crx" version="0.7.2" hash_sha256="d84a81f134672fa34fa35f436363f1d28587323530f3c68d6e5ffa8672dad6fb"/>
+  </app>
+</gupdate>
