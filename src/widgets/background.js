@@ -286,6 +286,262 @@ const SOUTHERN_CROSS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0
   </g>
 </svg>`;
 
+// ---- New silhouettes for additional biomes / events ----
+
+const SAGUARO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" preserveAspectRatio="xMidYEnd meet">
+  <g fill="#0a0a0d">
+    <path d="M105 320 L105 260 Q 105 220 80 200 Q 60 192 50 200 L50 130 Q 50 110 65 110 Q 80 110 80 130 L80 175 Q 92 175 100 168 Q 108 160 108 145 L108 90 Q 108 60 130 60 Q 152 60 152 90 L152 165 Q 152 178 162 178 Q 172 178 172 168 L172 130 Q 172 112 188 112 Q 200 112 200 130 L200 200 Q 195 210 175 210 Q 152 215 138 230 Q 130 240 130 260 L130 320 Z"/>
+  </g>
+</svg>`;
+
+const LIGHTHOUSE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 220" preserveAspectRatio="xMidYEnd meet">
+  <g fill="#0a0a0d">
+    <rect x="32" y="60" width="16" height="120"/>
+    <path d="M22 180 L58 180 L62 220 L18 220 Z"/>
+    <rect x="28" y="40" width="24" height="14"/>
+    <rect x="34" y="20" width="12" height="22"/>
+    <path d="M32 12 L48 12 L40 0 Z"/>
+  </g>
+  <circle cx="40" cy="32" r="3" fill="rgba(255,235,180,0.95)" class="lighthouse-bulb"/>
+</svg>`;
+
+const CITY_SKYLINE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 180" preserveAspectRatio="xMidYEnd slice">
+  <g fill="#0a0a0d">
+    <rect x="0"    y="120" width="80"  height="60"/>
+    <rect x="80"   y="90"  width="60"  height="90"/>
+    <rect x="140"  y="60"  width="40"  height="120"/>
+    <rect x="180"  y="100" width="70"  height="80"/>
+    <rect x="250"  y="40"  width="30"  height="140"/>
+    <rect x="280"  y="80"  width="60"  height="100"/>
+    <rect x="340"  y="110" width="80"  height="70"/>
+    <rect x="420"  y="70"  width="50"  height="110"/>
+    <rect x="470"  y="20"  width="40"  height="160"/>
+    <rect x="510"  y="100" width="70"  height="80"/>
+    <rect x="580"  y="50"  width="36"  height="130"/>
+    <rect x="616"  y="90"  width="60"  height="90"/>
+    <rect x="676"  y="120" width="80"  height="60"/>
+    <rect x="756"  y="80"  width="44"  height="100"/>
+    <rect x="800"  y="30"  width="50"  height="150"/>
+    <rect x="850"  y="60"  width="40"  height="120"/>
+    <rect x="890"  y="100" width="60"  height="80"/>
+    <rect x="950"  y="50"  width="30"  height="130"/>
+    <rect x="980"  y="80"  width="50"  height="100"/>
+    <rect x="1030" y="100" width="70"  height="80"/>
+    <rect x="1100" y="70"  width="50"  height="110"/>
+    <rect x="1150" y="120" width="50"  height="60"/>
+  </g>
+  <g class="city-windows" fill="#fef0a0" fill-opacity="0">
+    <rect x="14"  y="135" width="3" height="4"/><rect x="30" y="155" width="3" height="4"/>
+    <rect x="92"  y="105" width="3" height="4"/><rect x="118" y="125" width="3" height="4"/><rect x="100" y="155" width="3" height="4"/>
+    <rect x="150" y="80"  width="3" height="4"/><rect x="166" y="110" width="3" height="4"/><rect x="156" y="140" width="3" height="4"/>
+    <rect x="195" y="115" width="3" height="4"/><rect x="222" y="135" width="3" height="4"/>
+    <rect x="258" y="60"  width="3" height="4"/><rect x="265" y="100" width="3" height="4"/><rect x="261" y="135" width="3" height="4"/>
+    <rect x="295" y="100" width="3" height="4"/><rect x="320" y="125" width="3" height="4"/>
+    <rect x="358" y="125" width="3" height="4"/><rect x="395" y="145" width="3" height="4"/>
+    <rect x="432" y="90"  width="3" height="4"/><rect x="450" y="120" width="3" height="4"/><rect x="448" y="150" width="3" height="4"/>
+    <rect x="478" y="40"  width="3" height="4"/><rect x="490" y="70"  width="3" height="4"/><rect x="488" y="100" width="3" height="4"/><rect x="498" y="135" width="3" height="4"/>
+    <rect x="525" y="120" width="3" height="4"/><rect x="555" y="140" width="3" height="4"/>
+    <rect x="588" y="70"  width="3" height="4"/><rect x="600" y="105" width="3" height="4"/><rect x="595" y="140" width="3" height="4"/>
+    <rect x="630" y="105" width="3" height="4"/><rect x="660" y="135" width="3" height="4"/>
+    <rect x="690" y="135" width="3" height="4"/><rect x="725" y="150" width="3" height="4"/>
+    <rect x="765" y="100" width="3" height="4"/><rect x="785" y="135" width="3" height="4"/>
+    <rect x="810" y="50"  width="3" height="4"/><rect x="820" y="85"  width="3" height="4"/><rect x="830" y="120" width="3" height="4"/>
+    <rect x="858" y="80"  width="3" height="4"/><rect x="876" y="110" width="3" height="4"/><rect x="868" y="145" width="3" height="4"/>
+    <rect x="905" y="120" width="3" height="4"/><rect x="935" y="145" width="3" height="4"/>
+    <rect x="958" y="70"  width="3" height="4"/><rect x="965" y="110" width="3" height="4"/>
+    <rect x="990" y="100" width="3" height="4"/><rect x="1015" y="140" width="3" height="4"/>
+    <rect x="1042" y="125" width="3" height="4"/><rect x="1070" y="145" width="3" height="4"/>
+    <rect x="1110" y="90"  width="3" height="4"/><rect x="1130" y="125" width="3" height="4"/>
+    <rect x="1160" y="135" width="3" height="4"/>
+  </g>
+</svg>`;
+
+// Bat — replaces birds at dusk. Single SVG with five irregular silhouettes.
+const BATS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" preserveAspectRatio="xMidYMid meet">
+  <g fill="#0a0a0d">
+    <path class="bat bat-1" d="M40 30 Q 30 20 22 28 Q 30 26 36 32 L 38 28 Q 40 24 42 28 L 44 32 Q 50 26 58 28 Q 50 20 40 30 Z"/>
+    <path class="bat bat-2" d="M80 50 Q 70 40 62 48 Q 70 46 76 52 L 78 48 Q 80 44 82 48 L 84 52 Q 90 46 98 48 Q 90 40 80 50 Z"/>
+    <path class="bat bat-3" d="M120 24 Q 110 14 102 22 Q 110 20 116 26 L 118 22 Q 120 18 122 22 L 124 26 Q 130 20 138 22 Q 130 14 120 24 Z"/>
+    <path class="bat bat-4" d="M160 44 Q 150 34 142 42 Q 150 40 156 46 L 158 42 Q 160 38 162 42 L 164 46 Q 170 40 178 42 Q 170 34 160 44 Z"/>
+  </g>
+</svg>`;
+
+// Whale fluke breaching for coastal locations.
+const WHALE_FLUKE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" preserveAspectRatio="xMidYEnd meet">
+  <g fill="#0a0a0d">
+    <path d="M80 100 Q 88 80 96 60 Q 100 40 90 20 Q 84 14 78 18 Q 86 28 86 40 Q 84 52 78 60 Q 96 56 110 60 Q 124 56 142 60 Q 136 52 134 40 Q 134 28 142 18 Q 136 14 130 20 Q 120 40 124 60 Q 132 80 140 100 Z"/>
+  </g>
+  <ellipse cx="100" cy="98" rx="60" ry="3" fill="rgba(255,255,255,0.4)"/>
+</svg>`;
+
+// Deer silhouette — boreal/temperate dawn.
+const DEER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 160" preserveAspectRatio="xMidYEnd meet">
+  <g fill="#0a0a0d">
+    <path d="M48 80 L48 130 L40 145 L46 150 L52 130 L62 130 L62 145 L70 150 L72 130 L88 130 L88 145 L96 150 L100 130 L110 130 L110 145 L118 150 L120 130 L122 90 Q 122 75 105 75 L 70 75 Q 50 70 48 80 Z"/>
+    <path d="M40 75 Q 36 70 38 60 Q 26 56 28 50 L 38 52 L 36 38 L 42 50 L 46 32 L 48 50 L 56 38 L 52 56 Q 58 60 60 70 Q 56 78 48 75 Z"/>
+    <circle cx="44" cy="68" r="1.5" fill="#fff" opacity="0.6"/>
+  </g>
+</svg>`;
+
+// Butterfly — small fluttering for spring/summer temperate.
+const BUTTERFLY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 50" preserveAspectRatio="xMidYMid meet">
+  <g fill="#d97c52" fill-opacity="0.85">
+    <path class="bf-wing-l" d="M30 25 Q 12 8 8 18 Q 4 30 14 32 Q 22 30 30 25 Z"/>
+    <path class="bf-wing-r" d="M30 25 Q 48 8 52 18 Q 56 30 46 32 Q 38 30 30 25 Z"/>
+  </g>
+  <ellipse cx="30" cy="25" rx="1.5" ry="6" fill="#0a0a0d"/>
+</svg>`;
+
+// Jack-o'-lantern (Halloween) — small pumpkin with carved face.
+const JACK_O_LANTERN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+  <g>
+    <ellipse cx="25" cy="30" rx="20" ry="17" fill="#e87b1c"/>
+    <ellipse cx="12" cy="30" rx="6" ry="14" fill="#c25e10" opacity="0.45"/>
+    <ellipse cx="38" cy="30" rx="6" ry="14" fill="#c25e10" opacity="0.45"/>
+    <path d="M22 12 Q 22 6 28 6 L 26 12 Z" fill="#3a5e2a"/>
+    <path d="M14 27 L 19 23 L 19 30 Z" fill="#1a0a0a"/>
+    <path d="M36 27 L 31 23 L 31 30 Z" fill="#1a0a0a"/>
+    <path d="M14 38 Q 18 34 22 36 L 22 40 Q 18 38 14 41 Z" fill="#1a0a0a"/>
+    <path d="M28 36 Q 32 34 36 38 L 36 41 Q 32 38 28 40 Z" fill="#1a0a0a"/>
+    <rect x="22" y="34" width="2" height="4" fill="#1a0a0a"/>
+    <rect x="26" y="34" width="2" height="4" fill="#1a0a0a"/>
+  </g>
+</svg>`;
+
+// Santa's sleigh + reindeer (Christmas Eve).
+const SLEIGH_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 70">
+  <g fill="#0a0a0d">
+    <path d="M150 40 Q 160 28 180 30 L 200 32 Q 210 36 208 50 L 200 56 L 156 56 Q 146 56 148 46 Z"/>
+    <rect x="180" y="22" width="6" height="14"/>
+    <path d="M148 56 L 210 56" stroke="#0a0a0d" stroke-width="2"/>
+    <path d="M30 50 Q 40 35 60 38 L 75 38 Q 78 50 75 56 L 60 56 Q 50 56 48 50 Z"/>
+    <path d="M58 38 L 60 28 L 56 28 L 60 24 L 64 28 L 60 38" stroke-linecap="round"/>
+    <line x1="75" y1="48" x2="148" y2="48" stroke="#0a0a0d" stroke-width="1.5"/>
+    <circle cx="90"  cy="48" r="2"/>
+    <circle cx="105" cy="48" r="2"/>
+    <circle cx="120" cy="48" r="2"/>
+    <circle cx="135" cy="48" r="2"/>
+  </g>
+  <circle cx="62" cy="34" r="1.5" fill="#ff4040"/>
+</svg>`;
+
+// Balloon for birthdays — single bunch of three.
+const BALLOON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 90">
+  <g>
+    <ellipse cx="20" cy="20" rx="10" ry="13" fill="#f38ba8"/>
+    <ellipse cx="40" cy="14" rx="10" ry="13" fill="#89b4fa"/>
+    <ellipse cx="30" cy="32" rx="10" ry="13" fill="#a6e3a1"/>
+    <path d="M20 33 Q 22 50 26 60 Q 28 75 24 88" stroke="rgba(255,255,255,0.55)" stroke-width="0.8" fill="none"/>
+    <path d="M40 27 Q 36 50 30 60 Q 28 75 30 88" stroke="rgba(255,255,255,0.55)" stroke-width="0.8" fill="none"/>
+    <path d="M30 45 Q 30 60 30 75 Q 28 82 28 88" stroke="rgba(255,255,255,0.55)" stroke-width="0.8" fill="none"/>
+  </g>
+</svg>`;
+
+// ---- Astronomical helpers ----
+
+/** Lunar phase 0..1. 0/1 = new moon, 0.5 = full moon. */
+function getMoonPhase(date) {
+  // Reference: 2000-01-06 18:14 UTC, a known new moon.
+  const ref = Date.UTC(2000, 0, 6, 18, 14) / 86400000;
+  const synodic = 29.530588853;
+  const days = date.getTime() / 86400000 - ref;
+  const p = ((days % synodic) + synodic) % synodic / synodic;
+  return p;
+}
+
+/** Generate an SVG of the moon at the given phase. Uses a mask of an
+ *  offset circle to carve the dark side out of the bright disc. The
+ *  offset formula is correct for both waxing (mask on left, light on
+ *  right) and waning (mask on right, light on left). */
+function moonSVG(phase) {
+  const R = 50;
+  const d = phase < 0.5 ? -4 * R * phase : 4 * R * (1 - phase);
+  // Unique mask id per render so multiple SVGs in the document don't clash.
+  const mid = "moonM_" + Math.random().toString(36).slice(2, 8);
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <mask id="${mid}">
+        <rect width="100" height="100" fill="white"/>
+        <circle cx="${50 + d}" cy="50" r="50" fill="black"/>
+      </mask>
+    </defs>
+    <circle cx="50" cy="50" r="48" fill="#f0f0f5" mask="url(#${mid})"/>
+    <g fill="#d8d8e0" mask="url(#${mid})" opacity="0.5">
+      <circle cx="36" cy="38" r="4"/>
+      <circle cx="58" cy="32" r="3"/>
+      <circle cx="68" cy="56" r="5"/>
+      <circle cx="40" cy="62" r="3.5"/>
+      <circle cx="56" cy="70" r="2.5"/>
+    </g>
+  </svg>`;
+}
+
+/** Returns an integer multiplier for shooting star frequency on known
+ *  meteor-shower peak dates (1 = normal, 4 = peak burst). */
+function meteorShowerBoost(date) {
+  const m = date.getMonth() + 1; // 1..12
+  const d = date.getDate();
+  // Peak ±1 day window.
+  const peaks = [
+    [1,  3], [1,  4],   // Quadrantids
+    [4, 22], [4, 23],   // Lyrids
+    [5,  5], [5,  6],   // Eta Aquariids
+    [8, 12], [8, 13],   // Perseids (most famous)
+    [10, 8], [10, 9],   // Draconids
+    [10,21], [10,22],   // Orionids
+    [11,17], [11,18],   // Leonids
+    [12,13], [12,14],   // Geminids
+    [12,22], [12,23],   // Ursids
+  ];
+  return peaks.some(([pm, pd]) => pm === m && pd === d) ? 4 : 1;
+}
+
+/** Returns the active holiday key or null. Holidays apply for the full
+ *  24h of their date in the user's local timezone. */
+function getHoliday(date, birthdayMMDD) {
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  if (m === 10 && d === 31) return "halloween";
+  if (m === 12 && d === 24) return "christmas-eve";
+  if (m === 12 && d === 25) return "christmas-day";
+  if (m === 12 && d === 31) return "nye";
+  if (m === 1  && d === 1)  return "new-year-day";
+  if (birthdayMMDD) {
+    const [bm, bd] = birthdayMMDD.split("-").map(s => parseInt(s, 10));
+    if (m === bm && d === bd) return "birthday";
+  }
+  return null;
+}
+
+/** Whether the Milky Way's galactic core is up at a given hour for the
+ *  current month + hemisphere. Northern: Jun-Sep midnight. Southern:
+ *  Apr-Aug midnight. We approximate "up" as deep-night phases during
+ *  the appropriate months. */
+function milkyWayActive(date, hemisphere) {
+  const m = date.getMonth(); // 0..11
+  if (hemisphere === "S") return m >= 3 && m <= 7;  // Apr-Aug
+  return m >= 5 && m <= 8;                          // Jun-Sep
+}
+
+// Major desert lat/lon rectangles. Used to flag arid biomes that shouldn't
+// show oak trees + leaves; we render saguaros + dust devils instead.
+const DESERT_REGIONS = [
+  // [latMin, latMax, lonMin, lonMax, name]
+  [15, 30,   -10,   40, "sahara"],
+  [15, 30,    35,   55, "arabian"],
+  [25, 45,    45,  110, "central-asia"],
+  [25, 40,  -120, -100, "sonoran"],
+  [-30,-15,  -75,  -65, "atacama"],
+  [-35,-20,  115,  145, "australian"],
+  [-30,-20,   15,   25, "kalahari"],
+];
+
+/** Returns true if (lat, lon) falls inside a known desert region. */
+function isDesertLocation(lat, lon) {
+  if (lat == null || lon == null) return false;
+  return DESERT_REGIONS.some(([la, lb, oa, ob]) => lat >= la && lat <= lb && lon >= oa && lon <= ob);
+}
+
 // ---- Locality + season helpers ----
 
 /** Returns the biome name for a given latitude. */
@@ -398,15 +654,21 @@ export async function renderBackground(mount, settings, saveSettings) {
   // matches z-stacking — sky-tinted background first, foreground last.
   mount.innerHTML = `
     <div class="bg-stars" aria-hidden="true"></div>
+    <div class="bg-milky-way" aria-hidden="true"></div>
     <div class="bg-aurora" aria-hidden="true"></div>
     <div class="bg-constellation bg-constellation--north" aria-hidden="true">${BIG_DIPPER_SVG}</div>
     <div class="bg-constellation bg-constellation--south" aria-hidden="true">${SOUTHERN_CROSS_SVG}</div>
+    <div class="bg-venus" aria-hidden="true"></div>
     <div class="bg-shooting-star-host" aria-hidden="true"></div>
     <div class="bg-plane-host" aria-hidden="true"></div>
+    <div class="bg-fireworks-host" aria-hidden="true"></div>
     <div class="bg-cloud bg-cloud--1" aria-hidden="true"></div>
     <div class="bg-cloud bg-cloud--2" aria-hidden="true"></div>
     <div class="bg-cloud bg-cloud--3" aria-hidden="true"></div>
     <div class="bg-rays" aria-hidden="true"></div>
+    <div class="bg-sun-pillar" aria-hidden="true"></div>
+    <div class="bg-halo" aria-hidden="true"></div>
+    <div class="bg-rainbow" aria-hidden="true"></div>
     <div class="bg-fog" aria-hidden="true"></div>
     <div class="bg-rain" aria-hidden="true"></div>
     <div class="bg-rain bg-rain--2" aria-hidden="true"></div>
@@ -414,16 +676,28 @@ export async function renderBackground(mount, settings, saveSettings) {
     <div class="bg-petals" aria-hidden="true"></div>
     <div class="bg-leaves" aria-hidden="true"></div>
     <div class="bg-fireflies" aria-hidden="true"></div>
+    <div class="bg-butterflies-host" aria-hidden="true"></div>
     <div class="bg-flash" aria-hidden="true"></div>
     <div class="bg-horizon-flash" aria-hidden="true"></div>
+    <div class="bg-heat-shimmer" aria-hidden="true"></div>
     <div class="bg-sun" aria-hidden="true"></div>
+    <div class="bg-moon" aria-hidden="true"></div>
     <div class="bg-birds-host" aria-hidden="true"></div>
+    <div class="bg-bats-host" aria-hidden="true">${BATS_SVG}</div>
     <div class="bg-mountains bg-mountains--far"  aria-hidden="true">${MOUNTAINS_FAR_SVG}</div>
     <div class="bg-mountains bg-mountains--mid"  aria-hidden="true">${MOUNTAINS_MID_SVG}</div>
     <div class="bg-mountains bg-mountains--near" aria-hidden="true">${MOUNTAINS_NEAR_SVG}</div>
-    <div class="bg-tree bg-tree--palm" aria-hidden="true">${PALM_SVG}</div>
-    <div class="bg-tree bg-tree--pine" aria-hidden="true">${PINE_SVG}</div>
-    <div class="bg-tree bg-tree--oak"  aria-hidden="true">${OAK_SVG}</div>
+    <div class="bg-skyline" aria-hidden="true">${CITY_SKYLINE_SVG}</div>
+    <div class="bg-lighthouse" aria-hidden="true">${LIGHTHOUSE_SVG}</div>
+    <div class="bg-whale-host" aria-hidden="true"></div>
+    <div class="bg-deer" aria-hidden="true">${DEER_SVG}</div>
+    <div class="bg-tree bg-tree--palm"    aria-hidden="true">${PALM_SVG}</div>
+    <div class="bg-tree bg-tree--pine"    aria-hidden="true">${PINE_SVG}</div>
+    <div class="bg-tree bg-tree--oak"     aria-hidden="true">${OAK_SVG}</div>
+    <div class="bg-tree bg-tree--saguaro" aria-hidden="true">${SAGUARO_SVG}</div>
+    <div class="bg-pumpkins" aria-hidden="true"></div>
+    <div class="bg-sleigh" aria-hidden="true">${SLEIGH_SVG}</div>
+    <div class="bg-balloons-host" aria-hidden="true"></div>
   `;
 
   // ---- Render IMMEDIATELY with sensible defaults so the user never sees
@@ -464,9 +738,12 @@ export async function renderBackground(mount, settings, saveSettings) {
     } catch { /* defaults stay */ }
   }
 
-  // Stash latitude on the mount so updateScene + spawners can derive
-  // biome/season/hemisphere without re-threading the value through args.
-  mount._bgLat = location?.latitude ?? null;
+  // Stash locality data on the mount so updateScene + spawners can derive
+  // biome/season/hemisphere/holiday without re-threading through args.
+  mount._bgLat       = location?.latitude  ?? null;
+  mount._bgLon       = location?.longitude ?? null;
+  mount._bgBirthday  = settings.greeting?.birthday || null; // "MM-DD"
+  mount._bgLocality  = settings.appearance?.locality || "auto"; // "auto"|"coastal"|"urban"|"desert"|"default"
 
   // Compute sun-event times. Strategy:
   //   1) Open-Meteo's `daily.sunrise[0]` / `daily.sunset[0]` (requested
@@ -563,35 +840,53 @@ export async function renderBackground(mount, settings, saveSettings) {
   scheduleRollover();
 
   // ---- Shooting stars: random transient streaks during night phases.
-  // A new streak appears every 30-90 seconds. We append a div, animate
-  // it via CSS keyframes, then remove on animationend.
+  // Frequency boosts on known meteor-shower peak dates. We always fire
+  // one within the first 8s of load so users immediately see the system
+  // is alive (per UX brief — page-load celebration).
   const shootingHost = mount.querySelector(".bg-shooting-star-host");
   const isNightPhase = (p) =>
     p === "night" || p === "astronomical-night" ||
     p === "astronomical-dusk" || p === "astronomical-dawn" ||
     p === "nautical-dusk" || p === "nautical-dawn";
 
+  function spawnShootingStar() {
+    if (!shootingHost) return;
+    const star = document.createElement("div");
+    star.className = "bg-shooting-star";
+    // Random position in the upper half of the sky.
+    star.style.setProperty("--ss-x", `${5 + Math.random() * 60}%`);
+    star.style.setProperty("--ss-y", `${5 + Math.random() * 35}%`);
+    // Vary streak angle slightly so they don't all look identical.
+    star.style.setProperty("--ss-angle", `${20 + Math.random() * 25}deg`);
+    shootingHost.appendChild(star);
+    star.addEventListener("animationend", () => star.remove());
+  }
+
   let shootingTimer = null;
   function scheduleShootingStar() {
-    const delay = 30000 + Math.random() * 60000; // 30-90s
+    const boost = mount._meteorBoost || 1; // 4 on shower nights
+    // Base 30-90s, boosted nights compress to 8-22s for a visible storm.
+    const min = 30000 / boost;
+    const max = 90000 / boost;
+    const delay = min + Math.random() * (max - min);
     shootingTimer = setTimeout(() => {
-      if (shootingHost && isNightPhase(mount.dataset.phase) &&
-          weather !== "storm" && weather !== "rain" && weather !== "heavy-rain" &&
-          weather !== "fog" && weather !== "overcast") {
-        const star = document.createElement("div");
-        star.className = "bg-shooting-star";
-        // Random position in the upper half of the sky.
-        star.style.setProperty("--ss-x", `${5 + Math.random() * 60}%`);
-        star.style.setProperty("--ss-y", `${5 + Math.random() * 35}%`);
-        // Vary streak angle slightly so they don't all look identical.
-        star.style.setProperty("--ss-angle", `${20 + Math.random() * 25}deg`);
-        shootingHost.appendChild(star);
-        star.addEventListener("animationend", () => star.remove());
-      }
+      const allowed = isNightPhase(mount.dataset.phase) &&
+        weather !== "storm" && weather !== "rain" && weather !== "heavy-rain" &&
+        weather !== "fog" && weather !== "overcast";
+      if (allowed) spawnShootingStar();
       scheduleShootingStar();
     }, delay);
   }
   scheduleShootingStar();
+
+  // Page-load celebration: one star within ~3-8 s of load whenever the
+  // sky can show one (regardless of meteor schedule).
+  const initialStarTimer = setTimeout(() => {
+    const allowed = isNightPhase(mount.dataset.phase) &&
+      weather !== "storm" && weather !== "rain" && weather !== "heavy-rain" &&
+      weather !== "fog" && weather !== "overcast";
+    if (allowed) spawnShootingStar();
+  }, 3000 + Math.random() * 5000);
 
   // ---- Bird flock: V-formation crossing the sky during clear daytime.
   // Reuses a single hosted SVG; we trigger a CSS animation by toggling
@@ -654,14 +949,167 @@ export async function renderBackground(mount, settings, saveSettings) {
   }
   schedulePlane();
 
+  // ---- Bats: same V-formation pattern as birds but at dusk only.
+  const batsHost = mount.querySelector(".bg-bats-host");
+  let batTimer = null;
+  function scheduleBatFlock() {
+    const delay = 45000 + Math.random() * 90000; // 45s-2.25min
+    batTimer = setTimeout(() => {
+      const dusky = ["dusk", "nautical-dusk", "astronomical-dusk"].includes(mount.dataset.phase);
+      const calm = weather === "clear" || weather === "cloudy";
+      if (batsHost && dusky && calm) {
+        batsHost.style.setProperty("--bat-y", `${20 + Math.random() * 40}%`);
+        batsHost.classList.remove("bg-bats-host--flying");
+        void batsHost.offsetWidth;
+        batsHost.classList.add("bg-bats-host--flying");
+      }
+      scheduleBatFlock();
+    }, delay);
+  }
+  scheduleBatFlock();
+
+  // ---- Butterflies: spring/summer temperate, daytime, low altitude.
+  const butterfliesHost = mount.querySelector(".bg-butterflies-host");
+  let butterflyTimer = null;
+  function scheduleButterfly() {
+    const delay = 60000 + Math.random() * 120000;
+    butterflyTimer = setTimeout(() => {
+      const eligibleSeason = ["spring", "summer"].includes(mount.dataset.season);
+      const eligibleBiome  = mount.dataset.biome === "temperate";
+      const dayPhase = ["morning", "midday", "afternoon", "golden-hour"].includes(mount.dataset.phase);
+      const calm = weather === "clear" || weather === "cloudy";
+      if (butterfliesHost && eligibleSeason && eligibleBiome && dayPhase && calm) {
+        const bf = document.createElement("div");
+        bf.className = "bg-butterfly";
+        bf.style.setProperty("--bf-y", `${50 + Math.random() * 25}%`);
+        bf.style.setProperty("--bf-tone", `hsl(${Math.floor(Math.random() * 60)}, 65%, 55%)`);
+        bf.innerHTML = BUTTERFLY_SVG;
+        butterfliesHost.appendChild(bf);
+        bf.addEventListener("animationend", () => bf.remove());
+      }
+      scheduleButterfly();
+    }, delay);
+  }
+  scheduleButterfly();
+
+  // ---- NYE fireworks: random bursts all day on Dec 31. Each burst is a
+  // single SVG bloom of N radial spikes spawned at a random sky position.
+  const fireworksHost = mount.querySelector(".bg-fireworks-host");
+  let fireworksTimer = null;
+  function spawnFirework() {
+    if (!fireworksHost) return;
+    const fw = document.createElement("div");
+    fw.className = "bg-firework";
+    fw.style.setProperty("--fw-x", `${10 + Math.random() * 80}%`);
+    fw.style.setProperty("--fw-y", `${10 + Math.random() * 45}%`);
+    // Random hue per burst.
+    const hue = Math.floor(Math.random() * 360);
+    fw.style.setProperty("--fw-color", `hsl(${hue}, 95%, 60%)`);
+    // 24 spikes radially.
+    const spikes = Array.from({ length: 24 }, (_, i) => {
+      const angle = (i / 24) * 360;
+      return `<i class="spike" style="--spike-angle:${angle}deg"></i>`;
+    }).join("");
+    fw.innerHTML = `<div class="bg-firework__core"></div>${spikes}`;
+    fireworksHost.appendChild(fw);
+    setTimeout(() => fw.remove(), 1800);
+  }
+  function scheduleFirework() {
+    const delay = 4000 + Math.random() * 9000; // 4-13s between bursts
+    fireworksTimer = setTimeout(() => {
+      if (fireworksHost && mount.dataset.holiday === "nye") {
+        spawnFirework();
+        // Burst sometimes spawns 2-3 in quick succession for finale feel.
+        if (Math.random() < 0.3) setTimeout(spawnFirework, 250);
+        if (Math.random() < 0.15) setTimeout(spawnFirework, 500);
+      }
+      scheduleFirework();
+    }, delay);
+  }
+  scheduleFirework();
+
+  // ---- Birthday balloons: drift up across the whole sky.
+  const balloonsHost = mount.querySelector(".bg-balloons-host");
+  let balloonTimer = null;
+  function scheduleBalloon() {
+    const delay = 18000 + Math.random() * 30000;
+    balloonTimer = setTimeout(() => {
+      if (balloonsHost && mount.dataset.holiday === "birthday") {
+        const b = document.createElement("div");
+        b.className = "bg-balloon";
+        b.style.setProperty("--b-x", `${5 + Math.random() * 90}%`);
+        b.style.setProperty("--b-sway", Math.random() < 0.5 ? "1" : "-1");
+        b.innerHTML = BALLOON_SVG;
+        balloonsHost.appendChild(b);
+        b.addEventListener("animationend", () => b.remove());
+      }
+      scheduleBalloon();
+    }, delay);
+  }
+  scheduleBalloon();
+
+  // ---- Whale fluke: rare breach for coastal locations during daylight.
+  const whaleHost = mount.querySelector(".bg-whale-host");
+  let whaleTimer = null;
+  function scheduleWhale() {
+    const delay = 180000 + Math.random() * 240000; // 3-7min
+    whaleTimer = setTimeout(() => {
+      if (whaleHost && mount.dataset.locality === "coastal" &&
+          ["morning", "midday", "afternoon", "golden-hour"].includes(mount.dataset.phase) &&
+          (weather === "clear" || weather === "cloudy")) {
+        const w = document.createElement("div");
+        w.className = "bg-whale";
+        w.style.setProperty("--w-x", `${20 + Math.random() * 60}%`);
+        w.innerHTML = WHALE_FLUKE_SVG;
+        whaleHost.appendChild(w);
+        w.addEventListener("animationend", () => w.remove());
+      }
+      scheduleWhale();
+    }, delay);
+  }
+  scheduleWhale();
+
+  // ---- Rainbow: appears for ~3 minutes after weather transitions from
+  // any rain* to clear. We track the previous weather across each tick.
+  let prevWeather = weather;
+  let rainbowUntil = 0;
+  const trackRainbow = () => {
+    const wasRain = ["rain", "heavy-rain", "drizzle"].includes(prevWeather);
+    const nowClear = weather === "clear";
+    if (wasRain && nowClear) {
+      rainbowUntil = Date.now() + 3 * 60 * 1000;
+    }
+    prevWeather = weather;
+    mount.dataset.rainbow = (Date.now() < rainbowUntil) ? "on" : "off";
+  };
+  trackRainbow();
+  // Also re-evaluate on each refresh tick (every minute in updateScene
+  // and after weather refreshes).
+
+  // ---- Mouse parallax: mountains shift left/right slightly with cursor.
+  // Use one global handler on the document; ignore if reduced motion.
+  const onMouseMove = (e) => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const x = (e.clientX / window.innerWidth - 0.5) * 2; // -1..1
+    mount.style.setProperty("--parallax-x", x.toFixed(3));
+  };
+  document.addEventListener("mousemove", onMouseMove, { passive: true });
+
   return () => {
     clearInterval(interval);
     clearInterval(refreshInterval);
     if (rolloverTimeout) clearTimeout(rolloverTimeout);
     if (shootingTimer) clearTimeout(shootingTimer);
+    if (initialStarTimer) clearTimeout(initialStarTimer);
     if (birdTimer) clearTimeout(birdTimer);
     if (initialBirdTimer) clearTimeout(initialBirdTimer);
     if (planeTimer) clearTimeout(planeTimer);
+    if (batTimer) clearTimeout(batTimer);
+    if (butterflyTimer) clearTimeout(butterflyTimer);
+    if (fireworksTimer) clearTimeout(fireworksTimer);
+    if (balloonTimer) clearTimeout(balloonTimer);
+    if (whaleTimer) clearTimeout(whaleTimer);
+    document.removeEventListener("mousemove", onMouseMove);
   };
 }
 
@@ -727,22 +1175,67 @@ function updateScene(mount, weather, sunTimes) {
     // We attach the latitude on the mount as a closure-shared field so the
     // spawners can read it without needing to thread it through arguments.
     const lat = mount._bgLat;
+    const lon = mount._bgLon;
     if (lat != null) {
-      mount.dataset.biome      = getBiome(lat);
-      mount.dataset.hemisphere = getHemisphere(lat);
-      mount.dataset.season     = getSeason(now, getHemisphere(lat));
+      const hemi = getHemisphere(lat);
+      mount.dataset.hemisphere = hemi;
+      mount.dataset.season     = getSeason(now, hemi);
+      // Desert overrides the lat-based biome where applicable.
+      if (isDesertLocation(lat, lon)) {
+        mount.dataset.biome  = "desert";
+      } else {
+        mount.dataset.biome  = getBiome(lat);
+      }
       // Aurora eligibility: high latitude (|lat|>=55°) AND clear-ish night.
       const auroraEligible = Math.abs(lat) >= 55 &&
         (weather === "clear" || weather === "cloudy") &&
         (phase === "night" || phase === "astronomical-night" ||
          phase === "astronomical-dusk" || phase === "astronomical-dawn");
       mount.dataset.aurora = auroraEligible ? "on" : "off";
+      // Milky Way: galactic core up during these hemisphere-month windows
+      // AND deep-night phase AND clear weather.
+      const mwUp = milkyWayActive(now, hemi) &&
+        (phase === "astronomical-night" || phase === "night") &&
+        (weather === "clear" || weather === "cloudy");
+      mount.dataset.milkyWay = mwUp ? "on" : "off";
     } else {
       mount.dataset.biome      = "temperate";
       mount.dataset.hemisphere = "N";
       mount.dataset.season     = getSeason(now, "N");
       mount.dataset.aurora     = "off";
+      mount.dataset.milkyWay   = "off";
     }
+
+    // Locality override (settings.appearance.locality): user can pin
+    // coastal/urban/desert/default. Defaults to "auto" (use detected biome).
+    const localityOverride = mount._bgLocality;
+    if (localityOverride && localityOverride !== "auto") {
+      mount.dataset.locality = localityOverride;
+    } else {
+      mount.dataset.locality = "auto";
+    }
+
+    // Holiday: 24h banner — Halloween, Christmas Eve / Day, NYE, New Year,
+    // user birthday. CSS gates jack-o-lanterns / sleigh / fireworks / balloons.
+    const holiday = getHoliday(now, mount._bgBirthday);
+    if (holiday) mount.dataset.holiday = holiday;
+    else delete mount.dataset.holiday;
+
+    // Moon phase: paint the moon SVG in 0.05 increments to avoid re-render
+    // churn. Only update when the bucketed phase changes.
+    const moon = mount.querySelector(".bg-moon");
+    if (moon) {
+      const phaseFrac = getMoonPhase(now);
+      const bucket = Math.round(phaseFrac * 20) / 20; // 21 distinct values
+      if (moon._phase !== bucket) {
+        moon._phase = bucket;
+        moon.innerHTML = moonSVG(bucket);
+        moon.dataset.phaseFrac = bucket.toFixed(2);
+      }
+    }
+
+    // Meteor shower boost stored on mount for spawner to read.
+    mount._meteorBoost = meteorShowerBoost(now);
 
     // Wet/heavy weather hides or dims the sun behind the cloud deck. Rain
     // gets full hide because a visible warm sun behind rain streaks reads
