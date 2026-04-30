@@ -1,7 +1,9 @@
-// Vantage v0.7.1 — chrome.storage.local wrapper with deep-merged defaults.
+// Vantage v0.8.0 — chrome.storage.local wrapper with deep-merged defaults.
 
 const DEFAULTS = {
   theme: "mocha",
+  accent: "mauve",
+  customCSS: "",
   greeting: {
     enabled: true,
     name: ""
@@ -12,8 +14,8 @@ const DEFAULTS = {
   },
   weather: {
     enabled: true,
-    location: null, // { name, latitude, longitude } — autodetected on first run
-    units: "fahrenheit" // or "celsius"
+    location: null,
+    units: "fahrenheit"
   },
   clock: {
     enabled: true,
@@ -24,7 +26,15 @@ const DEFAULTS = {
     panels: ["news", "rss"]
   },
   background: {
-    enabled: true
+    enabled: true,
+    kind: "animated",       // "animated" | "solid" | "gradient" | "image-url" | "image-upload" | "bing-daily"
+    solid: "#1e1e2e",
+    gradient: { from: "#1e1e2e", to: "#313244", angle: 135 },
+    imageUrl: "",
+    imageData: null,         // base64 data-uri for uploaded image
+    bingDailyCache: null,    // { url: string, date: "YYYY-MM-DD" }
+    blur: 0,                 // 0–20 px  (image/bing/upload only)
+    brightness: 100          // 50–150 % (image/bing/upload only)
   },
   quicklinks: {
     enabled: true,
@@ -35,7 +45,12 @@ const DEFAULTS = {
       { title: "Hacker News", url: "https://news.ycombinator.com" },
       { title: "Gmail", url: "https://mail.google.com" },
       { title: "Calendar", url: "https://calendar.google.com" }
-    ]
+    ],
+    groups: []               // [{ id, name, items: [{ title, url }] }]
+  },
+  topsites: {
+    enabled: false,
+    maxItems: 8
   },
   rss: {
     enabled: true,
@@ -55,6 +70,9 @@ const DEFAULTS = {
     maxItems: 15,
     readItems: []
   },
+  feedFilters: {
+    rules: []                // [{ id, pattern, field:"title"|"url", action:"mute"|"highlight", color:null }]
+  },
   airquality: {
     enabled: false
   },
@@ -63,7 +81,7 @@ const DEFAULTS = {
     overlay: "wind",
     zoom: 5
   },
-  embeds: [],  // [{ id, title, url, enabled }] — replaces singular embed
+  embeds: [],
   calendar: {
     enabled: false,
     feeds: [],
@@ -130,13 +148,14 @@ const DEFAULTS = {
     enabled: false,
     defaultCategory: "length"
   },
-  accent: "mauve",
-  customCSS: "",
+  workspaces: {
+    active: null,            // workspace id or null (null = base settings)
+    list: []                 // [{ id, name, snapshot: { accent, background, layout, quicklinks, enabled:{} } }]
+  },
+  containerMap: {},          // Firefox-only: { cookieStoreId: workspaceId }
   onboardingComplete: false
 };
 
-// Cap on per-panel read-items to prevent unbounded growth.
-// 500 URLs ≈ 250KB worst case. chrome.storage.local quota is 10MB.
 export const READ_CAP = 500;
 
 export function pushRead(existingArr, urls) {
@@ -146,7 +165,6 @@ export function pushRead(existingArr, urls) {
   return out.length > READ_CAP ? out.slice(out.length - READ_CAP) : out;
 }
 
-/** Returns true if the user has previously saved settings (i.e. not a first install). */
 export async function hasStoredSettings() {
   if (!chrome?.storage?.local) return false;
   const stored = await chrome.storage.local.get("vantageSettings");
@@ -154,7 +172,6 @@ export async function hasStoredSettings() {
 }
 
 export async function loadSettings() {
-  // Ask the browser to retain our data under storage pressure.
   navigator.storage?.persist?.();
 
   if (!chrome?.storage?.local) {
@@ -163,7 +180,7 @@ export async function loadSettings() {
   const stored = await chrome.storage.local.get("vantageSettings");
   const merged = mergeDeep(structuredClone(DEFAULTS), stored.vantageSettings || {});
 
-  // Migrate singular embed → embeds array (v0.6.x → v0.7.0)
+  // v0.6.x → v0.7.0: singular embed → embeds array
   if (merged.embed !== undefined) {
     if (!merged.embeds || merged.embeds.length === 0) {
       if (merged.embed?.url) {
@@ -176,6 +193,11 @@ export async function loadSettings() {
       }
     }
     delete merged.embed;
+  }
+
+  // v0.7.x → v0.8.0: quicklinks.items flat array → quicklinks object shape
+  if (Array.isArray(merged.quicklinks)) {
+    merged.quicklinks = { enabled: true, items: merged.quicklinks, groups: [] };
   }
 
   return merged;

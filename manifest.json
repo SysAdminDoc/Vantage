@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Vantage",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "description": "Customizable new tab dashboard — search engines, RSS, news, weather, and quick links. Privacy-first. No API keys required.",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
@@ -26,7 +26,8 @@
   "permissions": [
     "storage",
     "alarms",
-    "bookmarks"
+    "bookmarks",
+    "topSites"
   ],
   "host_permissions": [
     "https://api.open-meteo.com/*",
@@ -34,6 +35,7 @@
     "https://air-quality-api.open-meteo.com/*",
     "https://api.allorigins.win/*",
     "https://corsproxy.io/*",
+    "https://www.bing.com/*",
     "*://*/*"
   ]
 }

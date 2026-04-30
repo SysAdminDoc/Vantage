@@ -3694,3 +3694,279 @@ a {
   background: color-mix(in srgb, var(--surface1) 50%, transparent);
   color: var(--accent);
 }
+
+/* ============================================================
+   v0.8.0 — New feature styles
+   ============================================================ */
+
+/* ---- Top Sites --------------------------------------------------------- */
+
+.topsites-mount {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.topsites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 720px;
+  padding: 4px 0;
+}
+
+.topsite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 60px;
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.topsite:hover { transform: translateY(-2px); opacity: 0.85; }
+
+.topsite__favicon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--surface1);
+  object-fit: contain;
+  display: block;
+}
+
+.topsite__fallback {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--surface1);
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.topsite__label {
+  font-size: 0.68rem;
+  color: var(--subtext1);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60px;
+}
+
+/* ---- Quick Link Groups ------------------------------------------------- */
+
+.quicklink--group {
+  background: var(--surface0);
+  border: 1px solid var(--surface1);
+  border-radius: var(--r-2);
+  cursor: pointer;
+  position: relative;
+}
+.quicklink--group:hover { background: var(--surface1); }
+
+.quicklink__folder-icon { font-style: normal; }
+
+.ql-group-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.97);
+  min-width: 180px;
+  max-width: 280px;
+  background: var(--mantle);
+  border: 1px solid var(--surface1);
+  border-radius: var(--r-2);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  padding: 6px 0;
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.ql-group-popover--open {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+.ql-group-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 0.85rem;
+  transition: background 0.1s ease;
+}
+.ql-group-item:hover { background: var(--surface0); }
+
+.ql-group-item__favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.ql-group-empty {
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  color: var(--subtext0);
+  margin: 0;
+}
+
+/* ---- Feed Highlight ----------------------------------------------------- */
+
+.feed-item--highlight {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+/* ---- Workspace Bar ----------------------------------------------------- */
+
+.workspace-bar {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 6px 0;
+}
+
+.workspace-pill {
+  padding: 4px 14px;
+  font-size: 0.78rem;
+  border-radius: 999px;
+  border: 1px solid var(--surface1);
+  background: var(--surface0);
+  color: var(--subtext1);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.workspace-pill:hover { background: var(--surface1); color: var(--text); }
+.workspace-pill--active {
+  background: var(--accent);
+  color: var(--base);
+  border-color: var(--accent);
+}
+
+/* ---- View Transitions -------------------------------------------------- */
+
+@keyframes vt-slide-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+::view-transition-old(root) { animation: 160ms ease both fade-out; }
+::view-transition-new(root) { animation: 200ms ease both vt-slide-in; }
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ---- Background kind settings ----------------------------------------- */
+
+.settings-bg-kind-host {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 0 4px;
+}
+
+.color-input {
+  width: 48px;
+  height: 32px;
+  border: none;
+  border-radius: var(--r-1);
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+/* ---- Feed Filters ------------------------------------------------------ */
+
+.filter-rule-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--surface0);
+}
+.filter-rule-row:last-child { border-bottom: none; }
+
+/* ---- Feed Presets ------------------------------------------------------ */
+
+.feed-presets {
+  margin-top: 8px;
+}
+.feed-presets__toggle {
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--accent);
+  padding: 4px 0;
+  user-select: none;
+  list-style: none;
+}
+.feed-presets__toggle::-webkit-details-marker { display: none; }
+.feed-presets { display: block; }
+.feed-presets[open] .feed-presets__toggle::before { content: "\25BE "; }
+.feed-presets .feed-presets__toggle::before { content: "\25B8 "; }
+
+.feed-presets button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-top: 4px;
+}
+
+/* ---- Workspace list items --------------------------------------------- */
+
+.workspace-item {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--surface0);
+}
+.workspace-item:last-child { border-bottom: none; }
+.workspace-item .text-input { flex: 1; }
+
+/* ---- Storage Quota ----------------------------------------------------- */
+
+.quota-bar-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+}
+
+.quota-bar {
+  height: 6px;
+  background: var(--accent);
+  border-radius: 999px;
+  width: 0%;
+  max-width: 100%;
+  transition: width 0.4s ease;
+}
+.quota-bar--warn { background: var(--red, #f38ba8); }
+
+.quota-label {
+  font-size: 0.78rem;
+  color: var(--subtext1);
+}
+
+/* ---- Container dot ----------------------------------------------------- */
+
+.container-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
