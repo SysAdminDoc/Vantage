@@ -1737,6 +1737,7 @@ a {
   outline: none;
   border-color: var(--accent);
   background: var(--bg-input-hover);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .text-input--inline {
