@@ -251,15 +251,34 @@ export async function renderBackground(mount, settings, saveSettings) {
     } catch { /* defaults stay */ }
   }
 
-  // Compute sun-event times locally from the location coordinates. This
-  // is more accurate than Open-Meteo's `daily.sunrise[0]` because the
-  // OM string has no timezone suffix and `new Date(str)` interprets it
-  // as browser-local time — wrong if browser TZ != location TZ. The
-  // local computation returns absolute UTC moments that compare
-  // correctly to `Date.now()` regardless of where the browser is.
-  const recomputeSunTimes = () => {
+  // Compute sun-event times. Strategy:
+  //   1) Open-Meteo's `daily.sunrise[0]` / `daily.sunset[0]` (requested
+  //      with timezone=UTC, parsed with 'Z' suffix → absolute UTC moments).
+  //      Open-Meteo uses NREL SPA which is the NIST-accuracy gold standard
+  //      (±30 seconds, accounts for atmospheric refraction model variation
+  //      and topography).
+  //   2) Local astronomical sun-calc.js as a fallback (NOAA / SunCalc
+  //      simplified algorithm, ±1-2 minutes) — runs when offline, when
+  //      Open-Meteo is unavailable, and pre-fetch on first paint.
+  //   3) Civil twilight (dawn/dusk) always comes from the local calc;
+  //      Open-Meteo does not return civil twilight in the free tier.
+  const parseUTC = (naive) => new Date((naive.endsWith("Z") ? naive : naive + "Z"));
+  const recomputeSunTimes = (openMeteoData = null) => {
     if (!location) return;
-    sunTimes = getSunTimes(new Date(), location.latitude, location.longitude);
+    // Always start from the local astronomical calc — gives us civil
+    // twilight + handles polar regions + works offline.
+    const local = getSunTimes(new Date(), location.latitude, location.longitude);
+    // If Open-Meteo gave us sunrise/sunset, use those (more accurate by
+    // ~1 minute), keep dawn/dusk/noon from the local calc.
+    if (openMeteoData?.daily?.sunrise?.[0] && openMeteoData?.daily?.sunset?.[0]) {
+      sunTimes = {
+        ...local,
+        sunrise: parseUTC(openMeteoData.daily.sunrise[0]),
+        sunset:  parseUTC(openMeteoData.daily.sunset[0])
+      };
+    } else {
+      sunTimes = local;
+    }
   };
   recomputeSunTimes();
   updateScene(mount, weather, sunTimes);
@@ -268,6 +287,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     try {
       const data = await getWeatherData(location, settings.weather?.units || "fahrenheit");
       weather = CODE_TO_WEATHER[data.current?.weather_code] || "clear";
+      recomputeSunTimes(data); // upgrade to NREL SPA precision
       updateScene(mount, weather, sunTimes);
     } catch { /* keep current scene */ }
   }
@@ -277,11 +297,13 @@ export async function renderBackground(mount, settings, saveSettings) {
   const interval = setInterval(tick, 60_000);
 
   // Re-fetch weather every 10 minutes so storms / clearing skies follow reality.
+  // The same fetch refreshes sunrise/sunset to NREL precision.
   const refreshInterval = setInterval(async () => {
     if (!location) return;
     try {
       const data = await getWeatherData(location, settings.weather?.units || "fahrenheit", { force: true });
       weather = CODE_TO_WEATHER[data.current?.weather_code] || "clear";
+      recomputeSunTimes(data);
       tick();
     } catch { /* keep last-known */ }
   }, 10 * 60 * 1000);

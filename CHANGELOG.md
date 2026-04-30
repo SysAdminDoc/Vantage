@@ -2,6 +2,12 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.12 — 2026-04-29
+
+### Changed
+- **Hybrid sun-time strategy: Open-Meteo NREL SPA primary + local SunCalc fallback.** v0.4.11 used purely local astronomical calc (~±1-2 min vs ground truth). Now Open-Meteo is the primary source — it uses NREL Solar Position Algorithm which is NIST-accuracy (±30 seconds, accounts for atmospheric refraction model variation). Local sun-calc.js is the fallback for first paint (before the API responds), offline use, and any API failure. Civil twilight (dawn/dusk) always comes from the local calc since Open-Meteo's free tier doesn't include it.
+- **Open-Meteo URL switched from `timezone=auto` to `timezone=UTC`.** Resolves the original timezone bug end-to-end: with auto mode, `daily.sunrise[0]` was a localized ISO string with no TZ suffix that JS parsed as browser-local time. With UTC mode, we just append 'Z' and get correct absolute moments. The `utc_offset_seconds` field in the response remains available if any UI element needs to display location-local time.
+
 ## v0.4.11 — 2026-04-29
 
 ### Changed

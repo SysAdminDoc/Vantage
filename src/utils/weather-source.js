@@ -30,13 +30,21 @@ export async function getWeatherData(location, units = "fahrenheit", { force = f
   }
 
   const tempUnit = units === "celsius" ? "celsius" : "fahrenheit";
+  // We intentionally request `timezone=UTC` for unambiguous parsing of the
+  // returned `daily.sunrise[0]` / `daily.sunset[0]` strings. With
+  // `timezone=auto`, Open-Meteo returns ISO strings in the location's local
+  // time WITHOUT a TZ suffix — `new Date(str)` then parses as the BROWSER's
+  // local time, which is wrong if browser TZ != location TZ. With UTC mode
+  // we just append 'Z' and parse absolute moments. The widget keeps a copy
+  // of `utc_offset_seconds` so the temperature display can still show the
+  // location's local time if needed.
   const url =
     `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${location.latitude}&longitude=${location.longitude}` +
     `&current=temperature_2m,apparent_temperature,weather_code,is_day,cloud_cover,wind_speed_10m` +
     `&daily=sunrise,sunset` +
     `&temperature_unit=${tempUnit}` +
-    `&timezone=auto`;
+    `&timezone=UTC`;
 
   const fetchPromise = (async () => {
     const res = await fetch(url, { cache: "no-store" });
