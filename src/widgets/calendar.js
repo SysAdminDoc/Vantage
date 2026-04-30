@@ -136,7 +136,7 @@ export function renderCalendar(mount, settings, { onAttachDragHandle } = {}) {
       }
     } catch (err) {
       clear(body);
-      body.appendChild(el("p", { class: "panel-error" }, [`Calendar error: ${err.message}`]));
+      body.appendChild(el("p", { class: "panel-error" }, [`Couldn't load calendar — ${err.message.toLowerCase()}.`]));
     }
   })();
 }

@@ -29,7 +29,7 @@ export function renderBookmarks(mount, settings, { onAttachDragHandle } = {}) {
 
   if (!chrome?.bookmarks) {
     body.appendChild(el("p", { class: "panel-empty" }, [
-      "Bookmarks API unavailable. Make sure the bookmarks permission is granted."
+      "Bookmarks unavailable — grant the bookmarks permission in your browser's extension settings."
     ]));
     return;
   }

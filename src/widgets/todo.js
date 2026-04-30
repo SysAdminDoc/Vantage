@@ -95,7 +95,7 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
   }
 
   if (visible.length === 0) {
-    listEl.appendChild(el("li", { class: "panel-empty" }, ["No tasks yet. Add one above."]));
+    listEl.appendChild(el("li", { class: "panel-empty" }, ["No tasks yet — add one above."]));
   }
 
   const body = el("div", { class: "panel-body todo-body" }, [addRow, listEl]);
