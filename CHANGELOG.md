@@ -2,6 +2,13 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.6.2 — 2026-04-29
+
+### Added
+- **Windy radar panel** — embeds `embed.windy.com` centered on your weather city. Configurable overlay (wind, gusts, rain, temperature, clouds, pressure, humidity) and zoom level. Drag-to-reorder with the other reading panels.
+- **Embed panel** — generic configurable iframe for any external service (e.g. ADS-B Exchange flight tracker). Set a title and URL in Settings → Embed. Shows an "Open in new tab" link in the panel header and a graceful fallback if the site blocks embedding.
+- New SVG icons: `plane` (embed panel header), `layers` (used by overlay picker).
+
 ## v0.6.1 — 2026-04-30
 
 ### Fixed

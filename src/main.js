@@ -1,4 +1,4 @@
-// Vantage v0.6.0 — entry point. Loads settings, mounts widgets, wires UI.
+// Vantage v0.6.2 — entry point. Loads settings, mounts widgets, wires UI.
 
 import { loadSettings, saveSettings, onSettingsChanged, hasStoredSettings } from "./storage.js";
 import { iconNode } from "./icons.js";
@@ -11,6 +11,8 @@ import { renderNews }       from "./widgets/news.js";
 import { renderBackground } from "./widgets/background.js";
 import { renderAirQuality } from "./widgets/airquality.js";
 import { renderCalendar }   from "./widgets/calendar.js";
+import { renderWindy }      from "./widgets/windy.js";
+import { renderEmbed }      from "./widgets/embed.js";
 import { renderPomodoro }   from "./widgets/pomodoro.js";
 import { renderSettingsPanel, openPanel, closePanel } from "./settings.js";
 import { showOnboarding } from "./onboarding.js";
@@ -22,7 +24,7 @@ let panelDragCleanup  = null;
 let backgroundTeardown = null;
 let pomodoroTeardown  = null;
 
-const PANEL_KINDS = ["news", "rss", "calendar"];
+const PANEL_KINDS = ["news", "rss", "calendar", "windy", "embed"];
 
 async function init() {
   // Handle shared-config URL fragment (#import=<base64-json>)
@@ -117,6 +119,8 @@ function mountAll() {
   renderNews(document.getElementById("news-mount"), currentSettings, { onAttachDragHandle: onAttach("news") });
   renderRss(document.getElementById("rss-mount"),  currentSettings, { onAttachDragHandle: onAttach("rss") });
   renderCalendar(document.getElementById("calendar-mount"), currentSettings, { onAttachDragHandle: onAttach("calendar") });
+  renderWindy(document.getElementById("windy-mount"), currentSettings, { onAttachDragHandle: onAttach("windy") });
+  renderEmbed(document.getElementById("embed-mount"), currentSettings, { onAttachDragHandle: onAttach("embed") });
 }
 
 function applyPanelOrder() {
