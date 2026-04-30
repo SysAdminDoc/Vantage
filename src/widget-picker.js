@@ -64,6 +64,13 @@ const WIDGET_GROUPS = [
 export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, openSettingsPanel) {
   let isOpen = false;
 
+  const onDocKey = (e) => {
+    if (e.key === "Escape" && isOpen) close();
+  };
+  const onDocMousedown = (e) => {
+    if (isOpen && !pickerEl.contains(e.target) && !toggleBtn.contains(e.target)) close();
+  };
+
   function open() {
     isOpen = true;
     rebuildPicker();
@@ -71,6 +78,8 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
     toggleBtn.setAttribute("aria-expanded", "true");
     requestAnimationFrame(() => pickerEl.classList.add("widget-picker--open"));
     setTimeout(() => pickerEl.querySelector(".widget-picker__inner")?.focus?.(), 50);
+    document.addEventListener("keydown", onDocKey);
+    document.addEventListener("mousedown", onDocMousedown);
   }
 
   function close() {
@@ -79,17 +88,11 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
     toggleBtn.setAttribute("aria-expanded", "false");
     setTimeout(() => { pickerEl.hidden = true; }, 220);
     toggleBtn.focus({ preventScroll: true });
+    document.removeEventListener("keydown", onDocKey);
+    document.removeEventListener("mousedown", onDocMousedown);
   }
 
   toggleBtn.addEventListener("click", () => isOpen ? close() : open());
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && isOpen) close();
-  });
-
-  document.addEventListener("mousedown", (e) => {
-    if (isOpen && !pickerEl.contains(e.target) && !toggleBtn.contains(e.target)) close();
-  });
 
   function rebuildPicker() {
     clear(pickerEl);
