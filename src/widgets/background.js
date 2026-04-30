@@ -18,7 +18,8 @@
 //   .bg-horizon-flash distant lightning at horizon (rain without storm)
 //   .bg-sun           sun or moon disc, positioned along an arc
 //   .bg-birds         V-formation flock crossing sky (clear daylight)
-//   .bg-mountains     distant mountain silhouettes (3-layer parallax)
+//   .bg-mountains     distant atmospheric mountain ridges (3-layer parallax)
+//   .bg-ocean         coastal water plane with subtle wave drift
 //   .bg-tree          biome-aware foreground tree (palm/pine/oak)
 //
 // The mount carries data-phase + data-weather + data-biome + data-season
@@ -226,16 +227,16 @@ const OAK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" p
   </g>
 </svg>`;
 
-// Distant mountain ranges — three layers for parallax. Each layer is its
-// own SVG so it can be opacity/blur tuned independently in CSS.
+// Distant mountain ranges — three atmospheric ridge layers for parallax. Each
+// layer is its own SVG so it can be opacity/blur tuned independently in CSS.
 const MOUNTAINS_FAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" preserveAspectRatio="xMidYMax slice">
-  <path fill="#0a0a0d" d="M0 200 L0 140 L80 110 L160 130 L240 80 L320 110 L420 60 L500 100 L580 70 L680 110 L760 50 L860 90 L940 70 L1040 100 L1120 60 L1200 90 L1200 200 Z"/>
+  <path fill="currentColor" d="M0 200 L0 150 C60 140 116 132 180 140 C242 118 310 108 376 116 C444 84 528 78 610 108 C680 92 744 90 814 112 C892 86 984 88 1062 118 C1110 105 1160 103 1200 116 L1200 200 Z"/>
 </svg>`;
 const MOUNTAINS_MID_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" preserveAspectRatio="xMidYMax slice">
-  <path fill="#0a0a0d" d="M0 220 L0 160 L100 120 L200 150 L300 90 L420 130 L540 80 L660 120 L780 70 L880 110 L980 80 L1080 120 L1200 90 L1200 220 Z"/>
+  <path fill="currentColor" d="M0 220 L0 164 C70 148 125 139 190 150 C255 118 328 104 400 120 C470 96 550 88 628 124 C704 94 790 88 866 122 C940 104 1032 104 1102 132 C1145 118 1175 112 1200 116 L1200 220 Z"/>
 </svg>`;
 const MOUNTAINS_NEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" preserveAspectRatio="xMidYMax slice">
-  <path fill="#0a0a0d" d="M0 240 L0 200 L120 130 L260 180 L400 100 L540 160 L680 110 L820 170 L960 120 L1080 180 L1200 140 L1200 240 Z"/>
+  <path fill="currentColor" d="M0 240 L0 205 C75 178 137 150 210 165 C287 122 370 110 452 145 C530 118 604 112 680 148 C760 118 848 118 930 154 C1002 132 1092 132 1200 165 L1200 240 Z"/>
 </svg>`;
 
 // V-formation bird flock. Each bird is two arcs forming the wing-flap shape.
@@ -536,10 +537,29 @@ const DESERT_REGIONS = [
   [-30,-20,   15,   25, "kalahari"],
 ];
 
+// Coarse metro rectangles used only for "Auto" scenery. This avoids rendering
+// generic mountain horizons for obvious city locations such as New York.
+const URBAN_REGIONS = [
+  // [latMin, latMax, lonMin, lonMax, name]
+  [40.3, 41.1, -74.35, -73.55, "new-york"],
+  [33.6, 34.4, -118.75, -117.60, "los-angeles"],
+  [37.2, 38.2, -122.75, -121.70, "san-francisco-bay"],
+  [41.5, 42.2,  -88.10,  -87.30, "chicago"],
+  [51.2, 51.8,   -0.55,    0.35, "london"],
+  [48.6, 49.1,    2.00,    2.70, "paris"],
+  [35.4, 36.0,  139.30,  140.20, "tokyo"]
+];
+
 /** Returns true if (lat, lon) falls inside a known desert region. */
 function isDesertLocation(lat, lon) {
   if (lat == null || lon == null) return false;
   return DESERT_REGIONS.some(([la, lb, oa, ob]) => lat >= la && lat <= lb && lon >= oa && lon <= ob);
+}
+
+/** Returns true if (lat, lon) falls inside a known major metro region. */
+function isUrbanLocation(lat, lon) {
+  if (lat == null || lon == null) return false;
+  return URBAN_REGIONS.some(([la, lb, oa, ob]) => lat >= la && lat <= lb && lon >= oa && lon <= ob);
 }
 
 // ---- Locality + season helpers ----
@@ -723,6 +743,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     <div class="bg-mountains bg-mountains--far"  aria-hidden="true">${MOUNTAINS_FAR_SVG}</div>
     <div class="bg-mountains bg-mountains--mid"  aria-hidden="true">${MOUNTAINS_MID_SVG}</div>
     <div class="bg-mountains bg-mountains--near" aria-hidden="true">${MOUNTAINS_NEAR_SVG}</div>
+    <div class="bg-ocean" aria-hidden="true"></div>
     <div class="bg-skyline" aria-hidden="true">${CITY_SKYLINE_SVG}</div>
     <div class="bg-lighthouse" aria-hidden="true">${LIGHTHOUSE_SVG}</div>
     <div class="bg-whale-host" aria-hidden="true"></div>
@@ -1291,10 +1312,12 @@ function updateScene(mount, weather, sunTimes) {
     }
 
     // Locality override (settings.appearance.locality): user can pin
-    // coastal/urban/desert/default. Defaults to "auto" (use detected biome).
+    // coastal/urban/desert/default. Auto can infer known metro regions.
     const localityOverride = mount._bgLocality;
     if (localityOverride && localityOverride !== "auto") {
       mount.dataset.locality = localityOverride;
+    } else if (isUrbanLocation(lat, lon)) {
+      mount.dataset.locality = "urban";
     } else {
       mount.dataset.locality = "auto";
     }
