@@ -55,7 +55,8 @@ export async function renderWeather(mount, settings, saveSettings) {
       clear(mount);
       mount.appendChild(el("div", {
         class: "weather weather--error",
-        title: "Set a city in settings to enable weather"
+        title: "Set a city in Settings → Weather to enable",
+        "aria-label": "Weather unavailable — set a city in settings"
       }, ["Weather unavailable"]));
       return;
     }
@@ -67,22 +68,26 @@ export async function renderWeather(mount, settings, saveSettings) {
     const code = data.current.weather_code;
     const meta = WMO_CODES[code] || { label: "Unknown", icon: "❓" };
     const unit = settings.weather.units === "celsius" ? "°C" : "°F";
+    const unitLabel = settings.weather.units === "celsius" ? "Celsius" : "Fahrenheit";
     const locName = location.name || "Current location";
+    const temp = Math.round(data.current.temperature_2m);
+    const feelsLike = Math.round(data.current.apparent_temperature);
 
     mount.appendChild(el("div", {
       class: "weather",
-      title: `${meta.label} · feels like ${Math.round(data.current.apparent_temperature)}${unit}`,
-      "aria-label": `${Math.round(data.current.temperature_2m)} degrees ${unit}, ${meta.label}, ${locName}`
+      title: `${meta.label} · feels like ${feelsLike}${unit}`,
+      "aria-label": `${temp} degrees ${unitLabel}, ${meta.label}, ${locName}`
     }, [
       el("span", { class: "weather__icon", "aria-hidden": "true" }, [meta.icon]),
-      el("span", { class: "weather__temp" }, [`${Math.round(data.current.temperature_2m)}${unit}`]),
+      el("span", { class: "weather__temp" }, [`${temp}${unit}`]),
       el("span", { class: "weather__loc" }, [locName])
     ]));
   } catch (err) {
     clear(mount);
     mount.appendChild(el("div", {
       class: "weather weather--error",
-      title: err.message || "Could not load weather"
-    }, ["Weather offline"]));
+      title: err.message || "Couldn't load weather",
+      "aria-label": "Weather unavailable"
+    }, ["Weather unavailable"]));
   }
 }
