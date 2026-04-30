@@ -2,6 +2,7 @@
 
 import { el, clear, hostnameLabel } from "../utils/dom.js";
 import { makeReorderable, arrayMove } from "../utils/drag.js";
+import { iconNode } from "../icons.js";
 
 export function renderQuickLinks(mount, settings, { onChange } = {}) {
   clear(mount);
@@ -58,7 +59,7 @@ function buildGroupButton(group, mount) {
     "aria-expanded": "false",
     title: group.name
   }, [
-    el("span", { class: "quicklink__folder-icon", "aria-hidden": "true" }, ["\u{1F4C1}"]),
+    el("span", { class: "quicklink__folder-icon", "aria-hidden": "true" }, [iconNode("folder", { size: 14 })]),
     el("span", {}, [group.name])
   ]);
 

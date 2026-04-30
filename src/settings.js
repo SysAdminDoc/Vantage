@@ -1,4 +1,4 @@
-// Vantage v0.7.0 — settings panel built with primitives (toggle, segmented, icon-button).
+// Vantage v0.8.0 — settings panel built with primitives (toggle, segmented, icon-button).
 // Sections render as grouped rows with hints and icons. Sticky header with close button.
 
 import { el, clear, toggle, segmented, toast, hostnameLabel } from "./utils/dom.js";
@@ -961,7 +961,7 @@ function buildLinksSection(settings, onChange) {
       refreshList();
       toast(`${t} added.`, "success");
     }
-  }, [iconNode("plus", { size: 14 }), "Add link"]);
+  }, [iconNode("plus", { size: 14 }), " Add link"]);
 
   sec.appendChild(el("div", { class: "compose" }, [
     titleInput,
@@ -1059,7 +1059,7 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
       refreshList();
       toast(`Feed added.`, "success");
     }
-  }, [iconNode("plus", { size: 14 }), "Add feed"]);
+  }, [iconNode("plus", { size: 14 }), " Add feed"]);
 
   sec.appendChild(el("div", { class: "compose" }, [
     titleInput,
@@ -1338,7 +1338,7 @@ function buildCalendarSection(settings, onChange) {
       refreshList();
       toast("Calendar added.", "success");
     }
-  }, [iconNode("plus", { size: 14 }), "Add calendar"]);
+  }, [iconNode("plus", { size: 14 }), " Add calendar"]);
 
   sec.appendChild(el("div", { class: "compose" }, [
     titleInput,
@@ -1404,7 +1404,7 @@ function buildDataSection(settings, onChange, showWizard) {
       el("button", {
         type: "button", class: "button button--ghost",
         onClick: showWizard
-      }, [iconNode("settings", { size: 14 }), "Run wizard"])
+      }, [iconNode("settings", { size: 14 }), " Run wizard"])
     ));
   }
 
@@ -1419,7 +1419,7 @@ function buildDataSection(settings, onChange, showWizard) {
         triggerDownload(json, `vantage-settings-${isoDate()}.json`, "application/json");
         toast("Settings exported.", "success");
       }
-    }, [iconNode("download", { size: 14 }), "Export JSON"])
+    }, [iconNode("download", { size: 14 }), " Export JSON"])
   ));
 
   // JSON import
@@ -1446,7 +1446,7 @@ function buildDataSection(settings, onChange, showWizard) {
     el("button", {
       type: "button", class: "button button--ghost",
       onClick: () => jsonImportInput.click()
-    }, [iconNode("upload", { size: 14 }), "Import JSON"])
+    }, [iconNode("upload", { size: 14 }), " Import JSON"])
   ));
 
   // OPML export
@@ -1460,7 +1460,7 @@ function buildDataSection(settings, onChange, showWizard) {
         triggerDownload(opml, `vantage-feeds-${isoDate()}.opml`, "text/x-opml");
         toast("Feeds exported as OPML.", "success");
       }
-    }, [iconNode("download", { size: 14 }), "Export OPML"])
+    }, [iconNode("download", { size: 14 }), " Export OPML"])
   ));
 
   // OPML import
@@ -1496,7 +1496,7 @@ function buildDataSection(settings, onChange, showWizard) {
     el("button", {
       type: "button", class: "button button--ghost",
       onClick: () => opmlImportInput.click()
-    }, [iconNode("upload", { size: 14 }), "Import OPML"])
+    }, [iconNode("upload", { size: 14 }), " Import OPML"])
   ));
 
   // Share config URL
@@ -1515,7 +1515,7 @@ function buildDataSection(settings, onChange, showWizard) {
           }).catch(() => { toast("Clipboard access denied.", "error"); });
         } catch { toast("Could not generate share link.", "error"); }
       }
-    }, [iconNode("share", { size: 14 }), "Copy share link"])
+    }, [iconNode("share", { size: 14 }), " Copy share link"])
   ));
 
   sec.appendChild(g);
@@ -1607,6 +1607,10 @@ function buildWorldClockSection(settings, onChange) {
 
   function refreshClockList() {
     clear(listEl);
+    if (!clocks.length) {
+      listEl.appendChild(el("li", { class: "item-list__empty" }, ["No clocks yet."]));
+      return;
+    }
     clocks.forEach((clock, idx) => {
       const labelIn = el("input", { type: "text", class: "text-input", value: clock.label, placeholder: "Label",
         "aria-label": "Clock label",
@@ -1632,7 +1636,7 @@ function buildWorldClockSection(settings, onChange) {
   const addBtn = el("button", {
     type: "button", class: "button button--ghost",
     onClick: () => {
-      clocks.push({ label: "New Clock", tz: "UTC" });
+      clocks.push({ label: "New clock", tz: "UTC" });
       settings.worldclock = { ...cfg, clocks };
       onChange(settings);
       refreshClockList();
