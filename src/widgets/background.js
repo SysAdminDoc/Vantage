@@ -790,6 +790,35 @@ export async function renderBackground(mount, settings, saveSettings) {
   recomputeSunTimes();
   updateScene(mount, weather, sunTimes);
 
+  // First-snow tracking: chrome.storage holds the timestamp of the first
+  // snow detection in the current "snow season". If it's been > 30 days
+  // since the last record (i.e., a new winter), reset the date. The
+  // _bgFirstSnowAt field is read by updateScene to set data-first-snow.
+  const FIRST_SNOW_KEY = "vantageFirstSnow";
+  const SNOW_SEASON_GAP = 30 * 86400000; // 30 days
+  const FIRST_SNOW_WINDOW = 86400000;    // 24 h
+  async function loadFirstSnow() {
+    if (!chrome?.storage?.local) return 0;
+    try {
+      const r = await chrome.storage.local.get(FIRST_SNOW_KEY);
+      return r[FIRST_SNOW_KEY] || 0;
+    } catch { return 0; }
+  }
+  async function saveFirstSnow(ms) {
+    if (!chrome?.storage?.local) return;
+    try { await chrome.storage.local.set({ [FIRST_SNOW_KEY]: ms }); } catch {}
+  }
+  mount._bgFirstSnowAt = await loadFirstSnow();
+  const checkFirstSnow = async () => {
+    const isSnow = weather === "snow" || weather === "heavy-snow";
+    if (!isSnow) return;
+    const last = mount._bgFirstSnowAt || 0;
+    if (!last || (Date.now() - last) > SNOW_SEASON_GAP) {
+      mount._bgFirstSnowAt = Date.now();
+      await saveFirstSnow(mount._bgFirstSnowAt);
+    }
+  };
+
   // Trigger a rainbow when weather transitions from rain* → clear.
   const checkRainbowTransition = () => {
     const wasRain = ["rain", "heavy-rain", "drizzle"].includes(mount._bgPrevWeather);
@@ -805,6 +834,7 @@ export async function renderBackground(mount, settings, saveSettings) {
       const data = await getWeatherData(location, settings.weather?.units || "fahrenheit");
       weather = CODE_TO_WEATHER[data.current?.weather_code] || "clear";
       checkRainbowTransition();
+      await checkFirstSnow();
       recomputeSunTimes(data); // upgrade to NREL SPA precision
       updateScene(mount, weather, sunTimes);
     } catch { /* keep current scene */ }
@@ -822,6 +852,7 @@ export async function renderBackground(mount, settings, saveSettings) {
       const data = await getWeatherData(location, settings.weather?.units || "fahrenheit", { force: true });
       weather = CODE_TO_WEATHER[data.current?.weather_code] || "clear";
       checkRainbowTransition();
+      await checkFirstSnow();
       recomputeSunTimes(data);
       tick();
     } catch { /* keep last-known */ }
@@ -1246,6 +1277,14 @@ function updateScene(mount, weather, sunTimes) {
     // _bgRainbowUntil is set in checkRainbowTransition (in renderBackground).
     const rainbowUntil = mount._bgRainbowUntil || 0;
     mount.dataset.rainbow = (now.getTime() < rainbowUntil) ? "on" : "off";
+
+    // First-snow window: 24h after the first snow of the season.
+    // _bgFirstSnowAt is loaded from chrome.storage.local on init.
+    const firstSnowAt = mount._bgFirstSnowAt || 0;
+    const isSnow = weather === "snow" || weather === "heavy-snow";
+    const inFirstSnowWindow = isSnow && firstSnowAt > 0 &&
+      (now.getTime() - firstSnowAt) < 86400000;
+    mount.dataset.firstSnow = inFirstSnowWindow ? "on" : "off";
 
     // Wet/heavy weather hides or dims the sun behind the cloud deck. Rain
     // gets full hide because a visible warm sun behind rain streaks reads
