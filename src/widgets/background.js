@@ -402,6 +402,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     <div class="bg-constellation bg-constellation--north" aria-hidden="true">${BIG_DIPPER_SVG}</div>
     <div class="bg-constellation bg-constellation--south" aria-hidden="true">${SOUTHERN_CROSS_SVG}</div>
     <div class="bg-shooting-star-host" aria-hidden="true"></div>
+    <div class="bg-plane-host" aria-hidden="true"></div>
     <div class="bg-cloud bg-cloud--1" aria-hidden="true"></div>
     <div class="bg-cloud bg-cloud--2" aria-hidden="true"></div>
     <div class="bg-cloud bg-cloud--3" aria-hidden="true"></div>
@@ -627,6 +628,32 @@ export async function renderBackground(mount, settings, saveSettings) {
   }, 5000);
   scheduleBirdFlock();
 
+  // ---- Plane lights: small blinking dot crossing the sky at dusk/night.
+  // Cheaper than birds — just one element with a long linear translation
+  // and a separate blink animation on a child light.
+  const planeHost = mount.querySelector(".bg-plane-host");
+  let planeTimer = null;
+  function schedulePlane() {
+    const delay = 60000 + Math.random() * 180000; // 1-4 min
+    planeTimer = setTimeout(() => {
+      const eligible = ["dusk", "nautical-dusk", "astronomical-dusk", "night",
+                        "astronomical-night", "astronomical-dawn", "nautical-dawn"]
+                       .includes(mount.dataset.phase);
+      const calm = weather === "clear" || weather === "cloudy";
+      if (planeHost && eligible && calm) {
+        const plane = document.createElement("div");
+        plane.className = "bg-plane";
+        plane.style.setProperty("--plane-y", `${10 + Math.random() * 25}%`);
+        // Reverse direction half the time for variety.
+        plane.style.setProperty("--plane-dir", Math.random() < 0.5 ? "1" : "-1");
+        planeHost.appendChild(plane);
+        plane.addEventListener("animationend", () => plane.remove());
+      }
+      schedulePlane();
+    }, delay);
+  }
+  schedulePlane();
+
   return () => {
     clearInterval(interval);
     clearInterval(refreshInterval);
@@ -634,6 +661,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     if (shootingTimer) clearTimeout(shootingTimer);
     if (birdTimer) clearTimeout(birdTimer);
     if (initialBirdTimer) clearTimeout(initialBirdTimer);
+    if (planeTimer) clearTimeout(planeTimer);
   };
 }
 
