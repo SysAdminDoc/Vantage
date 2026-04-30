@@ -161,7 +161,7 @@ function darkenForNight(hex, factor) {
 // so the silhouette survives offline rasterizers as well as Chromium. The crown
 // uses broad arched plume fronds with irregular leaflet edges, matching a
 // classic palm icon silhouette rather than a comb-like feather.
-const PALM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" preserveAspectRatio="xMidYEnd meet">
+const PALM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" preserveAspectRatio="xMidYMax meet">
   <g fill="#0a0a0d">
     <g transform="translate(109 130) rotate(-154) scale(0.62)">
       <path d="M 0 0 C 22 -22 58 -36 98 -34 C 122 -32 139 -24 151 -10 C 130 -14 113 -13 96 -8 L 116 6 C 96 -4 80 -3 66 4 L 83 18 C 66 9 52 11 38 19 L 52 31 C 36 23 20 20 7 23 L 19 34 C 9 25 3 13 0 0 Z"/>
@@ -209,7 +209,7 @@ const PALM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" 
 
 // Stylized pine tree silhouette — boreal latitudes (50–66°).
 // Stacked triangular crown layers narrow toward the top; thin trunk.
-const PINE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 320" preserveAspectRatio="xMidYEnd meet">
+const PINE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 320" preserveAspectRatio="xMidYMax meet">
   <g fill="#0a0a0d">
     <path d="M80 14 L52 78 L62 78 L40 132 L54 132 L28 192 L48 192 L18 252 L72 252 L72 320 L88 320 L88 252 L142 252 L112 192 L132 192 L106 132 L120 132 L98 78 L108 78 Z"/>
   </g>
@@ -217,7 +217,7 @@ const PINE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 320" 
 
 // Stylized deciduous (oak/maple) silhouette — temperate latitudes (23–50°).
 // Bushy multi-lobed crown over a tapered trunk with a couple of low branches.
-const OAK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" preserveAspectRatio="xMidYEnd meet">
+const OAK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" preserveAspectRatio="xMidYMax meet">
   <g fill="#0a0a0d">
     <path d="M110 30 C 70 30 36 56 36 100 C 16 110 6 132 14 156 C 4 178 14 204 38 212 C 28 232 44 254 70 252 C 76 270 102 278 122 268 C 144 280 174 264 178 240 C 200 236 216 212 208 190 C 220 170 218 144 200 132 C 206 102 184 70 150 64 C 144 42 128 30 110 30 Z"/>
     <path d="M104 200 L98 320 L122 320 L116 200 Z"/>
@@ -228,13 +228,13 @@ const OAK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" p
 
 // Distant mountain ranges — three layers for parallax. Each layer is its
 // own SVG so it can be opacity/blur tuned independently in CSS.
-const MOUNTAINS_FAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" preserveAspectRatio="xMidYEnd slice">
+const MOUNTAINS_FAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" preserveAspectRatio="xMidYMax slice">
   <path fill="#0a0a0d" d="M0 200 L0 140 L80 110 L160 130 L240 80 L320 110 L420 60 L500 100 L580 70 L680 110 L760 50 L860 90 L940 70 L1040 100 L1120 60 L1200 90 L1200 200 Z"/>
 </svg>`;
-const MOUNTAINS_MID_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" preserveAspectRatio="xMidYEnd slice">
+const MOUNTAINS_MID_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" preserveAspectRatio="xMidYMax slice">
   <path fill="#0a0a0d" d="M0 220 L0 160 L100 120 L200 150 L300 90 L420 130 L540 80 L660 120 L780 70 L880 110 L980 80 L1080 120 L1200 90 L1200 220 Z"/>
 </svg>`;
-const MOUNTAINS_NEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" preserveAspectRatio="xMidYEnd slice">
+const MOUNTAINS_NEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" preserveAspectRatio="xMidYMax slice">
   <path fill="#0a0a0d" d="M0 240 L0 200 L120 130 L260 180 L400 100 L540 160 L680 110 L820 170 L960 120 L1080 180 L1200 140 L1200 240 Z"/>
 </svg>`;
 
@@ -288,13 +288,13 @@ const SOUTHERN_CROSS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0
 
 // ---- New silhouettes for additional biomes / events ----
 
-const SAGUARO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" preserveAspectRatio="xMidYEnd meet">
+const SAGUARO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" preserveAspectRatio="xMidYMax meet">
   <g fill="#0a0a0d">
     <path d="M105 320 L105 260 Q 105 220 80 200 Q 60 192 50 200 L50 130 Q 50 110 65 110 Q 80 110 80 130 L80 175 Q 92 175 100 168 Q 108 160 108 145 L108 90 Q 108 60 130 60 Q 152 60 152 90 L152 165 Q 152 178 162 178 Q 172 178 172 168 L172 130 Q 172 112 188 112 Q 200 112 200 130 L200 200 Q 195 210 175 210 Q 152 215 138 230 Q 130 240 130 260 L130 320 Z"/>
   </g>
 </svg>`;
 
-const LIGHTHOUSE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 220" preserveAspectRatio="xMidYEnd meet">
+const LIGHTHOUSE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 220" preserveAspectRatio="xMidYMax meet">
   <g fill="#0a0a0d">
     <rect x="32" y="60" width="16" height="120"/>
     <path d="M22 180 L58 180 L62 220 L18 220 Z"/>
@@ -305,7 +305,7 @@ const LIGHTHOUSE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 
   <circle cx="40" cy="32" r="3" fill="rgba(255,235,180,0.95)" class="lighthouse-bulb"/>
 </svg>`;
 
-const CITY_SKYLINE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 180" preserveAspectRatio="xMidYEnd slice">
+const CITY_SKYLINE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 180" preserveAspectRatio="xMidYMax slice">
   <g fill="#0a0a0d">
     <rect x="0"    y="120" width="80"  height="60"/>
     <rect x="80"   y="90"  width="60"  height="90"/>
@@ -367,7 +367,7 @@ const BATS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" p
 </svg>`;
 
 // Whale fluke breaching for coastal locations.
-const WHALE_FLUKE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" preserveAspectRatio="xMidYEnd meet">
+const WHALE_FLUKE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" preserveAspectRatio="xMidYMax meet">
   <g fill="#0a0a0d">
     <path d="M80 100 Q 88 80 96 60 Q 100 40 90 20 Q 84 14 78 18 Q 86 28 86 40 Q 84 52 78 60 Q 96 56 110 60 Q 124 56 142 60 Q 136 52 134 40 Q 134 28 142 18 Q 136 14 130 20 Q 120 40 124 60 Q 132 80 140 100 Z"/>
   </g>
@@ -375,7 +375,7 @@ const WHALE_FLUKE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20
 </svg>`;
 
 // Deer silhouette — boreal/temperate dawn.
-const DEER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 160" preserveAspectRatio="xMidYEnd meet">
+const DEER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 160" preserveAspectRatio="xMidYMax meet">
   <g fill="#0a0a0d">
     <path d="M48 80 L48 130 L40 145 L46 150 L52 130 L62 130 L62 145 L70 150 L72 130 L88 130 L88 145 L96 150 L100 130 L110 130 L110 145 L118 150 L120 130 L122 90 Q 122 75 105 75 L 70 75 Q 50 70 48 80 Z"/>
     <path d="M40 75 Q 36 70 38 60 Q 26 56 28 50 L 38 52 L 36 38 L 42 50 L 46 32 L 48 50 L 56 38 L 52 56 Q 58 60 60 70 Q 56 78 48 75 Z"/>
