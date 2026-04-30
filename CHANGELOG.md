@@ -2,6 +2,24 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.5.0 — 2026-04-29
+
+The animated background is production-ready. v0.5.0 rolls up the v0.4.7–v0.4.14 patch series: weather that actually reads as weather, sunrise/sunset times accurate to the second, and a clean focus state on the search bar.
+
+### Animated weather backgrounds — accurate, not decorative
+- **Storms render as storms.** Wet/overcast weather (drizzle, overcast, rain, heavy-rain, storm, snow, heavy-snow) now overrides the time-of-day sky gradient with a flat slate palette via inline JS, sourced from the Apple Weather + community storm-weather color references. The previous `filter: saturate brightness` approach cascaded to and dimmed the rain streak overlays themselves; we now never apply a parent filter to `.bg`. Sun is forced to opacity 0 during heavy weather, palm-tree silhouette is hidden — a beachy silhouette undercuts the downpour mood.
+- **Rain looks like rain, not LCD bands.** Rain streak overlays moved from a tiled gradient (which produced full-width horizontal stripes) to inline-SVG tiles with discrete `<line>` elements at scattered x-positions and a 4px wind-shear tilt. Two layers (220×240 foreground, 280×320 parallax) at different durations for depth. Streaks are cool blue-white (`rgba(220,235,255,0.85)`) so they read as water on a slate sky.
+- **Storm tiers match precipitation level.** Open-Meteo's most common precip code in temperate climates is 63 ("rain"), not 65 ("heavy-rain") or 95+ ("storm"). The dark-sky / no-sun / no-palm treatment extends down to plain `rain` so any precipitation reads as overcast wet-sky. Drizzle gets the gentlest treatment.
+
+### Sunrise / sunset accuracy
+- **NREL SPA primary, local NOAA fallback.** Open-Meteo's `daily.sunrise` / `daily.sunset` (NREL SPA, ±30 seconds) is the source of truth, parsed via `utc_offset_seconds` into absolute-UTC moments — independent of browser timezone, correct across DST, correct in any hemisphere. New `src/utils/sun-calc.js` (vendored NOAA Solar Calculator algorithm, ~120 LOC, no dependency) provides the offline fallback and supplies civil-twilight `dawn`/`dusk` since OM's free tier doesn't include them.
+- **Civil-twilight phase boundaries.** "pre-dawn" begins at civil dawn (sun 6° below horizon) and ends at sunrise; "dusk" begins at sunset and ends at civil dusk. Civil-twilight duration varies by latitude / time of year (~30 min equator, ~90 min summer-north), so transitions feel right anywhere.
+- **Day-rollover watcher.** A one-shot timer fires ~5 minutes past the location's local midnight, recomputes sunrise/sunset for the new day, and chains the next rollover. Pages left open across midnight always reflect "today's" events.
+- **Polar regions handled.** When the sun never rises (alwaysNight) or never sets (alwaysDay) — possible above ~66.5° latitude — sun-calc returns flags that the phase computation respects.
+
+### UI polish
+- **No more box-inside-a-box on the search input.** The global `:focus-visible` ring no longer paints inside the search wrapper's own focus-within ring. Single clean border on focus.
+
 ## v0.4.14 — 2026-04-29
 
 ### Fixed
