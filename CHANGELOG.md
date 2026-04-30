@@ -2,6 +2,38 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.6.0 — 2026-04-29
+
+Major feature wave driven by a 96-source research pass: three new widgets (air quality, calendar, Pomodoro), full data portability (JSON + OPML + share link), multi-proxy CORS resilience, storage persistence, extended twilight phases, and a full accessibility skip-link.
+
+### New widgets
+- **Air quality** — live US AQI, PM2.5, PM10, and six pollen types from Open-Meteo Air Quality API (`air-quality-api.open-meteo.com`). No account or API key required. Reuses the weather location. Compact pill in the utility bar; click to expand pollen detail. Color-coded by AQI band (green → maroon → hazardous).
+- **iCal calendar** — add any standard `.ics` URL (Google Calendar → "Get shareable link → iCal", Outlook → "Publish calendar", any CalDAV feed). Events shown as upcoming list grouped by day, within a configurable window (1–30 days). CORS proxy fallback chain for hosted calendars.
+- **Pomodoro timer** — 25/5/15 work-break-long-break cycle (all durations configurable). Tab-blur auto-pauses; tab-focus auto-resumes. `navigator.locks` ensures only the active tab fires the phase-transition notification even when multiple new-tab pages are open. Web Notifications on completion. Live `<title>` countdown. Session-dot progress bar. Cross-tab state sync via `chrome.storage.onChanged`.
+
+### Data portability
+- **Settings JSON export** — download current settings as `vantage-settings-YYYY-MM-DD.json`.
+- **Settings JSON import** — load from file; replaces all settings.
+- **OPML export** — download all RSS + News feeds as `vantage-feeds-YYYY-MM-DD.opml` (Feedly / Inoreader / NetNewsWire compatible). Category attribute distinguishes rss vs news panels.
+- **OPML import** — merge feeds from any OPML file (no duplicates by URL; parent-outline or category attr determines panel).
+- **Config share link** — copy a `chrome-extension://<id>/newtab.html#import=<base64>` URL; opening it on any device with Vantage installed loads the encoded settings. Hash is consumed and stripped from the URL immediately.
+
+### Reliability
+- **Multi-proxy CORS chain** — RSS and iCal fetches now walk `allorigins.win → corsproxy.io` before failing. Single-proxy failure no longer breaks all feeds.
+- **`navigator.storage.persist()`** — called on startup to ask the browser not to evict Vantage data under storage pressure.
+- **`corsproxy.io` added to host_permissions** in manifest so MV3 allows the fallback fetch.
+
+### Animated background — extended twilight
+- **`sun-calc.js` now returns eight twilight/golden-hour events** in addition to the existing sunrise/sunset/dawn/dusk/noon: `goldenHourEnd`, `goldenHourStart` (sun at +6°), `nauticalDawn`, `nauticalDusk` (sun at -12°), `astronomicalDawn`, `astronomicalDusk` (sun at -18°).
+- **`computePhase()` uses these for granular phase labels**: `astronomical-night → astronomical-dawn → nautical-dawn → pre-dawn → sunrise → morning/midday/afternoon → golden-hour → sunset → dusk → nautical-dusk → astronomical-dusk → astronomical-night`. The sky gradient is driven by the same continuous t-interpolation as before; phases now control star visibility with correct opacity at each twilight band.
+- **Star opacity ladder**: `astronomical-night` (100%) → `astronomical-dawn/dusk` (90%) → `nautical-dawn/dusk` (60%) → `dusk` (55%) → `pre-dawn` (25%).
+- **Golden-hour boundaries** are now event-driven (actual +6° moment) rather than a fixed 5% fraction of day length — more accurate at high latitudes.
+
+### Accessibility
+- **Skip-to-main link** — first focusable element in `newtab.html`; visually hidden until focused. Resolves WCAG SC 2.4.1.
+- **Toast host upgraded** — `aria-live="assertive"` + `role="status"` so Pomodoro phase-change toasts are announced immediately by screen readers.
+- **Calendar panel** uses standard panel-body structure; drag handle and refresh button follow existing ARIA patterns.
+
 ## v0.5.0 — 2026-04-29
 
 The animated background is production-ready. v0.5.0 rolls up the v0.4.7–v0.4.14 patch series: weather that actually reads as weather, sunrise/sunset times accurate to the second, and a clean focus state on the search bar.
