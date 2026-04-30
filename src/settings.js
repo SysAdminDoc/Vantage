@@ -26,6 +26,23 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   const body = el("div", { class: "settings-panel__body" });
   panel.appendChild(body);
 
+  // Search / filter
+  const searchWrap = el("div", { class: "settings-search-wrap" });
+  const searchIn = el("input", {
+    type: "search",
+    class: "text-input settings-search",
+    placeholder: "Filter sections…",
+    "aria-label": "Filter settings sections",
+    onInput: (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      body.querySelectorAll(".settings-section").forEach(sec => {
+        sec.style.display = (!q || sec.textContent.toLowerCase().includes(q)) ? "" : "none";
+      });
+    }
+  });
+  searchWrap.appendChild(searchIn);
+  body.appendChild(searchWrap);
+
   body.appendChild(buildAppearance(settings, onChange));
   body.appendChild(buildBackground(settings, onChange));
   body.appendChild(buildGreeting(settings, onChange));
@@ -52,6 +69,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildPhotoSection(settings, onChange));
   body.appendChild(buildCountdownSection(settings, onChange));
   body.appendChild(buildConverterSection(settings, onChange));
+  body.appendChild(buildCustomCSSSection(settings, onChange));
   body.appendChild(buildDataSection(settings, onChange, showWizard));
   body.appendChild(buildResetSection(onChange));
 }
@@ -86,13 +104,43 @@ export function closePanel(panel) {
 
 /* ---- Section builders -------------------------------------------------- */
 
-function section(title, iconName) {
-  const sec = el("section", { class: "settings-section" });
-  sec.appendChild(el("h3", { class: "settings-section__title" }, [
+function section(title, iconName, { defaultOpen = false } = {}) {
+  const key = `v-sec-${title.replace(/\W+/g, "")}`;
+  const saved = sessionStorage.getItem(key);
+  const isOpen = saved !== null ? saved === "1" : defaultOpen;
+
+  const shell = el("section", {
+    class: `settings-section${isOpen ? " settings-section--open" : ""}`
+  });
+
+  const titleEl = el("button", {
+    type: "button",
+    class: "settings-section__title",
+    "aria-expanded": String(isOpen),
+    onClick: () => {
+      const nowOpen = !shell.classList.contains("settings-section--open");
+      shell.classList.toggle("settings-section--open", nowOpen);
+      titleEl.setAttribute("aria-expanded", String(nowOpen));
+      sessionStorage.setItem(key, nowOpen ? "1" : "0");
+    }
+  }, [
     iconName ? iconNode(iconName, { size: 14 }) : null,
-    title
-  ]));
-  return sec;
+    el("span", { class: "settings-section__title-text" }, [title]),
+    el("span", { class: "settings-section__chevron", "aria-hidden": "true" },
+      [iconNode("chevron-down", { size: 14 })])
+  ]);
+
+  shell.appendChild(titleEl);
+
+  const body = el("div", { class: "settings-section__body" });
+  shell.appendChild(body);
+
+  // Route all subsequent appendChild calls to body so callers don't need to change
+  const origAppend = shell.appendChild.bind(shell);
+  shell.appendChild = (child) => body.appendChild(child);
+  shell._origAppend = origAppend;
+
+  return shell;
 }
 
 function group() {
@@ -121,8 +169,20 @@ function rowColumn(title, control, hint) {
 
 /* ---- Appearance -------------------------------------------------------- */
 
+const ACCENT_COLORS = [
+  { value: "mauve",    label: "Mauve"    },
+  { value: "blue",     label: "Blue"     },
+  { value: "green",    label: "Green"    },
+  { value: "peach",    label: "Peach"    },
+  { value: "teal",     label: "Teal"     },
+  { value: "lavender", label: "Lavender" },
+  { value: "red",      label: "Red"      },
+  { value: "flamingo", label: "Flamingo" },
+  { value: "sky",      label: "Sky"      },
+];
+
 function buildAppearance(settings, onChange) {
-  const sec = section("Appearance", "palette");
+  const sec = section("Appearance", "palette", { defaultOpen: true });
   const g = group();
   g.appendChild(row(
     "Theme",
@@ -141,6 +201,28 @@ function buildAppearance(settings, onChange) {
       }
     })
   ));
+
+  const currentAccent = settings.accent || "mauve";
+  const accentRow = el("div", { class: "accent-picker" });
+  for (const ac of ACCENT_COLORS) {
+    accentRow.appendChild(el("button", {
+      type: "button",
+      class: `accent-swatch accent-swatch--${ac.value}${currentAccent === ac.value ? " accent-swatch--active" : ""}`,
+      title: ac.label,
+      "aria-label": `Accent: ${ac.label}`,
+      "aria-pressed": String(currentAccent === ac.value),
+      onClick: () => {
+        settings.accent = ac.value;
+        const a = ac.value === "mauve"
+          ? document.documentElement.removeAttribute("data-accent")
+          : document.documentElement.setAttribute("data-accent", ac.value);
+        void a;
+        onChange(settings);
+      }
+    }));
+  }
+  g.appendChild(row("Accent color", "Color for buttons, toggles, and highlights.", accentRow));
+
   sec.appendChild(g);
   return sec;
 }
@@ -198,7 +280,7 @@ function buildGreeting(settings, onChange) {
 /* ---- Search ------------------------------------------------------------ */
 
 function buildSearchSection(settings, onChange) {
-  const sec = section("Search", "search");
+  const sec = section("Search", "search", { defaultOpen: true });
   const g = group();
 
   const select = el("select", {
@@ -1289,6 +1371,45 @@ function buildConverterSection(settings, onChange) {
       onChange: (v) => { settings.converter = { ...cfg, defaultCategory: v }; onChange(settings); }
     })
   ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Custom CSS -------------------------------------------------------- */
+
+function buildCustomCSSSection(settings, onChange) {
+  const sec = section("Custom CSS", "code");
+  const g   = group();
+  const hint = el("p", { class: "settings-section__hint" }, [
+    "Injected as a ",
+    el("code", {}, ["<style>"]),
+    " tag on every new tab. Use CSS custom properties (",
+    el("code", {}, ["--accent"]),
+    ", ",
+    el("code", {}, ["--base"]),
+    ", etc.) for theme-aware overrides."
+  ]);
+  g.appendChild(hint);
+  const ta = el("textarea", {
+    class: "text-input custom-css-input",
+    placeholder: "/* e.g. .hero { gap: 2rem; } */",
+    rows: "8",
+    "aria-label": "Custom CSS",
+    onInput: (e) => {
+      settings.customCSS = e.target.value;
+      // Live-apply so users see changes without saving
+      let style = document.getElementById("vantage-custom-css");
+      if (!style) {
+        style = document.createElement("style");
+        style.id = "vantage-custom-css";
+        document.head.appendChild(style);
+      }
+      style.textContent = e.target.value;
+      onChange(settings);
+    }
+  });
+  ta.value = settings.customCSS || "";
+  g.appendChild(ta);
   sec.appendChild(g);
   return sec;
 }
