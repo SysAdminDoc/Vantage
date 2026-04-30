@@ -180,7 +180,7 @@ jobs:
             dist/Vantage-v${{ inputs.version }}-firefox.xpi \
             dist/SHA256SUMS.txt
 
-      - name: Update Omaha feed (updates.xml)
+      - name: Update Omaha feed + AMO update feed
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -188,6 +188,9 @@ jobs:
           TAG="v${VERSION}"
           REPO="${{ github.repository }}"
           EXT_ID="hkfepknnglonkidihcoicdfkjkjfnejn"
+          GECKO_ID="vantage@sysadmindoc"
+
+          # Omaha CRX update feed (Chrome self-hosted policy install)
           CRX_URL="https://github.com/${REPO}/releases/download/${TAG}/Vantage-${TAG}.crx"
           HASH=$(sha256sum dist/Vantage-${TAG}.crx | awk '{print $1}')
           cat > updates.xml <<EOF
@@ -198,8 +201,32 @@ jobs:
             </app>
           </gupdate>
           EOF
+
+          # AMO-compatible update feed (Firefox unlisted/self-hosted install)
+          XPI_URL="https://github.com/${REPO}/releases/download/${TAG}/Vantage-${TAG}-firefox.xpi"
+          python3 -c "
+          import json
+          data = {
+            'addons': {
+              '${GECKO_ID}': {
+                'updates': [
+                  {
+                    'version': '${VERSION}',
+                    'update_link': '${XPI_URL}',
+                    'browser_specific_settings': {
+                      'gecko': { 'strict_min_version': '109.0' }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+          json.dump(data, open('firefox-updates.json', 'w'), indent=2)
+          print('firefox-updates.json written')
+          "
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add updates.xml
-          git diff --cached --quiet || git commit -m "chore: update Omaha feed for ${TAG}"
+          git add updates.xml firefox-updates.json
+          git diff --cached --quiet || git commit -m "chore: update Omaha + AMO feeds for ${TAG}"
           git push origin HEAD:main

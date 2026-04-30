@@ -2,6 +2,29 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.8.0 — 2026-04-30
+
+### Added
+- **Wallpaper / background subsystem** — six background kinds selectable from Settings → Appearance: Animated (existing sun-cycle), Solid color, Gradient (from/to + angle), Image URL, Image Upload (base64-stored), Bing Daily (fresh photo each day, cached per date). Shared blur (0–20 px) and brightness (50–150%) sliders for image-based kinds.
+- **Multi-profile workspaces** — named layout profiles in Settings → Workspaces. Each workspace stores a snapshot of accent, background, layout, quicklinks config, and per-widget enabled flags. A workspace bar renders pill buttons below the utility bar when 2+ workspaces exist; switching wraps in `document.startViewTransition()` for a smooth cross-fade. Workspace settings never mutate the base profile — computed as `effectiveSettings` each mount.
+- **Quick-link folder groups** — link items can be placed in named groups. Groups render as pill buttons; clicking opens a floating popover grid of that group's links. Popover closes on Esc or outside click. MutationObserver cleans up event listeners on unmount.
+- **Top Sites widget** — reads `chrome.topSites.get()` and renders a favicon pill row in the hero area. Falls back to initials if the favicon is unavailable. Hidden automatically on Firefox builds where the API is absent.
+- **Feed deduplication** — after merging all feeds in `feed-list.js`, items are deduplicated by normalized URL (hostname + pathname, lowercase, trailing slash stripped) using a Set.
+- **Feed filter rules** — per-panel mute/highlight rules in Settings → RSS / News. Each rule has a regex pattern, field (title or URL), action (mute hides the item; highlight adds a colored left-border accent), and optional color. Rules are applied post-fetch before render.
+- **Reddit feed presets** — a collapsible presets block in the RSS and News feed settings with one-click add buttons for r/all, r/popular, r/technology, r/worldnews, r/programming, and r/science.
+- **View Transitions API** — `document.startViewTransition()` wraps workspace switches and accent color changes for smooth page transitions (graceful no-op on browsers without support).
+- **Storage quota panel** — Settings → Storage shows `navigator.storage.estimate()` usage and quota as a color-coded progress bar (yellow at 80%, red at 95%) plus a human-readable label.
+- **Firefox container → workspace mapping** — Firefox-only section in Settings. Reads `browser.contextualIdentities.query({})` to list all containers and lets you assign each to a workspace. On page load the active container is detected via `browser.tabs.getCurrent().cookieStoreId` and the mapped workspace is applied automatically.
+- **AMO update feed** — CI release workflow now generates `firefox-updates.json` (AMO-compatible format) and commits it alongside `updates.xml`. Firefox manifest's `gecko.update_url` points to the raw GitHub URL so self-hosted XPI updates are auto-detected by the browser.
+- New SVG icons: `folder`, `folder-open`, `layers2`, `star`, `filter`, `hard-drive`.
+
+### Changed
+- `manifest.json` — `topSites` added to permissions; `https://www.bing.com/*` added to host_permissions.
+- `manifest.firefox.json` — `topSites`, `contextualIdentities`, `tabs` added to permissions; `https://www.bing.com/*` added to host_permissions; `gecko.update_url` now set.
+- `src/main.js` — `mountAll()` computes `effectiveSettings` once from the active workspace before rendering all widgets; workspace bar rendered when workspaces are configured; Firefox container detection runs on init.
+- `src/storage.js` — defaults extended with `background`, `topsites`, `workspaces`, `feedFilters`, `containerMap` keys (done in prior v0.8.0 prep pass).
+- `.github/workflows/release.yml` — "Update Omaha feed" step also generates `firefox-updates.json` and commits both files.
+
 ## v0.7.2 — 2026-04-30
 
 ### Added
