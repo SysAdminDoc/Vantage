@@ -238,6 +238,24 @@ function rowColumn(title, control, hint) {
   ]);
 }
 
+function rangeWithValue({ min, max, step, value, ariaLabel, format, onInput }) {
+  const out = el("output", { class: "range-value" }, [format(value)]);
+  const input = el("input", {
+    type: "range",
+    min: String(min),
+    max: String(max),
+    step: String(step),
+    value: String(value),
+    "aria-label": ariaLabel,
+    onInput: (e) => {
+      const next = parseInt(e.target.value, 10);
+      out.textContent = format(next);
+      onInput(next);
+    }
+  });
+  return el("div", { class: "range-control" }, [input, out]);
+}
+
 function cloneValue(value) {
   return typeof structuredClone === "function"
     ? structuredClone(value)
@@ -321,7 +339,7 @@ function buildBackground(settings, onChange) {
 
   g.appendChild(row(
     "Show background",
-    "Enables the background subsystem.",
+    "Turn off to use the theme fallback gradient.",
     toggle({
       checked: bg.enabled !== false,
       ariaLabel: "Show background",
@@ -357,6 +375,12 @@ function buildBackground(settings, onChange) {
   function renderKindRows() {
     clear(kindHost);
     const kind = settings.background.kind || "animated";
+
+    if (kind === "animated") {
+      kindHost.appendChild(el("p", { class: "settings-section__hint" }, [
+        "Live sky follows time, weather, season, moon phase, and scenery. Motion follows your system reduced-motion setting."
+      ]));
+    }
 
     if (kind === "solid") {
       const inp = el("input", {
@@ -404,7 +428,11 @@ function buildBackground(settings, onChange) {
         "aria-label": "Image URL",
         onChange: (e) => { settings.background.imageUrl = e.target.value.trim(); onChange(settings); }
       });
-      kindHost.appendChild(rowColumn("Image URL", inp));
+      kindHost.appendChild(rowColumn(
+        "Image URL",
+        inp,
+        "Use a direct image URL. Vantage falls back to the theme gradient until one is set."
+      ));
     }
 
     if (kind === "image-upload") {
@@ -428,7 +456,7 @@ function buildBackground(settings, onChange) {
         onClick: () => fileIn.click()
       }, [iconNode("upload", { size: 14 }), " Choose image"]);
       kindHost.appendChild(fileIn);
-      kindHost.appendChild(row("Upload image", "Stored locally in your browser.", uploadBtn));
+      kindHost.appendChild(row("Upload image", "Stored locally in your browser; cleared images fall back to the theme gradient.", uploadBtn));
       if (settings.background.imageData) {
         const clearBtn = el("button", {
           type: "button", class: "button button--ghost",
@@ -439,28 +467,45 @@ function buildBackground(settings, onChange) {
     }
 
     if (kind === "image-url" || kind === "image-upload" || kind === "bing-daily") {
-      const blurIn = el("input", {
-        type: "range", min: "0", max: "20", step: "1",
-        value: String(settings.background.blur ?? 0),
-        "aria-label": "Blur",
-        onInput: (e) => { settings.background.blur = parseInt(e.target.value, 10); onChange(settings); }
+      const blurIn = rangeWithValue({
+        min: 0,
+        max: 20,
+        step: 1,
+        value: settings.background.blur ?? 0,
+        ariaLabel: "Blur",
+        format: (v) => `${v} px`,
+        onInput: (v) => { settings.background.blur = v; onChange(settings); }
       });
-      const brightIn = el("input", {
-        type: "range", min: "50", max: "150", step: "5",
-        value: String(settings.background.brightness ?? 100),
-        "aria-label": "Brightness",
-        onInput: (e) => { settings.background.brightness = parseInt(e.target.value, 10); onChange(settings); }
+      const brightIn = rangeWithValue({
+        min: 50,
+        max: 150,
+        step: 5,
+        value: settings.background.brightness ?? 100,
+        ariaLabel: "Brightness",
+        format: (v) => `${v}%`,
+        onInput: (v) => { settings.background.brightness = v; onChange(settings); }
       });
-      kindHost.appendChild(row("Blur", "0–20 px", blurIn));
-      kindHost.appendChild(row("Brightness", "50–150%", brightIn));
+      kindHost.appendChild(row("Blur", "Softens image wallpapers only.", blurIn));
+      kindHost.appendChild(row("Brightness", "Tunes image wallpapers behind panels.", brightIn));
     }
 
     if (kind === "bing-daily") {
       const cache = settings.background.bingDailyCache;
       const hint = cache?.date
-        ? `Cached from ${cache.date}. Refreshes daily.`
-        : "Fetches from Bing on first load.";
+        ? `Cached from ${cache.date}. Uses the cached image if today's fetch fails.`
+        : "Fetches from Bing on first load; falls back to the theme gradient if the network is unavailable.";
       kindHost.appendChild(el("p", { class: "settings-section__hint" }, [hint]));
+      const refreshBtn = el("button", {
+        type: "button",
+        class: "button button--ghost",
+        onClick: () => {
+          settings.background.bingDailyCache = null;
+          onChange(settings);
+          renderKindRows();
+          toast("Bing daily image will refresh.", "info");
+        }
+      }, [iconNode("refresh", { size: 14 }), " Refresh image"]);
+      kindHost.appendChild(row("", null, refreshBtn));
     }
   }
 

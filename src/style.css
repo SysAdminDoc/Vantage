@@ -41,6 +41,10 @@
   --bg-input-hover: color-mix(in srgb, var(--crust) 90%, transparent);
   --bg-button: color-mix(in srgb, var(--surface0) 70%, transparent);
   --bg-button-hover: color-mix(in srgb, var(--surface1) 80%, transparent);
+  --bg-readability-overlay:
+    radial-gradient(900px 520px at 50% 28%, rgba(0, 0, 0, 0.05), transparent 62%),
+    linear-gradient(180deg, rgba(8, 9, 18, 0.18), rgba(8, 9, 18, 0.08) 45%, rgba(8, 9, 18, 0.26));
+  --hero-text-shadow: 0 2px 18px rgba(0, 0, 0, 0.42);
 
   --border-subtle: color-mix(in srgb, var(--surface0) 60%, transparent);
   --border-default: color-mix(in srgb, var(--surface1) 65%, transparent);
@@ -106,6 +110,10 @@
   --bg-input-hover: color-mix(in srgb, white 90%, var(--surface0));
   --bg-button: color-mix(in srgb, white 80%, var(--surface0));
   --bg-button-hover: color-mix(in srgb, white 95%, var(--surface1));
+  --bg-readability-overlay:
+    radial-gradient(900px 520px at 50% 28%, rgba(255, 255, 255, 0.18), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.12) 45%, rgba(255, 255, 255, 0.30));
+  --hero-text-shadow: 0 1px 14px rgba(255, 255, 255, 0.72);
 
   --border-subtle: color-mix(in srgb, var(--surface0) 80%, transparent);
   --border-default: var(--surface1);
@@ -275,7 +283,7 @@ html:has(.bg:empty) {
     var(--bg-canvas);
 }
 
-[data-theme="latte"] html:has(.bg:empty) {
+html[data-theme="latte"]:has(.bg:empty) {
   background:
     radial-gradient(1100px 520px at 12% -10%, color-mix(in srgb, var(--mauve) 14%, transparent), transparent 60%),
     radial-gradient(900px 480px at 110% 110%, color-mix(in srgb, var(--blue) 12%, transparent), transparent 60%),
@@ -334,12 +342,39 @@ a {
   contain: strict;
 }
 
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0;
+  background: var(--bg-readability-overlay);
+  transition: opacity 20s linear, background var(--t-slow);
+}
+
+.bg[data-phase]::after,
+.bg[data-background-state]::after {
+  opacity: 1;
+}
+
+.bg[data-background-state="fallback"],
+.bg[data-background-state="loading"],
+.bg[data-background-state="missing"],
+.bg[data-background-state="error"] {
+  background:
+    radial-gradient(900px 520px at 12% -12%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 64%),
+    radial-gradient(760px 460px at 110% 112%, color-mix(in srgb, var(--accent-secondary) 12%, transparent), transparent 62%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-canvas) 92%, var(--surface0)), var(--bg-canvas));
+}
+
 /* Used on the very first paint so the inline-style assignment doesn't
    cross-fade from the dark-gray @property initial values into the right
    colors over 60s — that flash made evening loads feel like a sunrise.
    We snap once, force a reflow in JS, then drop the class. */
 .bg.bg--no-transition,
-.bg.bg--no-transition * {
+.bg.bg--no-transition *,
+.bg.bg--no-transition::after {
   transition: none !important;
 }
 
@@ -1932,6 +1967,7 @@ a {
   letter-spacing: 0;
   line-height: 1.1;
   color: var(--text);
+  text-shadow: var(--hero-text-shadow);
 }
 
 .greeting__hello em {
@@ -1947,6 +1983,7 @@ a {
   color: var(--subtext0);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.005em;
+  text-shadow: var(--hero-text-shadow);
 }
 
 /* ============================================================
@@ -5461,6 +5498,25 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   flex-direction: column;
   gap: var(--s-1);
   padding: 0 0 var(--s-1);
+}
+
+.range-control {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(44px, auto);
+  align-items: center;
+  gap: var(--s-2);
+  min-width: min(220px, 100%);
+}
+
+.range-control input[type="range"] {
+  min-width: 0;
+}
+
+.range-value {
+  font-size: var(--text-xs);
+  color: var(--subtext0);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .color-input {
