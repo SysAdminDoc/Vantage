@@ -38,6 +38,8 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildFeedsSection(settings, onChange, "news", "News", "newspaper",
     "Curated headlines and news sources."));
   body.appendChild(buildAirQualitySection(settings, onChange));
+  body.appendChild(buildWindySection(settings, onChange));
+  body.appendChild(buildEmbedSection(settings, onChange));
   body.appendChild(buildCalendarSection(settings, onChange));
   body.appendChild(buildPomodoroSection(settings, onChange));
   body.appendChild(buildDataSection(settings, onChange, showWizard));
@@ -568,6 +570,120 @@ function buildAirQualitySection(settings, onChange) {
       }
     })
   ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Windy radar ------------------------------------------------------- */
+
+const WINDY_OVERLAYS = [
+  { value: "wind",             label: "Wind" },
+  { value: "gust",             label: "Gusts" },
+  { value: "rain",             label: "Rain" },
+  { value: "rainAccumulation", label: "Precip accumulation" },
+  { value: "temp",             label: "Temperature" },
+  { value: "clouds",           label: "Clouds" },
+  { value: "pressure",         label: "Pressure" },
+  { value: "rh",               label: "Humidity" },
+];
+
+function buildWindySection(settings, onChange) {
+  const cfg = settings.windy || {};
+  const sec = section("Radar", "wind");
+  const g = group();
+
+  g.appendChild(row(
+    "Show Windy radar",
+    "Interactive weather radar via Windy.com. Uses your weather location as the map center.",
+    toggle({
+      checked: cfg.enabled || false,
+      ariaLabel: "Show Windy radar",
+      onChange: (v) => {
+        settings.windy = { ...cfg, enabled: v };
+        onChange(settings);
+      }
+    })
+  ));
+
+  // Layer picker
+  const overlaySelect = el("select", { class: "text-input", "aria-label": "Radar layer" },
+    WINDY_OVERLAYS.map(o =>
+      el("option", { value: o.value, selected: (cfg.overlay ?? "wind") === o.value }, [o.label])
+    )
+  );
+  overlaySelect.addEventListener("change", () => {
+    settings.windy = { ...cfg, overlay: overlaySelect.value };
+    onChange(settings);
+  });
+  g.appendChild(row("Layer", "Which data layer to display on the radar.", overlaySelect));
+
+  // Zoom
+  const zoomInput = el("input", {
+    type: "number", class: "text-input number-input",
+    min: "3", max: "12", value: String(cfg.zoom ?? 5),
+    "aria-label": "Map zoom level"
+  });
+  zoomInput.addEventListener("change", () => {
+    const z = Math.min(12, Math.max(3, parseInt(zoomInput.value, 10) || 5));
+    zoomInput.value = String(z);
+    settings.windy = { ...cfg, zoom: z };
+    onChange(settings);
+  });
+  g.appendChild(row("Zoom", "Map zoom level (3 = continent, 8 = city).", zoomInput));
+
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Embed (flight tracker / custom URL) -------------------------------- */
+
+function buildEmbedSection(settings, onChange) {
+  const cfg = settings.embed || {};
+  const sec = section("Embed", "plane");
+  const g = group();
+
+  g.appendChild(row(
+    "Show embed panel",
+    "Embed any website as a panel — flight tracker, traffic map, dashboard, etc. " +
+    "Some sites block embedding; use the \u201copen in new tab\u201d button if the panel is blank.",
+    toggle({
+      checked: cfg.enabled || false,
+      ariaLabel: "Show embed panel",
+      onChange: (v) => {
+        settings.embed = { ...cfg, enabled: v };
+        onChange(settings);
+      }
+    })
+  ));
+
+  const titleInput = el("input", {
+    type: "text", class: "text-input",
+    value: cfg.title || "Flight Tracker",
+    placeholder: "Panel title",
+    "aria-label": "Embed panel title"
+  });
+  titleInput.addEventListener("change", () => {
+    settings.embed = { ...cfg, title: titleInput.value.trim() || "Embed" };
+    onChange(settings);
+  });
+  g.appendChild(row("Title", "Label shown in the panel header.", titleInput));
+
+  const urlInput = el("input", {
+    type: "url", class: "text-input",
+    value: cfg.url || "",
+    placeholder: "https://globe.adsbexchange.com/",
+    "aria-label": "URL to embed"
+  });
+  urlInput.addEventListener("change", () => {
+    settings.embed = { ...cfg, url: urlInput.value.trim() };
+    onChange(settings);
+  });
+  g.appendChild(row(
+    "URL",
+    "Paste the full URL to embed. ADS-B Exchange, Flightradar24, OpenStreetMap, custom dashboards, etc.",
+    urlInput
+  ));
+
   sec.appendChild(g);
   return sec;
 }
