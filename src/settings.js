@@ -1660,20 +1660,40 @@ function buildDataSection(settings, onChange, showWizard) {
       const file = e.target.files[0];
       if (!file) return;
       try {
+        const previous = cloneValue(settings);
         const text = await file.text();
         const { rss, news } = importOPML(text);
         if (!settings.rss)  settings.rss  = { enabled: true, feeds: [], maxItems: 15, readItems: [] };
         if (!settings.news) settings.news = { enabled: true, feeds: [], maxItems: 15, readItems: [] };
-        // Merge by URL (no duplicates)
         const mergeFeeds = (existing, incoming) => {
           const seen = new Set(existing.map(f => f.url));
-          return [...existing, ...incoming.filter(f => !seen.has(f.url))];
+          const added = [];
+          for (const feed of incoming) {
+            if (!feed?.url || seen.has(feed.url)) continue;
+            seen.add(feed.url);
+            added.push(feed);
+          }
+          return { feeds: [...existing, ...added], added };
         };
-        settings.rss.feeds  = mergeFeeds(settings.rss.feeds,  rss);
-        settings.news.feeds = mergeFeeds(settings.news.feeds, news);
+        const rssMerge = mergeFeeds(settings.rss.feeds, rss);
+        const newsMerge = mergeFeeds(settings.news.feeds, news);
+        settings.rss.feeds = rssMerge.feeds;
+        settings.news.feeds = newsMerge.feeds;
+        const addedCount = rssMerge.added.length + newsMerge.added.length;
+        if (!addedCount) {
+          toast(`No new feeds found in ${file.name}.`, "info");
+          return;
+        }
         await saveSettings(settings);
         onChange(settings);
-        toast(`Imported ${rss.length + news.length} feed(s) from OPML.`, "success");
+        toast(`Imported ${addedCount} new feed${addedCount === 1 ? "" : "s"} from ${file.name}.`, "success", 8000, {
+          label: "Undo",
+          onClick: async () => {
+            await saveSettings(previous);
+            onChange(previous);
+            toast("Feed import undone.", "success");
+          }
+        });
       } catch (err) { toast(err.message || "Invalid OPML file.", "error"); }
       opmlImportInput.value = "";
     }
