@@ -681,7 +681,7 @@ a {
   height: 320px;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 18s linear, transform 18s linear;
+  transition: opacity 10s linear, transform 10s linear;
   pointer-events: none;
 }
 
@@ -722,6 +722,20 @@ a {
   transform: translateY(0);
 }
 
+.bg[data-locality="tropical"][data-phase="morning"]     .bg-tree--palm,
+.bg[data-locality="tropical"][data-phase="midday"]      .bg-tree--palm,
+.bg[data-locality="tropical"][data-phase="afternoon"]   .bg-tree--palm,
+.bg[data-locality="tropical"][data-phase="golden-hour"] .bg-tree--palm,
+.bg[data-locality="tropical"][data-phase="sunset"]      .bg-tree--palm,
+.bg[data-locality="forest"][data-phase="morning"]       .bg-tree--pine,
+.bg[data-locality="forest"][data-phase="afternoon"]     .bg-tree--pine,
+.bg[data-locality="forest"][data-phase="golden-hour"]   .bg-tree--pine,
+.bg[data-locality="meadow"][data-phase="golden-hour"]   .bg-tree--oak,
+.bg[data-locality="meadow"][data-phase="sunset"]        .bg-tree--oak {
+  opacity: 0.86;
+  transform: translateY(0);
+}
+
 /* Wet/heavy weather hides the tree. Drizzle keeps it (light rain). */
 .bg[data-weather="storm"]      .bg-tree,
 .bg[data-weather="heavy-rain"] .bg-tree,
@@ -750,6 +764,10 @@ a {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+.bg-mountains svg .mountain-snowcap {
+  mix-blend-mode: screen;
 }
 
 .bg-mountains--far {
@@ -804,7 +822,11 @@ a {
 
 /* Locality scenes get their own horizon treatment. */
 .bg[data-locality="coastal"] .bg-mountains,
-.bg[data-locality="urban"]   .bg-mountains {
+.bg[data-locality="urban"]   .bg-mountains,
+.bg[data-locality="forest"]  .bg-mountains,
+.bg[data-locality="meadow"]  .bg-mountains,
+.bg[data-locality="desert"]  .bg-mountains,
+.bg[data-locality="tropical"] .bg-mountains {
   opacity: 0 !important;
 }
 
@@ -814,6 +836,164 @@ a {
 .bg[data-weather="heavy-rain"] .bg-mountains,
 .bg[data-weather="heavy-snow"] .bg-mountains {
   opacity: 0 !important;
+}
+
+/* ============================================================
+   Locality foregrounds — lightweight CSS scenes layered under UI.
+   ============================================================ */
+
+.bg-meadow,
+.bg-forestline,
+.bg-lake,
+.bg-dunes,
+.bg-icefield {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 18s linear, filter 18s linear;
+}
+
+.bg-meadow {
+  height: 22%;
+  background:
+    radial-gradient(4px 3px at 12% 38%, rgba(255, 214, 132, 0.42), transparent 70%),
+    radial-gradient(3px 3px at 26% 62%, rgba(238, 153, 172, 0.34), transparent 72%),
+    radial-gradient(3px 3px at 44% 46%, rgba(166, 227, 161, 0.32), transparent 72%),
+    radial-gradient(4px 3px at 74% 54%, rgba(255, 214, 132, 0.32), transparent 70%),
+    linear-gradient(180deg, rgba(64, 92, 62, 0.00), rgba(52, 84, 54, 0.30) 24%, rgba(24, 48, 34, 0.58));
+  filter: saturate(0.84);
+}
+
+.bg-forestline {
+  height: 28%;
+  background-image:
+    linear-gradient(180deg, transparent 0 18%, rgba(10, 19, 16, 0.28) 18% 100%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 220'><g fill='%2308120e' fill-opacity='0.72'><path d='M0 220V166l26-62 21 62h15l30-86 31 86h18l26-72 28 72h16l34-92 35 92h17l27-64 25 64h19l33-82 31 82h21l26-70 28 70h16l34-94 36 94h18l24-62 27 62h17l33-78 34 78h19l27-68 29 68h21l30-82 31 82h21l24-58 26 58v54Z'/></g></svg>");
+  background-repeat: repeat-x;
+  background-position: center bottom;
+  background-size: 900px 220px;
+  filter: blur(0.25px) saturate(0.8);
+}
+
+.bg-lake {
+  height: 36%;
+  overflow: hidden;
+  background:
+    radial-gradient(76% 36% at 50% 0%, rgba(255, 230, 174, 0.20), transparent 70%),
+    linear-gradient(180deg, rgba(118, 154, 173, 0.12), rgba(58, 91, 111, 0.50) 46%, rgba(26, 46, 65, 0.66));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  filter: saturate(0.78) contrast(0.92);
+}
+
+.bg-lake::before {
+  content: "";
+  position: absolute;
+  inset: 10% -8% 0;
+  background:
+    repeating-linear-gradient(181deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(178deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 46px);
+  opacity: 0.54;
+  animation: lake-drift 46s linear infinite;
+}
+
+.bg-dunes {
+  height: 34%;
+  background:
+    radial-gradient(90% 54% at 18% 100%, rgba(196, 131, 63, 0.52), transparent 68%),
+    radial-gradient(82% 48% at 68% 96%, rgba(234, 174, 94, 0.46), transparent 70%),
+    linear-gradient(180deg, rgba(235, 169, 89, 0.00), rgba(174, 108, 53, 0.48) 48%, rgba(99, 66, 45, 0.62));
+  filter: saturate(0.80);
+}
+
+.bg-icefield {
+  height: 32%;
+  background:
+    linear-gradient(176deg, transparent 0 34%, rgba(229, 239, 245, 0.54) 34% 42%, transparent 42%),
+    linear-gradient(184deg, transparent 0 28%, rgba(172, 204, 221, 0.32) 28% 36%, transparent 36%),
+    linear-gradient(180deg, rgba(235, 246, 250, 0.00), rgba(220, 237, 245, 0.44) 36%, rgba(150, 188, 207, 0.54));
+  filter: saturate(0.62) brightness(1.06);
+}
+
+.bg[data-locality="meadow"] .bg-meadow,
+.bg[data-locality="mountain"] .bg-meadow {
+  opacity: 0.72;
+}
+
+.bg[data-locality="forest"] .bg-forestline {
+  opacity: 0.86;
+}
+
+.bg[data-locality="lake"] .bg-lake {
+  opacity: 0.78;
+}
+
+.bg[data-locality="desert"] .bg-dunes {
+  opacity: 0.84;
+}
+
+.bg[data-locality="polar"] .bg-icefield {
+  opacity: 0.86;
+}
+
+.bg[data-locality="lake"] .bg-mountains,
+.bg[data-locality="mountain"] .bg-mountains,
+.bg[data-locality="polar"] .bg-mountains {
+  opacity: 0.58;
+}
+
+.bg[data-locality="lake"] .bg-mountains--far,
+.bg[data-locality="mountain"] .bg-mountains--far,
+.bg[data-locality="polar"] .bg-mountains--far {
+  opacity: 0.38;
+}
+
+.bg[data-weather="fog"] .bg-meadow,
+.bg[data-weather="fog"] .bg-forestline,
+.bg[data-weather="fog"] .bg-lake,
+.bg[data-weather="fog"] .bg-dunes,
+.bg[data-weather="fog"] .bg-icefield {
+  filter: blur(1.5px) saturate(0.58);
+}
+
+.bg[data-locality="default"] .bg-mountains,
+.bg[data-locality="default"] .bg-meadow,
+.bg[data-locality="default"] .bg-forestline,
+.bg[data-locality="default"] .bg-lake,
+.bg[data-locality="default"] .bg-dunes,
+.bg[data-locality="default"] .bg-icefield,
+.bg[data-locality="default"] .bg-ocean,
+.bg[data-locality="default"] .bg-skyline,
+.bg[data-locality="default"] .bg-lighthouse,
+.bg[data-locality="default"] .bg-deer,
+.bg[data-locality="default"] .bg-tree {
+  opacity: 0 !important;
+}
+
+.bg[data-locality="tropical"] .bg-tree--oak,
+.bg[data-locality="tropical"] .bg-tree--pine,
+.bg[data-locality="tropical"] .bg-tree--saguaro,
+.bg[data-locality="urban"] .bg-tree,
+.bg[data-locality="coastal"] .bg-tree,
+.bg[data-locality="lake"] .bg-tree,
+.bg[data-locality="mountain"] .bg-tree,
+.bg[data-locality="forest"] .bg-tree--palm,
+.bg[data-locality="forest"] .bg-tree--oak,
+.bg[data-locality="forest"] .bg-tree--saguaro,
+.bg[data-locality="meadow"] .bg-tree--palm,
+.bg[data-locality="meadow"] .bg-tree--pine,
+.bg[data-locality="meadow"] .bg-tree--saguaro,
+.bg[data-locality="polar"] .bg-tree {
+  opacity: 0 !important;
+  transform: translateY(24px) !important;
+  transition: opacity 2.5s ease, transform 2.5s ease !important;
+}
+
+@keyframes lake-drift {
+  0%   { background-position: 0 0, 0 0; }
+  100% { background-position: -120px 12px, 90px 18px; }
 }
 
 /* ============================================================
@@ -871,6 +1051,19 @@ a {
 .bg[data-locality="coastal"][data-phase="golden-hour"] .bg-ocean,
 .bg[data-locality="coastal"][data-phase="sunset"]      .bg-ocean {
   opacity: 0.84;
+}
+
+.bg[data-locality="tropical"][data-phase="sunrise"]     .bg-ocean,
+.bg[data-locality="tropical"][data-phase="morning"]     .bg-ocean,
+.bg[data-locality="tropical"][data-phase="midday"]      .bg-ocean,
+.bg[data-locality="tropical"][data-phase="afternoon"]   .bg-ocean,
+.bg[data-locality="tropical"][data-phase="golden-hour"] .bg-ocean,
+.bg[data-locality="tropical"][data-phase="sunset"]      .bg-ocean {
+  opacity: 0.58;
+  background:
+    radial-gradient(90% 42% at 50% 0%, rgba(255, 232, 170, 0.28), transparent 70%),
+    linear-gradient(180deg, rgba(120, 210, 210, 0.22), rgba(42, 142, 152, 0.50) 52%, rgba(22, 79, 93, 0.70));
+  filter: saturate(0.96) contrast(0.92);
 }
 
 .bg[data-locality="coastal"][data-phase="dusk"]              .bg-ocean,
@@ -1229,8 +1422,15 @@ a {
   opacity: 0.34;
 }
 
-.bg[data-locality="urban"] .bg-petals {
+.bg[data-locality="urban"] .bg-petals,
+.bg[data-locality="coastal"] .bg-petals,
+.bg[data-locality="lake"] .bg-petals,
+.bg[data-locality="mountain"] .bg-petals,
+.bg[data-locality="desert"] .bg-petals,
+.bg[data-locality="polar"] .bg-petals,
+.bg[data-locality="tropical"] .bg-petals {
   opacity: 0 !important;
+  transition: opacity 2.5s ease !important;
 }
 
 .bg[data-phase="dusk"]               .bg-petals,
@@ -1793,7 +1993,11 @@ a {
 .bg[data-biome="desert"][data-phase="golden-hour"] .bg-tree--saguaro,
 .bg[data-biome="desert"][data-phase="sunset"]      .bg-tree--saguaro,
 .bg[data-biome="desert"][data-phase="afternoon"]   .bg-tree--saguaro,
-.bg[data-biome="desert"][data-phase="midday"]      .bg-tree--saguaro {
+.bg[data-biome="desert"][data-phase="midday"]      .bg-tree--saguaro,
+.bg[data-locality="desert"][data-phase="golden-hour"] .bg-tree--saguaro,
+.bg[data-locality="desert"][data-phase="sunset"]      .bg-tree--saguaro,
+.bg[data-locality="desert"][data-phase="afternoon"]   .bg-tree--saguaro,
+.bg[data-locality="desert"][data-phase="midday"]      .bg-tree--saguaro {
   opacity: 0.95;
   transform: translateY(0);
 }
@@ -1801,8 +2005,60 @@ a {
 /* Desert biome hides oak/pine/palm — only saguaro shows. */
 .bg[data-biome="desert"] .bg-tree--palm,
 .bg[data-biome="desert"] .bg-tree--pine,
-.bg[data-biome="desert"] .bg-tree--oak {
+.bg[data-biome="desert"] .bg-tree--oak,
+.bg[data-locality="desert"] .bg-tree--palm,
+.bg[data-locality="desert"] .bg-tree--pine,
+.bg[data-locality="desert"] .bg-tree--oak {
   display: none;
+}
+
+/* ============================================================
+   Holiday atmosphere — static accents so special dates read instantly.
+   ============================================================ */
+
+.bg-holiday-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 16s linear;
+}
+
+.bg[data-holiday="halloween"] .bg-holiday-glow {
+  opacity: 0.72;
+  background:
+    radial-gradient(380px 220px at 18% 78%, rgba(255, 120, 32, 0.20), transparent 70%),
+    radial-gradient(260px 180px at 88% 18%, rgba(255, 170, 72, 0.14), transparent 72%),
+    linear-gradient(180deg, transparent 48%, rgba(45, 18, 12, 0.22) 100%);
+  mix-blend-mode: screen;
+}
+
+.bg[data-holiday="christmas-eve"] .bg-holiday-glow,
+.bg[data-holiday="christmas-day"] .bg-holiday-glow {
+  opacity: 0.60;
+  background:
+    radial-gradient(520px 220px at 78% 18%, rgba(255, 236, 188, 0.18), transparent 72%),
+    radial-gradient(80% 26% at 50% 100%, rgba(214, 235, 245, 0.18), transparent 72%);
+  mix-blend-mode: screen;
+}
+
+.bg[data-holiday="nye"] .bg-holiday-glow,
+.bg[data-holiday="new-year-day"] .bg-holiday-glow {
+  opacity: 0.72;
+  background:
+    radial-gradient(250px 250px at 24% 20%, rgba(137, 180, 250, 0.18), transparent 64%),
+    radial-gradient(280px 280px at 72% 24%, rgba(249, 226, 175, 0.18), transparent 64%),
+    radial-gradient(80% 28% at 50% 100%, rgba(180, 190, 254, 0.10), transparent 72%);
+  mix-blend-mode: screen;
+}
+
+.bg[data-holiday="birthday"] .bg-holiday-glow {
+  opacity: 0.52;
+  background:
+    radial-gradient(240px 160px at 18% 24%, rgba(245, 194, 231, 0.16), transparent 72%),
+    radial-gradient(280px 180px at 78% 18%, rgba(137, 220, 235, 0.18), transparent 72%),
+    radial-gradient(65% 22% at 50% 100%, rgba(166, 227, 161, 0.10), transparent 72%);
+  mix-blend-mode: screen;
 }
 
 /* ============================================================
@@ -1844,6 +2100,17 @@ a {
 
 .bg[data-holiday="halloween"] .bg-pumpkins {
   opacity: 0.95;
+}
+
+.bg[data-holiday="halloween"] .bg-pumpkins::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -16px;
+  height: 38px;
+  background: radial-gradient(ellipse at center, rgba(255, 128, 42, 0.28), transparent 68%);
+  filter: blur(12px);
 }
 
 /* ============================================================
@@ -1893,6 +2160,51 @@ a {
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+}
+
+.bg-fireworks-host::before,
+.bg-fireworks-host::after {
+  content: "";
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  opacity: 0;
+  background:
+    repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.00) 0 8deg, rgba(255, 236, 170, 0.72) 8deg 10deg, rgba(255, 255, 255, 0.00) 10deg 18deg),
+    radial-gradient(circle, rgba(255,255,255,0.95) 0 3px, rgba(255,255,255,0.0) 4px 100%);
+  filter: drop-shadow(0 0 18px rgba(249, 226, 175, 0.45)) blur(0.2px);
+  transform: scale(0.72);
+  animation: none;
+}
+
+.bg-fireworks-host::before {
+  left: 18%;
+  top: 14%;
+}
+
+.bg-fireworks-host::after {
+  right: 18%;
+  top: 22%;
+  width: 150px;
+  height: 150px;
+  background:
+    repeating-conic-gradient(from 8deg, rgba(255, 255, 255, 0.00) 0 10deg, rgba(137, 180, 250, 0.72) 10deg 12deg, rgba(255, 255, 255, 0.00) 12deg 20deg),
+    radial-gradient(circle, rgba(255,255,255,0.92) 0 3px, rgba(255,255,255,0.0) 4px 100%);
+  animation-delay: -1.4s;
+}
+
+.bg[data-holiday="nye"] .bg-fireworks-host::before,
+.bg[data-holiday="nye"] .bg-fireworks-host::after,
+.bg[data-holiday="new-year-day"] .bg-fireworks-host::before,
+.bg[data-holiday="new-year-day"] .bg-fireworks-host::after {
+  opacity: 0.52;
+  animation: holiday-burst 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes holiday-burst {
+  0%   { transform: scale(0.60) rotate(0deg); opacity: 0.28; }
+  100% { transform: scale(0.94) rotate(8deg); opacity: 0.62; }
 }
 
 .bg-firework {
@@ -1963,6 +2275,29 @@ a {
   overflow: hidden;
 }
 
+.bg-balloons-host::before {
+  content: "";
+  position: absolute;
+  right: 9%;
+  bottom: 13%;
+  width: 124px;
+  height: 168px;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.34) 0 12%, transparent 13%),
+    radial-gradient(ellipse 30px 38px at 34px 42px, rgba(243, 139, 168, 0.82) 0 68%, transparent 70%),
+    radial-gradient(ellipse 30px 38px at 74px 30px, rgba(137, 180, 250, 0.82) 0 68%, transparent 70%),
+    radial-gradient(ellipse 30px 38px at 58px 70px, rgba(166, 227, 161, 0.82) 0 68%, transparent 70%),
+    linear-gradient(72deg, transparent 0 42%, rgba(255,255,255,0.30) 42% 44%, transparent 44% 100%),
+    linear-gradient(104deg, transparent 0 48%, rgba(255,255,255,0.26) 48% 50%, transparent 50% 100%);
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.18));
+  transition: opacity 16s linear;
+}
+
+.bg[data-holiday="birthday"] .bg-balloons-host::before {
+  opacity: 0.76;
+}
+
 .bg-balloon {
   position: absolute;
   left: var(--b-x, 50%);
@@ -2023,7 +2358,8 @@ a {
   .bg-bats-host, .bg-bats-host .bat, .bg-butterfly, .bg-whale,
   .bg-firework__core, .bg-firework .spike, .bg-sleigh, .bg-balloon,
   .bg-heat-shimmer, .bg-lighthouse svg .lighthouse-bulb, .bg-lighthouse::after,
-  .bg-skyline svg .city-windows, .bg-ocean::before, .bg-ocean::after {
+  .bg-skyline svg .city-windows, .bg-ocean::before, .bg-ocean::after,
+  .bg-lake::before, .bg-fireworks-host::before, .bg-fireworks-host::after {
     animation: none !important;
   }
   .bg-sun, .bg-mountains--far, .bg-mountains--mid, .bg-mountains--near, .bg-ocean {
@@ -3121,6 +3457,8 @@ a {
 
 .segmented {
   display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   background: var(--surface0);
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-3);

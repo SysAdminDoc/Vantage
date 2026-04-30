@@ -883,7 +883,13 @@ function buildLocalitySection(settings, onChange) {
         { value: "auto",     label: "Auto"     },
         { value: "coastal",  label: "Coastal"  },
         { value: "urban",    label: "Urban"    },
+        { value: "forest",   label: "Forest"   },
+        { value: "mountain", label: "Mountain" },
+        { value: "lake",     label: "Lake"     },
+        { value: "meadow",   label: "Meadow"   },
+        { value: "tropical", label: "Tropical" },
         { value: "desert",   label: "Desert"   },
+        { value: "polar",    label: "Polar"    },
         { value: "default",  label: "None"     }
       ],
       onChange: (v) => {
@@ -891,7 +897,7 @@ function buildLocalitySection(settings, onChange) {
         onChange(settings);
       }
     }),
-    "Auto detects desert from location; coastal adds a lighthouse + whales; urban adds a city skyline with twinkling windows."
+    "Auto blends location, biome, and region into urban, coastal, lake, mountain, forest, desert, tropical, polar, or meadow scenery."
   ));
   sec.appendChild(g);
   return sec;

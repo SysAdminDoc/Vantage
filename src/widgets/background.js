@@ -20,7 +20,13 @@
 //   .bg-birds         V-formation flock crossing sky (clear daylight)
 //   .bg-mountains     distant atmospheric mountain ridges (3-layer parallax)
 //   .bg-ocean         coastal water plane with subtle wave drift
+//   .bg-meadow        low meadow foreground for inland temperate scenes
+//   .bg-forestline    distant tree line for forest/boreal scenes
+//   .bg-lake          reflective lake foreground
+//   .bg-dunes         desert dune foreground
+//   .bg-icefield      polar ice/snow foreground
 //   .bg-tree          biome-aware foreground tree (palm/pine/oak)
+//   .bg-holiday-glow  holiday-specific atmosphere accents
 //
 // The mount carries data-phase + data-weather + data-biome + data-season
 // + data-hemisphere attributes so all visual styling lives in CSS.
@@ -127,6 +133,12 @@ const CODE_TO_WEATHER = {
   95: "storm", 96: "storm", 99: "storm"
 };
 
+const WEATHER_VALUES = new Set(Object.values(CODE_TO_WEATHER));
+
+function normalizeWeatherOverride(value) {
+  return WEATHER_VALUES.has(value) ? value : null;
+}
+
 // Per-weather sky palette overrides. We replace the keyframe-computed
 // time-of-day colors with these flat slate gradients when the weather is
 // wet or overcast — this is the canonical pattern from open-source
@@ -230,13 +242,16 @@ const OAK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" p
 // Distant mountain ranges — three atmospheric ridge layers for parallax. Each
 // layer is its own SVG so it can be opacity/blur tuned independently in CSS.
 const MOUNTAINS_FAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" preserveAspectRatio="xMidYMax slice">
-  <path fill="currentColor" d="M0 200 L0 150 C60 140 116 132 180 140 C242 118 310 108 376 116 C444 84 528 78 610 108 C680 92 744 90 814 112 C892 86 984 88 1062 118 C1110 105 1160 103 1200 116 L1200 200 Z"/>
+  <path fill="currentColor" d="M0 200 L0 152 L70 136 L132 146 L205 112 L268 132 L335 96 L404 122 L470 88 L545 116 L612 84 L690 118 L760 98 L832 126 L900 90 L982 122 L1058 104 L1130 132 L1200 118 L1200 200 Z"/>
+  <path class="mountain-snowcap" fill="#edf4f7" opacity="0.12" d="M448 98 L470 88 L498 102 L480 100 L470 94 L462 102 Z M592 98 L612 84 L638 103 L622 100 L612 91 L604 102 Z M878 104 L900 90 L926 106 L910 102 L900 97 L892 106 Z"/>
 </svg>`;
 const MOUNTAINS_MID_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" preserveAspectRatio="xMidYMax slice">
-  <path fill="currentColor" d="M0 220 L0 164 C70 148 125 139 190 150 C255 118 328 104 400 120 C470 96 550 88 628 124 C704 94 790 88 866 122 C940 104 1032 104 1102 132 C1145 118 1175 112 1200 116 L1200 220 Z"/>
+  <path fill="currentColor" d="M0 220 L0 168 L80 148 L145 160 L220 118 L288 144 L360 96 L430 132 L510 88 L586 138 L665 96 L742 134 L824 92 L910 144 L990 112 L1065 136 L1138 116 L1200 126 L1200 220 Z"/>
+  <path class="mountain-snowcap" fill="#eff6f8" opacity="0.16" d="M326 122 L360 96 L398 128 L374 120 L360 107 L344 126 Z M478 122 L510 88 L552 128 L524 118 L510 102 L494 126 Z M790 122 L824 92 L866 132 L838 124 L824 104 L806 130 Z"/>
 </svg>`;
 const MOUNTAINS_NEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" preserveAspectRatio="xMidYMax slice">
-  <path fill="currentColor" d="M0 240 L0 205 C75 178 137 150 210 165 C287 122 370 110 452 145 C530 118 604 112 680 148 C760 118 848 118 930 154 C1002 132 1092 132 1200 165 L1200 240 Z"/>
+  <path fill="currentColor" d="M0 240 L0 210 L82 176 L152 196 L232 128 L292 168 L372 98 L456 164 L535 122 L622 172 L710 94 L785 160 L874 112 L960 178 L1042 138 L1120 164 L1200 150 L1200 240 Z"/>
+  <path class="mountain-snowcap" fill="#f1f7f8" opacity="0.20" d="M212 154 L232 128 L260 162 L240 152 L232 139 L220 158 Z M330 132 L372 98 L414 138 L388 126 L372 112 L352 136 Z M674 132 L710 94 L752 138 L724 128 L710 108 L692 136 Z M846 132 L874 112 L906 144 L884 136 L874 122 L860 140 Z"/>
 </svg>`;
 
 // V-formation bird flock. Each bird is two arcs forming the wing-flap shape.
@@ -514,6 +529,32 @@ function getHoliday(date, birthdayMMDD) {
   return null;
 }
 
+function parseSceneDateOverride(value) {
+  if (typeof value !== "string") return null;
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const [, y, m, d] = match;
+  const date = new Date();
+  date.setFullYear(Number(y), Number(m) - 1, Number(d));
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
+function sceneNow(mount) {
+  const override = mount?._bgDateOverride;
+  if (!override) return new Date();
+  const current = new Date();
+  return new Date(
+    override.getFullYear(),
+    override.getMonth(),
+    override.getDate(),
+    current.getHours(),
+    current.getMinutes(),
+    current.getSeconds(),
+    current.getMilliseconds()
+  );
+}
+
 /** Whether the Milky Way's galactic core is up at a given hour for the
  *  current month + hemisphere. Northern: Jun-Sep midnight. Southern:
  *  Apr-Aug midnight. We approximate "up" as deep-night phases during
@@ -550,6 +591,35 @@ const URBAN_REGIONS = [
   [35.4, 36.0,  139.30,  140.20, "tokyo"]
 ];
 
+const COASTAL_REGIONS = [
+  // [latMin, latMax, lonMin, lonMax, name]
+  [32.4, 33.3, -117.45, -116.90, "san-diego"],
+  [21.0, 21.8, -158.30, -157.40, "honolulu"],
+  [25.3, 26.3,  -80.60,  -79.80, "miami"],
+  [36.7, 37.3,  -76.50,  -75.70, "virginia-beach"],
+  [43.0, 49.5, -125.20, -122.00, "pacific-northwest"],
+  [41.0, 42.9,  -71.60,  -69.80, "new-england"],
+  [33.4, 34.2,  150.50,  151.50, "sydney"],
+  [-23.2, -22.5, -43.80,  -42.70, "rio"]
+];
+
+const LAKE_REGIONS = [
+  // [latMin, latMax, lonMin, lonMax, name]
+  [41.3, 49.2,  -93.20,  -75.00, "great-lakes"],
+  [38.7, 39.4, -120.30, -119.75, "tahoe"],
+  [45.6, 46.3,    8.40,   10.10, "italian-lakes"],
+  [46.0, 47.2,    6.00,    7.80, "geneva"]
+];
+
+const MOUNTAIN_REGIONS = [
+  // [latMin, latMax, lonMin, lonMax, name]
+  [35.0, 49.5, -118.00, -104.00, "rockies"],
+  [44.0, 48.5,    5.00,   16.50, "alps"],
+  [27.0, 36.5,   72.00,   95.00, "himalaya"],
+  [-45.0, -5.0,  -75.50,  -65.00, "andes"],
+  [35.0, 37.0,  137.00,  139.50, "japanese-alps"]
+];
+
 /** Returns true if (lat, lon) falls inside a known desert region. */
 function isDesertLocation(lat, lon) {
   if (lat == null || lon == null) return false;
@@ -560,6 +630,23 @@ function isDesertLocation(lat, lon) {
 function isUrbanLocation(lat, lon) {
   if (lat == null || lon == null) return false;
   return URBAN_REGIONS.some(([la, lb, oa, ob]) => lat >= la && lat <= lb && lon >= oa && lon <= ob);
+}
+
+function isRegionMatch(regions, lat, lon) {
+  if (lat == null || lon == null) return false;
+  return regions.some(([la, lb, oa, ob]) => lat >= la && lat <= lb && lon >= oa && lon <= ob);
+}
+
+function inferLocality(lat, lon, biome) {
+  if (isUrbanLocation(lat, lon)) return "urban";
+  if (biome === "tropical") return "tropical";
+  if (isRegionMatch(COASTAL_REGIONS, lat, lon)) return "coastal";
+  if (isRegionMatch(LAKE_REGIONS, lat, lon)) return "lake";
+  if (isRegionMatch(MOUNTAIN_REGIONS, lat, lon)) return "mountain";
+  if (biome === "desert") return "desert";
+  if (biome === "boreal") return "forest";
+  if (biome === "polar") return "polar";
+  return "meadow";
 }
 
 // ---- Locality + season helpers ----
@@ -617,6 +704,7 @@ function resetBackgroundMount(mount) {
   mount._bgLon = null;
   mount._bgBirthday = null;
   mount._bgLocality = null;
+  mount._bgDateOverride = null;
   mount._bgFirstSnowAt = 0;
   mount._bgPrevWeather = null;
   mount._bgRainbowUntil = 0;
@@ -743,6 +831,11 @@ export async function renderBackground(mount, settings, saveSettings) {
     <div class="bg-mountains bg-mountains--far"  aria-hidden="true">${MOUNTAINS_FAR_SVG}</div>
     <div class="bg-mountains bg-mountains--mid"  aria-hidden="true">${MOUNTAINS_MID_SVG}</div>
     <div class="bg-mountains bg-mountains--near" aria-hidden="true">${MOUNTAINS_NEAR_SVG}</div>
+    <div class="bg-lake" aria-hidden="true"></div>
+    <div class="bg-meadow" aria-hidden="true"></div>
+    <div class="bg-forestline" aria-hidden="true"></div>
+    <div class="bg-dunes" aria-hidden="true"></div>
+    <div class="bg-icefield" aria-hidden="true"></div>
     <div class="bg-ocean" aria-hidden="true"></div>
     <div class="bg-skyline" aria-hidden="true">${CITY_SKYLINE_SVG}</div>
     <div class="bg-lighthouse" aria-hidden="true">${LIGHTHOUSE_SVG}</div>
@@ -752,6 +845,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     <div class="bg-tree bg-tree--pine"    aria-hidden="true">${PINE_SVG}</div>
     <div class="bg-tree bg-tree--oak"     aria-hidden="true">${OAK_SVG}</div>
     <div class="bg-tree bg-tree--saguaro" aria-hidden="true">${SAGUARO_SVG}</div>
+    <div class="bg-holiday-glow" aria-hidden="true"></div>
     <div class="bg-pumpkins" aria-hidden="true"></div>
     <div class="bg-sleigh" aria-hidden="true">${SLEIGH_SVG}</div>
     <div class="bg-balloons-host" aria-hidden="true"></div>
@@ -760,7 +854,9 @@ export async function renderBackground(mount, settings, saveSettings) {
   // ---- Render IMMEDIATELY with sensible defaults so the user never sees
   // a dark void while we wait on geolocation (~6s) and the weather fetch.
   // We refine in place once real data arrives.
-  let weather = "clear";
+  const qaParams = new URLSearchParams(globalThis.location?.search || "");
+  const forcedWeather = normalizeWeatherOverride(qaParams.get("qaWeather"));
+  let weather = forcedWeather || "clear";
   // Sun-event times for the location, recomputed daily. Default values
   // are placeholder times for "today, somewhere temperate" — they get
   // overwritten by getSunTimes(...) as soon as we know the lat/lon.
@@ -800,7 +896,11 @@ export async function renderBackground(mount, settings, saveSettings) {
   mount._bgLat       = location?.latitude  ?? null;
   mount._bgLon       = location?.longitude ?? null;
   mount._bgBirthday  = settings.greeting?.birthday || null; // "MM-DD"
-  mount._bgLocality  = settings.appearance?.locality || "auto"; // "auto"|"coastal"|"urban"|"desert"|"default"
+  mount._bgLocality  = settings.appearance?.locality || "auto";
+  // Hidden QA hook for screenshots: ?qaDate=YYYY-MM-DD forces seasonal and
+  // holiday evaluation without changing the user's clock.
+  const qaDate = qaParams.get("qaDate");
+  mount._bgDateOverride = parseSceneDateOverride(qaDate || settings.background?.qaDate);
 
   // Compute sun-event times. Strategy:
   //   1) Open-Meteo's `daily.sunrise[0]` / `daily.sunset[0]` (requested
@@ -828,13 +928,13 @@ export async function renderBackground(mount, settings, saveSettings) {
     if (!location) return;
     // Always start from the local astronomical calc — gives us civil
     // twilight + handles polar regions + works offline.
-    const local = getSunTimes(new Date(), location.latitude, location.longitude);
+    const local = getSunTimes(sceneNow(mount), location.latitude, location.longitude);
     // If Open-Meteo returned daily sunrise/sunset, prefer those values
     // (NREL SPA, ±30s ground truth) over the local calc (±1-2 min).
     // Keep dawn/dusk/noon from the local calc since Open-Meteo's free
     // tier doesn't include civil twilight.
     const om = openMeteoData;
-    if (om?.daily?.sunrise?.[0] && om?.daily?.sunset?.[0] && typeof om.utc_offset_seconds === "number") {
+    if (!mount._bgDateOverride && om?.daily?.sunrise?.[0] && om?.daily?.sunset?.[0] && typeof om.utc_offset_seconds === "number") {
       sunTimes = {
         ...local,
         sunrise: parseLocationLocal(om.daily.sunrise[0], om.utc_offset_seconds),
@@ -891,7 +991,7 @@ export async function renderBackground(mount, settings, saveSettings) {
   if (location) {
     try {
       const data = await getWeatherData(location, settings.weather?.units || "fahrenheit");
-      weather = CODE_TO_WEATHER[data.current?.weather_code] || "clear";
+      weather = forcedWeather || CODE_TO_WEATHER[data.current?.weather_code] || "clear";
       checkRainbowTransition();
       await checkFirstSnow();
       recomputeSunTimes(data); // upgrade to NREL SPA precision
@@ -909,7 +1009,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     if (!location) return;
     try {
       const data = await getWeatherData(location, settings.weather?.units || "fahrenheit", { force: true });
-      weather = CODE_TO_WEATHER[data.current?.weather_code] || "clear";
+      weather = forcedWeather || CODE_TO_WEATHER[data.current?.weather_code] || "clear";
       checkRainbowTransition();
       await checkFirstSnow();
       recomputeSunTimes(data);
@@ -1106,7 +1206,7 @@ export async function renderBackground(mount, settings, saveSettings) {
   let fireworksTimer = null;
   const fireworkBurstTimers = [];
   function spawnFirework() {
-    if (!fireworksHost || !motionAllowed()) return;
+    if (!fireworksHost || !motionAllowed() || !isFireworksHoliday()) return;
     const fw = document.createElement("div");
     fw.className = "bg-firework";
     fw.style.setProperty("--fw-x", `${10 + Math.random() * 80}%`);
@@ -1134,7 +1234,7 @@ export async function renderBackground(mount, settings, saveSettings) {
   function scheduleFirework() {
     const delay = 4000 + Math.random() * 9000; // 4-13s between bursts
     fireworksTimer = setTimeout(() => {
-      if (motionAllowed() && fireworksHost && mount.dataset.holiday === "nye") {
+      if (motionAllowed() && fireworksHost && isFireworksHoliday()) {
         spawnFirework();
         // Burst sometimes spawns 2-3 in quick succession for finale feel.
         if (Math.random() < 0.3) queueFirework(250);
@@ -1143,26 +1243,38 @@ export async function renderBackground(mount, settings, saveSettings) {
       scheduleFirework();
     }, delay);
   }
-  if (motionAllowed()) scheduleFirework();
+  function isFireworksHoliday() {
+    return mount.dataset.holiday === "nye" || mount.dataset.holiday === "new-year-day";
+  }
+  if (motionAllowed()) {
+    scheduleFirework();
+    queueFirework(900);
+    queueFirework(1800);
+  }
 
   // ---- Birthday balloons: drift up across the whole sky.
   const balloonsHost = mount.querySelector(".bg-balloons-host");
   let balloonTimer = null;
+  function spawnBalloon() {
+    if (!motionAllowed() || !balloonsHost || mount.dataset.holiday !== "birthday") return;
+    const b = document.createElement("div");
+    b.className = "bg-balloon";
+    b.style.setProperty("--b-x", `${5 + Math.random() * 90}%`);
+    b.style.setProperty("--b-sway", Math.random() < 0.5 ? "1" : "-1");
+    b.innerHTML = BALLOON_SVG;
+    balloonsHost.appendChild(b);
+    b.addEventListener("animationend", () => b.remove());
+  }
   function scheduleBalloon() {
     const delay = 18000 + Math.random() * 30000;
     balloonTimer = setTimeout(() => {
-      if (motionAllowed() && balloonsHost && mount.dataset.holiday === "birthday") {
-        const b = document.createElement("div");
-        b.className = "bg-balloon";
-        b.style.setProperty("--b-x", `${5 + Math.random() * 90}%`);
-        b.style.setProperty("--b-sway", Math.random() < 0.5 ? "1" : "-1");
-        b.innerHTML = BALLOON_SVG;
-        balloonsHost.appendChild(b);
-        b.addEventListener("animationend", () => b.remove());
-      }
+      spawnBalloon();
       scheduleBalloon();
     }, delay);
   }
+  const initialBalloonTimer = motionAllowed()
+    ? setTimeout(spawnBalloon, 1200)
+    : null;
   if (motionAllowed()) scheduleBalloon();
 
   // ---- Whale fluke: rare breach for coastal locations during daylight.
@@ -1218,6 +1330,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     if (butterflyTimer) clearTimeout(butterflyTimer);
     if (fireworksTimer) clearTimeout(fireworksTimer);
     for (const timer of fireworkBurstTimers) clearTimeout(timer);
+    if (initialBalloonTimer) clearTimeout(initialBalloonTimer);
     if (balloonTimer) clearTimeout(balloonTimer);
     if (whaleTimer) clearTimeout(whaleTimer);
     document.removeEventListener("mousemove", onMouseMove);
@@ -1239,7 +1352,7 @@ function applyImageBackground(mount, src, bg) {
 }
 
 function updateScene(mount, weather, sunTimes) {
-  const now = new Date();
+  const now = sceneNow(mount);
   const { sunrise, sunset } = sunTimes;
   const phase = computePhase(now, sunTimes);
   const sunPos = computeSunPosition(now, sunrise, sunset);
@@ -1286,11 +1399,8 @@ function updateScene(mount, weather, sunTimes) {
       mount.dataset.hemisphere = hemi;
       mount.dataset.season     = getSeason(now, hemi);
       // Desert overrides the lat-based biome where applicable.
-      if (isDesertLocation(lat, lon)) {
-        mount.dataset.biome  = "desert";
-      } else {
-        mount.dataset.biome  = getBiome(lat);
-      }
+      const biome = isDesertLocation(lat, lon) ? "desert" : getBiome(lat);
+      mount.dataset.biome = biome;
       // Aurora eligibility: high latitude (|lat|>=55°) AND clear-ish night.
       const auroraEligible = Math.abs(lat) >= 55 &&
         (weather === "clear" || weather === "cloudy") &&
@@ -1316,10 +1426,8 @@ function updateScene(mount, weather, sunTimes) {
     const localityOverride = mount._bgLocality;
     if (localityOverride && localityOverride !== "auto") {
       mount.dataset.locality = localityOverride;
-    } else if (isUrbanLocation(lat, lon)) {
-      mount.dataset.locality = "urban";
     } else {
-      mount.dataset.locality = "auto";
+      mount.dataset.locality = inferLocality(lat, lon, mount.dataset.biome);
     }
 
     // Holiday: 24h banner — Halloween, Christmas Eve / Day, NYE, New Year,
