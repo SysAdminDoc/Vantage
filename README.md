@@ -15,6 +15,9 @@
 
 ---
 
+<img width="1616" height="883" alt="2026-04-29 23_24_00-_new 68 - Notepad++" src="https://github.com/user-attachments/assets/0afeef81-dbf9-4093-8497-8d5115c35744" />
+
+
 ## Why another new tab extension?
 
 Most new tab dashboards (Momentum, Tabliss, Bonjourr, Mue, Renewed Tab, Horizon) lock you to one search engine — usually Google. **Vantage treats the search engine as a first-class setting**: switch between Google, DuckDuckGo, Startpage, Brave, Kagi, Ecosia, Qwant, SearXNG, Perplexity, or your own self-hosted endpoint with one click, right from the new tab.
