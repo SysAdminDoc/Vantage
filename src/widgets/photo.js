@@ -86,6 +86,6 @@ async function loadNasa(body, apiKey) {
     body.appendChild(credit);
   } catch (err) {
     body.innerHTML = "";
-    body.appendChild(el("p", { class: "panel-empty" }, [`Could not load NASA APOD: ${err.message}`]));
+    body.appendChild(el("p", { class: "panel-error" }, [`Couldn't load NASA APOD — ${err.message.toLowerCase()}.`]));
   }
 }
