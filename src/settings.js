@@ -1610,11 +1610,21 @@ function buildDataSection(settings, onChange, showWizard) {
       if (!file) return;
       try {
         const text = await file.text();
-        const parsed = JSON.parse(text);
-        await saveSettings(parsed);
-        onChange(parsed);
-        toast("Settings imported.", "success");
-      } catch { toast("Invalid JSON file.", "error"); }
+        const previous = cloneValue(settings);
+        const imported = normalizeImportedSettings(JSON.parse(text));
+        await saveSettings(imported);
+        onChange(imported);
+        toast(`Settings imported from ${file.name}.`, "success", 8000, {
+          label: "Undo",
+          onClick: async () => {
+            await saveSettings(previous);
+            onChange(previous);
+            toast("Import undone.", "success");
+          }
+        });
+      } catch (err) {
+        toast(err.message || "Invalid JSON file.", "error");
+      }
       jsonImportInput.value = "";
     }
   });
@@ -1711,6 +1721,46 @@ function triggerDownload(content, filename, mimeType) {
 
 function isoDate() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function normalizeImportedSettings(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Import file must contain a Vantage settings object.");
+  }
+  const merged = mergeSettings(getDefaults(), value);
+  if (Array.isArray(merged.quicklinks)) {
+    merged.quicklinks = { enabled: true, items: merged.quicklinks, groups: [] };
+  }
+  if (merged.embed !== undefined) {
+    if ((!merged.embeds || merged.embeds.length === 0) && merged.embed?.url) {
+      merged.embeds = [{
+        id: "1",
+        title: merged.embed.title || "Embed",
+        url: merged.embed.url,
+        enabled: merged.embed.enabled ?? false
+      }];
+    }
+    delete merged.embed;
+  }
+  return merged;
+}
+
+function mergeSettings(base, incoming) {
+  for (const [key, value] of Object.entries(incoming)) {
+    if (
+      value &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      base[key] &&
+      typeof base[key] === "object" &&
+      !Array.isArray(base[key])
+    ) {
+      base[key] = mergeSettings({ ...base[key] }, value);
+    } else {
+      base[key] = value;
+    }
+  }
+  return base;
 }
 
 /* ---- To-Do ------------------------------------------------------------- */
