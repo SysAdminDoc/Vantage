@@ -15,41 +15,114 @@
 
 ---
 
-<img width="1616" height="883" alt="2026-04-29 23_24_00-_new 68 - Notepad++" src="https://github.com/user-attachments/assets/0afeef81-dbf9-4093-8497-8d5115c35744" />
+<img width="1616" height="883" alt="Vantage screenshot" src="https://github.com/user-attachments/assets/0afeef81-dbf9-4093-8497-8d5115c35744" />
 
 
 ## Why another new tab extension?
 
 Most new tab dashboards (Momentum, Tabliss, Bonjourr, Mue, Renewed Tab, Horizon) lock you to one search engine — usually Google. **Vantage treats the search engine as a first-class setting**: switch between Google, DuckDuckGo, Startpage, Brave, Kagi, Ecosia, Qwant, SearXNG, Perplexity, or your own self-hosted endpoint with one click, right from the new tab.
 
-Beyond that, Vantage gives you the dashboard staples — clock, weather, RSS, news, quick links — without any API keys, account signups, or third-party tracking.
+Beyond that: 22 toggleable widgets, a place- and time-aware animated sky, multi-profile workspaces, and zero API keys / signups / tracking.
 
 ## Features
 
-- **10 search engines built-in + custom URL** — Google · Bing · DuckDuckGo · Startpage · Brave · Kagi · Ecosia · SearXNG · Qwant · Perplexity · custom (use `%s` for the query). Custom dropdown picker, not a native `<select>`.
-- **Air quality panel** — live AQI, PM2.5, PM10, and pollen levels (alder, birch, grass, mugwort, olive, ragweed) from Open-Meteo Air Quality API. No API key. Reuses your weather location.
-- **iCal / calendar widget** — add any `.ics` URL (Google Calendar, Outlook, standard feed). Shows upcoming events grouped by day. No OAuth required.
-- **Pomodoro timer** — focus / break / long-break cycles with tab-blur auto-pause, cross-tab `navigator.locks` single-completion guarantee, Web Notifications on phase change, and live `<title>` countdown.
+### Search
+- **10 engines built-in + custom URL** — Google · Bing · DuckDuckGo · Startpage · Brave · Kagi · Ecosia · SearXNG · Qwant · Perplexity · custom (use `%s` for the query). Custom dropdown picker, not a native `<select>`.
+- **Full keyboard navigation on the engine picker** — `↑/↓/Home/End/Enter/Esc` plus type-ahead (`d` jumps to DuckDuckGo, `b` to Bing, etc.).
+- **`/` to focus search** — keyboard shortcut hint shown inline.
+
+### Widgets
+22 toggleable widgets, all locally stored, all togglable from a popover quick-picker without opening settings.
+
+| Hero | Status bar | Reading panels | Tools |
+|---|---|---|---|
+| Clock | Weather | News | Pomodoro |
+| Greeting | Air quality | RSS / Reading list | Unit converter |
+| Search | | Calendar (iCal) | |
+| Quick links | | Weather radar (Windy) | |
+| Top sites | | To-Do | |
+| World clocks | | Notes | |
+| Quote of the day | | Bookmarks | |
+| | | Crypto prices | |
+| | | GitHub activity | |
+| | | Photo of the day | |
+| | | Countdowns | |
+| | | Custom iframe embeds | |
+
+- **Drag-to-reorder** — quick-link pills, reading panels, even custom embed panels remember the order you arrange them in.
+- **Click-to-mark-read** — feed items dim out, panel headers show unread-count badges, one-click "mark all read" per panel. State persists across tabs.
+- **Quick-link folder groups** — bundle related links into a popover folder pill.
+- **Feed dedup + filter rules** — paste the same article URL across multiple feeds and it appears once. Optional regex rules can mute or highlight feeds by title/URL.
+- **Per-feed favicons** in headline rows.
+- **Skeleton loading + last-updated timestamp + refresh-with-spinner** on every async panel.
+
+### Animated background
+
+The reason the dashboard feels alive. Toggleable; defaults on.
+
+**Time-of-day sky** with 15 color keyframes — pre-dawn, civil/nautical/astronomical twilight, golden hour, sunrise, midday, afternoon, golden hour, sunset, dusk, deep night. Sun arcs across the sky on its actual NREL SPA path; the moon shows the **real current lunar phase** computed from the synodic cycle.
+
+**Weather-driven layers** — clouds drift at three depths, rain streaks scroll over a darkened sky palette, snow falls (with **fat lazy flakes for the first 24h after the first snow of the season**), fog hazes, lightning flashes (full sky for storms, soft horizon glow for distant rain), sun halos through cirrus, sun pillars at sunrise/sunset, **rainbow for 3 minutes after rain → clear**.
+
+**Locality-aware foreground** based on your weather location:
+
+| Latitude | Tree | Notes |
+|---|---|---|
+| Tropical (\|lat\|<23°) | Coconut palm | Default for warm climates |
+| Temperate (23-50°) | Oak / deciduous | Sways in the wind |
+| Boreal (50-66°) | Pine | Slow narrow oscillation |
+| Polar (>66°) | None — bare horizon | Open to aurora |
+| Desert (Sahara, Sonoran, Atacama, Australian outback, Kalahari, etc.) | Saguaro cactus | Auto-detected from lat/lon rectangles |
+
+**Three-layer parallax mountains** with subtle mouse-driven parallax shift. Optional **coastal scenery** (lighthouse with rotating beam + occasional whale-fluke breach) and **urban scenery** (distant city skyline with twinkling windows).
+
+**Astronomical extras** — Milky Way streak across the deep summer/autumn night sky (hemisphere-aware), Big Dipper / Southern Cross constellations (hemisphere-aware), Venus as the morning/evening star, **shooting stars** at random intervals at night (frequency boosted 4× on Perseids, Geminids, Leonids, Quadrantids, and 5 other meteor-shower peak dates), **aurora borealis** at \|lat\|≥55° on clear nights, plane lights crossing the sky.
+
+**Wildlife** — V-formation bird flock during clear days, **bats replace birds at dusk** for Halloween mood, butterflies in spring/summer temperate, deer silhouette at dawn in temperate/boreal forests, fireflies in summer twilight.
+
+**Seasonal particles** — cherry blossoms drift in spring temperate, autumn leaves fall in autumn temperate.
+
+**Holidays — full 24h, all day** (using the user's local timezone):
+- 🎃 **Halloween** (Oct 31): jack-o'-lantern row across horizon, bats replace birds at dusk
+- 🎅 **Christmas Eve / Day** (Dec 24-25): Santa's sleigh + reindeer crosses the sky on loop
+- 🎆 **New Year's Eve / Day** (Dec 31 / Jan 1): random firework bursts every 4-13 seconds, all day, with random hues and 24-spike radial blooms
+- 🎈 **Birthday** (user-set MM-DD): balloons drift up across the screen
+
+**Subtle interactivity** — mouse parallax on the three mountain layers, page-load shooting star within 8 seconds of opening, all transitions honor `prefers-reduced-motion`.
+
+### Wallpapers (alternative to the animated background)
+
+Six wallpaper modes:
+- **Animated** (default — the place-aware sky above)
+- **Solid color** — single color picker
+- **Gradient** — two-color picker + angle
+- **Image URL** — any direct image URL with blur + brightness sliders
+- **Image upload** — local file → base64 in storage
+- **Bing daily** — pulls the current Bing image of the day, cached per-day
+
+### Personalization
+- **Catppuccin Mocha (dark) + Latte (light)** with full design-token system, careful tonal layering, refined shadows, and ambient gradient backdrop.
+- **9-color accent picker** — Mauve · Blue · Green · Peach · Teal · Lavender · Red · Flamingo · Sky.
+- **Custom CSS injection** — paste any CSS into the textarea; live-applies as you type.
+- **Locality scenery override** — pick coastal / urban / desert / default, or auto.
+- **Multi-profile workspaces** — snapshot your current layout, switch between layouts with View Transitions. (Firefox: optional container → workspace mapping.)
+- **Onboarding wizard** on first run — three layout presets (Minimal, Standard, Full) plus optional name + weather location.
+- **Reddit feed presets** — one-click add for popular subreddits.
+
+### Productivity
 - **OPML import + export** — one-click export of all RSS + News feeds; merge-import from any OPML file (Feedly, Inoreader, NetNewsWire compatible).
 - **Settings JSON export / import** — download your full config as JSON, restore it on any device.
-- **Config share link** — copy a URL that encodes your entire settings as a base64 fragment; open it on any Chromium device with Vantage installed.
-- **Multi-proxy CORS fallback** — RSS and calendar feeds now try allorigins.win → corsproxy.io before giving up.
-- **Full twilight phases** — background now tracks civil (-6°), nautical (-12°), and astronomical (-18°) twilight plus golden hour (+6°) using your local sun-calc for pixel-accurate phase transitions anywhere on Earth.
-- **Open-Meteo weather** — no API key required. Geolocation auto-detect or manual city. °F / °C. Compact pill in the utility bar.
-- **Time-aware greeting + clock** — “Good morning, Matthew” with a soft accent gradient. Optional name, optional 24-hour, optional seconds.
-- **Multi-feed RSS reader** — add any RSS or Atom feed. Sorted by date across all feeds, fetched in parallel with graceful per-feed failure handling. Skeleton loading, last-updated timestamp, refresh-with-spinner.
-- **News panel** — same engine as RSS, separate config and category accent. BBC + Ars Technica + The Verge by default.
-- **Quick links** — clean pill row with favicons. Add / remove from settings.
-- **Custom UI primitives** — toggle switches, segmented controls, icon buttons. No native checkboxes or selects on the primary surface.
-- **Catppuccin Mocha (dark) + Latte (light)** with full design-token system, careful tonal layering, refined shadows, and ambient gradient backdrop.
-- **`/` to focus search** — keyboard shortcut hint shown inline; Esc closes any open panel.
-- **All local** — `chrome.storage.local` only. No analytics, no telemetry, no remote config server. The only outbound calls are: Open-Meteo (weather), the RSS feeds you configure, and (fallback only) a public CORS proxy for feeds that block direct fetches.
+- **Config share link** — copy a URL that encodes your entire settings as a base64 fragment; open it on any device with Vantage installed.
+- **Pomodoro timer** — focus / break / long-break cycles with tab-blur auto-pause, cross-tab `navigator.locks` single-completion guarantee, Web Notifications on phase change, and live `<title>` countdown.
+- **Storage quota panel** — see how much of your `chrome.storage.local` quota you're using.
+
+### Privacy & UX
+- **All local** — `chrome.storage.local` only. No analytics, no telemetry, no remote config server. The only outbound calls are listed in the [Privacy table](#privacy--network).
+- **No API keys required** — every external service used is free and open.
 - **Cross-tab sync** — change a setting in one tab, every other open new tab updates instantly.
-- **Drag-to-reorder** — quick-link pills and the news / reading-list panels remember the order you arrange them in.
-- **Click-to-mark-read** — read articles dim out, panel header shows an unread-count badge, one-click "mark all read" per panel. State persists across tabs.
-- **Per-feed favicons** in headline rows.
-- **Full keyboard navigation on the engine picker** — `↑/↓/Home/End/Enter/Esc` plus type-ahead (`d` jumps to DuckDuckGo, `b` to Bing, etc.).
-- **Accessibility-aware** — visible focus rings, ARIA-labelled controls, `prefers-reduced-motion` support, semantic landmarks, dialog-pattern settings panel with focus trap and Esc-to-close.
+- **Multi-proxy CORS fallback** — RSS and calendar feeds try direct → allorigins.win → corsproxy.io before failing.
+- **Custom UI primitives** — toggle switches, segmented controls, icon buttons. No native checkboxes or selects on the primary surface.
+- **Accessibility-aware** — visible focus rings, ARIA-labelled controls, `prefers-reduced-motion` support, semantic landmarks, dialog-pattern settings panel with focus trap and Esc-to-close, Windows High Contrast support.
 
 ## Install
 
@@ -115,14 +188,20 @@ Stock Chrome / Brave / Edge reject every self-signed CRX dragged onto the extens
 
 ## Customize
 
-Click the gear icon in the top-right of any new tab.
+Click the gear icon in the top-right of any new tab. Or click the layout-grid icon next to it for a quick widget toggle popover.
 
-- **Theme** — Mocha (dark) or Latte (light).
+Highlights:
+
+- **Theme** — Mocha (dark) or Latte (light), plus 9 accent colors and a custom CSS textarea.
+- **Background** — Animated / Solid / Gradient / Image URL / Image upload / Bing daily.
+- **Greeting** — display name + birthday (MM-DD; triggers all-day balloons on the day).
+- **Scenery** — Auto / Coastal / Urban / Desert / None — overrides the auto-detected biome scenery.
 - **Search** — pick the default engine, or supply a custom URL like `https://my-searx.example.com/search?q=%s`.
-- **Weather** — type a city name and hit "Set city", or click "Reset to auto-detect" to use geolocation.
-- **Clock** — toggle 24-hour, toggle seconds.
-- **Quick Links** — add / remove. Favicons fetch via Google's `s2/favicons` service.
-- **RSS / News** — separate sections. Add any RSS or Atom feed URL. Tune max items per panel.
+- **Weather** — type a city name and hit "Set", or click "Reset to auto-detect" to use geolocation.
+- **Workspaces** — name multiple layouts, snapshot the current one, switch between them.
+- **Embeds** — add any iframe-friendly URL as a custom reading panel (flight tracker, dashboard, internal tool, anything).
+- **Filter rules** — regex `mute` or `highlight` rules over RSS / News by title or URL.
+- **Data** — JSON export, JSON import, OPML export, OPML import, share-link, re-run the setup wizard.
 - **Reset** — wipe back to defaults if you make a mess.
 
 ## Architecture
@@ -132,26 +211,51 @@ Pure vanilla JS modules. No build step. No bundler. No framework. Ships exactly 
 ```
 Vantage/
 ├── manifest.json              MV3 manifest (chrome_url_overrides → newtab.html)
-├── newtab.html                Static HTML shell — utility bar, hero, reading panels
+├── manifest.firefox.json      Firefox variant (no module worker)
+├── newtab.html                Static HTML shell
 ├── src/
-│   ├── main.js                Entry — loads settings, mounts widgets, wires UI + keyboard
+│   ├── main.js                Entry — settings, mounts, keyboard, workspace bar
 │   ├── background.js          Service worker (toolbar action → open new tab)
-│   ├── style.css              Design tokens, typography, motion, all UI styles
+│   ├── style.css              Design tokens, type, motion, all UI styles
 │   ├── storage.js             chrome.storage.local wrapper with deep-merged defaults
 │   ├── search-engines.js      Engine catalog + URL builder
-│   ├── settings.js            Settings panel — composed from primitives below
+│   ├── settings.js            Settings panel — composed from primitives
+│   ├── widget-picker.js       Quick-toggle popover for widgets + embeds
+│   ├── onboarding.js          First-run setup wizard
 │   ├── icons.js               Inline SVG icon library (Lucide-style stroke set)
 │   ├── widgets/
-│   │   ├── search.js          Hero search bar with custom engine picker dropdown
-│   │   ├── clock.js           Time-aware greeting + datetime line
-│   │   ├── weather.js         Open-Meteo pill with skeleton loading
-│   │   ├── quicklinks.js      Pill-row link list
-│   │   ├── feed-list.js       Shared multi-feed renderer with skeleton, last-updated, refresh
+│   │   ├── search.js          Hero search + custom engine picker
+│   │   ├── clock.js           Time-aware greeting + datetime
+│   │   ├── weather.js         Open-Meteo weather pill
+│   │   ├── airquality.js      AQI pill (Open-Meteo Air Quality API)
+│   │   ├── background.js      Animated sky / weather / locality / holidays
+│   │   ├── quicklinks.js      Pill-row links + folder groups
+│   │   ├── topsites.js        chrome.topSites widget
+│   │   ├── worldclock.js      World clocks strip
+│   │   ├── pomodoro.js        Cross-tab focus timer
+│   │   ├── feed-list.js       Shared multi-feed renderer (used by RSS + News)
 │   │   ├── rss.js             RSS / Reading-list panel
-│   │   └── news.js            News panel
+│   │   ├── news.js            News panel
+│   │   ├── calendar.js        iCal panel
+│   │   ├── windy.js           Windy radar embed panel
+│   │   ├── embed.js           Generic iframe embed panel
+│   │   ├── todo.js            To-do list panel
+│   │   ├── notes.js           Sticky notes panel
+│   │   ├── bookmarks.js       Browser bookmarks panel
+│   │   ├── crypto.js          Crypto prices (CoinGecko)
+│   │   ├── github.js          GitHub activity / trending repos
+│   │   ├── quote.js           Daily quote banner
+│   │   ├── photo.js           Daily photo (Picsum / NASA APOD)
+│   │   └── countdown.js       Countdown events panel
 │   └── utils/
-│       ├── dom.js             el() builder + toggle / segmented primitives + toast + helpers
-│       └── rss-parser.js      RSS / Atom parser via DOMParser, with CORS fallback
+│       ├── dom.js             el() builder + toggle/segmented/toast primitives
+│       ├── drag.js            Drag-to-reorder helper
+│       ├── ical-parser.js     iCal RFC 5545 parser
+│       ├── opml.js            OPML 2.0 import/export
+│       ├── rss-parser.js      RSS / Atom parser via DOMParser, CORS fallback
+│       ├── sun-calc.js        SunCalc-style astronomical computation
+│       ├── weather-source.js  Open-Meteo client with 10-min cache
+│       └── workspace.js       Workspace snapshot + apply
 └── icons/                     16/48/128/256/512 PNGs + master SVG
 ```
 
@@ -159,17 +263,26 @@ Vantage/
 
 | Outbound call | Triggered by | Why |
 |---|---|---|
-| `api.open-meteo.com` | Weather widget | Current temperature + weather code |
-| `geocoding-api.open-meteo.com` | Settings panel ("Set city") | Resolve city name to lat/lon |
-| Each configured RSS/News feed URL | RSS / News widgets | Direct fetch first |
-| `api.allorigins.win` | RSS / News (fallback) | Used **only** when direct fetch is blocked by CORS — strips the request to raw XML, no cookies forwarded |
-| `www.google.com/s2/favicons` | Quick Links widget | 64×64 favicon images for the link grid |
+| `api.open-meteo.com` | Weather | Current temperature + sunrise/sunset (NREL SPA) |
+| `geocoding-api.open-meteo.com` | Settings ("Set city") | Resolve city name to lat/lon |
+| `air-quality-api.open-meteo.com` | Air quality widget | AQI / PM / pollen |
+| Each configured RSS / News feed URL | RSS / News widgets | Direct fetch first |
+| Each configured iCal feed URL | Calendar widget | Direct fetch first |
+| `api.allorigins.win` | RSS / News / Calendar (fallback) | Used **only** when direct fetch is blocked by CORS |
+| `corsproxy.io` | RSS / News / Calendar (second fallback) | Tried after allorigins fails |
+| `www.google.com/s2/favicons` | Quick Links / Top Sites / Bookmarks / Feeds | 32-64px favicon images |
+| `api.coingecko.com` | Crypto widget | Current prices for selected coins |
+| `api.github.com` | GitHub widget | Public events / trending repos |
+| `api.quotable.io` | Quote widget | Quote of the day |
+| `picsum.photos` | Photo widget (default) | Random daily photo |
+| `api.nasa.gov` | Photo widget (NASA APOD mode) | Astronomy picture of the day |
+| `www.bing.com` | Background → Bing daily | Daily wallpaper image |
 
 Nothing else. No analytics, no error reporting, no auto-update server.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md). v0.2 will add wallpapers, a todo widget, drag-to-reposition layout, and unread-count badges on RSS / News panels.
+See [ROADMAP.md](ROADMAP.md). Short version: AMO unlisted Firefox signing, Chrome Web Store listing, more meteor-shower-style "celebrate this date" calendar events, and continued biome / locality refinement.
 
 ## License
 
@@ -177,7 +290,10 @@ MIT — see [LICENSE](LICENSE).
 
 ## Credits
 
-- [Open-Meteo](https://open-meteo.com/) — free, no-API-key weather + geocoding.
+- [Open-Meteo](https://open-meteo.com/) — free, no-API-key weather + geocoding + air quality.
 - [Catppuccin](https://github.com/catppuccin/catppuccin) — color palette.
-- [allorigins](https://allorigins.win/) — CORS proxy fallback for RSS feeds.
+- [allorigins](https://allorigins.win/) and [corsproxy.io](https://corsproxy.io/) — CORS proxy fallbacks.
+- [Lucide](https://lucide.dev/) — icon stroke style.
+- [SunCalc](https://github.com/mourner/suncalc) — astronomical algorithm reference.
+- [CoinGecko](https://www.coingecko.com/), [Quotable](https://github.com/lukePeavey/quotable), [Picsum](https://picsum.photos/), [NASA APOD](https://api.nasa.gov/) — free APIs.
 - Inspired by Epiboard, Tabliss, Bonjourr, Mue, Renewed Tab, Horizon, and Fluent — each great in their own way; Vantage is just my flavor.
