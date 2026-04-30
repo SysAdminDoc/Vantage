@@ -195,6 +195,28 @@
   }
 }
 
+/* Windows High Contrast / forced-colors — let the OS theme override
+   our colors but keep critical structural elements visible. */
+@media (forced-colors: active) {
+  .panel,
+  .settings-section__group,
+  .toast,
+  .widget-picker,
+  .engine-picker__popover,
+  .onboard-card,
+  .quicklink,
+  .topsite__favicon {
+    border: 1px solid CanvasText;
+  }
+  .button:focus-visible,
+  .icon-button:focus-visible,
+  .text-input:focus,
+  :focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 2px;
+  }
+}
+
 /* ============================================================
    Base
    ============================================================ */
@@ -2049,6 +2071,11 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 .chip__close:hover {
   background: color-mix(in srgb, var(--red) 18%, transparent);
   color: var(--red);
+}
+
+.chip__close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 25%, transparent);
 }
 
 /* ============================================================
@@ -4035,7 +4062,7 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 
 .ql-group-popover {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + var(--s-2));
   left: 50%;
   transform: translateX(-50%) scale(0.97);
   min-width: 180px;
@@ -4065,6 +4092,10 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   transition: background var(--t-micro);
 }
 .ql-group-item:hover { background: color-mix(in srgb, var(--surface0) 60%, transparent); }
+.ql-group-item:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
 
 .ql-group-item__favicon {
   width: 16px;
@@ -4074,7 +4105,7 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 }
 
 .ql-group-empty {
-  padding: var(--s-3) var(--s-3);
+  padding: var(--s-3);
   font-size: var(--text-sm);
   color: var(--subtext0);
   margin: 0;
