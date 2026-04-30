@@ -1035,13 +1035,13 @@ a {
 }
 
 @keyframes petal-fall {
-  0%   { background-position: 0 -280px, 0 0; transform: translateX(0); }
-  100% { background-position: 40px 0,    0 0; transform: translateX(0); }
+  0%   { background-position: 0   -280px; }
+  100% { background-position: 40px 0; }
 }
 
 @keyframes leaves-fall {
-  0%   { background-position: 0 -300px; }
-  100% { background-position: 0 0; }
+  0%   { background-position: 0   -300px; }
+  100% { background-position: 30px 0; }
 }
 
 .bg[data-biome="temperate"][data-season="spring"][data-weather="clear"]   .bg-petals,
