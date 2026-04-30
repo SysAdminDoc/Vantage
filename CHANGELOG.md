@@ -2,6 +2,14 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.11 — 2026-04-29
+
+### Changed
+- **Sunrise / sunset / civil-twilight times now computed locally from the location coordinates instead of read from Open-Meteo.** Open-Meteo's `daily.sunrise[0]` returns a localized ISO string with no timezone suffix; `new Date(str)` parses it as **browser-local** time, so if browser TZ != location TZ, sunrise was off by hours. The new `src/utils/sun-calc.js` (vendored NOAA Solar Calculator algorithm, ~120 LOC, no dependency) returns absolute-UTC moments for `sunrise`, `sunset`, civil-twilight `dawn` and `dusk`, and solar `noon` — accurate to the second, year-round, through DST, and at any latitude including polar regions (handles the always-day / always-night cases explicitly).
+- **Phase boundaries use civil twilight instead of fixed hour offsets.** "pre-dawn" now begins at civil dawn (sun 6° below horizon) and ends at sunrise; "dusk" begins at sunset and ends at civil dusk. Civil twilight duration varies by latitude / time of year (~30 min equator, ~90 min summer-north), so transitions feel right anywhere on Earth.
+- **Day-rollover watcher** schedules a one-shot timer for ~5 minutes past the location's local midnight, recomputes sunrise/sunset for the new day, and chains the next rollover. The page no longer drifts off "today's" sun events if you leave the tab open across midnight.
+- Open-Meteo is still queried for current weather (rain / storm / etc.) — only the sunrise/sunset usage moved local.
+
 ## v0.4.10 — 2026-04-29
 
 ### Fixed

@@ -14,8 +14,10 @@
 // styling lives in CSS. JS only sets state and positions the sun.
 
 import { getWeatherData, detectLocation } from "../utils/weather-source.js";
+import { getSunTimes } from "../utils/sun-calc.js";
 
 const HOUR = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR;
 
 // Sky + sun color keyframes anchored to a fractional-day timeline:
 //   t = 0   -> sunrise
@@ -221,10 +223,20 @@ export async function renderBackground(mount, settings, saveSettings) {
   // a dark void while we wait on geolocation (~6s) and the weather fetch.
   // We refine in place once real data arrives.
   let weather = "clear";
+  // Sun-event times for the location, recomputed daily. Default values
+  // are placeholder times for "today, somewhere temperate" — they get
+  // overwritten by getSunTimes(...) as soon as we know the lat/lon.
   const today = new Date();
-  let sunrise = new Date(today); sunrise.setHours(6, 30, 0, 0);
-  let sunset  = new Date(today); sunset.setHours(19, 30, 0, 0);
-  updateScene(mount, weather, sunrise, sunset);
+  let sunTimes = {
+    sunrise: new Date(today.setHours(6, 30, 0, 0)),
+    sunset:  new Date(new Date().setHours(19, 30, 0, 0)),
+    dawn:    new Date(new Date().setHours(6, 0, 0, 0)),
+    dusk:    new Date(new Date().setHours(20, 0, 0, 0)),
+    noon:    new Date(new Date().setHours(13, 0, 0, 0)),
+    alwaysDay: false,
+    alwaysNight: false
+  };
+  updateScene(mount, weather, sunTimes);
 
   // ---- Now resolve real location + weather in the background.
   let location = settings.weather?.location || null;
@@ -239,18 +251,28 @@ export async function renderBackground(mount, settings, saveSettings) {
     } catch { /* defaults stay */ }
   }
 
+  // Compute sun-event times locally from the location coordinates. This
+  // is more accurate than Open-Meteo's `daily.sunrise[0]` because the
+  // OM string has no timezone suffix and `new Date(str)` interprets it
+  // as browser-local time — wrong if browser TZ != location TZ. The
+  // local computation returns absolute UTC moments that compare
+  // correctly to `Date.now()` regardless of where the browser is.
+  const recomputeSunTimes = () => {
+    if (!location) return;
+    sunTimes = getSunTimes(new Date(), location.latitude, location.longitude);
+  };
+  recomputeSunTimes();
+  updateScene(mount, weather, sunTimes);
+
   if (location) {
     try {
       const data = await getWeatherData(location, settings.weather?.units || "fahrenheit");
       weather = CODE_TO_WEATHER[data.current?.weather_code] || "clear";
-      if (data.daily?.sunrise?.[0]) sunrise = new Date(data.daily.sunrise[0]);
-      if (data.daily?.sunset?.[0])  sunset  = new Date(data.daily.sunset[0]);
-      // Refine the scene now that we have real sunrise/sunset/weather.
-      updateScene(mount, weather, sunrise, sunset);
+      updateScene(mount, weather, sunTimes);
     } catch { /* keep current scene */ }
   }
 
-  const tick = () => updateScene(mount, weather, sunrise, sunset);
+  const tick = () => updateScene(mount, weather, sunTimes);
   // Update every minute to keep sun position + phase fresh.
   const interval = setInterval(tick, 60_000);
 
@@ -260,15 +282,38 @@ export async function renderBackground(mount, settings, saveSettings) {
     try {
       const data = await getWeatherData(location, settings.weather?.units || "fahrenheit", { force: true });
       weather = CODE_TO_WEATHER[data.current?.weather_code] || "clear";
-      if (data.daily?.sunrise?.[0]) sunrise = new Date(data.daily.sunrise[0]);
-      if (data.daily?.sunset?.[0])  sunset  = new Date(data.daily.sunset[0]);
       tick();
     } catch { /* keep last-known */ }
   }, 10 * 60 * 1000);
 
+  // Day-rollover watcher — recomputes sunrise/sunset right after the
+  // current civil-day boundary at the location. We schedule a one-shot
+  // timer for the moment the calendar day flips at the location's
+  // longitude, then chain another. This ensures sunrise/sunset always
+  // reflects "today" at the location, year-round, through DST.
+  let rolloverTimeout = null;
+  const scheduleRollover = () => {
+    // Fire ~5 minutes past local midnight so DST jumps + leap seconds
+    // settle. Compute "next local midnight at location" as solar noon
+    // ± 12h: noon is the most stable astronomical anchor we have.
+    const noon = sunTimes.noon || new Date();
+    const nextMidnight = new Date(noon.getTime() + 12 * HOUR);
+    if (nextMidnight <= new Date()) {
+      nextMidnight.setTime(nextMidnight.getTime() + DAY_MS);
+    }
+    const ms = (nextMidnight - new Date()) + 5 * 60 * 1000;
+    rolloverTimeout = setTimeout(() => {
+      recomputeSunTimes();
+      tick();
+      scheduleRollover();
+    }, Math.max(60_000, ms));
+  };
+  scheduleRollover();
+
   return () => {
     clearInterval(interval);
     clearInterval(refreshInterval);
+    if (rolloverTimeout) clearTimeout(rolloverTimeout);
   };
 }
 
@@ -277,9 +322,10 @@ export async function renderBackground(mount, settings, saveSettings) {
 // initial values (which made early-evening loads feel like a sunrise).
 let firstScenePainted = false;
 
-function updateScene(mount, weather, sunrise, sunset) {
+function updateScene(mount, weather, sunTimes) {
   const now = new Date();
-  const phase = computePhase(now, sunrise, sunset);
+  const { sunrise, sunset } = sunTimes;
+  const phase = computePhase(now, sunTimes);
   const sunPos = computeSunPosition(now, sunrise, sunset);
 
   // Time as fraction of day-length: 0 at sunrise, 1 at sunset. <0 before, >1 after.
@@ -354,31 +400,50 @@ function updateScene(mount, weather, sunrise, sunset) {
 }
 
 /**
- * Map "now" relative to today's sunrise / sunset to a phase name.
- * Uses absolute hour offsets near the boundaries so phases feel right
- * regardless of day length (winter vs summer).
+ * Map "now" relative to the day's astronomical events to a phase name.
+ *
+ * Phase boundaries use civil twilight (h = -6°) for the "pre-dawn" /
+ * "dusk" cutoffs instead of fixed hour offsets — civil twilight is when
+ * the sky genuinely starts brightening / finishes darkening, and its
+ * duration varies by latitude and time of year (~30 min near the
+ * equator, ~90 min in summer at northern latitudes). This makes the
+ * sky transition feel right anywhere on Earth.
+ *
+ * Polar regions: when the sun never rises (alwaysNight) we hold "night";
+ * when it never sets (alwaysDay) we hold "midday".
  */
-function computePhase(now, sunrise, sunset) {
-  if (now < sunrise) {
-    const before = sunrise - now;
-    if (before > 1.5 * HOUR) return "night";
-    return "pre-dawn";
-  }
-  if (now > sunset) {
-    const after = now - sunset;
-    if (after < 0.5 * HOUR) return "sunset";
-    if (after < 1.5 * HOUR) return "dusk";
+function computePhase(now, sunTimes) {
+  const { sunrise, sunset, dawn, dusk, alwaysDay, alwaysNight } = sunTimes;
+
+  if (alwaysNight) return "night";
+  if (alwaysDay)   return "midday";
+
+  // Before today's civil dawn → fully dark
+  if (dawn && now < dawn) return "night";
+
+  // Civil dawn → sunrise = "pre-dawn" (sky brightening, sun still below)
+  if (sunrise && now < sunrise) return "pre-dawn";
+
+  // After sunset → dusk progression
+  if (sunset && now > sunset) {
+    if (dusk && now < dusk) {
+      // 0..1 progress from sunset to dusk
+      const span = dusk - sunset;
+      const k = (now - sunset) / span;
+      return k < 0.5 ? "sunset" : "dusk";
+    }
     return "night";
   }
-  // daytime — split by fraction of day length
+
+  // Daytime — split by fraction of day length
   const dayMs = sunset - sunrise;
   const t = (now - sunrise) / dayMs;     // 0..1
-  if (t < 0.08) return "sunrise";
+  if (t < 0.05) return "sunrise";        // first ~5% of day = orange-warm
   if (t < 0.40) return "morning";
   if (t < 0.60) return "midday";
-  if (t < 0.85) return "afternoon";
+  if (t < 0.82) return "afternoon";
   if (t < 0.95) return "golden-hour";
-  return "sunset";
+  return "sunset";                        // last 5% of day before actual sunset event
 }
 
 /**
