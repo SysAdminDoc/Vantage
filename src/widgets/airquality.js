@@ -78,6 +78,9 @@ export function renderAirQuality(mount, settings) {
       clear(mount);
       const pill = el("div", {
         class: "aq-pill",
+        role: "button",
+        tabindex: "0",
+        "aria-expanded": "false",
         title: tooltipText,
         "aria-label": tooltipText,
         style: { "--aq-color": info.color }
@@ -87,11 +90,12 @@ export function renderAirQuality(mount, settings) {
         el("span", { class: "aq-pill__label" }, [info.label])
       ]);
 
-      // Expand on click to show PM + pollen detail
+      // Expand on click/keyboard to show PM + pollen detail
       let expanded = false;
       let detail = null;
-      pill.addEventListener("click", () => {
+      function toggleDetail() {
         expanded = !expanded;
+        pill.setAttribute("aria-expanded", String(expanded));
         if (expanded) {
           detail = el("div", { class: "aq-detail" }, lines.map(l => el("span", { class: "aq-detail__row" }, [l])));
           mount.appendChild(detail);
@@ -99,7 +103,9 @@ export function renderAirQuality(mount, settings) {
           detail?.remove();
           detail = null;
         }
-      });
+      }
+      pill.addEventListener("click", toggleDetail);
+      pill.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleDetail(); } });
 
       mount.appendChild(pill);
     } catch {
