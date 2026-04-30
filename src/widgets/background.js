@@ -790,10 +790,21 @@ export async function renderBackground(mount, settings, saveSettings) {
   recomputeSunTimes();
   updateScene(mount, weather, sunTimes);
 
+  // Trigger a rainbow when weather transitions from rain* → clear.
+  const checkRainbowTransition = () => {
+    const wasRain = ["rain", "heavy-rain", "drizzle"].includes(mount._bgPrevWeather);
+    const nowClear = weather === "clear";
+    if (wasRain && nowClear) {
+      mount._bgRainbowUntil = Date.now() + 3 * 60 * 1000;
+    }
+    mount._bgPrevWeather = weather;
+  };
+
   if (location) {
     try {
       const data = await getWeatherData(location, settings.weather?.units || "fahrenheit");
       weather = CODE_TO_WEATHER[data.current?.weather_code] || "clear";
+      checkRainbowTransition();
       recomputeSunTimes(data); // upgrade to NREL SPA precision
       updateScene(mount, weather, sunTimes);
     } catch { /* keep current scene */ }
@@ -810,6 +821,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     try {
       const data = await getWeatherData(location, settings.weather?.units || "fahrenheit", { force: true });
       weather = CODE_TO_WEATHER[data.current?.weather_code] || "clear";
+      checkRainbowTransition();
       recomputeSunTimes(data);
       tick();
     } catch { /* keep last-known */ }
@@ -1069,22 +1081,15 @@ export async function renderBackground(mount, settings, saveSettings) {
   }
   scheduleWhale();
 
-  // ---- Rainbow: appears for ~3 minutes after weather transitions from
-  // any rain* to clear. We track the previous weather across each tick.
-  let prevWeather = weather;
-  let rainbowUntil = 0;
-  const trackRainbow = () => {
-    const wasRain = ["rain", "heavy-rain", "drizzle"].includes(prevWeather);
-    const nowClear = weather === "clear";
-    if (wasRain && nowClear) {
-      rainbowUntil = Date.now() + 3 * 60 * 1000;
-    }
-    prevWeather = weather;
-    mount.dataset.rainbow = (Date.now() < rainbowUntil) ? "on" : "off";
-  };
-  trackRainbow();
-  // Also re-evaluate on each refresh tick (every minute in updateScene
-  // and after weather refreshes).
+  // ---- Rainbow tracking happens via mount fields so the closures used
+  // by updateScene + the weather refresh interval can both update it.
+  // mount._bgPrevWeather: last seen weather string, updated only when
+  //   the weather actually changes
+  // mount._bgRainbowUntil: epoch ms when the rainbow effect should end
+  // updateScene reads _bgRainbowUntil and sets data-rainbow each tick
+  // so the effect auto-clears when its 3-min window expires.
+  mount._bgPrevWeather  = weather;
+  mount._bgRainbowUntil = 0;
 
   // ---- Mouse parallax: mountains shift left/right slightly with cursor.
   // Use one global handler on the document; ignore if reduced motion.
@@ -1236,6 +1241,11 @@ function updateScene(mount, weather, sunTimes) {
 
     // Meteor shower boost stored on mount for spawner to read.
     mount._meteorBoost = meteorShowerBoost(now);
+
+    // Rainbow auto-expires 3 minutes after the rain → clear transition.
+    // _bgRainbowUntil is set in checkRainbowTransition (in renderBackground).
+    const rainbowUntil = mount._bgRainbowUntil || 0;
+    mount.dataset.rainbow = (now.getTime() < rainbowUntil) ? "on" : "off";
 
     // Wet/heavy weather hides or dims the sun behind the cloud deck. Rain
     // gets full hide because a visible warm sun behind rain streaks reads
