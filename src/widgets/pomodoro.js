@@ -114,7 +114,7 @@ export function renderPomodoro(mount, settings) {
     localState = state;
     if (!state || state.phase === "idle") {
       phaseEl.textContent = "Ready";
-      timerEl.textContent = formatMs(phaseDuration("work", state?.settings || cfg) * 60_000 || cfg.workMinutes * 60_000);
+      timerEl.textContent = formatMs(phaseDuration("work", state?.settings || cfg) || (cfg.workMinutes * 60_000));
       startBtn.hidden = false; pauseBtn.hidden = true;
       updateDots(state?.sessionCount || 0, state?.settings?.sessionsBeforeLongBreak || cfg.sessionsBeforeLongBreak);
       document.title = "New Tab";
