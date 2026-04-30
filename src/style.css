@@ -1,5 +1,5 @@
 /* ============================================================
-   Vantage v0.2.0 — design system
+   Vantage v0.6.0 — design system
    Catppuccin Mocha (default) + Latte
    ============================================================ */
 
@@ -304,15 +304,20 @@ a {
 }
 
 /* --- Phase color palettes --- */
-.bg[data-phase="night"]        { --sky-top: #050511; --sky-mid: #0a0d2a; --sky-bottom: #03030c; --sun-color: #f0f0f0; --sun-glow: rgba(255,255,255,0.5); }
-.bg[data-phase="pre-dawn"]     { --sky-top: #1a1f3d; --sky-mid: #5a3461; --sky-bottom: #ec6d4d; --sun-color: #f5b88c; --sun-glow: rgba(255,170,120,0.5); }
-.bg[data-phase="sunrise"]      { --sky-top: #f5b88c; --sky-mid: #f08d70; --sky-bottom: #e87466; --sun-color: #fff0c2; --sun-glow: rgba(255,180,120,0.7); }
-.bg[data-phase="morning"]      { --sky-top: #67aedf; --sky-mid: #a8d4ee; --sky-bottom: #dde9f2; --sun-color: #fff5b0; --sun-glow: rgba(255,240,180,0.65); }
-.bg[data-phase="midday"]       { --sky-top: #3b82d2; --sky-mid: #74bdec; --sky-bottom: #bbe0f5; --sun-color: #fff8d8; --sun-glow: rgba(255,250,200,0.65); }
-.bg[data-phase="afternoon"]    { --sky-top: #5697d0; --sky-mid: #94c8e2; --sky-bottom: #dad6d8; --sun-color: #ffefa8; --sun-glow: rgba(255,230,150,0.7); }
-.bg[data-phase="golden-hour"]  { --sky-top: #5e3461; --sky-mid: #ed7651; --sky-bottom: #fab86b; --sun-color: #ffd382; --sun-glow: rgba(255,140,80,0.85); }
-.bg[data-phase="sunset"]       { --sky-top: #311530; --sky-mid: #a8344c; --sky-bottom: #ed4f30; --sun-color: #ff9658; --sun-glow: rgba(220,80,40,0.9); }
-.bg[data-phase="dusk"]         { --sky-top: #0e1230; --sky-mid: #2c2447; --sky-bottom: #5b386a; --sun-color: #d4d4f0; --sun-glow: rgba(180,180,220,0.5); }
+.bg[data-phase="astronomical-night"] { --sky-top: #020209; --sky-mid: #060818; --sky-bottom: #020207; --sun-color: #e8e8f8; --sun-glow: rgba(220,220,240,0.35); }
+.bg[data-phase="astronomical-dawn"]  { --sky-top: #040412; --sky-mid: #0c0e26; --sky-bottom: #100820; --sun-color: #d8d8f0; --sun-glow: rgba(200,200,240,0.30); }
+.bg[data-phase="nautical-dawn"]      { --sky-top: #0c1032; --sky-mid: #1e1848; --sky-bottom: #2a1a3c; --sun-color: #e8c8b0; --sun-glow: rgba(240,190,160,0.40); }
+.bg[data-phase="night"]              { --sky-top: #050511; --sky-mid: #0a0d2a; --sky-bottom: #03030c; --sun-color: #f0f0f0; --sun-glow: rgba(255,255,255,0.5); }
+.bg[data-phase="pre-dawn"]           { --sky-top: #1a1f3d; --sky-mid: #5a3461; --sky-bottom: #ec6d4d; --sun-color: #f5b88c; --sun-glow: rgba(255,170,120,0.5); }
+.bg[data-phase="sunrise"]            { --sky-top: #f5b88c; --sky-mid: #f08d70; --sky-bottom: #e87466; --sun-color: #fff0c2; --sun-glow: rgba(255,180,120,0.7); }
+.bg[data-phase="morning"]            { --sky-top: #67aedf; --sky-mid: #a8d4ee; --sky-bottom: #dde9f2; --sun-color: #fff5b0; --sun-glow: rgba(255,240,180,0.65); }
+.bg[data-phase="midday"]             { --sky-top: #3b82d2; --sky-mid: #74bdec; --sky-bottom: #bbe0f5; --sun-color: #fff8d8; --sun-glow: rgba(255,250,200,0.65); }
+.bg[data-phase="afternoon"]          { --sky-top: #5697d0; --sky-mid: #94c8e2; --sky-bottom: #dad6d8; --sun-color: #ffefa8; --sun-glow: rgba(255,230,150,0.7); }
+.bg[data-phase="golden-hour"]        { --sky-top: #5e3461; --sky-mid: #ed7651; --sky-bottom: #fab86b; --sun-color: #ffd382; --sun-glow: rgba(255,140,80,0.85); }
+.bg[data-phase="sunset"]             { --sky-top: #311530; --sky-mid: #a8344c; --sky-bottom: #ed4f30; --sun-color: #ff9658; --sun-glow: rgba(220,80,40,0.9); }
+.bg[data-phase="dusk"]               { --sky-top: #0e1230; --sky-mid: #2c2447; --sky-bottom: #5b386a; --sun-color: #d4d4f0; --sun-glow: rgba(180,180,220,0.5); }
+.bg[data-phase="nautical-dusk"]      { --sky-top: #0a0e28; --sky-mid: #18163c; --sky-bottom: #201830; --sun-color: #c8c8e8; --sun-glow: rgba(180,180,230,0.40); }
+.bg[data-phase="astronomical-dusk"]  { --sky-top: #040410; --sky-mid: #0a0c22; --sky-bottom: #08061a; --sun-color: #d0d0e8; --sun-glow: rgba(200,200,240,0.30); }
 
 /* IMPORTANT: do NOT apply `filter:` to .bg as a whole for wet weather.
    filter cascades to every descendant, including the rain streak overlays —
@@ -351,14 +356,18 @@ a {
 }
 
 .bg[data-phase="golden-hour"] .bg-sun,
-.bg[data-phase="sunset"] .bg-sun {
+.bg[data-phase="sunrise"]    .bg-sun,
+.bg[data-phase="sunset"]     .bg-sun {
   width: 200px;
   height: 200px;
   filter: blur(1px);
 }
 
-.bg[data-phase="night"] .bg-sun,
-.bg[data-phase="dusk"] .bg-sun {
+.bg[data-phase="night"]              .bg-sun,
+.bg[data-phase="astronomical-night"] .bg-sun,
+.bg[data-phase="astronomical-dawn"]  .bg-sun,
+.bg[data-phase="astronomical-dusk"]  .bg-sun,
+.bg[data-phase="dusk"]               .bg-sun {
   width: 80px;
   height: 80px;
   background: radial-gradient(circle at 50% 50%,
@@ -395,8 +404,14 @@ a {
   animation: star-twinkle 6s ease-in-out infinite alternate;
 }
 
-.bg[data-phase="dusk"] .bg-stars   { opacity: 0.55; }
-.bg[data-phase="night"] .bg-stars  { opacity: 1; }
+.bg[data-phase="dusk"]               .bg-stars { opacity: 0.55; }
+.bg[data-phase="nautical-dusk"]      .bg-stars { opacity: 0.80; }
+.bg[data-phase="astronomical-dusk"]  .bg-stars { opacity: 0.95; }
+.bg[data-phase="night"]              .bg-stars { opacity: 1; }
+.bg[data-phase="astronomical-night"] .bg-stars { opacity: 1; }
+.bg[data-phase="astronomical-dawn"]  .bg-stars { opacity: 0.90; }
+.bg[data-phase="nautical-dawn"]      .bg-stars { opacity: 0.60; }
+.bg[data-phase="pre-dawn"]           .bg-stars { opacity: 0.25; }
 
 @keyframes star-twinkle {
   0%   { filter: brightness(1)   contrast(1); }
@@ -1959,4 +1974,280 @@ a {
     left: var(--s-4);
     right: var(--s-4);
   }
+}
+
+/* ============================================================
+   Skip-to-main link (WCAG 2.4.1)
+   ============================================================ */
+
+.skip-to-main {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 9999;
+  background: var(--crust);
+  color: var(--accent);
+  padding: 0;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: var(--r-md);
+}
+
+.skip-to-main:focus-visible {
+  left: var(--s-4);
+  top: var(--s-4);
+  width: auto;
+  height: auto;
+  overflow: visible;
+  padding: var(--s-2) var(--s-4);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Air quality pill (utility bar)
+   ============================================================ */
+
+.airquality-mount {
+  position: relative;
+  margin-right: var(--s-2);
+}
+
+.aq-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 6px var(--s-3) 6px 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-pill);
+  font-size: var(--text-sm);
+  cursor: default;
+  user-select: none;
+  transition: border-color var(--t-fast);
+}
+
+.aq-pill:hover { border-color: var(--border-default); }
+
+.aq-pill--skeleton {
+  width: 80px;
+  height: 32px;
+}
+
+.aq-pill--skeleton::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--surface0) 25%, var(--surface1) 50%, var(--surface0) 75%);
+  background-size: 200% 100%;
+  border-radius: var(--r-pill);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.aq-pill__icon {
+  display: flex;
+  align-items: center;
+  color: var(--aq-color, var(--green));
+}
+
+.aq-pill__aqi {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--aq-color, var(--green));
+}
+
+.aq-pill__label {
+  color: var(--subtext0);
+  font-size: var(--text-xs, 11px);
+}
+
+.aq-detail {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  padding: var(--s-2) var(--s-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.aq-detail__row {
+  font-size: var(--text-xs, 11px);
+  color: var(--subtext1);
+}
+
+/* ============================================================
+   Pomodoro widget
+   ============================================================ */
+
+.pomodoro-mount {
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--s-4);
+  margin-bottom: var(--s-4);
+}
+
+.pomodoro-mount:empty { display: none; }
+
+.pom-widget {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-5);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
+}
+
+.pom-display {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+.pom-phase {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--subtext0);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  min-width: 5ch;
+}
+
+.pom-time {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.pom-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.pom-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--surface1);
+  transition: background var(--t-fast);
+}
+
+.pom-dot--filled {
+  background: var(--accent);
+}
+
+.pom-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.pom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px;
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+
+.pom-btn:hover { background: var(--bg-button-hover); border-color: var(--border-default); }
+
+.pom-btn--primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: transparent;
+}
+
+.pom-btn--primary:hover {
+  background: var(--accent-strong);
+  border-color: transparent;
+}
+
+.pom-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Calendar panel
+   ============================================================ */
+
+.cal-day-label {
+  font-size: var(--text-xs, 11px);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: var(--s-3) 0 var(--s-2);
+  padding-bottom: var(--s-1);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cal-day-label:first-child {
+  margin-top: 0;
+}
+
+.cal-event {
+  display: flex;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+}
+
+.cal-event + .cal-event {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.cal-event__time {
+  font-size: var(--text-xs, 11px);
+  font-variant-numeric: tabular-nums;
+  color: var(--subtext0);
+  min-width: 52px;
+  padding-top: 1px;
+  flex-shrink: 0;
+}
+
+.cal-event__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cal-event__title {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cal-event__location {
+  font-size: var(--text-xs, 11px);
+  color: var(--subtext0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

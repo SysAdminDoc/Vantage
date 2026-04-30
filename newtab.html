@@ -7,12 +7,15 @@
   <link rel="stylesheet" href="src/style.css" />
 </head>
 <body>
+  <a href="#vantage-root" class="skip-to-main">Skip to main content</a>
+
   <div id="background-mount" class="bg" aria-hidden="true"></div>
 
   <main id="vantage-root" class="vantage" role="main">
 
     <header class="utility-bar">
       <div id="weather-mount" class="weather-mount" aria-live="polite"></div>
+      <div id="airquality-mount" class="airquality-mount" aria-live="polite"></div>
       <button
         id="settings-toggle"
         class="icon-button"
@@ -31,12 +34,21 @@
       <div id="quicklinks-mount" class="quicklinks"></div>
     </section>
 
+    <div id="pomodoro-mount" class="pomodoro-mount"></div>
+
     <section class="reading" aria-label="Reading panels">
       <div id="news-mount" class="panel" data-widget="news"></div>
       <div id="rss-mount" class="panel" data-widget="rss"></div>
+      <div id="calendar-mount" class="panel" data-widget="calendar"></div>
     </section>
 
-    <div id="toast-host" class="toast-host" aria-live="polite"></div>
+    <div
+      id="toast-host"
+      class="toast-host"
+      aria-live="assertive"
+      aria-atomic="true"
+      role="status"
+    ></div>
     <div id="settings-backdrop" class="settings-backdrop" hidden></div>
     <aside
       id="settings-panel"

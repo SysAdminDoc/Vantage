@@ -1,4 +1,4 @@
-// Astronomical sun-event calculator (sunrise / sunset / civil twilight)
+// Astronomical sun-event calculator (sunrise / sunset / twilight / golden hour)
 // based on the NOAA Solar Calculator and the algorithm popularized by
 // Vladimir Agafonkin's SunCalc (BSD-2-Clause). Vendored, no dependency.
 //
@@ -33,9 +33,8 @@ function solarMeanAnomaly(d) {
   return RAD * (357.5291 + 0.98560028 * d);
 }
 function eclipticLongitude(M) {
-  // Equation of center
   const C = RAD * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M));
-  const P = RAD * 102.9372; // perihelion of Earth
+  const P = RAD * 102.9372;
   return M + C + P + Math.PI;
 }
 
@@ -52,8 +51,7 @@ function solarTransitJ(ds, M, L) {
 function hourAngle(h, phi, d) {
   const x = (Math.sin(h) - Math.sin(phi) * Math.sin(d)) / (Math.cos(phi) * Math.cos(d));
   // Above the polar circle in summer the sun never sets; in winter it never
-  // rises. Both cases produce |x| > 1 → NaN. Caller handles the NaN by
-  // falling back to "always day" or "always night" as appropriate.
+  // rises. Both cases produce |x| > 1 → NaN. Caller handles the NaN.
   if (x < -1 || x > 1) return NaN;
   return Math.acos(x);
 }
@@ -65,19 +63,26 @@ function getSetJ(h, lw, phi, dec, n, M, L) {
 }
 
 /**
- * Compute sunrise / sunset / civil twilight for a given date and location.
+ * Compute sunrise / sunset / civil / nautical / astronomical twilight and
+ * golden hour for a given date and location.
  *
- * @param {Date}   date — any moment within the desired calendar day (UTC math takes care of the rest)
+ * @param {Date}   date — any moment within the desired calendar day
  * @param {number} lat  — latitude in degrees (-90..90)
- * @param {number} lon  — longitude in degrees (-180..180), east positive
+ * @param {number} lon  — longitude (-180..180, east positive)
  * @returns {{
- *   sunrise: Date,    // top-of-disc crosses horizon (h = -0.833°)
- *   sunset:  Date,
- *   dawn:    Date,    // civil twilight begins (h = -6°) — sky starts getting noticeably bright
- *   dusk:    Date,    // civil twilight ends — full dark begins
- *   noon:    Date,    // solar transit (sun at highest point in sky)
- *   alwaysDay: boolean,
- *   alwaysNight: boolean
+ *   sunrise:          Date,   // top-of-disc crosses horizon (h = -0.833°)
+ *   sunset:           Date,
+ *   dawn:             Date,   // civil twilight begins (h = -6°)
+ *   dusk:             Date,   // civil twilight ends
+ *   goldenHourEnd:    Date,   // morning golden hour ends (sun reaches +6°)
+ *   goldenHourStart:  Date,   // evening golden hour begins (sun drops to +6°)
+ *   nauticalDawn:     Date,   // nautical twilight begins (h = -12°)
+ *   nauticalDusk:     Date,
+ *   astronomicalDawn: Date,   // astronomical twilight begins (h = -18°)
+ *   astronomicalDusk: Date,
+ *   noon:             Date,
+ *   alwaysDay:        boolean,
+ *   alwaysNight:      boolean
  * }}
  */
 export function getSunTimes(date, lat, lon) {
@@ -91,42 +96,63 @@ export function getSunTimes(date, lat, lon) {
   const dec = declination(L, 0);
   const Jnoon = solarTransitJ(ds, M, L);
 
-  // Sun's apparent altitude at the events we care about:
-  //   sunrise/sunset:  -0.833°  (atmospheric refraction + sun's apparent radius)
-  //   civil twilight:  -6°
-  const sunriseAlt = RAD * -0.833;
-  const civilAlt   = RAD * -6;
+  // Sun altitude thresholds
+  const sunriseAlt      = RAD * -0.833;  // atmospheric refraction + sun radius
+  const goldenAlt       = RAD *  6;      // golden hour: sun 6° above horizon
+  const civilAlt        = RAD * -6;      // civil twilight
+  const nauticalAlt     = RAD * -12;     // nautical twilight
+  const astronomicalAlt = RAD * -18;     // astronomical twilight
 
-  const Jset    = getSetJ(sunriseAlt, lw, phi, dec, n, M, L);
-  const Jcdusk  = getSetJ(civilAlt,   lw, phi, dec, n, M, L);
+  const Jset        = getSetJ(sunriseAlt,      lw, phi, dec, n, M, L);
+  const JsetGolden  = getSetJ(goldenAlt,        lw, phi, dec, n, M, L);
+  const Jcdusk      = getSetJ(civilAlt,         lw, phi, dec, n, M, L);
+  const Jndusk      = getSetJ(nauticalAlt,      lw, phi, dec, n, M, L);
+  const Jadusk      = getSetJ(astronomicalAlt,  lw, phi, dec, n, M, L);
 
-  // If the sun never sets / never rises (polar regions), Jset is NaN.
-  // Decide which case it is by sun altitude at noon.
+  // Polar-region handling: if the sun never reaches the horizon, Jset is NaN.
   if (Number.isNaN(Jset)) {
     const noonAlt = Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec));
     const alwaysDay = noonAlt > sunriseAlt;
     const noonDate = fromJulian(Jnoon);
+    const halfDay = 12 * 60 * 60 * 1000;
     return {
-      sunrise: alwaysDay ? new Date(noonDate.getTime() - 12 * 60 * 60 * 1000) : null,
-      sunset:  alwaysDay ? new Date(noonDate.getTime() + 12 * 60 * 60 * 1000) : null,
-      dawn:    null,
-      dusk:    null,
-      noon:    noonDate,
+      sunrise:          alwaysDay ? new Date(noonDate.getTime() - halfDay) : null,
+      sunset:           alwaysDay ? new Date(noonDate.getTime() + halfDay) : null,
+      dawn:             null,
+      dusk:             null,
+      goldenHourEnd:    null,
+      goldenHourStart:  null,
+      nauticalDawn:     null,
+      nauticalDusk:     null,
+      astronomicalDawn: null,
+      astronomicalDusk: null,
+      noon:             noonDate,
       alwaysDay,
       alwaysNight: !alwaysDay
     };
   }
 
-  const Jrise  = Jnoon - (Jset   - Jnoon);
-  const Jcdawn = Jnoon - (Jcdusk - Jnoon);
+  const Jrise       = Jnoon - (Jset       - Jnoon);
+  const JriseGolden = Jnoon - (JsetGolden - Jnoon);
+  const Jcdawn      = Jnoon - (Jcdusk     - Jnoon);
+  const Jndawn      = Number.isNaN(Jndusk) ? NaN : Jnoon - (Jndusk - Jnoon);
+  const Jadawn      = Number.isNaN(Jadusk) ? NaN : Jnoon - (Jadusk - Jnoon);
+
+  const maybeDate = (j) => Number.isNaN(j) ? null : fromJulian(j);
 
   return {
-    sunrise: fromJulian(Jrise),
-    sunset:  fromJulian(Jset),
-    dawn:    fromJulian(Jcdawn),
-    dusk:    fromJulian(Jcdusk),
-    noon:    fromJulian(Jnoon),
-    alwaysDay: false,
+    sunrise:          fromJulian(Jrise),
+    sunset:           fromJulian(Jset),
+    dawn:             fromJulian(Jcdawn),
+    dusk:             fromJulian(Jcdusk),
+    goldenHourEnd:    Number.isNaN(JriseGolden) ? null : fromJulian(JriseGolden),
+    goldenHourStart:  Number.isNaN(JsetGolden)  ? null : fromJulian(JsetGolden),
+    nauticalDawn:     maybeDate(Jndawn),
+    nauticalDusk:     maybeDate(Jndusk),
+    astronomicalDawn: maybeDate(Jadawn),
+    astronomicalDusk: maybeDate(Jadusk),
+    noon:             fromJulian(Jnoon),
+    alwaysDay:  false,
     alwaysNight: false
   };
 }

@@ -1,20 +1,36 @@
-// Vantage v0.1.0 — RSS / Atom feed parser via DOMParser.
-// Tries direct fetch first; falls back to a public CORS proxy when blocked.
-// allorigins.win returns raw XML and is the only one declared in host_permissions.
+// Vantage v0.6.0 — RSS / Atom feed parser via DOMParser.
+// Tries direct fetch first; on CORS failure walks a proxy fallback chain.
+// allorigins.win and corsproxy.io both return raw XML content.
 
-const PROXY = "https://api.allorigins.win/raw?url=";
+const PROXIES = [
+  (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
+];
 
 export async function fetchFeed(url) {
   let xmlText;
+
+  // Direct fetch first — works for most feeds that send permissive CORS headers.
   try {
     const direct = await fetch(url, { cache: "no-store" });
     if (!direct.ok) throw new Error(`HTTP ${direct.status}`);
     xmlText = await direct.text();
-  } catch (err) {
-    const proxied = await fetch(`${PROXY}${encodeURIComponent(url)}`, { cache: "no-store" });
-    if (!proxied.ok) throw new Error(`Proxy HTTP ${proxied.status}`);
-    xmlText = await proxied.text();
+  } catch {
+    // Walk the proxy chain until one succeeds.
+    let lastErr;
+    for (const proxyFn of PROXIES) {
+      try {
+        const proxied = await fetch(proxyFn(url), { cache: "no-store" });
+        if (!proxied.ok) throw new Error(`Proxy HTTP ${proxied.status}`);
+        xmlText = await proxied.text();
+        break;
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    if (!xmlText) throw lastErr || new Error("All proxies failed");
   }
+
   return parseFeed(xmlText, url);
 }
 
