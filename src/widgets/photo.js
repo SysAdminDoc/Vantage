@@ -43,6 +43,7 @@ function loadPicsum(body, dateStr) {
     alt: "Daily photo",
     loading: "lazy"
   });
+  img.addEventListener("load", () => { img.dataset.loaded = "true"; });
   img.addEventListener("error", () => {
     body.innerHTML = "";
     body.appendChild(el("p", { class: "panel-empty" }, ["Could not load photo."]));
@@ -75,6 +76,7 @@ async function loadNasa(body, apiKey) {
       alt: data.title || "NASA APOD",
       loading: "lazy"
     });
+    img.addEventListener("load", () => { img.dataset.loaded = "true"; });
     const credit = el("div", { class: "photo-credit" }, [
       el("strong", {}, [data.title || "Astronomy Picture of the Day"]),
       " — NASA APOD",
