@@ -1919,7 +1919,7 @@ function buildResetSection(onChange) {
       onChange(fresh);
       toast("Settings reset to defaults.", "success");
     }
-  }, [iconNode("trash", { size: 14 }), "Reset everything"]);
+  }, [iconNode("trash", { size: 14 }), " Reset everything"]);
   sec.appendChild(btn);
   return sec;
 }
