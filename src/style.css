@@ -3211,6 +3211,7 @@ a {
 .note-color-btn--yellow { background: var(--yellow); }
 .note-color-btn--red    { background: var(--red);    }
 .note-color-btn--mauve  { background: var(--mauve);  }
+.note-color-btn--peach  { background: var(--peach);  }
 
 .note-color-btn--active {
   border-color: var(--text);
@@ -3590,6 +3591,7 @@ a {
 .countdown-item--yellow { border-left-color: var(--yellow); }
 .countdown-item--red    { border-left-color: var(--red);    }
 .countdown-item--mauve  { border-left-color: var(--mauve);  }
+.countdown-item--peach  { border-left-color: var(--peach);  }
 
 .countdown-item--past {
   opacity: 0.55;
