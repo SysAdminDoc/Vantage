@@ -1718,7 +1718,7 @@ a {
   color: var(--text);
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-2);
-  padding: 8px 12px;
+  padding: var(--s-2) var(--s-3);
   font-size: var(--text-base);
   width: 100%;
   font-family: inherit;
@@ -2210,7 +2210,7 @@ a {
 }
 
 .pom-time {
-  font-size: 2rem;
+  font-size: var(--text-2xl);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--text);
@@ -2424,7 +2424,7 @@ a {
 }
 
 .onboard-title {
-  font-size: 1.45rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--text);
   margin: 0;
@@ -2843,7 +2843,7 @@ a {
 }
 
 .worldclock-time {
-  font-size: 1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--text);
   font-variant-numeric: tabular-nums;
@@ -3758,7 +3758,7 @@ a {
   background: var(--surface1);
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--accent);
 }
