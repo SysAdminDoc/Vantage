@@ -2,6 +2,11 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.13 — 2026-04-29
+
+### Fixed
+- **v0.4.12's `timezone=UTC` regressed phase computation across the UTC date boundary.** Open-Meteo's `daily.sunrise[0]` is "today's" sunrise per the requested timezone. With `timezone=UTC`, "today" means UTC today — so at 19:20 CDT (= 00:20 UTC the next day), Open-Meteo returned the **next location-day's** sunrise (06:04 CDT tomorrow morning), 11 hours in the future. The phase logic then thought we were 11h before sunrise and rendered "pre-dawn" colors at sunset. **Fix:** request `timezone=auto` (returns daily values for the location's local day) and parse the naive ISO string into an absolute-UTC Date using the response's `utc_offset_seconds` field. New `parseLocationLocal(naive, offset)` helper handles the conversion: parse digits as if they were UTC, then subtract the offset to recover the actual moment. Independent of browser timezone, correct across DST, correct in any hemisphere.
+
 ## v0.4.12 — 2026-04-29
 
 ### Changed

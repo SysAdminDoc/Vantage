@@ -262,19 +262,32 @@ export async function renderBackground(mount, settings, saveSettings) {
   //      Open-Meteo is unavailable, and pre-fetch on first paint.
   //   3) Civil twilight (dawn/dusk) always comes from the local calc;
   //      Open-Meteo does not return civil twilight in the free tier.
-  const parseUTC = (naive) => new Date((naive.endsWith("Z") ? naive : naive + "Z"));
+  // Parse Open-Meteo's naive timezone=auto ISO string into an absolute-UTC
+  // Date object using the response's utc_offset_seconds. The naive string
+  // (e.g. "2026-04-29T06:05") represents location-local time; we treat
+  // the digits as if they were UTC, then subtract the offset to recover
+  // the actual UTC moment. Example: "06:05" with offset -18000s (CDT) →
+  // parse as 06:05 UTC → subtract -5h → 11:05 UTC = 06:05 CDT ✓.
+  const parseLocationLocal = (naive, utcOffsetSeconds) => {
+    const ms = new Date(naive + "Z").getTime() - utcOffsetSeconds * 1000;
+    return new Date(ms);
+  };
+
   const recomputeSunTimes = (openMeteoData = null) => {
     if (!location) return;
     // Always start from the local astronomical calc — gives us civil
     // twilight + handles polar regions + works offline.
     const local = getSunTimes(new Date(), location.latitude, location.longitude);
-    // If Open-Meteo gave us sunrise/sunset, use those (more accurate by
-    // ~1 minute), keep dawn/dusk/noon from the local calc.
-    if (openMeteoData?.daily?.sunrise?.[0] && openMeteoData?.daily?.sunset?.[0]) {
+    // If Open-Meteo returned daily sunrise/sunset, prefer those values
+    // (NREL SPA, ±30s ground truth) over the local calc (±1-2 min).
+    // Keep dawn/dusk/noon from the local calc since Open-Meteo's free
+    // tier doesn't include civil twilight.
+    const om = openMeteoData;
+    if (om?.daily?.sunrise?.[0] && om?.daily?.sunset?.[0] && typeof om.utc_offset_seconds === "number") {
       sunTimes = {
         ...local,
-        sunrise: parseUTC(openMeteoData.daily.sunrise[0]),
-        sunset:  parseUTC(openMeteoData.daily.sunset[0])
+        sunrise: parseLocationLocal(om.daily.sunrise[0], om.utc_offset_seconds),
+        sunset:  parseLocationLocal(om.daily.sunset[0],  om.utc_offset_seconds)
       };
     } else {
       sunTimes = local;
