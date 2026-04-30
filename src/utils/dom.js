@@ -79,7 +79,9 @@ export function toast(message, kind = "info", timeoutMs = 3400) {
   const host = document.getElementById("toast-host");
   if (!host) return;
   const iconName = kind === "error" ? "alert" : kind === "success" ? "check" : kind === "warning" ? "alert" : "info";
-  const node = el("div", { class: `toast toast--${kind}`, role: "status" }, [
+  // Errors are assertive (role=alert); everything else inherits polite from host.
+  const role = kind === "error" ? "alert" : "status";
+  const node = el("div", { class: `toast toast--${kind}`, role }, [
     el("span", { class: "toast__icon" }, [iconNode(iconName, { size: 16 })]),
     el("span", { class: "toast__body" }, [message])
   ]);
