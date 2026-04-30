@@ -35,13 +35,23 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
     "aria-label": "Filter settings sections",
     onInput: (e) => {
       const q = e.target.value.toLowerCase().trim();
+      let visibleCount = 0;
       body.querySelectorAll(".settings-section").forEach(sec => {
-        sec.style.display = (!q || sec.textContent.toLowerCase().includes(q)) ? "" : "none";
+        const matches = !q || sec.textContent.toLowerCase().includes(q);
+        sec.style.display = matches ? "" : "none";
+        if (matches) visibleCount++;
       });
+      filterEmpty.hidden = !q || visibleCount > 0;
     }
   });
   searchWrap.appendChild(searchIn);
   body.appendChild(searchWrap);
+
+  const filterEmpty = el("p", {
+    class: "panel-empty settings-filter-empty",
+    hidden: true
+  }, ["No matching sections."]);
+  body.appendChild(filterEmpty);
 
   body.appendChild(buildAppearance(settings, onChange));
   body.appendChild(buildBackground(settings, onChange));
