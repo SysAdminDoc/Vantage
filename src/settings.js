@@ -56,6 +56,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildAppearance(settings, onChange));
   body.appendChild(buildBackground(settings, onChange));
   body.appendChild(buildGreeting(settings, onChange));
+  body.appendChild(buildLocalitySection(settings, onChange));
   body.appendChild(buildSearchSection(settings, onChange));
   body.appendChild(buildWeatherSection(settings, onChange));
   body.appendChild(buildClockSection(settings, onChange));
@@ -726,8 +727,64 @@ function buildGreeting(settings, onChange) {
   });
   g.appendChild(row(
     "Display name",
-    "Optional — appears as “Good evening, Matthew”.",
+    "Optional — appears as 'Good evening, Matthew'.",
     nameInput
+  ));
+
+  // Birthday — MM-DD format. When today's MM-DD matches, the background
+  // shows balloons drifting up across the screen for 24 hours.
+  const birthdayInput = el("input", {
+    type: "text",
+    class: "text-input text-input--inline",
+    placeholder: "MM-DD (e.g. 04-15)",
+    pattern: "\\d{2}-\\d{2}",
+    maxlength: "5",
+    value: settings.greeting.birthday || "",
+    "aria-label": "Birthday in MM-DD format",
+    onChange: (e) => {
+      const v = e.target.value.trim();
+      if (v && !/^\d{2}-\d{2}$/.test(v)) {
+        toast("Birthday must be in MM-DD format (e.g. 04-15).", "error");
+        e.target.value = settings.greeting.birthday || "";
+        return;
+      }
+      settings.greeting.birthday = v;
+      onChange(settings);
+    }
+  });
+  g.appendChild(row(
+    "Birthday",
+    "Optional — MM-DD. Triggers floating balloons all day on your birthday.",
+    birthdayInput
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Locality (scenery override) -------------------------------------- */
+
+function buildLocalitySection(settings, onChange) {
+  const sec = section("Scenery", "image");
+  if (!settings.appearance) settings.appearance = { locality: "auto" };
+  const g = group();
+  g.appendChild(rowColumn(
+    "Locality scenery",
+    segmented({
+      ariaLabel: "Locality scenery",
+      value: settings.appearance.locality || "auto",
+      options: [
+        { value: "auto",     label: "Auto"     },
+        { value: "coastal",  label: "Coastal"  },
+        { value: "urban",    label: "Urban"    },
+        { value: "desert",   label: "Desert"   },
+        { value: "default",  label: "None"     }
+      ],
+      onChange: (v) => {
+        settings.appearance.locality = v;
+        onChange(settings);
+      }
+    }),
+    "Auto detects desert from location; coastal adds a lighthouse + whales; urban adds a city skyline with twinkling windows."
   ));
   sec.appendChild(g);
   return sec;
