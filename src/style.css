@@ -1409,6 +1409,19 @@ a {
   justify-content: center;
 }
 
+/* Panel error state — same layout as panel-empty but signals failure
+   with a tinted accent so users know it's not just "nothing here". */
+.panel-error {
+  margin: 0;
+  padding: var(--s-4) var(--s-3);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--red);
+  line-height: 1.5;
+  background: color-mix(in srgb, var(--red) 8%, transparent);
+  border-radius: var(--r-2);
+}
+
 /* Refresh spinner state on icon button */
 
 .icon-button[data-loading="true"] svg {
@@ -2653,6 +2666,72 @@ a {
   justify-content: flex-end;
   gap: 0.6rem;
   margin-top: 0.25rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Panel header (hyphen-style) — used by widgets that don't share
+   the BEM .panel__header layout. Establishes the shared row layout
+   for: drag handle | title | actions.
+   ═══════════════════════════════════════════════════════════ */
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+
+.panel-header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.panel-header__right {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  flex-shrink: 0;
+}
+
+.panel-header__title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel-header__drag {
+  display: inline-flex;
+  align-items: center;
+  color: var(--overlay0);
+  opacity: 0.4;
+  transition: opacity var(--t-fast), color var(--t-fast);
+  cursor: grab;
+}
+
+.panel:hover .panel-header__drag,
+.panel-header__drag:focus-visible {
+  opacity: 1;
+  color: var(--subtext0);
+}
+
+.panel-header__drag:active { cursor: grabbing; }
+
+.panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  flex: 1;
+  min-height: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════

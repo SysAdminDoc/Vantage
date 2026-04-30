@@ -85,8 +85,13 @@ export function renderCalendar(mount, settings, { onAttachDragHandle } = {}) {
     return;
   }
 
-  // Show skeleton rows while loading
-  body.innerHTML = `<div class="feed-skeleton">${Array(4).fill('<div class="skeleton-row"></div>').join("")}</div>`;
+  // Show skeleton rows while loading (reuses the shared skel-line shimmer)
+  for (let i = 0; i < 4; i++) {
+    body.appendChild(el("div", { class: "feed-skeleton", "aria-hidden": "true" }, [
+      el("div", { class: "skel-line skel-line--title" }),
+      el("div", { class: "skel-line skel-line--meta"  })
+    ]));
+  }
 
   (async () => {
     try {
