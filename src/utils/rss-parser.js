@@ -39,7 +39,7 @@ export function parseFeed(xmlText, sourceUrl = "") {
   const doc = parser.parseFromString(xmlText, "application/xml");
 
   const parserError = doc.querySelector("parsererror");
-  if (parserError) throw new Error("Could not parse feed XML");
+  if (parserError) throw new Error("invalid feed XML");
 
   // Atom
   if (doc.documentElement.localName === "feed") {
