@@ -2,6 +2,32 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.7.0 — 2026-04-30
+
+Major widget expansion — 10 new panels, a quick widget picker, and multi-embed support.
+
+### Added
+- **Widget picker** — floating popover (grid icon in utility bar) to toggle any widget on/off without opening settings. Groups widgets by category. Inline embed management (add/remove/toggle each embed).
+- **To-Do List panel** — add tasks, check them off, clear completed. Unread badge shows open task count.
+- **Notes panel** — sticky-note grid with 5 color variants (blue/green/yellow/red/mauve). Click to expand inline editor with title, body, and color picker. Notes persist in settings.
+- **Bookmarks panel** — reads Chrome bookmarks API and renders them as a favicon grid. Requires new `bookmarks` manifest permission.
+- **World Clocks strip** — slim horizontal strip below the hero section showing time in configurable IANA timezones.
+- **Crypto Prices panel** — live prices via CoinGecko free API. Configurable coin list and fiat currency. Auto-refreshes every 5 minutes. Shows 24-hour change with color coding.
+- **GitHub panel** — two tabs: Activity (your public event feed) and Trending (repos created in the last 7 days sorted by stars). Optional language filter.
+- **Quote of the Day banner** — daily rotating quote from Quotable API (with 10 offline fallbacks). Cached per-day to avoid repeated fetches. Configurable tag filter. Manual refresh button.
+- **Photo of the Day panel** — daily Picsum photo (seed-stable per date). Optional NASA APOD with API key.
+- **Countdown Timer panel** — add labeled countdown events with target dates and color coding. Auto-removes past events (or shows "X days ago").
+- **Unit Converter panel** — 7 categories: Length, Weight, Temperature, Volume, Speed, Data, and Area. Swap button to reverse conversion. Pure client-side math.
+- **Multiple embeds** — `settings.embeds[]` array replaces the single `embed` object. Add unlimited named iframes. Settings includes an embeds list with per-embed toggle + edit + delete. Existing single-embed settings auto-migrated.
+- 15 new SVG icons: `note`, `square`, `check-square`, `trending-up`, `message-square`, `hourglass`, `calculator`, `layout-grid`, `pencil`, `github`, `dollar-sign`, `arrow-left`, `arrows-up-down`, `plane` (reused), `layers` (reused).
+
+### Changed
+- `src/widgets/embed.js` — signature changed from `renderEmbed(mount, settings)` to `renderEmbed(mount, embedCfg, opts)` where `embedCfg` is one entry from `settings.embeds[]`.
+- `src/main.js` — `FIXED_PANEL_KINDS` expanded; dynamic embed mounts synced in `syncEmbedMounts()`; panel reorder wired after `requestAnimationFrame`.
+
+### Fixed
+- Style comment updated to v0.7.0.
+
 ## v0.6.2 — 2026-04-29
 
 ### Added

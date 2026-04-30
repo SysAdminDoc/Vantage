@@ -1,4 +1,4 @@
-// Vantage v0.6.0 — settings panel built with primitives (toggle, segmented, icon-button).
+// Vantage v0.7.0 — settings panel built with primitives (toggle, segmented, icon-button).
 // Sections render as grouped rows with hints and icons. Sticky header with close button.
 
 import { el, clear, toggle, segmented, toast, hostnameLabel } from "./utils/dom.js";
@@ -39,9 +39,19 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
     "Curated headlines and news sources."));
   body.appendChild(buildAirQualitySection(settings, onChange));
   body.appendChild(buildWindySection(settings, onChange));
-  body.appendChild(buildEmbedSection(settings, onChange));
+  body.appendChild(buildEmbedsSection(settings, onChange));
   body.appendChild(buildCalendarSection(settings, onChange));
   body.appendChild(buildPomodoroSection(settings, onChange));
+  body.appendChild(buildTodoSection(settings, onChange));
+  body.appendChild(buildNotesSection(settings, onChange));
+  body.appendChild(buildBookmarksSection(settings, onChange));
+  body.appendChild(buildWorldClockSection(settings, onChange));
+  body.appendChild(buildCryptoSection(settings, onChange));
+  body.appendChild(buildGithubSection(settings, onChange));
+  body.appendChild(buildQuoteSection(settings, onChange));
+  body.appendChild(buildPhotoSection(settings, onChange));
+  body.appendChild(buildCountdownSection(settings, onChange));
+  body.appendChild(buildConverterSection(settings, onChange));
   body.appendChild(buildDataSection(settings, onChange, showWizard));
   body.appendChild(buildResetSection(onChange));
 }
@@ -637,54 +647,85 @@ function buildWindySection(settings, onChange) {
 
 /* ---- Embed (flight tracker / custom URL) -------------------------------- */
 
-function buildEmbedSection(settings, onChange) {
-  const cfg = settings.embed || {};
-  const sec = section("Embed", "plane");
-  const g = group();
+function buildEmbedsSection(settings, onChange) {
+  const sec  = section("Embeds", "plane");
+  const hint = el("p", { class: "settings-section__hint" }, [
+    "Add any website as a panel — flight tracker, traffic map, custom dashboard, etc. " +
+    "Some sites block embedding; the panel shows an \u201copen in new tab\u201d fallback."
+  ]);
+  sec.appendChild(hint);
 
-  g.appendChild(row(
-    "Show embed panel",
-    "Embed any website as a panel — flight tracker, traffic map, dashboard, etc. " +
-    "Some sites block embedding; use the \u201copen in new tab\u201d button if the panel is blank.",
-    toggle({
-      checked: cfg.enabled || false,
-      ariaLabel: "Show embed panel",
-      onChange: (v) => {
-        settings.embed = { ...cfg, enabled: v };
-        onChange(settings);
-      }
-    })
-  ));
+  const embeds = settings.embeds || [];
+  const listEl = el("div", { class: "item-list embeds-list" });
 
-  const titleInput = el("input", {
-    type: "text", class: "text-input",
-    value: cfg.title || "Flight Tracker",
-    placeholder: "Panel title",
-    "aria-label": "Embed panel title"
-  });
-  titleInput.addEventListener("change", () => {
-    settings.embed = { ...cfg, title: titleInput.value.trim() || "Embed" };
-    onChange(settings);
-  });
-  g.appendChild(row("Title", "Label shown in the panel header.", titleInput));
+  function refreshList() {
+    clear(listEl);
+    const current = settings.embeds || [];
+    if (!current.length) {
+      listEl.appendChild(el("div", { class: "item-list__empty" }, ["No embeds configured yet."]));
+      return;
+    }
+    for (const embed of current) {
+      const titleIn = el("input", {
+        type: "text", class: "text-input",
+        value: embed.title || "",
+        placeholder: "Title",
+        "aria-label": "Embed title",
+        onChange: (e) => {
+          embed.title = e.target.value.trim() || "Embed";
+          onChange(settings);
+        }
+      });
+      const urlIn = el("input", {
+        type: "url", class: "text-input",
+        value: embed.url || "",
+        placeholder: "https://…",
+        "aria-label": "Embed URL",
+        onChange: (e) => {
+          embed.url = e.target.value.trim();
+          onChange(settings);
+        }
+      });
+      const tog = toggle({
+        checked: embed.enabled ?? false,
+        ariaLabel: "Enable this embed",
+        onChange: (v) => {
+          embed.enabled = v;
+          onChange(settings);
+        }
+      });
+      const del = el("button", {
+        type: "button", class: "icon-button icon-button--ghost icon-button--small",
+        "aria-label": "Remove embed", title: "Remove",
+        onClick: () => {
+          settings.embeds = settings.embeds.filter(e => e.id !== embed.id);
+          onChange(settings);
+          refreshList();
+        }
+      }, [iconNode("trash", { size: 14 })]);
 
-  const urlInput = el("input", {
-    type: "url", class: "text-input",
-    value: cfg.url || "",
-    placeholder: "https://globe.adsbexchange.com/",
-    "aria-label": "URL to embed"
-  });
-  urlInput.addEventListener("change", () => {
-    settings.embed = { ...cfg, url: urlInput.value.trim() };
-    onChange(settings);
-  });
-  g.appendChild(row(
-    "URL",
-    "Paste the full URL to embed. ADS-B Exchange, Flightradar24, OpenStreetMap, custom dashboards, etc.",
-    urlInput
-  ));
+      listEl.appendChild(el("div", { class: "embed-item" }, [
+        el("div", { class: "embed-item__row" }, [
+          tog,
+          el("div", { class: "embed-item__inputs" }, [titleIn, urlIn]),
+          del
+        ])
+      ]));
+    }
+  }
+  refreshList();
+  sec.appendChild(listEl);
 
-  sec.appendChild(g);
+  const addBtn = el("button", {
+    type: "button", class: "button button--ghost",
+    onClick: () => {
+      if (!settings.embeds) settings.embeds = [];
+      settings.embeds.push({ id: String(Date.now()), title: "Embed", url: "", enabled: false });
+      onChange(settings);
+      refreshList();
+    }
+  }, [iconNode("plus", { size: 14 }), " Add embed"]);
+  sec.appendChild(addBtn);
   return sec;
 }
 
@@ -953,6 +994,303 @@ function triggerDownload(content, filename, mimeType) {
 
 function isoDate() {
   return new Date().toISOString().slice(0, 10);
+}
+
+/* ---- To-Do ------------------------------------------------------------- */
+
+function buildTodoSection(settings, onChange) {
+  const cfg = settings.todo || {};
+  const sec = section("To-Do List", "check-square");
+  const g   = group();
+  g.appendChild(row("Show to-do panel", "A personal task list that persists across sessions.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show to-do panel",
+      onChange: (v) => { settings.todo = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+  g.appendChild(row("Show completed tasks", "Keep done items visible (strikethrough) rather than hiding them.",
+    toggle({ checked: cfg.showCompleted !== false, ariaLabel: "Show completed",
+      onChange: (v) => { settings.todo = { ...cfg, showCompleted: v }; onChange(settings); } })
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Notes ------------------------------------------------------------- */
+
+function buildNotesSection(settings, onChange) {
+  const cfg = settings.notes || {};
+  const sec = section("Notes", "note");
+  const g   = group();
+  g.appendChild(row("Show notes panel", "Color-coded sticky notes stored in your browser.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show notes panel",
+      onChange: (v) => { settings.notes = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Bookmarks --------------------------------------------------------- */
+
+function buildBookmarksSection(settings, onChange) {
+  const cfg = settings.bookmarks || {};
+  const sec = section("Bookmarks", "bookmark");
+  const g   = group();
+  g.appendChild(row("Show bookmarks panel", "Tiles from your browser\u2019s bookmark library.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show bookmarks panel",
+      onChange: (v) => { settings.bookmarks = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+  const maxIn = el("input", {
+    type: "number", min: "4", max: "100",
+    value: String(cfg.maxItems ?? 24), class: "text-input number-input",
+    "aria-label": "Max bookmarks",
+    onChange: (e) => {
+      const v = parseInt(e.target.value, 10);
+      if (!isNaN(v) && v >= 4) { settings.bookmarks = { ...cfg, maxItems: v }; onChange(settings); }
+    }
+  });
+  g.appendChild(row("Max items", "Maximum number of bookmarks to display.", maxIn));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- World Clock ------------------------------------------------------- */
+
+function buildWorldClockSection(settings, onChange) {
+  const cfg = settings.worldclock || {};
+  const sec = section("World Clocks", "globe");
+  const g   = group();
+  g.appendChild(row("Show world clocks", "A compact strip of clocks for multiple time zones, shown below the hero.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show world clocks",
+      onChange: (v) => { settings.worldclock = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+  sec.appendChild(g);
+
+  const clocks = cfg.clocks || [];
+  const listEl = el("ul", { class: "item-list" });
+
+  function refreshClockList() {
+    clear(listEl);
+    clocks.forEach((clock, idx) => {
+      const labelIn = el("input", { type: "text", class: "text-input", value: clock.label, placeholder: "Label",
+        "aria-label": "Clock label",
+        onChange: (e) => { clock.label = e.target.value; settings.worldclock = { ...cfg, clocks }; onChange(settings); }
+      });
+      const tzIn = el("input", { type: "text", class: "text-input", value: clock.tz, placeholder: "e.g. America/Chicago",
+        "aria-label": "IANA timezone",
+        onChange: (e) => { clock.tz = e.target.value; settings.worldclock = { ...cfg, clocks }; onChange(settings); }
+      });
+      const del = el("button", {
+        type: "button", class: "icon-button icon-button--ghost icon-button--small",
+        "aria-label": "Remove clock",
+        onClick: () => { clocks.splice(idx, 1); settings.worldclock = { ...cfg, clocks }; onChange(settings); refreshClockList(); }
+      }, [iconNode("trash", { size: 14 })]);
+      listEl.appendChild(el("li", { class: "item-list__row" }, [
+        el("div", { class: "item-list__row-content" }, [labelIn, tzIn]), del
+      ]));
+    });
+  }
+  refreshClockList();
+  sec.appendChild(listEl);
+
+  const addBtn = el("button", {
+    type: "button", class: "button button--ghost",
+    onClick: () => {
+      clocks.push({ label: "New Clock", tz: "UTC" });
+      settings.worldclock = { ...cfg, clocks };
+      onChange(settings);
+      refreshClockList();
+    }
+  }, [iconNode("plus", { size: 14 }), " Add clock"]);
+  sec.appendChild(addBtn);
+  return sec;
+}
+
+/* ---- Crypto ------------------------------------------------------------ */
+
+function buildCryptoSection(settings, onChange) {
+  const cfg = settings.crypto || {};
+  const sec = section("Crypto Prices", "trending-up");
+  const g   = group();
+  g.appendChild(row("Show crypto panel", "Live prices from CoinGecko (no API key required).",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show crypto panel",
+      onChange: (v) => { settings.crypto = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+
+  const coinsIn = el("input", {
+    type: "text", class: "text-input",
+    value: (cfg.coins || ["bitcoin","ethereum","solana"]).join(", "),
+    placeholder: "bitcoin, ethereum, solana",
+    "aria-label": "CoinGecko coin IDs",
+    onChange: (e) => {
+      const coins = e.target.value.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+      settings.crypto = { ...cfg, coins };
+      onChange(settings);
+    }
+  });
+  g.appendChild(row("Coins", "Comma-separated CoinGecko IDs (e.g. bitcoin, ethereum, solana, dogecoin).", coinsIn));
+
+  g.appendChild(row("Currency",
+    "Display prices in this fiat currency.",
+    segmented({
+      ariaLabel: "Currency",
+      value: cfg.currency || "usd",
+      options: [{ value: "usd", label: "USD" }, { value: "eur", label: "EUR" }, { value: "gbp", label: "GBP" }],
+      onChange: (v) => { settings.crypto = { ...cfg, currency: v }; onChange(settings); }
+    })
+  ));
+
+  const refreshIn = el("input", {
+    type: "number", min: "1", max: "60",
+    value: String(cfg.refreshMinutes ?? 5), class: "text-input number-input",
+    "aria-label": "Refresh interval minutes",
+    onChange: (e) => {
+      const v = parseInt(e.target.value, 10);
+      if (!isNaN(v) && v >= 1) { settings.crypto = { ...cfg, refreshMinutes: v }; onChange(settings); }
+    }
+  });
+  g.appendChild(row("Refresh (minutes)", "How often to poll for new prices.", refreshIn));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- GitHub ------------------------------------------------------------ */
+
+function buildGithubSection(settings, onChange) {
+  const cfg = settings.github || {};
+  const sec = section("GitHub", "github");
+  const g   = group();
+  g.appendChild(row("Show GitHub panel", "Your public activity and trending repos from the GitHub API.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show GitHub panel",
+      onChange: (v) => { settings.github = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+
+  const userIn = el("input", {
+    type: "text", class: "text-input",
+    value: cfg.username || "",
+    placeholder: "your-github-username",
+    "aria-label": "GitHub username",
+    onChange: (e) => { settings.github = { ...cfg, username: e.target.value.trim() }; onChange(settings); }
+  });
+  g.appendChild(row("Username", "Your GitHub handle — used for the Activity tab. Leave blank to show only Trending.", userIn));
+
+  g.appendChild(row("Show trending", "Show the Trending tab (top repos created in the last 7 days).",
+    toggle({ checked: cfg.showTrending !== false, ariaLabel: "Show trending tab",
+      onChange: (v) => { settings.github = { ...cfg, showTrending: v }; onChange(settings); } })
+  ));
+
+  const langIn = el("input", {
+    type: "text", class: "text-input",
+    value: cfg.language || "",
+    placeholder: "e.g. typescript (leave blank for all)",
+    "aria-label": "Filter trending by language",
+    onChange: (e) => { settings.github = { ...cfg, language: e.target.value.trim() }; onChange(settings); }
+  });
+  g.appendChild(row("Trending language", "Filter trending repos to a specific programming language.", langIn));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Quote ------------------------------------------------------------- */
+
+function buildQuoteSection(settings, onChange) {
+  const cfg = settings.quote || {};
+  const sec = section("Quote of the Day", "message-square");
+  const g   = group();
+  g.appendChild(row("Show quote banner", "A daily quote shown between the hero and the reading panels.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show quote banner",
+      onChange: (v) => { settings.quote = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+  g.appendChild(row("Category",
+    "Type of quotes to fetch from Quotable.",
+    segmented({
+      ariaLabel: "Quote category",
+      value: cfg.category || "random",
+      options: [
+        { value: "random",        label: "Random" },
+        { value: "inspirational", label: "Inspired" },
+        { value: "technology",    label: "Tech" },
+        { value: "life",          label: "Life" },
+      ],
+      onChange: (v) => { settings.quote = { ...cfg, category: v, cached: null }; onChange(settings); }
+    })
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Photo ------------------------------------------------------------- */
+
+function buildPhotoSection(settings, onChange) {
+  const cfg = settings.photo || {};
+  const sec = section("Photo of the Day", "image");
+  const g   = group();
+  g.appendChild(row("Show photo panel", "A daily photo panel — changes every day.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show photo panel",
+      onChange: (v) => { settings.photo = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+  g.appendChild(row("Source",
+    "Picsum requires no configuration. NASA APOD shows astronomy imagery (DEMO_KEY has rate limits).",
+    segmented({
+      ariaLabel: "Photo source",
+      value: cfg.source || "picsum",
+      options: [{ value: "picsum", label: "Picsum" }, { value: "nasa", label: "NASA APOD" }],
+      onChange: (v) => { settings.photo = { ...cfg, source: v }; onChange(settings); }
+    })
+  ));
+  if (cfg.source === "nasa") {
+    const keyIn = el("input", {
+      type: "text", class: "text-input",
+      value: cfg.nasaKey || "",
+      placeholder: "DEMO_KEY or your NASA API key",
+      "aria-label": "NASA API key",
+      onChange: (e) => { settings.photo = { ...cfg, nasaKey: e.target.value.trim() }; onChange(settings); }
+    });
+    g.appendChild(row("NASA API key", "Get a free key at api.nasa.gov — removes rate limits.", keyIn));
+  }
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Countdown --------------------------------------------------------- */
+
+function buildCountdownSection(settings, onChange) {
+  const cfg = settings.countdown || {};
+  const sec = section("Countdowns", "hourglass");
+  const g   = group();
+  g.appendChild(row("Show countdowns panel", "Count down (or up) to named dates — launches, vacations, deadlines.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show countdowns panel",
+      onChange: (v) => { settings.countdown = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Converter --------------------------------------------------------- */
+
+function buildConverterSection(settings, onChange) {
+  const cfg = settings.converter || {};
+  const sec = section("Unit Converter", "calculator");
+  const g   = group();
+  g.appendChild(row("Show converter panel", "Convert between length, weight, temperature, area, volume, speed, and data units.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show converter panel",
+      onChange: (v) => { settings.converter = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+  g.appendChild(row("Default category",
+    "Which unit category to show first when the panel loads.",
+    segmented({
+      ariaLabel: "Default category",
+      value: cfg.defaultCategory || "length",
+      options: [
+        { value: "length",      label: "Length" },
+        { value: "weight",      label: "Weight" },
+        { value: "temperature", label: "Temp" },
+        { value: "speed",       label: "Speed" },
+        { value: "data",        label: "Data" },
+      ],
+      onChange: (v) => { settings.converter = { ...cfg, defaultCategory: v }; onChange(settings); }
+    })
+  ));
+  sec.appendChild(g);
+  return sec;
 }
 
 /* ---- Reset ------------------------------------------------------------- */
