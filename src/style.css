@@ -2582,13 +2582,13 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 .onboard-content {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--s-5);
 }
 
 .onboard-header {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--s-1);
 }
 
 .onboard-title {
@@ -2611,7 +2611,7 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 .onboard-presets {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
+  gap: var(--s-3);
 }
 
 @media (max-width: 420px) {
@@ -2661,10 +2661,10 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 .onboard-preset__features {
   list-style: none;
   padding: 0;
-  margin: 0.25rem 0 0;
+  margin: var(--s-1) 0 0;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 2px;
 }
 
 .onboard-preset__feature {
@@ -2688,7 +2688,7 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 .onboard-field {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--s-1);
 }
 
 .onboard-field label {
@@ -2697,7 +2697,7 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   color: var(--subtext1);
   display: flex;
   align-items: baseline;
-  gap: 0.35rem;
+  gap: var(--s-1);
 }
 
 .onboard-optional {
@@ -2710,7 +2710,7 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   background: var(--bg-input);
   border: 1px solid var(--border-default);
   border-radius: var(--r-2);
-  padding: 0.55rem 0.75rem;
+  padding: var(--s-2) var(--s-3);
   color: var(--text);
   font-size: var(--text-base);
   font-family: var(--font-sans);
@@ -2727,7 +2727,7 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 
 .onboard-location-row {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--s-2);
 }
 
 .onboard-location-row input {
@@ -2904,8 +2904,9 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 0;
+  padding: var(--s-7) 0;
   color: var(--subtext0);
+  flex: 1;
 }
 
 .spin {
