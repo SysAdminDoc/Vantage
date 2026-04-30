@@ -1,5 +1,5 @@
 /* ============================================================
-   Vantage v0.7.0 — design system
+   Vantage v0.7.1 — design system
    Catppuccin Mocha (default) + Latte
    ============================================================ */
 
@@ -59,6 +59,16 @@
   --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.50);
   --ring: 0 0 0 2px var(--bg-canvas), 0 0 0 4px var(--accent);
 }
+
+/* Accent color overrides — set via data-accent on <html> */
+[data-accent="blue"]     { --accent: var(--blue);     --accent-strong: color-mix(in srgb, var(--blue)     92%, white); }
+[data-accent="green"]    { --accent: var(--green);    --accent-strong: color-mix(in srgb, var(--green)    92%, white); }
+[data-accent="peach"]    { --accent: var(--peach);    --accent-strong: color-mix(in srgb, var(--peach)    92%, white); }
+[data-accent="teal"]     { --accent: var(--teal);     --accent-strong: color-mix(in srgb, var(--teal)     92%, white); }
+[data-accent="lavender"] { --accent: var(--lavender); --accent-strong: color-mix(in srgb, var(--lavender) 92%, white); }
+[data-accent="red"]      { --accent: var(--red);      --accent-strong: color-mix(in srgb, var(--red)      92%, white); }
+[data-accent="flamingo"] { --accent: var(--flamingo); --accent-strong: color-mix(in srgb, var(--flamingo) 92%, white); }
+[data-accent="sky"]      { --accent: var(--sky);      --accent-strong: color-mix(in srgb, var(--sky)      92%, white); }
 
 [data-theme="latte"] {
   /* Catppuccin Latte */
@@ -1455,28 +1465,80 @@ a {
   border-radius: var(--r-pill);
 }
 
-/* Settings sections */
+/* Settings search */
+
+.settings-search-wrap {
+  padding: 0 0 var(--s-2);
+}
+
+.settings-search {
+  width: 100%;
+}
+
+/* Settings sections — collapsible */
 
 .settings-section {
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
 }
 
 .settings-section__title {
-  margin: 0;
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  padding: var(--s-2) var(--s-1);
   font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--subtext0);
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
+  border-radius: var(--r-2);
+  transition: color 120ms, background 120ms;
+}
+
+.settings-section__title:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface0) 30%, transparent);
+}
+
+.settings-section__title:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .settings-section__title svg {
   color: var(--accent);
+  flex-shrink: 0;
+}
+
+.settings-section__title-text {
+  flex: 1;
+}
+
+.settings-section__chevron {
+  margin-left: auto;
+  color: var(--overlay1);
+  flex-shrink: 0;
+  transition: transform 200ms var(--ease-out);
+}
+
+.settings-section__body {
+  display: none;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-1) 0 var(--s-3);
+}
+
+.settings-section--open .settings-section__body {
+  display: flex;
+}
+
+.settings-section--open .settings-section__chevron {
+  transform: rotate(180deg);
 }
 
 .settings-section__group {
@@ -3555,4 +3617,80 @@ a {
     right: 8px;
     width: calc(100vw - 16px);
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   v0.7.1 — Settings UX: accent picker + custom CSS + search
+   ═══════════════════════════════════════════════════════════ */
+
+/* Accent color swatches */
+
+.accent-picker {
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.accent-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: transform 130ms var(--ease-out), border-color 130ms;
+}
+
+.accent-swatch:hover {
+  transform: scale(1.2);
+}
+
+.accent-swatch--active {
+  border-color: var(--text);
+  transform: scale(1.15);
+}
+
+.accent-swatch--mauve    { background: var(--mauve);    }
+.accent-swatch--blue     { background: var(--blue);     }
+.accent-swatch--green    { background: var(--green);    }
+.accent-swatch--peach    { background: var(--peach);    }
+.accent-swatch--teal     { background: var(--teal);     }
+.accent-swatch--lavender { background: var(--lavender); }
+.accent-swatch--red      { background: var(--red);      }
+.accent-swatch--flamingo { background: var(--flamingo); }
+.accent-swatch--sky      { background: var(--sky);      }
+
+/* Custom CSS textarea */
+
+.custom-css-input {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 120px;
+  width: 100%;
+  box-sizing: border-box;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+
+/* Settings hint paragraph inside a section body */
+
+.settings-section__hint {
+  font-size: 0.78rem;
+  color: var(--subtext0);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.settings-section__hint code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 1px 4px;
+  border-radius: var(--r-1);
+  background: color-mix(in srgb, var(--surface1) 50%, transparent);
+  color: var(--accent);
 }

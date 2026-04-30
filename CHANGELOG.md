@@ -2,6 +2,19 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.7.1 — 2026-04-30
+
+### Added
+- **Collapsible settings sections** — every section in the settings panel now has a click-to-expand/collapse header. State persists across opens via `sessionStorage`. Appearance and Search default open; all others default closed.
+- **Settings filter** — search input at the top of the settings panel filters visible sections by keyword as you type.
+- **Accent color picker** — 9 Catppuccin color options (Mauve, Blue, Green, Peach, Teal, Lavender, Red, Flamingo, Sky) selectable from color swatches in Appearance settings. Applied instantly via `data-accent` attribute on `<html>`. Persists in settings.
+- **Custom CSS injection** — new "Custom CSS" settings section with a monospaced textarea. CSS is injected as `<style id="vantage-custom-css">` on every load. Changes apply live while the settings panel is open. Supports all CSS custom properties (`--accent`, `--base`, etc.).
+- New SVG icons: `code`, `chevron-right`.
+
+### Changed
+- `src/storage.js` — added `accent: "mauve"` and `customCSS: ""` to defaults.
+- `src/main.js` — added `applyAccent()` and `applyCustomCSS()` called on init and every settings change.
+
 ## v0.7.0 — 2026-04-30
 
 Major widget expansion — 10 new panels, a quick widget picker, and multi-embed support.

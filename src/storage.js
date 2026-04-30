@@ -1,4 +1,4 @@
-// Vantage v0.7.0 — chrome.storage.local wrapper with deep-merged defaults.
+// Vantage v0.7.1 — chrome.storage.local wrapper with deep-merged defaults.
 
 const DEFAULTS = {
   theme: "mocha",
@@ -130,6 +130,8 @@ const DEFAULTS = {
     enabled: false,
     defaultCategory: "length"
   },
+  accent: "mauve",
+  customCSS: "",
   onboardingComplete: false
 };
 
