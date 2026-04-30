@@ -1,0 +1,17 @@
+{
+  "addons": {
+    "vantage@sysadmindoc": {
+      "updates": [
+        {
+          "version": "0.8.0",
+          "update_link": "https://github.com/SysAdminDoc/Vantage/releases/download/v0.8.0/Vantage-v0.8.0-firefox.xpi",
+          "browser_specific_settings": {
+            "gecko": {
+              "strict_min_version": "109.0"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
