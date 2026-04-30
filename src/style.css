@@ -731,8 +731,8 @@ a {
 }
 
 /* ============================================================
-   Distant mountains — three parallax layers. Show in temperate +
-   boreal biomes; subtle fade-in/out with day cycle.
+   Distant mountains — three atmospheric parallax ridges. Show in
+   temperate + boreal biomes; subtle fade-in/out with day cycle.
    ============================================================ */
 
 .bg-mountains {
@@ -741,7 +741,9 @@ a {
   right: 0;
   pointer-events: none;
   opacity: 0;
+  color: rgba(15, 18, 26, 0.56);
   transition: opacity 30s linear;
+  transform-origin: center bottom;
 }
 
 .bg-mountains svg {
@@ -751,22 +753,25 @@ a {
 }
 
 .bg-mountains--far {
-  bottom: 22%;
-  height: 14%;
+  bottom: 20%;
+  height: 16%;
   opacity: 0;
-  filter: blur(2px) brightness(0.85);
+  color: rgba(74, 83, 98, 0.34);
+  filter: blur(9px) saturate(0.78);
 }
 
 .bg-mountains--mid {
-  bottom: 14%;
-  height: 16%;
-  filter: blur(1px) brightness(0.7);
+  bottom: 11%;
+  height: 18%;
+  color: rgba(37, 43, 55, 0.46);
+  filter: blur(4px) saturate(0.78);
 }
 
 .bg-mountains--near {
-  bottom: 6%;
-  height: 18%;
-  filter: brightness(0.5);
+  bottom: -1%;
+  height: 24%;
+  color: rgba(13, 17, 26, 0.64);
+  filter: blur(0.8px) saturate(0.72);
 }
 
 /* Mountains visible in non-tropical biomes during daylight phases. */
@@ -785,7 +790,7 @@ a {
 .bg[data-biome="polar"][data-phase="midday"]           .bg-mountains,
 .bg[data-biome="polar"][data-phase="morning"]          .bg-mountains,
 .bg[data-biome="polar"][data-phase="afternoon"]        .bg-mountains {
-  opacity: 0.75;
+  opacity: 0.62;
 }
 .bg[data-biome="temperate"][data-phase="morning"]   .bg-mountains--far,
 .bg[data-biome="temperate"][data-phase="midday"]    .bg-mountains--far,
@@ -794,7 +799,13 @@ a {
 .bg[data-biome="boreal"][data-phase="midday"]       .bg-mountains--far,
 .bg[data-biome="boreal"][data-phase="afternoon"]    .bg-mountains--far,
 .bg[data-biome="polar"][data-phase="midday"]        .bg-mountains--far {
-  opacity: 0.45;
+  opacity: 0.42;
+}
+
+/* Locality scenes get their own horizon treatment. */
+.bg[data-locality="coastal"] .bg-mountains,
+.bg[data-locality="urban"]   .bg-mountains {
+  opacity: 0 !important;
 }
 
 /* Hide mountains in fog/heavy weather */
@@ -802,6 +813,98 @@ a {
 .bg[data-weather="storm"]      .bg-mountains,
 .bg[data-weather="heavy-rain"] .bg-mountains,
 .bg[data-weather="heavy-snow"] .bg-mountains {
+  opacity: 0 !important;
+}
+
+/* ============================================================
+   Coastal ocean — a low water plane for coastal locality.
+   ============================================================ */
+
+.bg-ocean {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 38%;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(90% 42% at 50% 0%, rgba(255, 220, 164, 0.26), transparent 70%),
+    linear-gradient(180deg, rgba(126, 178, 190, 0.30), rgba(46, 93, 112, 0.68) 52%, rgba(16, 39, 56, 0.80));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  filter: saturate(0.90) contrast(0.94);
+  transition: opacity 18s linear;
+}
+
+.bg-ocean::before {
+  content: "";
+  position: absolute;
+  inset: 9% -8% 0;
+  background:
+    repeating-linear-gradient(178deg, rgba(255, 255, 255, 0.22) 0 1px, transparent 1px 20px),
+    repeating-linear-gradient(182deg, rgba(255, 255, 255, 0.10) 0 1px, transparent 1px 38px);
+  opacity: 0.48;
+  transform: skewY(-1deg);
+  animation: ocean-drift 38s linear infinite;
+}
+
+.bg-ocean::after {
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  top: -8%;
+  height: 48%;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 235, 185, 0.24), transparent 66%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 62%);
+  mix-blend-mode: screen;
+  opacity: 0.62;
+  animation: ocean-glow 16s ease-in-out infinite alternate;
+}
+
+.bg[data-locality="coastal"][data-phase="sunrise"]     .bg-ocean,
+.bg[data-locality="coastal"][data-phase="morning"]     .bg-ocean,
+.bg[data-locality="coastal"][data-phase="midday"]      .bg-ocean,
+.bg[data-locality="coastal"][data-phase="afternoon"]   .bg-ocean,
+.bg[data-locality="coastal"][data-phase="golden-hour"] .bg-ocean,
+.bg[data-locality="coastal"][data-phase="sunset"]      .bg-ocean {
+  opacity: 0.84;
+}
+
+.bg[data-locality="coastal"][data-phase="dusk"]              .bg-ocean,
+.bg[data-locality="coastal"][data-phase="nautical-dusk"]     .bg-ocean,
+.bg[data-locality="coastal"][data-phase="astronomical-dusk"] .bg-ocean,
+.bg[data-locality="coastal"][data-phase="night"]             .bg-ocean,
+.bg[data-locality="coastal"][data-phase="astronomical-night"] .bg-ocean,
+.bg[data-locality="coastal"][data-phase="pre-dawn"]          .bg-ocean,
+.bg[data-locality="coastal"][data-phase="nautical-dawn"]     .bg-ocean {
+  opacity: 0.56;
+}
+
+.bg[data-locality="coastal"][data-weather="fog"]        .bg-ocean,
+.bg[data-locality="coastal"][data-weather="rain"]       .bg-ocean,
+.bg[data-locality="coastal"][data-weather="heavy-rain"] .bg-ocean,
+.bg[data-locality="coastal"][data-weather="storm"]      .bg-ocean,
+.bg[data-locality="coastal"][data-weather="snow"]       .bg-ocean,
+.bg[data-locality="coastal"][data-weather="heavy-snow"] .bg-ocean {
+  opacity: 0.38;
+  filter: blur(0.5px) saturate(0.62) contrast(0.92);
+}
+
+@keyframes ocean-drift {
+  0%   { background-position: 0 0, 0 0; }
+  100% { background-position: 120px 18px, -90px 12px; }
+}
+
+@keyframes ocean-glow {
+  0%   { transform: translateX(-2%); opacity: 0.42; }
+  100% { transform: translateX(2%);  opacity: 0.68; }
+}
+
+.bg[data-locality="coastal"] .bg-tree--saguaro,
+.bg[data-locality="coastal"] .bg-heat-shimmer {
   opacity: 0 !important;
 }
 
@@ -1098,9 +1201,11 @@ a {
 }
 
 .bg-petals {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='280' viewBox='0 0 240 280'><g fill='%23f7c8d8' fill-opacity='0.78'><ellipse cx='30'  cy='40'  rx='4' ry='3' transform='rotate(20 30 40)'/><ellipse cx='110' cy='80'  rx='5' ry='3.5' transform='rotate(-30 110 80)'/><ellipse cx='200' cy='30'  rx='4' ry='3' transform='rotate(50 200 30)'/><ellipse cx='60'  cy='160' rx='5' ry='3.5' transform='rotate(70 60 160)'/><ellipse cx='150' cy='200' rx='4' ry='3' transform='rotate(-40 150 200)'/><ellipse cx='220' cy='180' rx='5' ry='3.5' transform='rotate(15 220 180)'/><ellipse cx='90'  cy='240' rx='4' ry='3' transform='rotate(-60 90 240)'/><ellipse cx='180' cy='260' rx='4.5' ry='3.2' transform='rotate(80 180 260)'/></g></svg>");
-  background-size: 240px 280px;
-  animation: petal-fall 22s linear infinite;
+  inset: -18% 0 0 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='520' height='620' viewBox='0 0 520 620'><g fill-opacity='0.68'><path fill='%23e79ab2' d='M54 76 C42 66 45 48 61 42 C77 54 70 72 54 76 Z' transform='rotate(18 58 60)'/><path fill='%23f0b5c5' d='M214 128 C202 118 205 101 221 94 C237 106 229 124 214 128 Z' transform='rotate(-28 220 112)'/><path fill='%23d9829f' d='M406 82 C394 72 397 54 413 48 C429 60 422 78 406 82 Z' transform='rotate(42 412 66)'/><path fill='%23efafc0' d='M126 318 C112 307 116 288 134 282 C152 296 144 314 126 318 Z' transform='rotate(68 134 300)'/><path fill='%23d889a5' d='M340 404 C328 394 331 376 348 370 C364 383 357 400 340 404 Z' transform='rotate(-46 348 388)'/><path fill='%23e9a4b8' d='M456 520 C443 510 447 492 464 486 C480 499 472 516 456 520 Z' transform='rotate(22 464 504)'/></g><g fill='%23b85f7b' fill-opacity='0.28'><circle cx='68' cy='66' r='2'/><circle cx='226' cy='110' r='2'/><circle cx='420' cy='64' r='2'/><circle cx='138' cy='302' r='2'/><circle cx='352' cy='386' r='2'/><circle cx='468' cy='502' r='2'/></g></svg>");
+  background-size: 520px 620px;
+  filter: drop-shadow(0 1px 2px rgba(92, 45, 62, 0.16));
+  animation: petal-fall 46s linear infinite;
 }
 
 .bg-leaves {
@@ -1110,8 +1215,8 @@ a {
 }
 
 @keyframes petal-fall {
-  0%   { background-position: 0   -280px; }
-  100% { background-position: 40px 0; }
+  0%   { background-position: -40px -620px; }
+  100% { background-position: 80px 0; }
 }
 
 @keyframes leaves-fall {
@@ -1119,10 +1224,23 @@ a {
   100% { background-position: 30px 0; }
 }
 
-.bg[data-biome="temperate"][data-season="spring"][data-weather="clear"]   .bg-petals,
-.bg[data-biome="temperate"][data-season="spring"][data-weather="cloudy"]  .bg-petals,
-.bg[data-biome="temperate"][data-season="spring"][data-weather="drizzle"] .bg-petals {
-  opacity: 0.7;
+.bg[data-biome="temperate"][data-season="spring"][data-weather="clear"]  .bg-petals,
+.bg[data-biome="temperate"][data-season="spring"][data-weather="cloudy"] .bg-petals {
+  opacity: 0.34;
+}
+
+.bg[data-locality="urban"] .bg-petals {
+  opacity: 0 !important;
+}
+
+.bg[data-phase="dusk"]               .bg-petals,
+.bg[data-phase="nautical-dusk"]      .bg-petals,
+.bg[data-phase="astronomical-dusk"]  .bg-petals,
+.bg[data-phase="night"]              .bg-petals,
+.bg[data-phase="astronomical-night"] .bg-petals,
+.bg[data-phase="pre-dawn"]           .bg-petals,
+.bg[data-phase="nautical-dawn"]      .bg-petals {
+  opacity: 0 !important;
 }
 
 .bg[data-biome="temperate"][data-season="autumn"][data-weather="clear"]   .bg-leaves,
@@ -1905,10 +2023,10 @@ a {
   .bg-bats-host, .bg-bats-host .bat, .bg-butterfly, .bg-whale,
   .bg-firework__core, .bg-firework .spike, .bg-sleigh, .bg-balloon,
   .bg-heat-shimmer, .bg-lighthouse svg .lighthouse-bulb, .bg-lighthouse::after,
-  .bg-skyline svg .city-windows {
+  .bg-skyline svg .city-windows, .bg-ocean::before, .bg-ocean::after {
     animation: none !important;
   }
-  .bg-sun, .bg-mountains--far, .bg-mountains--mid, .bg-mountains--near {
+  .bg-sun, .bg-mountains--far, .bg-mountains--mid, .bg-mountains--near, .bg-ocean {
     transition: none !important;
   }
 }
