@@ -4,7 +4,7 @@
 
 # Vantage
 
-**A privacy-first new tab dashboard for Chromium browsers — bring your search engine, your feeds, your weather, your links.**
+**A new tab dashboard for Chromium browsers — bring your search engine, your feeds, your weather, your links.**
 
 [![Version](https://img.shields.io/badge/version-0.5.0-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
 [![License](https://img.shields.io/badge/license-MIT-89b4fa?style=flat-square)](LICENSE)
