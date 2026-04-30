@@ -22,11 +22,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Verify version in manifest matches input
+      - name: Verify version in manifests matches input
         run: |
           MANIFEST_VER=$(python -c "import json; print(json.load(open('manifest.json'))['version'])")
           if [ "$MANIFEST_VER" != "${{ inputs.version }}" ]; then
             echo "manifest.json says $MANIFEST_VER but workflow input is ${{ inputs.version }}"
+            exit 1
+          fi
+          FF_VER=$(python -c "import json; print(json.load(open('manifest.firefox.json'))['version'])")
+          if [ "$FF_VER" != "${{ inputs.version }}" ]; then
+            echo "manifest.firefox.json says $FF_VER but workflow input is ${{ inputs.version }}"
             exit 1
           fi
 
@@ -41,7 +46,7 @@ jobs:
           echo "$EXTENSION_PEM" | base64 -d > Vantage-selfhost.pem
           chmod 600 Vantage-selfhost.pem
 
-      - name: Build ZIP
+      - name: Build Chrome ZIP
         run: |
           mkdir -p dist
           python -c "
@@ -49,8 +54,8 @@ jobs:
           from pathlib import Path
           src = Path('.')
           excludes = {'.git', '.github', 'scripts', 'dist', '.claude', 'node_modules'}
-          exclude_files = {'CLAUDE.md', 'CODEX_CHANGELOG.md', 'Vantage-selfhost.pem'}
-          exclude_suffix = ('.bak', '.pem', '.zip', '.crx', '.log')
+          exclude_files = {'CLAUDE.md', 'CODEX_CHANGELOG.md', 'Vantage-selfhost.pem', 'manifest.firefox.json'}
+          exclude_suffix = ('.bak', '.pem', '.zip', '.crx', '.xpi', '.log')
           out = 'dist/Vantage-v${{ inputs.version }}.zip'
           with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
               for root, dirs, files in os.walk(src):
@@ -85,9 +90,41 @@ jobs:
           print('CRX OK')
           "
 
+      - name: Build Firefox XPI
+        run: |
+          python -c "
+          import zipfile, os
+          from pathlib import Path
+          src = Path('.')
+          excludes = {'.git', '.github', 'scripts', 'dist', '.claude', 'node_modules'}
+          # Exclude Chrome manifest — we'll inject the Firefox one as manifest.json
+          exclude_files = {'CLAUDE.md', 'CODEX_CHANGELOG.md', 'Vantage-selfhost.pem', 'manifest.json'}
+          exclude_suffix = ('.bak', '.pem', '.zip', '.crx', '.xpi', '.log')
+          out = 'dist/Vantage-v${{ inputs.version }}-firefox.xpi'
+          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+              # Write the Firefox manifest as manifest.json at root
+              zf.write('manifest.firefox.json', 'manifest.json')
+              for root, dirs, files in os.walk(src):
+                  dirs[:] = [d for d in dirs if d not in excludes and not d.startswith('.')]
+                  for f in files:
+                      if f in exclude_files: continue
+                      if f == 'manifest.firefox.json': continue
+                      if f.endswith(exclude_suffix): continue
+                      if f.startswith('.') and f != '.gitignore': continue
+                      p = Path(root) / f
+                      rel = p.relative_to(src).as_posix()
+                      zf.write(p, rel)
+          print(f'wrote {out} ({os.path.getsize(out):,} bytes)')
+          "
+
       - name: Generate checksums
         working-directory: dist
-        run: sha256sum Vantage-v${{ inputs.version }}.zip Vantage-v${{ inputs.version }}.crx > SHA256SUMS.txt
+        run: |
+          sha256sum \
+            Vantage-v${{ inputs.version }}.zip \
+            Vantage-v${{ inputs.version }}.crx \
+            Vantage-v${{ inputs.version }}-firefox.xpi \
+            > SHA256SUMS.txt
 
       - name: Generate release notes
         run: |
@@ -95,7 +132,6 @@ jobs:
           import re, sys
           version = '${{ inputs.version }}'
           src = open('CHANGELOG.md').read()
-          # Find the section for this version, stop at the next ## heading
           m = re.search(rf'## v{re.escape(version)}\b.*?(?=\n## v|\Z)', src, re.S)
           if not m:
               sys.exit(f'CHANGELOG section for v{version} not found')
@@ -103,11 +139,17 @@ jobs:
           install = '''
           ## Install
 
+          **Chrome / Edge / Brave / Vivaldi (Chromium):**
           1. Download **\`Vantage-v''' + version + '''.zip\`** below.
           2. Extract to a permanent folder.
           3. \`chrome://extensions\` → enable Developer mode → **Load unpacked** → pick the folder.
 
-          The \`.crx\` is provided as a secondary asset for Chromium forks that still accept self-signed packages.
+          The \`.crx\` is a secondary asset for Chromium forks that still accept self-signed packages.
+
+          **Firefox (109+):**
+          1. Download **\`Vantage-v''' + version + '''-firefox.xpi\`** below.
+          2. Open \`about:debugging\` → **This Firefox** → **Load Temporary Add-on…** → pick the XPI.
+             _(Temporary installs reset on browser restart — see README for permanent options.)_
 
           ## Verify integrity
 
@@ -128,7 +170,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="v${{ inputs.version }}"
-          # Create tag if it doesn't already exist
           git tag --list | grep -qx "$TAG" || git tag "$TAG"
           git push origin "$TAG"
           gh release create "$TAG" \
@@ -136,4 +177,29 @@ jobs:
             --notes-file dist/release-notes.md \
             dist/Vantage-v${{ inputs.version }}.zip \
             dist/Vantage-v${{ inputs.version }}.crx \
+            dist/Vantage-v${{ inputs.version }}-firefox.xpi \
             dist/SHA256SUMS.txt
+
+      - name: Update Omaha feed (updates.xml)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ inputs.version }}"
+          TAG="v${VERSION}"
+          REPO="${{ github.repository }}"
+          EXT_ID="hkfepknnglonkidihcoicdfkjkjfnejn"
+          CRX_URL="https://github.com/${REPO}/releases/download/${TAG}/Vantage-${TAG}.crx"
+          HASH=$(sha256sum dist/Vantage-${TAG}.crx | awk '{print $1}')
+          cat > updates.xml <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <gupdate xmlns="http://www.google.com/update2/response" protocol="2.0">
+            <app appid="${EXT_ID}">
+              <updatecheck codebase="${CRX_URL}" version="${VERSION}" hash_sha256="${HASH}"/>
+            </app>
+          </gupdate>
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add updates.xml
+          git diff --cached --quiet || git commit -m "chore: update Omaha feed for ${TAG}"
+          git push origin HEAD:main

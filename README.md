@@ -4,12 +4,12 @@
 
 # Vantage
 
-**A new tab dashboard for Chromium browsers — bring your search engine, your feeds, your weather, your links.**
+**A new tab dashboard for Chromium and Firefox — bring your search engine, your feeds, your weather, your links.**
 
-[![Version](https://img.shields.io/badge/version-0.7.1-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
+[![Version](https://img.shields.io/badge/version-0.7.2-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
 [![License](https://img.shields.io/badge/license-MIT-89b4fa?style=flat-square)](LICENSE)
 [![Manifest](https://img.shields.io/badge/manifest-V3-a6e3a1?style=flat-square)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
-[![Platform](https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave%20%7C%20Vivaldi-94e2d5?style=flat-square)](#install)
+[![Platform](https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave%20%7C%20Firefox-94e2d5?style=flat-square)](#install)
 
 </div>
 
@@ -53,9 +53,9 @@ Beyond that, Vantage gives you the dashboard staples — clock, weather, RSS, ne
 
 ## Install
 
-Two paths. Both work. Pick the one that fits.
+Three paths for Chromium browsers, one for Firefox. Pick the one that fits.
 
-### Option A — One-line PowerShell installer (Windows, recommended)
+### Option A — One-line PowerShell installer (Windows, recommended, Chromium only)
 
 Downloads the latest release, extracts to `%LOCALAPPDATA%\Vantage\extension`, and adds `--load-extension="<that path>"` to every Brave / Chrome / Edge / Vivaldi / Opera shortcut on the system (Start Menu, Desktop, Taskbar pin — user-level and system-wide). Relaunch the browser from any of those shortcuts and Vantage loads.
 
@@ -78,7 +78,7 @@ irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.p
 $f="$env:TEMP\vantage-install.ps1"; iwr https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 -OutFile $f -UseBasicParsing; & $f -Uninstall
 ```
 
-### Option B — Load unpacked from the ZIP (any OS, no admin)
+### Option B — Load unpacked from the ZIP (Chromium, any OS, no admin)
 
 1. Download the latest **`Vantage-vX.Y.Z.zip`** from [Releases](https://github.com/SysAdminDoc/Vantage/releases).
 2. Right-click → **Extract All** to a permanent folder (e.g. `C:\Tools\Vantage\`). **Don't delete this folder** — your browser reads from it on every startup.
@@ -89,7 +89,23 @@ $f="$env:TEMP\vantage-install.ps1"; iwr https://raw.githubusercontent.com/SysAdm
 
 When the browser asks for location permission (for weather), allow it — or skip and set a city manually in settings. To update: download the new ZIP, extract over the same folder, hit the refresh icon on the extension card.
 
-### Why no Enterprise Policy install?
+### Option C — Firefox (109+)
+
+Download **`Vantage-vX.Y.Z-firefox.xpi`** from [Releases](https://github.com/SysAdminDoc/Vantage/releases).
+
+**Temporary install (any Firefox, resets on restart):**
+1. Open `about:debugging` → **This Firefox**.
+2. Click **Load Temporary Add-on…** → pick the `.xpi` file.
+3. Open a new tab. Welcome to Vantage.
+
+**Permanent install (survives restarts):** Firefox requires extensions to be signed by Mozilla for permanent installation on Release and Beta channels. Options:
+- **Firefox Developer Edition / Nightly**: go to `about:config`, set `xpinstall.signatures.required` to `false`, then drag-drop the XPI onto `about:addons` or use **Install Add-on From File**.
+- **Firefox ESR with enterprise policy**: set `ExtensionSettings` via `policies.json` to allow unsigned extensions from a local path.
+- **AMO unlisted submission**: submit the XPI to addons.mozilla.org as an unlisted add-on; Mozilla signs it within minutes and you get back a signed XPI that installs permanently on any Firefox. This path is on the roadmap.
+
+To update: download the new XPI, repeat the install step — the old version is replaced automatically.
+
+### Why no Enterprise Policy install? (Chromium)
 
 I tried. Modern Chromium browsers (Chrome 137+, Brave 147+) now silently filter self-hosted CRX URLs out of `ExtensionInstallForcelist` — the registry policy is accepted but never propagates to the extension service. The only update_urls that actually install through that policy are Chrome Web Store entries. The launch-flag path above is the reliable alternative.
 

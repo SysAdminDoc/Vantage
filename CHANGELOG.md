@@ -2,6 +2,18 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.7.2 — 2026-04-30
+
+### Added
+- **Firefox port** — `manifest.firefox.json` ships alongside `manifest.json`. The CI release workflow now builds a `Vantage-vX.Y.Z-firefox.xpi` from the same source tree (Firefox manifest injected at package time). Requires Firefox 109+ (MV3 + service worker support).
+- Background script (`src/background.js`) detects Firefox via `typeof browser !== "undefined"` and opens a blank new tab (which Firefox routes to the overridden newtab page) instead of the Chrome-only `chrome://newtab` URL.
+- SHA256SUMS.txt in every release now includes the Firefox XPI hash.
+- Release notes updated to include Firefox install instructions (temporary via `about:debugging`, permanent via DevEdition/Nightly or enterprise policy).
+
+### Technical
+- `manifest.firefox.json` includes `browser_specific_settings.gecko` (id: `vantage@sysadmindoc`, strict_min_version: `109.0`) and omits `"type": "module"` from the background service worker declaration (ES module SW requires Firefox 128+; plain SW works from 109+).
+- All `chrome.*` API calls in the extension page scripts are compatible with Firefox's `chrome` namespace alias — no polyfill required.
+
 ## v0.7.1 — 2026-04-30
 
 ### Added

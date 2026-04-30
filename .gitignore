@@ -4,6 +4,7 @@
 dist/
 *.zip
 *.crx
+*.xpi
 !.github/**/*.yml
 
 # Self-host signing key (NEVER commit)
