@@ -1743,7 +1743,7 @@ function isoDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function normalizeImportedSettings(value) {
+export function normalizeImportedSettings(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("Import file must contain a Vantage settings object.");
   }
