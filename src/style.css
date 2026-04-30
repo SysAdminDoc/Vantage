@@ -3890,8 +3890,8 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   }
 
   .widget-picker {
-    right: 8px;
-    width: calc(100vw - 16px);
+    right: var(--s-2);
+    width: calc(100vw - var(--s-4));
   }
 }
 
