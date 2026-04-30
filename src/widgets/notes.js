@@ -1,6 +1,6 @@
 // Vantage — Sticky Notes panel widget.
 
-import { el, clear } from "../utils/dom.js";
+import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 
 let _uid = Date.now();
@@ -136,6 +136,14 @@ function buildEditor(note, items, cfg, settings, saveItems, rerender, onAttachDr
       if (idx > -1) items.splice(idx, 1);
       saveItems();
       rerender(null);
+      toast("Note deleted.", "warning", 6500, {
+        label: "Undo",
+        onClick: () => {
+          items.splice(Math.max(0, idx), 0, note);
+          saveItems();
+          rerender(note.id);
+        }
+      });
     }
   }, [iconNode("trash", { size: 14 })]);
 

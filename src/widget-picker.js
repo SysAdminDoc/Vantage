@@ -191,9 +191,19 @@ function buildEmbedRow(embed, settings, onSave, rebuildPicker, openSettingsPanel
     title: "Remove embed",
     "aria-label": "Remove this embed",
     onClick: () => {
+      const idx = settings.embeds.findIndex(e => e.id === embed.id);
       const next = { ...settings, embeds: settings.embeds.filter(e => e.id !== embed.id) };
       onSave(next);
       rebuildPicker();
+      toast(`Removed "${embed.title || "Embed"}".`, "warning", 6500, {
+        label: "Undo",
+        onClick: () => {
+          const restored = [...(next.embeds || [])];
+          restored.splice(Math.max(0, idx), 0, embed);
+          onSave({ ...settings, embeds: restored });
+          rebuildPicker();
+        }
+      });
     }
   }, [iconNode("trash", { size: 12 })]);
 
@@ -243,6 +253,11 @@ function buildAddEmbedRow(settings, onSave, rebuildPicker) {
       class: "button button--ghost button--small",
       onClick: () => {
         if (!newTitle.trim()) { toast("Enter a title.", "warning"); return; }
+        if (!newUrl.trim()) { toast("Enter an embed URL.", "warning"); return; }
+        try { new URL(newUrl.trim()); } catch {
+          toast("That doesn't look like a valid URL.", "error");
+          return;
+        }
         const newEmbed = {
           id: String(Date.now()),
           title: newTitle.trim(),

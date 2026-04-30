@@ -45,8 +45,14 @@ export function renderSearch(mount, settings, onChange) {
 
   mount.appendChild(form);
 
-  // Autofocus shortly after mount so it doesn't fight panel transitions.
-  requestAnimationFrame(() => input.focus());
+  // Focus on first new-tab paint, but do not steal focus from settings,
+  // widget forms, or other active controls after a settings remount.
+  requestAnimationFrame(() => {
+    const settingsOpen = document.getElementById("settings-panel")?.dataset.open === "true";
+    const pickerOpen = document.getElementById("widget-picker")?.hidden === false;
+    const canAutofocus = document.activeElement === document.body && !settingsOpen && !pickerOpen;
+    if (canAutofocus) input.focus();
+  });
 }
 
 function buildEnginePicker(settings, onChange, refocusInput) {
