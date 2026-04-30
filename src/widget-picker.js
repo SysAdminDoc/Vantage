@@ -63,33 +63,44 @@ const WIDGET_GROUPS = [
  */
 export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, openSettingsPanel) {
   let isOpen = false;
+  let closeTimer = null;
 
   const onDocKey = (e) => {
     if (e.key === "Escape" && isOpen) close();
   };
-  const onDocMousedown = (e) => {
-    if (isOpen && !pickerEl.contains(e.target) && !toggleBtn.contains(e.target)) close();
+  const onDocPointerDown = (e) => {
+    if (isOpen && !pickerEl.contains(e.target) && !toggleBtn.contains(e.target)) {
+      close({ restoreFocus: false });
+    }
   };
 
   function open() {
+    clearTimeout(closeTimer);
     isOpen = true;
     rebuildPicker();
     pickerEl.hidden = false;
     toggleBtn.setAttribute("aria-expanded", "true");
+    pickerEl.setAttribute("aria-hidden", "false");
     requestAnimationFrame(() => pickerEl.classList.add("widget-picker--open"));
     setTimeout(() => pickerEl.querySelector(".widget-picker__inner")?.focus?.(), 50);
     document.addEventListener("keydown", onDocKey);
-    document.addEventListener("mousedown", onDocMousedown);
+    document.addEventListener("pointerdown", onDocPointerDown, true);
   }
 
-  function close() {
+  function close({ restoreFocus = true, immediate = false } = {}) {
     isOpen = false;
     pickerEl.classList.remove("widget-picker--open");
     toggleBtn.setAttribute("aria-expanded", "false");
-    setTimeout(() => { pickerEl.hidden = true; }, 220);
-    toggleBtn.focus({ preventScroll: true });
+    pickerEl.setAttribute("aria-hidden", "true");
+    if (immediate) {
+      clearTimeout(closeTimer);
+      pickerEl.hidden = true;
+    } else {
+      closeTimer = setTimeout(() => { pickerEl.hidden = true; }, 220);
+    }
+    if (restoreFocus) toggleBtn.focus({ preventScroll: true });
     document.removeEventListener("keydown", onDocKey);
-    document.removeEventListener("mousedown", onDocMousedown);
+    document.removeEventListener("pointerdown", onDocPointerDown, true);
   }
 
   toggleBtn.addEventListener("click", () => isOpen ? close() : open());
@@ -101,7 +112,10 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
     const inner = el("div", { class: "widget-picker__inner", tabindex: "-1" });
 
     const pickerHeader = el("div", { class: "widget-picker__header" }, [
-      el("span", { class: "widget-picker__title" }, ["Widgets"]),
+      el("div", { class: "widget-picker__heading" }, [
+        el("h2", { id: "widget-picker-title", class: "widget-picker__title" }, ["Widgets"]),
+        el("p", { class: "widget-picker__subtitle" }, ["Show, hide, or add page modules."])
+      ]),
       el("button", {
         type: "button",
         class: "icon-button icon-button--ghost icon-button--small",
@@ -124,11 +138,14 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
     const embeds = settings.embeds || [];
     if (embeds.length === 0) {
       inner.appendChild(el("p", { class: "widget-picker__empty-embeds" }, [
-        "No embeds configured — add one below."
+        "No custom embeds yet."
       ]));
     }
     for (const embed of embeds) {
-      inner.appendChild(buildEmbedRow(embed, settings, onSave, rebuildPicker, openSettingsPanel));
+      inner.appendChild(buildEmbedRow(embed, settings, onSave, rebuildPicker, () => {
+        close({ restoreFocus: false, immediate: true });
+        openSettingsPanel?.();
+      }));
     }
 
     inner.appendChild(buildAddEmbedRow(settings, onSave, rebuildPicker));
@@ -239,22 +256,40 @@ function buildAddEmbedRow(settings, onSave, rebuildPicker) {
       class: "text-input",
       placeholder: "Title (e.g. Flight Tracker)",
       "aria-label": "Embed title",
-      onInput: (e) => { newTitle = e.target.value; }
+      onInput: (e) => {
+        newTitle = e.target.value;
+        e.target.removeAttribute("aria-invalid");
+      }
     });
     const urlIn = el("input", {
       type: "url",
       class: "text-input",
       placeholder: "https://…",
       "aria-label": "Embed URL",
-      onInput: (e) => { newUrl = e.target.value; }
+      onInput: (e) => {
+        newUrl = e.target.value;
+        e.target.removeAttribute("aria-invalid");
+      }
     });
     const saveBtn = el("button", {
       type: "button",
       class: "button button--ghost button--small",
       onClick: () => {
-        if (!newTitle.trim()) { toast("Enter a title.", "warning"); return; }
-        if (!newUrl.trim()) { toast("Enter an embed URL.", "warning"); return; }
+        if (!newTitle.trim()) {
+          titleIn.setAttribute("aria-invalid", "true");
+          titleIn.focus({ preventScroll: true });
+          toast("Enter a title for the embed.", "warning");
+          return;
+        }
+        if (!newUrl.trim()) {
+          urlIn.setAttribute("aria-invalid", "true");
+          urlIn.focus({ preventScroll: true });
+          toast("Enter the embed URL.", "warning");
+          return;
+        }
         try { new URL(newUrl.trim()); } catch {
+          urlIn.setAttribute("aria-invalid", "true");
+          urlIn.focus({ preventScroll: true });
           toast("That doesn't look like a valid URL.", "error");
           return;
         }
