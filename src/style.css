@@ -621,8 +621,24 @@ a {
   90.6%                     { opacity: 0.75; }
 }
 
-/* --- Palm-tree silhouette (golden-hour + sunset) --- */
-.bg-palm {
+/* Palm-tree sway keyframe — used by the .bg-tree--palm tropical
+   variant. (See the locality-aware tree block further below.) */
+@keyframes palm-sway {
+  0%   { transform: rotate(-1.2deg); }
+  100% { transform: rotate(1.4deg); }
+}
+
+@media (max-width: 720px) {
+  .bg-tree { width: 160px; height: 240px; right: 2%; }
+  .bg-sun  { width: 100px; height: 100px; }
+}
+
+/* ============================================================
+   Locality-aware tree silhouettes — palm/oak/pine swap based on
+   data-biome. Default behavior matches v0.8 (palm at golden hour).
+   ============================================================ */
+
+.bg-tree {
   position: absolute;
   bottom: -8px;
   right: 4%;
@@ -634,7 +650,7 @@ a {
   pointer-events: none;
 }
 
-.bg-palm svg {
+.bg-tree svg {
   width: 100%;
   height: 100%;
   filter: drop-shadow(0 0 24px rgba(0,0,0,0.4));
@@ -642,34 +658,439 @@ a {
   animation: palm-sway 6s ease-in-out infinite alternate;
 }
 
-.bg[data-phase="golden-hour"] .bg-palm,
-.bg[data-phase="sunset"]      .bg-palm {
+.bg-tree--pine svg {
+  /* Pines don't sway as visibly as palms — slow, narrow oscillation. */
+  animation: tree-sway 9s ease-in-out infinite alternate;
+}
+
+.bg-tree--oak svg {
+  animation: tree-sway 7s ease-in-out infinite alternate;
+}
+
+@keyframes tree-sway {
+  0%   { transform: rotate(-0.6deg); }
+  100% { transform: rotate(0.7deg); }
+}
+
+/* Show exactly one biome-appropriate tree at golden hour / sunset.
+   Tropical → palm (the existing v0.8 silhouette).
+   Temperate → oak (deciduous).
+   Boreal → pine.
+   Polar → no tree (bare horizon). */
+.bg[data-biome="tropical"][data-phase="golden-hour"] .bg-tree--palm,
+.bg[data-biome="tropical"][data-phase="sunset"]      .bg-tree--palm,
+.bg[data-biome="temperate"][data-phase="golden-hour"] .bg-tree--oak,
+.bg[data-biome="temperate"][data-phase="sunset"]      .bg-tree--oak,
+.bg[data-biome="boreal"][data-phase="golden-hour"]   .bg-tree--pine,
+.bg[data-biome="boreal"][data-phase="sunset"]        .bg-tree--pine {
   opacity: 0.95;
   transform: translateY(0);
 }
 
-/* Rainy / heavy weather hides the palm — a beachy silhouette undercuts
-   the wet-sky mood. Drizzle keeps the palm because it's light rain. */
-.bg[data-weather="storm"]      .bg-palm,
-.bg[data-weather="heavy-rain"] .bg-palm,
-.bg[data-weather="rain"]       .bg-palm,
-.bg[data-weather="heavy-snow"] .bg-palm {
+/* Wet/heavy weather hides the tree. Drizzle keeps it (light rain). */
+.bg[data-weather="storm"]      .bg-tree,
+.bg[data-weather="heavy-rain"] .bg-tree,
+.bg[data-weather="rain"]       .bg-tree,
+.bg[data-weather="heavy-snow"] .bg-tree {
   opacity: 0 !important;
 }
 
-@keyframes palm-sway {
-  0%   { transform: rotate(-1.2deg); }
-  100% { transform: rotate(1.4deg); }
+/* ============================================================
+   Distant mountains — three parallax layers. Show in temperate +
+   boreal biomes; subtle fade-in/out with day cycle.
+   ============================================================ */
+
+.bg-mountains {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 30s linear;
 }
 
-@media (max-width: 720px) {
-  .bg-palm { width: 160px; height: 240px; right: 2%; }
-  .bg-sun  { width: 100px; height: 100px; }
+.bg-mountains svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.bg-mountains--far {
+  bottom: 22%;
+  height: 14%;
+  opacity: 0;
+  filter: blur(2px) brightness(0.85);
+}
+
+.bg-mountains--mid {
+  bottom: 14%;
+  height: 16%;
+  filter: blur(1px) brightness(0.7);
+}
+
+.bg-mountains--near {
+  bottom: 6%;
+  height: 18%;
+  filter: brightness(0.5);
+}
+
+/* Mountains visible in non-tropical biomes during daylight phases. */
+.bg[data-biome="temperate"][data-phase="morning"]      .bg-mountains,
+.bg[data-biome="temperate"][data-phase="midday"]       .bg-mountains,
+.bg[data-biome="temperate"][data-phase="afternoon"]    .bg-mountains,
+.bg[data-biome="temperate"][data-phase="golden-hour"]  .bg-mountains,
+.bg[data-biome="temperate"][data-phase="sunrise"]      .bg-mountains,
+.bg[data-biome="temperate"][data-phase="sunset"]       .bg-mountains,
+.bg[data-biome="boreal"][data-phase="morning"]         .bg-mountains,
+.bg[data-biome="boreal"][data-phase="midday"]          .bg-mountains,
+.bg[data-biome="boreal"][data-phase="afternoon"]       .bg-mountains,
+.bg[data-biome="boreal"][data-phase="golden-hour"]     .bg-mountains,
+.bg[data-biome="boreal"][data-phase="sunrise"]         .bg-mountains,
+.bg[data-biome="boreal"][data-phase="sunset"]          .bg-mountains,
+.bg[data-biome="polar"][data-phase="midday"]           .bg-mountains,
+.bg[data-biome="polar"][data-phase="morning"]          .bg-mountains,
+.bg[data-biome="polar"][data-phase="afternoon"]        .bg-mountains {
+  opacity: 0.75;
+}
+.bg[data-biome="temperate"][data-phase="morning"]   .bg-mountains--far,
+.bg[data-biome="temperate"][data-phase="midday"]    .bg-mountains--far,
+.bg[data-biome="temperate"][data-phase="afternoon"] .bg-mountains--far,
+.bg[data-biome="boreal"][data-phase="morning"]      .bg-mountains--far,
+.bg[data-biome="boreal"][data-phase="midday"]       .bg-mountains--far,
+.bg[data-biome="boreal"][data-phase="afternoon"]    .bg-mountains--far,
+.bg[data-biome="polar"][data-phase="midday"]        .bg-mountains--far {
+  opacity: 0.45;
+}
+
+/* Hide mountains in fog/heavy weather */
+.bg[data-weather="fog"]        .bg-mountains,
+.bg[data-weather="storm"]      .bg-mountains,
+.bg[data-weather="heavy-rain"] .bg-mountains,
+.bg[data-weather="heavy-snow"] .bg-mountains {
+  opacity: 0 !important;
+}
+
+/* ============================================================
+   Aurora borealis — high latitudes (|lat|>=55°), clear-sky night.
+   Triggered by data-aurora="on" on the .bg mount.
+   ============================================================ */
+
+.bg-aurora {
+  position: absolute;
+  inset: 0 0 30% 0;
+  background:
+    radial-gradient(ellipse 60% 35% at 30% 20%, rgba(80, 240, 180, 0.0), transparent 70%),
+    radial-gradient(ellipse 50% 30% at 60% 25%, rgba(140, 100, 240, 0.0), transparent 70%),
+    radial-gradient(ellipse 55% 28% at 80% 18%, rgba(80, 200, 240, 0.0), transparent 70%);
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 20s linear;
+  filter: blur(8px);
+  animation: aurora-shimmer 14s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.bg[data-aurora="on"] .bg-aurora {
+  opacity: 0.7;
+  background:
+    radial-gradient(ellipse 60% 35% at 30% 20%, rgba(80, 240, 180, 0.45), transparent 70%),
+    radial-gradient(ellipse 50% 30% at 60% 25%, rgba(140, 100, 240, 0.40), transparent 70%),
+    radial-gradient(ellipse 55% 28% at 80% 18%, rgba(80, 200, 240, 0.38), transparent 70%);
+}
+
+@keyframes aurora-shimmer {
+  0%   { transform: translateY(0)   scaleY(1);    filter: blur(8px)  hue-rotate(0deg); }
+  50%  { transform: translateY(-8px) scaleY(1.05); filter: blur(10px) hue-rotate(-15deg); }
+  100% { transform: translateY(4px)  scaleY(0.97); filter: blur(8px)  hue-rotate(12deg); }
+}
+
+/* ============================================================
+   Constellations — show during deep night phases, hemisphere-aware.
+   ============================================================ */
+
+.bg-constellation {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 20s linear;
+  pointer-events: none;
+}
+
+.bg-constellation--north {
+  top: 12%;
+  left: 60%;
+  width: 18%;
+  max-width: 280px;
+}
+
+.bg-constellation--south {
+  top: 18%;
+  left: 18%;
+  width: 12%;
+  max-width: 160px;
+}
+
+.bg-constellation svg { width: 100%; height: auto; opacity: 0.7; }
+
+.bg[data-phase="astronomical-night"][data-hemisphere="N"] .bg-constellation--north,
+.bg[data-phase="night"][data-hemisphere="N"]              .bg-constellation--north,
+.bg[data-phase="astronomical-dusk"][data-hemisphere="N"]  .bg-constellation--north,
+.bg[data-phase="astronomical-dawn"][data-hemisphere="N"]  .bg-constellation--north {
+  opacity: 0.55;
+}
+
+.bg[data-phase="astronomical-night"][data-hemisphere="S"] .bg-constellation--south,
+.bg[data-phase="night"][data-hemisphere="S"]              .bg-constellation--south,
+.bg[data-phase="astronomical-dusk"][data-hemisphere="S"]  .bg-constellation--south,
+.bg[data-phase="astronomical-dawn"][data-hemisphere="S"]  .bg-constellation--south {
+  opacity: 0.55;
+}
+
+/* Hide constellations under clouds/storm/fog */
+.bg[data-weather="cloudy"]     .bg-constellation,
+.bg[data-weather="overcast"]   .bg-constellation,
+.bg[data-weather="rain"]       .bg-constellation,
+.bg[data-weather="heavy-rain"] .bg-constellation,
+.bg[data-weather="storm"]      .bg-constellation,
+.bg[data-weather="fog"]        .bg-constellation,
+.bg[data-weather="snow"]       .bg-constellation,
+.bg[data-weather="heavy-snow"] .bg-constellation {
+  opacity: 0 !important;
+}
+
+/* ============================================================
+   Shooting stars — JS spawns transient elements into the host.
+   ============================================================ */
+
+.bg-shooting-star-host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-shooting-star {
+  position: absolute;
+  left: var(--ss-x, 50%);
+  top: var(--ss-y, 20%);
+  width: 140px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.0) 10%, rgba(255,255,255,0.95) 60%, white 100%);
+  border-radius: var(--r-pill);
+  box-shadow: 0 0 8px rgba(255,255,255,0.6);
+  transform-origin: right center;
+  transform: rotate(var(--ss-angle, 30deg)) translateX(-280px);
+  opacity: 0;
+  animation: shooting-star 1.4s ease-out forwards;
+}
+
+@keyframes shooting-star {
+  0%   { opacity: 0;   transform: rotate(var(--ss-angle, 30deg)) translateX(-280px); }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { opacity: 0;   transform: rotate(var(--ss-angle, 30deg)) translateX(60px); }
+}
+
+/* ============================================================
+   Birds — V-formation flock crossing the sky.
+   ============================================================ */
+
+.bg-birds-host {
+  position: absolute;
+  top: var(--bird-y, 25%);
+  left: -240px;
+  width: 200px;
+  height: 60px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bg-birds-host--flying {
+  animation: birds-cross 24s linear forwards;
+}
+
+.bg-birds-host svg { width: 100%; height: 100%; }
+
+.bg-birds-host .bird {
+  animation: bird-flap 0.45s ease-in-out infinite alternate;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.bg-birds-host .bird-2 { animation-delay: -0.10s; }
+.bg-birds-host .bird-3 { animation-delay: -0.05s; }
+.bg-birds-host .bird-4 { animation-delay: -0.15s; }
+.bg-birds-host .bird-5 { animation-delay: -0.20s; }
+
+@keyframes bird-flap {
+  0%   { transform: scaleY(1); }
+  100% { transform: scaleY(0.55); }
+}
+
+@keyframes birds-cross {
+  0%   { opacity: 0;   transform: translateX(0)      translateY(0); }
+  6%   { opacity: 0.7; }
+  50%  { transform: translateX(60vw) translateY(-12px); }
+  94%  { opacity: 0.7; }
+  100% { opacity: 0;   transform: translateX(120vw)  translateY(0); }
+}
+
+/* Storm/rain hides birds (and the JS guard prevents spawning anyway) */
+.bg[data-weather="rain"]       .bg-birds-host,
+.bg[data-weather="heavy-rain"] .bg-birds-host,
+.bg[data-weather="storm"]      .bg-birds-host,
+.bg[data-weather="fog"]        .bg-birds-host {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+/* ============================================================
+   Distant horizon lightning — soft glow at horizon for non-storm
+   rain (suggests a storm cell off in the distance).
+   ============================================================ */
+
+.bg-horizon-flash {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 25%;
+  background: radial-gradient(ellipse 60% 100% at 50% 100%, rgba(255,255,255,0.65), transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bg[data-weather="rain"]       .bg-horizon-flash,
+.bg[data-weather="heavy-rain"] .bg-horizon-flash {
+  animation: horizon-strike 18s ease-in-out infinite;
+}
+
+@keyframes horizon-strike {
+  0%, 92%, 94%, 100% { opacity: 0; }
+  93%                { opacity: 0.4; }
+  95%                { opacity: 0.25; }
+  96%                { opacity: 0.35; }
+}
+
+/* ============================================================
+   Crepuscular sun rays — radial spokes through cloud breaks during
+   the existing golden-hour phase (or sunrise).
+   ============================================================ */
+
+.bg-rays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: conic-gradient(from 90deg at var(--rays-x, 80%) var(--rays-y, 25%),
+    transparent 0deg,
+    rgba(255, 230, 180, 0.0) 5deg,
+    rgba(255, 230, 180, 0.18) 10deg,
+    rgba(255, 230, 180, 0.0) 15deg,
+    transparent 20deg,
+    rgba(255, 230, 180, 0.16) 28deg,
+    rgba(255, 230, 180, 0.0) 36deg,
+    transparent 45deg,
+    rgba(255, 230, 180, 0.20) 55deg,
+    rgba(255, 230, 180, 0.0) 65deg,
+    transparent 360deg
+  );
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 18s linear;
+  filter: blur(4px);
+}
+
+.bg[data-phase="golden-hour"][data-weather="cloudy"] .bg-rays,
+.bg[data-phase="sunrise"][data-weather="cloudy"]    .bg-rays,
+.bg[data-phase="golden-hour"][data-weather="clear"] .bg-rays,
+.bg[data-phase="sunrise"][data-weather="clear"]    .bg-rays {
+  opacity: 0.6;
+}
+
+/* ============================================================
+   Seasonal particles — petals (spring), leaves (autumn), fireflies
+   (summer twilight). Temperate biomes only. Each is a tiled SVG
+   pattern that scrolls down/across like rain.
+   ============================================================ */
+
+.bg-petals,
+.bg-leaves {
+  position: absolute;
+  inset: -10% 0 0 0;
+  background-repeat: repeat;
+  opacity: 0;
+  transition: opacity 12s linear;
+  pointer-events: none;
+}
+
+.bg-petals {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='280' viewBox='0 0 240 280'><g fill='%23f7c8d8' fill-opacity='0.78'><ellipse cx='30'  cy='40'  rx='4' ry='3' transform='rotate(20 30 40)'/><ellipse cx='110' cy='80'  rx='5' ry='3.5' transform='rotate(-30 110 80)'/><ellipse cx='200' cy='30'  rx='4' ry='3' transform='rotate(50 200 30)'/><ellipse cx='60'  cy='160' rx='5' ry='3.5' transform='rotate(70 60 160)'/><ellipse cx='150' cy='200' rx='4' ry='3' transform='rotate(-40 150 200)'/><ellipse cx='220' cy='180' rx='5' ry='3.5' transform='rotate(15 220 180)'/><ellipse cx='90'  cy='240' rx='4' ry='3' transform='rotate(-60 90 240)'/><ellipse cx='180' cy='260' rx='4.5' ry='3.2' transform='rotate(80 180 260)'/></g></svg>");
+  background-size: 240px 280px;
+  animation: petal-fall 22s linear infinite;
+}
+
+.bg-leaves {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='300' viewBox='0 0 260 300'><g fill-opacity='0.78'><path fill='%23d4742a' d='M40 50 Q 50 38 58 50 Q 50 62 40 50 Z'/><path fill='%23c45f24' d='M120 100 Q 132 86 142 100 Q 132 114 120 100 Z'/><path fill='%23e89f3a' d='M210 60 Q 222 48 232 60 Q 222 72 210 60 Z'/><path fill='%23b04018' d='M70 180 Q 82 168 92 180 Q 82 194 70 180 Z'/><path fill='%23d4742a' d='M160 220 Q 172 208 182 220 Q 172 234 160 220 Z'/><path fill='%23e89f3a' d='M230 200 Q 240 188 248 200 Q 240 212 230 200 Z'/><path fill='%23c45f24' d='M100 270 Q 110 258 120 270 Q 110 282 100 270 Z'/></g></svg>");
+  background-size: 260px 300px;
+  animation: leaves-fall 26s linear infinite;
+}
+
+@keyframes petal-fall {
+  0%   { background-position: 0 -280px, 0 0; transform: translateX(0); }
+  100% { background-position: 40px 0,    0 0; transform: translateX(0); }
+}
+
+@keyframes leaves-fall {
+  0%   { background-position: 0 -300px; }
+  100% { background-position: 0 0; }
+}
+
+.bg[data-biome="temperate"][data-season="spring"][data-weather="clear"]   .bg-petals,
+.bg[data-biome="temperate"][data-season="spring"][data-weather="cloudy"]  .bg-petals,
+.bg[data-biome="temperate"][data-season="spring"][data-weather="drizzle"] .bg-petals {
+  opacity: 0.7;
+}
+
+.bg[data-biome="temperate"][data-season="autumn"][data-weather="clear"]   .bg-leaves,
+.bg[data-biome="temperate"][data-season="autumn"][data-weather="cloudy"]  .bg-leaves,
+.bg[data-biome="temperate"][data-season="autumn"][data-weather="overcast"] .bg-leaves {
+  opacity: 0.85;
+}
+
+/* Fireflies — small glowing dots in the lower half during summer
+   dusk/twilight, temperate biome. */
+.bg-fireflies {
+  position: absolute;
+  inset: 30% 0 0 0;
+  background-image:
+    radial-gradient(2px 2px at 12% 30%, rgba(255,235,140,0.95), transparent 65%),
+    radial-gradient(2px 2px at 28% 70%, rgba(255,235,140,0.95), transparent 65%),
+    radial-gradient(2px 2px at 44% 50%, rgba(255,235,140,0.95), transparent 65%),
+    radial-gradient(2px 2px at 62% 80%, rgba(255,235,140,0.95), transparent 65%),
+    radial-gradient(2px 2px at 78% 35%, rgba(255,235,140,0.95), transparent 65%),
+    radial-gradient(2px 2px at 92% 65%, rgba(255,235,140,0.95), transparent 65%);
+  opacity: 0;
+  transition: opacity 14s linear;
+  pointer-events: none;
+  animation: firefly-pulse 3.4s ease-in-out infinite alternate;
+}
+
+@keyframes firefly-pulse {
+  0%   { filter: brightness(0.5); }
+  100% { filter: brightness(1.4); }
+}
+
+.bg[data-biome="temperate"][data-season="summer"][data-phase="dusk"]            .bg-fireflies,
+.bg[data-biome="temperate"][data-season="summer"][data-phase="nautical-dusk"]   .bg-fireflies,
+.bg[data-biome="temperate"][data-season="summer"][data-phase="astronomical-dusk"] .bg-fireflies,
+.bg[data-biome="temperate"][data-season="summer"][data-phase="night"]           .bg-fireflies {
+  opacity: 0.85;
 }
 
 /* Honor reduced motion: keep colors + sun position, drop loops */
 @media (prefers-reduced-motion: reduce) {
-  .bg-stars, .bg-cloud, .bg-rain, .bg-snow, .bg-flash, .bg-palm svg {
+  .bg-stars, .bg-cloud, .bg-rain, .bg-snow, .bg-flash,
+  .bg-tree svg, .bg-aurora, .bg-shooting-star, .bg-birds-host, .bg-birds-host .bird,
+  .bg-petals, .bg-leaves, .bg-fireflies, .bg-horizon-flash {
     animation: none !important;
   }
   .bg-sun { transition: none !important; }
