@@ -1,6 +1,7 @@
-// Vantage v0.3.0 — shared multi-feed renderer.
+// Vantage v0.8.0 — shared multi-feed renderer with dedupe + feed filter rules.
 // Adds: per-item favicons, click-to-mark-read state (with cross-tab persistence),
-// unread count badge, "mark all read" button, skeleton loading, last-updated stamp.
+// unread count badge, "mark all read" button, skeleton loading, last-updated stamp,
+// URL-based deduplication, mute/highlight feed filter rules.
 
 import { el, clear, relativeTime, hostnameLabel } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
@@ -13,6 +14,7 @@ export async function renderFeedList(mount, options) {
     feeds,
     maxItems,
     readItems = [],
+    filterRules = [],
     onRefresh,
     onMarkRead,           // (urls: string[]) => Promise<void>
     onDragHandleAttach,   // (handleEl) => void; lets caller wire panel-level drag
@@ -40,7 +42,7 @@ export async function renderFeedList(mount, options) {
     title: "Drag to reorder",
     tabindex: "-1"
   }, [iconNode("grip", { size: 14 })]);
-  dragHandle.addEventListener("click", (e) => e.preventDefault()); // handle is for drag, not click
+  dragHandle.addEventListener("click", (e) => e.preventDefault());
 
   const markAllBtn = el("button", {
     type: "button",
@@ -96,9 +98,19 @@ export async function renderFeedList(mount, options) {
 
   const merged = [];
   const errors = [];
+  const seenLinks = new Set();
+
   results.forEach((r, idx) => {
-    if (r.status === "fulfilled") merged.push(...r.value);
-    else errors.push(feeds[idx].title || hostnameLabel(feeds[idx].url));
+    if (r.status === "fulfilled") {
+      for (const item of r.value) {
+        const key = normalizeUrl(item.link);
+        if (key && seenLinks.has(key)) continue;
+        if (key) seenLinks.add(key);
+        merged.push(item);
+      }
+    } else {
+      errors.push(feeds[idx].title || hostnameLabel(feeds[idx].url));
+    }
   });
 
   merged.sort((a, b) => {
@@ -112,7 +124,7 @@ export async function renderFeedList(mount, options) {
   if (!merged.length) {
     listHost.appendChild(buildEmpty(
       "alert",
-      errors.length ? "Couldn’t load feeds" : "Nothing to show yet",
+      errors.length ? "Couldn't load feeds" : "Nothing to show yet",
       errors.length
         ? `Failed: ${errors.join(", ")}. Check your connection or these feed URLs.`
         : emptyHint
@@ -122,15 +134,24 @@ export async function renderFeedList(mount, options) {
     return;
   }
 
-  const visible = merged.slice(0, maxItems);
   const readSet = new Set(readItems);
-
   const list = el("ul", { class: "feed-list" });
   let unreadCount = 0;
 
-  for (const item of visible) {
+  const visible = [];
+  for (const item of merged) {
+    if (visible.length >= maxItems) break;
+    const rule = matchRule(item, filterRules);
+    if (rule?.action === "mute") continue;
+    visible.push({ item, rule });
+  }
+
+  for (const { item, rule } of visible) {
     const isRead = readSet.has(item.link);
     if (!isRead) unreadCount++;
+
+    const isHighlight = rule?.action === "highlight";
+    const hlStyle = isHighlight && rule.color ? `border-left: 3px solid ${rule.color}` : "";
 
     const titleEl = el("p", { class: "feed-item__title" }, [item.title]);
     const favicon = el("img", {
@@ -155,8 +176,9 @@ export async function renderFeedList(mount, options) {
       ])
     ]);
     const li = el("li", {
-      class: `feed-item${isRead ? " feed-item--read" : ""}`,
-      "data-url": item.link
+      class: `feed-item${isRead ? " feed-item--read" : ""}${isHighlight ? " feed-item--highlight" : ""}`,
+      "data-url": item.link,
+      ...(hlStyle ? { style: hlStyle } : {})
     }, [link]);
 
     link.addEventListener("click", () => {
@@ -222,6 +244,27 @@ export async function renderFeedList(mount, options) {
   observer.observe(mount, { childList: true });
 }
 
+function matchRule(item, rules) {
+  if (!rules?.length) return null;
+  for (const rule of rules) {
+    if (!rule.pattern) continue;
+    try {
+      const re = new RegExp(rule.pattern, "i");
+      const haystack = rule.field === "url" ? (item.link || "") : (item.title || "");
+      if (re.test(haystack)) return rule;
+    } catch { /* invalid regex — skip */ }
+  }
+  return null;
+}
+
+function normalizeUrl(url) {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    return `${u.hostname}${u.pathname}`.replace(/\/$/, "").toLowerCase();
+  } catch { return url.toLowerCase(); }
+}
+
 function buildSkeleton(rows) {
   const wrap = el("ul", { class: "feed-list", "aria-label": "Loading" });
   for (let i = 0; i < rows; i++) {
@@ -245,7 +288,5 @@ function faviconUrl(url) {
   try {
     const u = new URL(url);
     return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=32`;
-  } catch {
-    return "";
-  }
+  } catch { return ""; }
 }

@@ -10,6 +10,7 @@ const WIDGET_GROUPS = [
       { key: "clock",      path: "clock.enabled",      icon: "clock",          label: "Clock" },
       { key: "greeting",   path: "greeting.enabled",   icon: "circle-check",   label: "Greeting" },
       { key: "quicklinks", path: "quicklinks.enabled",  icon: "link",           label: "Quick Links" },
+      { key: "topsites",   path: "topsites.enabled",    icon: "star",           label: "Top Sites" },
       { key: "worldclock", path: "worldclock.enabled",  icon: "globe",          label: "World Clocks" },
       { key: "quote",      path: "quote.enabled",       icon: "message-square", label: "Quote of the Day" },
     ]
