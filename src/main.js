@@ -1,4 +1,4 @@
-// Vantage v0.7.0 — entry point. Loads settings, mounts widgets, wires UI.
+// Vantage v0.7.1 — entry point. Loads settings, mounts widgets, wires UI.
 
 import { loadSettings, saveSettings, onSettingsChanged, hasStoredSettings } from "./storage.js";
 import { iconNode } from "./icons.js";
@@ -64,6 +64,8 @@ async function init() {
 
   currentSettings = await loadSettings();
   document.documentElement.setAttribute("data-theme", currentSettings.theme);
+  applyAccent(currentSettings);
+  applyCustomCSS(currentSettings.customCSS);
   injectStaticIcons();
 
   const isFirstInstall = !(await hasStoredSettings());
@@ -86,6 +88,8 @@ async function init() {
     if (!next) return;
     currentSettings = next;
     document.documentElement.setAttribute("data-theme", currentSettings.theme);
+    applyAccent(currentSettings);
+    applyCustomCSS(currentSettings.customCSS);
     mountAll();
   });
 }
@@ -334,6 +338,25 @@ function wireKeyboard() {
     e.preventDefault();
     document.querySelector(".search-input")?.focus();
   });
+}
+
+function applyAccent(settings) {
+  const accent = settings.accent || "mauve";
+  if (accent === "mauve") {
+    document.documentElement.removeAttribute("data-accent");
+  } else {
+    document.documentElement.setAttribute("data-accent", accent);
+  }
+}
+
+function applyCustomCSS(css) {
+  let style = document.getElementById("vantage-custom-css");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "vantage-custom-css";
+    document.head.appendChild(style);
+  }
+  style.textContent = css || "";
 }
 
 async function persist(next) {
