@@ -51,7 +51,11 @@ function timeLabel(event) {
 export function renderCalendar(mount, settings, { onAttachDragHandle } = {}) {
   clear(mount);
   const cfg = settings.calendar;
-  if (!cfg?.enabled) return;
+  if (!cfg?.enabled) {
+    mount.style.display = "none";
+    return;
+  }
+  mount.style.display = "";
 
   // Panel scaffold
   const header = el("div", { class: "panel-header" }, [
