@@ -25,9 +25,10 @@ import { renderPhoto }      from "./widgets/photo.js";
 import { renderCountdown }  from "./widgets/countdown.js";
 import { renderConverter }  from "./widgets/converter.js";
 import { renderTopsites }   from "./widgets/topsites.js";
-import { renderSettingsPanel, openPanel, closePanel } from "./settings.js";
+import { renderSettingsPanel, openPanel, closePanel, normalizeImportedSettings } from "./settings.js";
 import { showOnboarding } from "./onboarding.js";
 import { renderWidgetPicker } from "./widget-picker.js";
+import { toast } from "./utils/dom.js";
 import { makeReorderable, arrayMove } from "./utils/drag.js";
 import { applyWorkspace, getActiveWorkspace, captureSnapshot } from "./utils/workspace.js";
 window._vantageWorkspaceHelpers = { captureSnapshot: () => captureSnapshot(currentSettings) };
@@ -53,19 +54,25 @@ function getPanelKinds() {
 
 async function init() {
   // Handle shared-config URL fragment (#import=<base64-json>)
+  let sharedImportNotice = null;
+  let sharedImportedSettings = null;
   const hash = location.hash;
   if (hash.startsWith("#import=")) {
     try {
       const encoded = hash.slice(8);
-      const imported = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+      const imported = normalizeImportedSettings(JSON.parse(decodeURIComponent(escape(atob(encoded)))));
       await saveSettings(imported);
-      history.replaceState(null, "", location.pathname);
-    } catch {
-      console.warn("[Vantage] Failed to import shared config from URL hash");
+      sharedImportedSettings = imported;
+      sharedImportNotice = { message: "Shared settings imported.", kind: "success" };
+    } catch (err) {
+      console.warn("[Vantage] Failed to import shared config from URL hash", err);
+      sharedImportNotice = { message: "Couldn't import shared settings. The link may be invalid.", kind: "error" };
+    } finally {
+      history.replaceState(null, "", `${location.pathname}${location.search}`);
     }
   }
 
-  currentSettings = await loadSettings();
+  currentSettings = sharedImportedSettings || await loadSettings();
 
   // Firefox container mapping — detect active container, apply workspace
   await applyContainerWorkspace();
@@ -75,7 +82,7 @@ async function init() {
   applyCustomCSS(currentSettings.customCSS);
   injectStaticIcons();
 
-  const isFirstInstall = !(await hasStoredSettings());
+  const isFirstInstall = !sharedImportedSettings && !(await hasStoredSettings());
   if (isFirstInstall && !currentSettings.onboardingComplete) {
     await new Promise((resolve) => {
       showOnboarding(currentSettings, async (next) => {
@@ -91,6 +98,9 @@ async function init() {
   wireSettings();
   wireWidgetPicker();
   wireKeyboard();
+  if (sharedImportNotice) {
+    requestAnimationFrame(() => toast(sharedImportNotice.message, sharedImportNotice.kind));
+  }
   onSettingsChanged((next) => {
     if (!next) return;
     currentSettings = next;
