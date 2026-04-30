@@ -2,6 +2,11 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.10 — 2026-04-29
+
+### Fixed
+- **Rain rendered as horizontal LCD-stripe bands instead of falling streaks.** The original implementation used `linear-gradient(180deg, transparent, white, transparent)` with `background-size: 1px 80px` and CSS tiling. Tiling that 1px-wide strip horizontally meant every column had the same vertical gradient, so the bright center band rendered as a continuous **horizontal** stripe across the full viewport — not vertical streaks. Animating background-position scrolled those horizontal stripes down, producing a "broken-LCD" look. **Fix:** rain layers now use inline-SVG tiles (220×240 foreground, 280×320 background-parallax) containing 22 / 16 actual `<line>` elements at scattered x-positions with a 4px wind-shear tilt. Background-position scrolls each tile by exactly its own height for a seamless loop. Two layers run at different durations (0.55s vs 0.85s) for parallax depth. Reads as actual rain now.
+
 ## v0.4.9 — 2026-04-29
 
 ### Fixed

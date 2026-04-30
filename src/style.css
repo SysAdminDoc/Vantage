@@ -459,32 +459,33 @@ a {
 .bg[data-weather="fog"] .bg-fog { opacity: 1; }
 
 /* --- Rain --- */
-/* Rain streaks — cool blue-white per OSS rain-effect references
-   (rgba(174,194,224,...) reads as actual water against a slate sky).
-   Two layers at different speeds for parallax depth. */
+/* Rain streaks — discrete vertical streaks at scattered x-positions,
+   tiled. The PRIOR implementation used a `linear-gradient(180deg, ...)`
+   with `background-size: 1px N`, which when tiled produced full-width
+   horizontal LCD-stripe bands instead of rain — every column got the
+   same vertical gradient, so the bright band rendered as a continuous
+   horizontal line. Switched to inline-SVG tiles containing actual
+   <line> elements at scattered x-positions, with a slight wind-shear
+   tilt. Animating background-position scrolls the tile downward, so
+   streaks appear to fall. Two layers at different scales/speeds for
+   parallax depth. */
 .bg-rain {
   position: absolute;
   inset: -10% 0 0 0;
-  background-image: linear-gradient(180deg,
-    transparent 0%,
-    rgba(190,210,240,0.55) 45%,
-    rgba(220,235,255,0.85) 55%,
-    transparent 100%);
-  background-size: 1px 80px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='240' viewBox='0 0 220 240'><g stroke='rgb(220,235,255)' stroke-width='1.4' stroke-linecap='round' stroke-opacity='0.9'><line x1='14' y1='0' x2='10' y2='44'/><line x1='38' y1='28' x2='34' y2='72'/><line x1='61' y1='8' x2='57' y2='56'/><line x1='85' y1='38' x2='81' y2='86'/><line x1='108' y1='14' x2='104' y2='62'/><line x1='132' y1='44' x2='128' y2='90'/><line x1='154' y1='22' x2='150' y2='66'/><line x1='178' y1='6' x2='174' y2='52'/><line x1='201' y1='32' x2='197' y2='78'/><line x1='24' y1='112' x2='20' y2='158'/><line x1='50' y1='130' x2='46' y2='176'/><line x1='76' y1='102' x2='72' y2='148'/><line x1='102' y1='140' x2='98' y2='190'/><line x1='126' y1='118' x2='122' y2='162'/><line x1='150' y1='148' x2='146' y2='198'/><line x1='176' y1='110' x2='172' y2='156'/><line x1='202' y1='136' x2='198' y2='184'/><line x1='12' y1='184' x2='8' y2='230'/><line x1='66' y1='194' x2='62' y2='238'/><line x1='114' y1='200' x2='110' y2='240'/><line x1='162' y1='180' x2='158' y2='226'/><line x1='208' y1='208' x2='204' y2='240'/></g></svg>");
+  background-size: 220px 240px;
   background-repeat: repeat;
   opacity: 0;
   transition: opacity 8s linear;
-  animation: rain-fall 0.45s linear infinite;
+  animation: rain-fall 0.55s linear infinite;
   will-change: background-position;
+  transform: translateZ(0);
 }
 
 .bg-rain--2 {
-  background-size: 1.5px 110px;
-  animation-duration: 0.65s;
-  background-image: linear-gradient(180deg,
-    transparent 0%,
-    rgba(174,194,224,0.40) 50%,
-    transparent 100%);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='280' height='320' viewBox='0 0 280 320'><g stroke='rgb(190,210,240)' stroke-width='1' stroke-linecap='round' stroke-opacity='0.65'><line x1='22' y1='10' x2='17' y2='62'/><line x1='66' y1='40' x2='61' y2='98'/><line x1='118' y1='20' x2='113' y2='74'/><line x1='162' y1='52' x2='157' y2='110'/><line x1='208' y1='28' x2='203' y2='82'/><line x1='254' y1='14' x2='249' y2='68'/><line x1='40' y1='130' x2='35' y2='184'/><line x1='98' y1='148' x2='93' y2='202'/><line x1='148' y1='130' x2='143' y2='186'/><line x1='200' y1='158' x2='195' y2='212'/><line x1='248' y1='140' x2='243' y2='196'/><line x1='14' y1='240' x2='9' y2='298'/><line x1='80' y1='258' x2='75' y2='314'/><line x1='138' y1='244' x2='133' y2='300'/><line x1='194' y1='268' x2='189' y2='320'/><line x1='246' y1='248' x2='241' y2='306'/></g></svg>");
+  background-size: 280px 320px;
+  animation-duration: 0.85s;
 }
 
 .bg[data-weather="drizzle"]    .bg-rain    { opacity: 0.45; }
@@ -496,9 +497,21 @@ a {
 .bg[data-weather="storm"]      .bg-rain    { opacity: 1;    }
 .bg[data-weather="storm"]      .bg-rain--2 { opacity: 0.85; }
 
+/* Scrolls the SVG tile down by exactly its tile height so the loop is
+   seamless. Each layer overrides this implicitly because background-size
+   sets the tile dimension and background-position is the same axis. */
 @keyframes rain-fall {
   0%   { background-position: 0 0; }
-  100% { background-position: 0 70px; }
+  100% { background-position: 0 240px; }
+}
+
+.bg-rain--2 {
+  animation-name: rain-fall-back;
+}
+
+@keyframes rain-fall-back {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 320px; }
 }
 
 /* --- Snow --- */
