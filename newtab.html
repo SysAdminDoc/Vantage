@@ -22,7 +22,8 @@
         type="button"
         title="Customize widgets"
         aria-label="Customize widgets"
-        aria-haspopup="listbox"
+        aria-haspopup="dialog"
+        aria-controls="widget-picker"
         aria-expanded="false"
       ></button>
       <button
@@ -37,7 +38,15 @@
       ></button>
     </header>
 
-    <div id="widget-picker" class="widget-picker" hidden aria-label="Widget picker"></div>
+    <div
+      id="widget-picker"
+      class="widget-picker"
+      hidden
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="widget-picker-title"
+      aria-hidden="true"
+    ></div>
 
     <div id="workspace-bar" class="workspace-bar" hidden aria-label="Workspaces"></div>
 
