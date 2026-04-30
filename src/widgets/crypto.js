@@ -61,8 +61,8 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
       renderRows(data);
     } catch (err) {
       body.innerHTML = "";
-      body.appendChild(el("div", { class: "panel-empty" }, [
-        `Could not load prices: ${err.message}`
+      body.appendChild(el("div", { class: "panel-error" }, [
+        `Couldn't load prices — ${err.message.toLowerCase()}.`
       ]));
     }
   }

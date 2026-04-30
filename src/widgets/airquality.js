@@ -10,12 +10,12 @@ import { detectLocation } from "../utils/weather-source.js";
 const AQ_BASE = "https://air-quality-api.open-meteo.com/v1/air-quality";
 
 const AQI_LEVELS = [
-  { max: 50,  label: "Good",           color: "var(--green)"  },
-  { max: 100, label: "Moderate",       color: "var(--yellow)" },
-  { max: 150, label: "USG",            color: "var(--peach)"  },
-  { max: 200, label: "Unhealthy",      color: "var(--red)"    },
-  { max: 300, label: "Very Unhealthy", color: "var(--mauve)"  },
-  { max: Infinity, label: "Hazardous", color: "var(--maroon)" }
+  { max: 50,  label: "Good",                color: "var(--green)"  },
+  { max: 100, label: "Moderate",            color: "var(--yellow)" },
+  { max: 150, label: "Sensitive groups",    color: "var(--peach)"  },
+  { max: 200, label: "Unhealthy",           color: "var(--red)"    },
+  { max: 300, label: "Very unhealthy",      color: "var(--mauve)"  },
+  { max: Infinity, label: "Hazardous",      color: "var(--maroon)" }
 ];
 
 function aqiInfo(aqi) {

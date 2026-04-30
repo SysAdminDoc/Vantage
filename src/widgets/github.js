@@ -79,7 +79,7 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
       }
     } catch (err) {
       body.innerHTML = "";
-      body.appendChild(el("p", { class: "panel-empty" }, [`Error: ${err.message}`]));
+      body.appendChild(el("p", { class: "panel-error" }, [`Couldn't load GitHub data — ${err.message.toLowerCase()}.`]));
     }
   }
 
