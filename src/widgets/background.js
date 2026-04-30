@@ -573,14 +573,51 @@ function getSeason(date, hemisphere) {
 
 const BING_ENDPOINT = "https://www.bing.com/HPImageArchive.aspx?format=js&n=1&mkt=en-US";
 
+const BACKGROUND_DATA_KEYS = [
+  "phase",
+  "weather",
+  "biome",
+  "season",
+  "hemisphere",
+  "aurora",
+  "milkyWay",
+  "locality",
+  "holiday",
+  "rainbow",
+  "firstSnow",
+  "backgroundState"
+];
+
+function resetBackgroundMount(mount) {
+  mount.innerHTML = "";
+  mount.style.cssText = "";
+  mount.classList.remove("bg--no-transition");
+  for (const key of BACKGROUND_DATA_KEYS) delete mount.dataset[key];
+  mount._bgLat = null;
+  mount._bgLon = null;
+  mount._bgBirthday = null;
+  mount._bgLocality = null;
+  mount._bgFirstSnowAt = 0;
+  mount._bgPrevWeather = null;
+  mount._bgRainbowUntil = 0;
+  mount._meteorBoost = 1;
+  mount._bgFirstScenePainted = false;
+}
+
+function applyFallbackBackground(mount, state = "fallback") {
+  resetBackgroundMount(mount);
+  mount.dataset.backgroundState = state;
+}
+
+function prefersReducedMotion() {
+  return globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
+}
+
 export async function renderBackground(mount, settings, saveSettings) {
   const bg = settings.background || {};
   const enabled = bg.enabled !== false;
   if (!enabled) {
-    mount.innerHTML = "";
-    mount.style.cssText = "";
-    delete mount.dataset.phase;
-    delete mount.dataset.weather;
+    resetBackgroundMount(mount);
     return () => {};
   }
 
@@ -588,17 +625,13 @@ export async function renderBackground(mount, settings, saveSettings) {
 
   // ---- Static background kinds (no animation loop needed) ----
   if (kind === "solid") {
-    mount.innerHTML = "";
-    delete mount.dataset.phase;
-    delete mount.dataset.weather;
+    resetBackgroundMount(mount);
     mount.style.background = bg.solid || "#1e1e2e";
     return () => {};
   }
 
   if (kind === "gradient") {
-    mount.innerHTML = "";
-    delete mount.dataset.phase;
-    delete mount.dataset.weather;
+    resetBackgroundMount(mount);
     const g = bg.gradient || { from: "#1e1e2e", to: "#313244", angle: 135 };
     mount.style.background = `linear-gradient(${g.angle}deg, ${g.from}, ${g.to})`;
     return () => {};
@@ -607,8 +640,7 @@ export async function renderBackground(mount, settings, saveSettings) {
   if (kind === "image-url" || kind === "image-upload") {
     const src = kind === "image-url" ? bg.imageUrl : bg.imageData;
     if (!src) {
-      mount.innerHTML = "";
-      mount.style.background = "#1e1e2e";
+      applyFallbackBackground(mount, "missing");
       return () => {};
     }
     applyImageBackground(mount, src, bg);
@@ -616,14 +648,14 @@ export async function renderBackground(mount, settings, saveSettings) {
   }
 
   if (kind === "bing-daily") {
-    mount.innerHTML = "";
-    delete mount.dataset.phase;
-    delete mount.dataset.weather;
+    applyFallbackBackground(mount, "loading");
 
     const today = new Date().toISOString().slice(0, 10);
     const cached = bg.bingDailyCache;
+    let hasImage = false;
 
     const applyBing = (url) => {
+      hasImage = true;
       applyImageBackground(mount, url, bg);
     };
 
@@ -637,18 +669,22 @@ export async function renderBackground(mount, settings, saveSettings) {
         const path = data?.images?.[0]?.url;
         if (path) {
           const url = `https://www.bing.com${path}`;
+          applyBing(url);
           if (typeof saveSettings === "function") {
             settings.background.bingDailyCache = { url, date: today };
             await saveSettings(settings);
           }
-          applyBing(url);
         }
-      } catch { /* keep cached or blank */ }
+        if (!hasImage) applyFallbackBackground(mount, "error");
+      } catch {
+        if (!hasImage) applyFallbackBackground(mount, "error");
+      }
     }
     return () => {};
   }
 
   // ---- Animated (default) ----
+  resetBackgroundMount(mount);
 
   // Build the scaffold once. Layers are ordered low-to-high so cascade
   // matches z-stacking — sky-tinted background first, foreground last.
@@ -798,15 +834,17 @@ export async function renderBackground(mount, settings, saveSettings) {
   const SNOW_SEASON_GAP = 30 * 86400000; // 30 days
   const FIRST_SNOW_WINDOW = 86400000;    // 24 h
   async function loadFirstSnow() {
-    if (!chrome?.storage?.local) return 0;
+    const chromeApi = globalThis.chrome;
+    if (!chromeApi?.storage?.local) return 0;
     try {
-      const r = await chrome.storage.local.get(FIRST_SNOW_KEY);
+      const r = await chromeApi.storage.local.get(FIRST_SNOW_KEY);
       return r[FIRST_SNOW_KEY] || 0;
     } catch { return 0; }
   }
   async function saveFirstSnow(ms) {
-    if (!chrome?.storage?.local) return;
-    try { await chrome.storage.local.set({ [FIRST_SNOW_KEY]: ms }); } catch {}
+    const chromeApi = globalThis.chrome;
+    if (!chromeApi?.storage?.local) return;
+    try { await chromeApi.storage.local.set({ [FIRST_SNOW_KEY]: ms }); } catch {}
   }
   mount._bgFirstSnowAt = await loadFirstSnow();
   const checkFirstSnow = async () => {
@@ -882,6 +920,8 @@ export async function renderBackground(mount, settings, saveSettings) {
   };
   scheduleRollover();
 
+  const motionAllowed = () => !prefersReducedMotion();
+
   // ---- Shooting stars: random transient streaks during night phases.
   // Frequency boosts on known meteor-shower peak dates. We always fire
   // one within the first 8s of load so users immediately see the system
@@ -893,7 +933,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     p === "nautical-dusk" || p === "nautical-dawn";
 
   function spawnShootingStar() {
-    if (!shootingHost) return;
+    if (!shootingHost || !motionAllowed()) return;
     const star = document.createElement("div");
     star.className = "bg-shooting-star";
     // Random position in the upper half of the sky.
@@ -916,20 +956,22 @@ export async function renderBackground(mount, settings, saveSettings) {
       const allowed = isNightPhase(mount.dataset.phase) &&
         weather !== "storm" && weather !== "rain" && weather !== "heavy-rain" &&
         weather !== "fog" && weather !== "overcast";
-      if (allowed) spawnShootingStar();
+      if (motionAllowed() && allowed) spawnShootingStar();
       scheduleShootingStar();
     }, delay);
   }
-  scheduleShootingStar();
+  if (motionAllowed()) scheduleShootingStar();
 
   // Page-load celebration: one star within ~3-8 s of load whenever the
   // sky can show one (regardless of meteor schedule).
-  const initialStarTimer = setTimeout(() => {
-    const allowed = isNightPhase(mount.dataset.phase) &&
-      weather !== "storm" && weather !== "rain" && weather !== "heavy-rain" &&
-      weather !== "fog" && weather !== "overcast";
-    if (allowed) spawnShootingStar();
-  }, 3000 + Math.random() * 5000);
+  const initialStarTimer = motionAllowed()
+    ? setTimeout(() => {
+      const allowed = isNightPhase(mount.dataset.phase) &&
+        weather !== "storm" && weather !== "rain" && weather !== "heavy-rain" &&
+        weather !== "fog" && weather !== "overcast";
+      if (motionAllowed() && allowed) spawnShootingStar();
+    }, 3000 + Math.random() * 5000)
+    : null;
 
   // ---- Bird flock: V-formation crossing the sky during clear daytime.
   // Reuses a single hosted SVG; we trigger a CSS animation by toggling
@@ -942,7 +984,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     birdTimer = setTimeout(() => {
       const dayPhase = ["morning", "midday", "afternoon", "golden-hour", "sunrise"].includes(mount.dataset.phase);
       const calm = weather === "clear" || weather === "cloudy";
-      if (birdsHost && dayPhase && calm) {
+      if (motionAllowed() && birdsHost && dayPhase && calm) {
         // Vary altitude per pass.
         birdsHost.style.setProperty("--bird-y", `${15 + Math.random() * 30}%`);
         // Re-trigger the keyframe by removing/adding the active class.
@@ -956,15 +998,17 @@ export async function renderBackground(mount, settings, saveSettings) {
   }
   // Trigger one flyover ~5s after first paint so users see the feature
   // sooner than the 1.5-min cadence would otherwise allow.
-  const initialBirdTimer = setTimeout(() => {
-    const dayPhase = ["morning", "midday", "afternoon", "golden-hour", "sunrise"].includes(mount.dataset.phase);
-    const calm = weather === "clear" || weather === "cloudy";
-    if (birdsHost && dayPhase && calm) {
-      birdsHost.style.setProperty("--bird-y", `${15 + Math.random() * 30}%`);
-      birdsHost.classList.add("bg-birds-host--flying");
-    }
-  }, 5000);
-  scheduleBirdFlock();
+  const initialBirdTimer = motionAllowed()
+    ? setTimeout(() => {
+      const dayPhase = ["morning", "midday", "afternoon", "golden-hour", "sunrise"].includes(mount.dataset.phase);
+      const calm = weather === "clear" || weather === "cloudy";
+      if (motionAllowed() && birdsHost && dayPhase && calm) {
+        birdsHost.style.setProperty("--bird-y", `${15 + Math.random() * 30}%`);
+        birdsHost.classList.add("bg-birds-host--flying");
+      }
+    }, 5000)
+    : null;
+  if (motionAllowed()) scheduleBirdFlock();
 
   // ---- Plane lights: small blinking dot crossing the sky at dusk/night.
   // Cheaper than birds — just one element with a long linear translation
@@ -978,7 +1022,7 @@ export async function renderBackground(mount, settings, saveSettings) {
                         "astronomical-night", "astronomical-dawn", "nautical-dawn"]
                        .includes(mount.dataset.phase);
       const calm = weather === "clear" || weather === "cloudy";
-      if (planeHost && eligible && calm) {
+      if (motionAllowed() && planeHost && eligible && calm) {
         const plane = document.createElement("div");
         plane.className = "bg-plane";
         plane.style.setProperty("--plane-y", `${10 + Math.random() * 25}%`);
@@ -990,7 +1034,7 @@ export async function renderBackground(mount, settings, saveSettings) {
       schedulePlane();
     }, delay);
   }
-  schedulePlane();
+  if (motionAllowed()) schedulePlane();
 
   // ---- Bats: same V-formation pattern as birds but at dusk only.
   const batsHost = mount.querySelector(".bg-bats-host");
@@ -1000,7 +1044,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     batTimer = setTimeout(() => {
       const dusky = ["dusk", "nautical-dusk", "astronomical-dusk"].includes(mount.dataset.phase);
       const calm = weather === "clear" || weather === "cloudy";
-      if (batsHost && dusky && calm) {
+      if (motionAllowed() && batsHost && dusky && calm) {
         batsHost.style.setProperty("--bat-y", `${20 + Math.random() * 40}%`);
         batsHost.classList.remove("bg-bats-host--flying");
         void batsHost.offsetWidth;
@@ -1009,7 +1053,7 @@ export async function renderBackground(mount, settings, saveSettings) {
       scheduleBatFlock();
     }, delay);
   }
-  scheduleBatFlock();
+  if (motionAllowed()) scheduleBatFlock();
 
   // ---- Butterflies: spring/summer temperate, daytime, low altitude.
   const butterfliesHost = mount.querySelector(".bg-butterflies-host");
@@ -1021,7 +1065,7 @@ export async function renderBackground(mount, settings, saveSettings) {
       const eligibleBiome  = mount.dataset.biome === "temperate";
       const dayPhase = ["morning", "midday", "afternoon", "golden-hour"].includes(mount.dataset.phase);
       const calm = weather === "clear" || weather === "cloudy";
-      if (butterfliesHost && eligibleSeason && eligibleBiome && dayPhase && calm) {
+      if (motionAllowed() && butterfliesHost && eligibleSeason && eligibleBiome && dayPhase && calm) {
         const bf = document.createElement("div");
         bf.className = "bg-butterfly";
         bf.style.setProperty("--bf-y", `${50 + Math.random() * 25}%`);
@@ -1033,14 +1077,15 @@ export async function renderBackground(mount, settings, saveSettings) {
       scheduleButterfly();
     }, delay);
   }
-  scheduleButterfly();
+  if (motionAllowed()) scheduleButterfly();
 
   // ---- NYE fireworks: random bursts all day on Dec 31. Each burst is a
   // single SVG bloom of N radial spikes spawned at a random sky position.
   const fireworksHost = mount.querySelector(".bg-fireworks-host");
   let fireworksTimer = null;
+  const fireworkBurstTimers = [];
   function spawnFirework() {
-    if (!fireworksHost) return;
+    if (!fireworksHost || !motionAllowed()) return;
     const fw = document.createElement("div");
     fw.className = "bg-firework";
     fw.style.setProperty("--fw-x", `${10 + Math.random() * 80}%`);
@@ -1057,19 +1102,27 @@ export async function renderBackground(mount, settings, saveSettings) {
     fireworksHost.appendChild(fw);
     setTimeout(() => fw.remove(), 1800);
   }
+  function queueFirework(delay) {
+    const timer = setTimeout(() => {
+      const idx = fireworkBurstTimers.indexOf(timer);
+      if (idx >= 0) fireworkBurstTimers.splice(idx, 1);
+      spawnFirework();
+    }, delay);
+    fireworkBurstTimers.push(timer);
+  }
   function scheduleFirework() {
     const delay = 4000 + Math.random() * 9000; // 4-13s between bursts
     fireworksTimer = setTimeout(() => {
-      if (fireworksHost && mount.dataset.holiday === "nye") {
+      if (motionAllowed() && fireworksHost && mount.dataset.holiday === "nye") {
         spawnFirework();
         // Burst sometimes spawns 2-3 in quick succession for finale feel.
-        if (Math.random() < 0.3) setTimeout(spawnFirework, 250);
-        if (Math.random() < 0.15) setTimeout(spawnFirework, 500);
+        if (Math.random() < 0.3) queueFirework(250);
+        if (Math.random() < 0.15) queueFirework(500);
       }
       scheduleFirework();
     }, delay);
   }
-  scheduleFirework();
+  if (motionAllowed()) scheduleFirework();
 
   // ---- Birthday balloons: drift up across the whole sky.
   const balloonsHost = mount.querySelector(".bg-balloons-host");
@@ -1077,7 +1130,7 @@ export async function renderBackground(mount, settings, saveSettings) {
   function scheduleBalloon() {
     const delay = 18000 + Math.random() * 30000;
     balloonTimer = setTimeout(() => {
-      if (balloonsHost && mount.dataset.holiday === "birthday") {
+      if (motionAllowed() && balloonsHost && mount.dataset.holiday === "birthday") {
         const b = document.createElement("div");
         b.className = "bg-balloon";
         b.style.setProperty("--b-x", `${5 + Math.random() * 90}%`);
@@ -1089,7 +1142,7 @@ export async function renderBackground(mount, settings, saveSettings) {
       scheduleBalloon();
     }, delay);
   }
-  scheduleBalloon();
+  if (motionAllowed()) scheduleBalloon();
 
   // ---- Whale fluke: rare breach for coastal locations during daylight.
   const whaleHost = mount.querySelector(".bg-whale-host");
@@ -1097,7 +1150,7 @@ export async function renderBackground(mount, settings, saveSettings) {
   function scheduleWhale() {
     const delay = 180000 + Math.random() * 240000; // 3-7min
     whaleTimer = setTimeout(() => {
-      if (whaleHost && mount.dataset.locality === "coastal" &&
+      if (motionAllowed() && whaleHost && mount.dataset.locality === "coastal" &&
           ["morning", "midday", "afternoon", "golden-hour"].includes(mount.dataset.phase) &&
           (weather === "clear" || weather === "cloudy")) {
         const w = document.createElement("div");
@@ -1110,7 +1163,7 @@ export async function renderBackground(mount, settings, saveSettings) {
       scheduleWhale();
     }, delay);
   }
-  scheduleWhale();
+  if (motionAllowed()) scheduleWhale();
 
   // ---- Rainbow tracking happens via mount fields so the closures used
   // by updateScene + the weather refresh interval can both update it.
@@ -1125,11 +1178,11 @@ export async function renderBackground(mount, settings, saveSettings) {
   // ---- Mouse parallax: mountains shift left/right slightly with cursor.
   // Use one global handler on the document; ignore if reduced motion.
   const onMouseMove = (e) => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!motionAllowed()) return;
     const x = (e.clientX / window.innerWidth - 0.5) * 2; // -1..1
     mount.style.setProperty("--parallax-x", x.toFixed(3));
   };
-  document.addEventListener("mousemove", onMouseMove, { passive: true });
+  if (motionAllowed()) document.addEventListener("mousemove", onMouseMove, { passive: true });
 
   return () => {
     clearInterval(interval);
@@ -1143,6 +1196,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     if (batTimer) clearTimeout(batTimer);
     if (butterflyTimer) clearTimeout(butterflyTimer);
     if (fireworksTimer) clearTimeout(fireworksTimer);
+    for (const timer of fireworkBurstTimers) clearTimeout(timer);
     if (balloonTimer) clearTimeout(balloonTimer);
     if (whaleTimer) clearTimeout(whaleTimer);
     document.removeEventListener("mousemove", onMouseMove);
@@ -1150,12 +1204,11 @@ export async function renderBackground(mount, settings, saveSettings) {
 }
 
 function applyImageBackground(mount, src, bg) {
-  mount.innerHTML = "";
-  delete mount.dataset.phase;
-  delete mount.dataset.weather;
+  resetBackgroundMount(mount);
+  mount.dataset.backgroundState = "image";
   const blur = Math.min(20, Math.max(0, bg.blur ?? 0));
   const brightness = Math.min(150, Math.max(50, bg.brightness ?? 100));
-  mount.style.backgroundImage    = `url(${CSS.escape ? src : JSON.stringify(src)})`;
+  mount.style.backgroundImage    = `url(${JSON.stringify(src)})`;
   mount.style.backgroundSize     = "cover";
   mount.style.backgroundPosition = "center";
   mount.style.backgroundRepeat   = "no-repeat";
@@ -1163,11 +1216,6 @@ function applyImageBackground(mount, src, bg) {
     ? `blur(${blur}px) brightness(${brightness / 100})`
     : "";
 }
-
-// Tracks whether we've painted yet, so the very first call snaps to the
-// correct colors instead of CSS-interpolating from the @property dark-gray
-// initial values (which made early-evening loads feel like a sunrise).
-let firstScenePainted = false;
 
 function updateScene(mount, weather, sunTimes) {
   const now = new Date();
@@ -1311,7 +1359,7 @@ function updateScene(mount, weather, sunTimes) {
     }
   };
 
-  if (!firstScenePainted) {
+  if (!mount._bgFirstScenePainted) {
     // Snap the first paint to the correct colors so we never visibly
     // transition from the @property dark-gray initial values.
     mount.classList.add("bg--no-transition");
@@ -1319,7 +1367,7 @@ function updateScene(mount, weather, sunTimes) {
     // Force a reflow before re-enabling transitions.
     void mount.offsetWidth;
     mount.classList.remove("bg--no-transition");
-    firstScenePainted = true;
+    mount._bgFirstScenePainted = true;
   } else {
     apply();
   }
