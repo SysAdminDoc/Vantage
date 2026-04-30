@@ -3101,6 +3101,10 @@ a {
   color: var(--text);
   padding: var(--s-1) 0;
   outline: none;
+  transition: border-color var(--t-fast);
+}
+.note-title-input:focus {
+  border-bottom-color: var(--accent);
 }
 
 .note-content-input {
@@ -3110,12 +3114,17 @@ a {
   resize: vertical;
   background: transparent;
   border: none;
+  border-bottom: 1px solid transparent;
   color: var(--subtext1);
   font-size: var(--text-sm);
   line-height: 1.6;
   padding: var(--s-2) 0;
   outline: none;
   font-family: inherit;
+  transition: border-color var(--t-fast);
+}
+.note-content-input:focus {
+  border-bottom-color: var(--accent);
 }
 
 .note-actions {
