@@ -88,7 +88,7 @@ function buildPreview(note, items, cfg, settings, saveItems, rerender) {
   card.appendChild(
     note.content
       ? el("div", { class: "note-preview__content" }, [note.content.slice(0, 140) + (note.content.length > 140 ? "…" : "")])
-      : el("div", { class: "note-preview__empty" }, ["Empty — tap to edit"])
+      : el("div", { class: "note-preview__empty" }, ["Empty — click to edit"])
   );
   return card;
 }
@@ -102,7 +102,7 @@ function buildEditor(note, items, cfg, settings, saveItems, rerender, onAttachDr
     colorRow.appendChild(el("button", {
       type: "button",
       class: `note-color-btn note-color-btn--${color}${note.color === color ? " note-color-btn--active" : ""}`,
-      "aria-label": `${color}`,
+      "aria-label": color.charAt(0).toUpperCase() + color.slice(1),
       onClick: () => { note.color = color; saveItems(); rerender(note.id); }
     }));
   }
