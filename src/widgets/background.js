@@ -37,6 +37,7 @@
 
 import { getWeatherData, detectLocation } from "../utils/weather-source.js";
 import { getSunTimes } from "../utils/sun-calc.js";
+import { getBackgroundPreview, hasBackgroundPreview } from "../utils/background-preview.js";
 
 const HOUR = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR;
@@ -160,6 +161,7 @@ const HOLIDAY_VALUES = new Set([
 ]);
 const MOTION_VALUES = new Set(["system", "still", "calm", "full"]);
 const ATMOSPHERE_VALUES = new Set(["soft", "balanced", "vivid"]);
+const READABILITY_VALUES = new Set(["minimal", "standard", "high"]);
 
 function normalizeWeatherOverride(value) {
   return WEATHER_VALUES.has(value) ? value : null;
@@ -179,6 +181,10 @@ function normalizeMotionSetting(value) {
 
 function normalizeAtmosphereSetting(value) {
   return ATMOSPHERE_VALUES.has(value) ? value : "balanced";
+}
+
+function normalizeReadabilitySetting(value) {
+  return READABILITY_VALUES.has(value) ? value : "standard";
 }
 
 // Per-weather sky palette overrides. We replace the keyframe-computed
@@ -836,6 +842,8 @@ const BACKGROUND_DATA_KEYS = [
   "firstSnow",
   "motion",
   "atmosphere",
+  "readability",
+  "preview",
   "backgroundState"
 ];
 
@@ -858,6 +866,7 @@ function resetBackgroundMount(mount) {
   mount._bgFirstScenePainted = false;
   mount._bgMotionMode = "full";
   mount._bgAtmosphere = "balanced";
+  mount._bgReadability = "standard";
 }
 
 function applyFallbackBackground(mount, state = "fallback") {
@@ -965,8 +974,10 @@ export async function renderBackground(mount, settings, saveSettings) {
   resetBackgroundMount(mount);
   mount._bgMotionMode = resolveMotionMode(bg.motion);
   mount._bgAtmosphere = normalizeAtmosphereSetting(bg.atmosphere);
+  mount._bgReadability = normalizeReadabilitySetting(bg.readability);
   mount.dataset.motion = mount._bgMotionMode;
   mount.dataset.atmosphere = mount._bgAtmosphere;
+  mount.dataset.readability = mount._bgReadability;
 
   // Build the scaffold once. Layers are ordered low-to-high so cascade
   // matches z-stacking — sky-tinted background first, foreground last.
@@ -1030,8 +1041,12 @@ export async function renderBackground(mount, settings, saveSettings) {
   // a dark void while we wait on geolocation (~6s) and the weather fetch.
   // We refine in place once real data arrives.
   const qaParams = new URLSearchParams(globalThis.location?.search || "");
-  const forcedWeather = normalizeWeatherOverride(qaParams.get("qaWeather"));
-  const forcedLocality = normalizeLocalityOverride(qaParams.get("qaLocality"));
+  const preview = getBackgroundPreview();
+  if (hasBackgroundPreview(preview)) mount.dataset.preview = "on";
+  const forcedWeather = normalizeWeatherOverride(qaParams.get("qaWeather"))
+    || normalizeWeatherOverride(preview.weather);
+  const forcedLocality = normalizeLocalityOverride(qaParams.get("qaLocality"))
+    || normalizeLocalityOverride(preview.locality);
   const forcedLat = parseSceneCoordinate(qaParams.get("qaLat"), -90, 90);
   const forcedLon = parseSceneCoordinate(qaParams.get("qaLon"), -180, 180);
   const forcedLocation = forcedLat == null || forcedLon == null
@@ -1039,9 +1054,11 @@ export async function renderBackground(mount, settings, saveSettings) {
     : { latitude: forcedLat, longitude: forcedLon, label: "QA scene" };
   let weather = forcedWeather || "clear";
   let location = forcedLocation || settings.weather?.location || null;
-  const qaDate = qaParams.get("qaDate");
-  const qaTime = qaParams.get("qaTime");
-  const forcedHoliday = normalizeHolidayOverride(qaParams.get("qaHoliday") || settings.background?.qaHoliday);
+  const qaDate = qaParams.get("qaDate") || preview.date;
+  const qaTime = qaParams.get("qaTime") || preview.time;
+  const forcedHoliday = normalizeHolidayOverride(qaParams.get("qaHoliday"))
+    || normalizeHolidayOverride(preview.holiday)
+    || normalizeHolidayOverride(settings.background?.qaHoliday);
   const birthday = parseBirthdayMMDD(
     qaParams.get("qaBirthday") || settings.background?.qaBirthday || settings.greeting?.birthday
   );
