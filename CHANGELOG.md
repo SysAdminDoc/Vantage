@@ -11,6 +11,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Workspace system-theme refresh** — active workspaces that use the System theme now respond to browser/OS color-scheme changes even when the base profile uses a fixed theme.
 - **Live reduced-motion refresh** — animated backgrounds now re-resolve Motion when browser/OS reduced-motion preferences change while Vantage is open.
 - **Motion settings clarity** — the Background panel now explains whether System motion currently resolves to Full or Still.
+- **Accent-aware fallback atmosphere** — the theme gradient shown when backgrounds are off now follows the active accent color instead of fixed mauve/blue tones.
 
 ## v0.8.0 — 2026-04-30
 
