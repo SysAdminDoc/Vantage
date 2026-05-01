@@ -100,8 +100,10 @@ Six wallpaper modes:
 - **Image upload** — local file → base64 in storage
 - **Bing daily** — pulls the current Bing image of the day, cached per-day
 
+Animated mode includes **Motion** controls (System / Still / Calm / Full) and **Atmosphere** controls (Soft / Balanced / Vivid), so the live scene can be calmer, fully still, or more visually present without changing the dashboard layout.
+
 ### Personalization
-- **Catppuccin Mocha (dark) + Latte (light)** with full design-token system, careful tonal layering, refined shadows, and ambient gradient backdrop.
+- **System, Catppuccin Mocha, Macchiato, Frappe, and Latte themes** with full design-token system, careful tonal layering, refined shadows, and ambient gradient backdrop.
 - **9-color accent picker** — Mauve · Blue · Green · Peach · Teal · Lavender · Red · Flamingo · Sky.
 - **Custom CSS injection** — paste any CSS into the textarea; live-applies as you type.
 - **Locality scenery override** — pick coastal / urban / desert / default, or auto.
@@ -192,8 +194,8 @@ Click the gear icon in the top-right of any new tab. Or click the layout-grid ic
 
 Highlights:
 
-- **Theme** — Mocha (dark) or Latte (light), plus 9 accent colors and a custom CSS textarea.
-- **Background** — Animated / Solid / Gradient / Image URL / Image upload / Bing daily.
+- **Theme** — System, Mocha, Macchiato, Frappe, or Latte, plus 9 accent colors and a custom CSS textarea.
+- **Background** — Animated / Solid / Gradient / Image URL / Image upload / Bing daily. Animated includes Motion and Atmosphere controls.
 - **Greeting** — display name + birthday (MM-DD; triggers all-day balloons on the day).
 - **Scenery** — Auto / Coastal / Urban / Desert / None — overrides the auto-detected biome scenery.
 - **Search** — pick the default engine, or supply a custom URL like `https://my-searx.example.com/search?q=%s`.
