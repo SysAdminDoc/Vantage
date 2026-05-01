@@ -482,7 +482,6 @@ a {
   position: absolute;
   inset: 0;
   background-image:
-    url("../assets/backgrounds/starfield.png"),
     radial-gradient(1px 1px at 13% 18%, white, transparent 60%),
     radial-gradient(1px 1px at 27% 9%,  white, transparent 60%),
     radial-gradient(1.5px 1.5px at 41% 22%, white, transparent 60%),
@@ -508,6 +507,24 @@ a {
   opacity: 0;
   transition: opacity 12s linear;
   animation: star-twinkle 6s ease-in-out infinite alternate;
+}
+
+.bg-stars::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bg[data-phase="dusk"]               .bg-stars::before,
+.bg[data-phase="nautical-dusk"]      .bg-stars::before,
+.bg[data-phase="astronomical-dusk"]  .bg-stars::before,
+.bg[data-phase="night"]              .bg-stars::before,
+.bg[data-phase="astronomical-night"] .bg-stars::before,
+.bg[data-phase="astronomical-dawn"]  .bg-stars::before,
+.bg[data-phase="nautical-dawn"]      .bg-stars::before,
+.bg[data-phase="pre-dawn"]           .bg-stars::before {
+  background: url("../assets/backgrounds/starfield.png") center top / cover no-repeat;
 }
 
 .bg[data-phase="dusk"]               .bg-stars { opacity: 0.55; }
