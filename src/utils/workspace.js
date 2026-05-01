@@ -2,7 +2,7 @@
 
 /**
  * Apply a workspace snapshot over the base settings, returning a merged copy.
- * Workspaces override: accent, background, layout.panels, quicklinks, and
+ * Workspaces override visual atmosphere, layout.panels, quicklinks, and
  * per-widget enabled flags stored under snapshot.enabled.
  */
 export function applyWorkspace(baseSettings, workspace) {
@@ -11,7 +11,9 @@ export function applyWorkspace(baseSettings, workspace) {
   const snap = workspace.snapshot;
   const merged = { ...s };
 
+  if (snap.theme !== undefined)      merged.theme = snap.theme;
   if (snap.accent !== undefined)     merged.accent = snap.accent;
+  if (snap.appearance !== undefined) merged.appearance = { ...s.appearance, ...snap.appearance };
   if (snap.background !== undefined) merged.background = { ...s.background, ...snap.background };
   if (snap.layout !== undefined)     merged.layout    = { ...s.layout,    ...snap.layout };
   if (snap.quicklinks !== undefined) merged.quicklinks = { ...s.quicklinks, ...snap.quicklinks };
@@ -47,7 +49,9 @@ export function captureSnapshot(settings) {
     if (typeof settings[k]?.enabled === "boolean") enabled[k] = settings[k].enabled;
   }
   return {
+    theme:      settings.theme,
     accent:     settings.accent,
+    appearance: { ...settings.appearance },
     background: { ...settings.background },
     layout:     { ...settings.layout },
     quicklinks: { ...settings.quicklinks },

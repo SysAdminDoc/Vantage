@@ -156,7 +156,7 @@ const DEFAULTS = {
   },
   workspaces: {
     active: null,            // workspace id or null (null = base settings)
-    list: []                 // [{ id, name, snapshot: { accent, background, layout, quicklinks, enabled:{} } }]
+    list: []                 // [{ id, name, snapshot: { theme, accent, appearance, background, layout, quicklinks, enabled:{} } }]
   },
   containerMap: {},          // Firefox-only: { cookieStoreId: workspaceId }
   onboardingComplete: false

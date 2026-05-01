@@ -669,7 +669,7 @@ function buildFeedFiltersSection(settings, onChange) {
 function buildWorkspacesSection(settings, onChange) {
   const sec = section("Workspaces", "layers2");
   sec.appendChild(el("p", { class: "settings-section__hint" }, [
-    "Named layout profiles — each can override accent, background, layout, quick links, and per-widget toggles."
+    "Named profiles — each can override theme, accent, scenery, background, layout, quick links, and per-widget toggles."
   ]));
 
   const list = settings.workspaces?.list ?? [];
