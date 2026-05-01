@@ -29,12 +29,21 @@ export function applyWorkspace(baseSettings, workspace) {
 }
 
 /**
+ * Resolve the settings object that should drive rendering for the current
+ * active workspace.
+ */
+export function resolveWorkspaceSettings(settings) {
+  const activeWs = getActiveWorkspace(settings);
+  return activeWs ? applyWorkspace({ ...settings }, activeWs) : settings;
+}
+
+/**
  * Get the active workspace object from settings, or null.
  */
 export function getActiveWorkspace(settings) {
-  const id = settings.workspaces?.active;
+  const id = settings?.workspaces?.active;
   if (!id) return null;
-  return settings.workspaces.list.find(w => w.id === id) ?? null;
+  return settings.workspaces?.list?.find(w => w.id === id) ?? null;
 }
 
 /**

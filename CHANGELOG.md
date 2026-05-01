@@ -8,6 +8,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Theme expansion** — Appearance now supports System, Mocha, Macchiato, Frappe, and Latte. System resolves from `prefers-color-scheme` and updates live when the browser or OS color scheme changes.
 - **Animated background controls** — Live backgrounds now expose Motion (System, Still, Calm, Full) and Atmosphere (Soft, Balanced, Vivid) controls. Reduced-motion preferences always force Still; Calm keeps ambient sky/weather movement while disabling rare flyovers, bursts, and parallax.
 - **Workspace visual profiles** — workspace snapshots now include theme and scenery, and switching workspaces reapplies the effective theme/accent alongside the saved background.
+- **Workspace system-theme refresh** — active workspaces that use the System theme now respond to browser/OS color-scheme changes even when the base profile uses a fixed theme.
 
 ## v0.8.0 — 2026-04-30
 
