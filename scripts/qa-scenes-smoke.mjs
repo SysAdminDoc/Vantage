@@ -10,6 +10,7 @@ const requiredFiles = [
   "src/widgets/background.js",
   "src/style.css",
   "src/utils/browser-shim.js",
+  "src/utils/visual-qa.js",
   "src/utils/background-preview.js"
 ];
 
@@ -42,26 +43,37 @@ for (const src of sceneUrls) {
 }
 
 const settings = readRequired("src/settings.js");
+const main = readRequired("src/main.js");
 const background = readRequired("src/widgets/background.js");
 const styles = readRequired("src/style.css");
 const preview = readRequired("src/utils/background-preview.js");
+const visualQa = readRequired("src/utils/visual-qa.js");
 const newtab = readRequired("newtab.html");
 
 const probes = [
   [settings, "BACKGROUND_PRESETS", "settings background presets"],
   [settings, "buildScenePreviewControls", "settings scene preview controls"],
   [settings, "Readability", "settings readability control"],
+  [main, "getVisualEffectiveSettings", "visual QA render isolation"],
   [background, "getBackgroundPreview", "renderer preview hook"],
   [background, "dataset.readability", "renderer readability data attribute"],
   [styles, ".visual-preset-grid", "preset styles"],
   [styles, ".scene-preview__grid", "preview styles"],
   [styles, "[data-readability=\"high\"]", "readability styles"],
   [preview, "BACKGROUND_PREVIEW_EVENT", "preview event export"],
+  [visualQa, "applyVisualQaOverrides", "visual QA override helper"],
+  [visualQa, "qaTheme", "theme QA query support"],
   [newtab, "src/utils/browser-shim.js", "local browser API shim"]
 ];
 
 for (const [source, needle, label] of probes) {
   if (!source.includes(needle)) fail(`Missing ${label}`);
+}
+
+for (const param of ["qaTheme", "qaAccent", "qaMotion", "qaAtmosphere", "qaReadability"]) {
+  if (!sceneUrls.some((src) => new URL(src, "http://vantage.local/").searchParams.has(param))) {
+    fail(`No QA scene exercises ${param}`);
+  }
 }
 
 console.log(`[qa-scenes] OK: ${sceneUrls.length} scenes and visual-control hooks verified.`);

@@ -33,6 +33,7 @@ import { makeReorderable, arrayMove } from "./utils/drag.js";
 import { applyThemePreference, onSystemThemeChange } from "./utils/theme.js";
 import { applyWorkspace, getActiveWorkspace, captureSnapshot, resolveWorkspaceSettings } from "./utils/workspace.js";
 import { BACKGROUND_PREVIEW_EVENT } from "./utils/background-preview.js";
+import { applyVisualQaOverrides } from "./utils/visual-qa.js";
 window._vantageWorkspaceHelpers = { captureSnapshot: () => captureSnapshot(currentSettings) };
 
 let currentSettings;
@@ -82,8 +83,9 @@ async function init() {
   // Firefox container mapping — detect active container, apply workspace
   await applyContainerWorkspace();
 
-  applyTheme(currentSettings);
-  applyAccent(currentSettings);
+  const initialEffectiveSettings = getVisualEffectiveSettings();
+  applyTheme(initialEffectiveSettings);
+  applyAccent(initialEffectiveSettings);
   applyCustomCSS(currentSettings.customCSS);
   injectStaticIcons();
   watchSystemTheme();
@@ -160,13 +162,14 @@ function mountAll() {
 
   // Apply active workspace snapshot once; reused for all mounts below
   const effectiveSettings = getEffectiveSettings();
-  applyTheme(effectiveSettings);
-  applyAccent(effectiveSettings);
+  const visualSettings = getVisualEffectiveSettings(effectiveSettings);
+  applyTheme(visualSettings);
+  applyAccent(visualSettings);
 
   // Background
   renderBackground(
     document.getElementById("background-mount"),
-    effectiveSettings,
+    visualSettings,
     saveSettings
   ).then((teardown) => { backgroundTeardown = teardown; })
    .catch((err) => console.error("[Vantage] background failed", err));
@@ -479,10 +482,14 @@ function getEffectiveSettings() {
   return resolveWorkspaceSettings(currentSettings);
 }
 
+function getVisualEffectiveSettings(base = getEffectiveSettings()) {
+  return applyVisualQaOverrides(base);
+}
+
 function watchSystemTheme() {
   if (systemThemeCleanup) return;
   systemThemeCleanup = onSystemThemeChange(() => {
-    const effectiveSettings = getEffectiveSettings();
+    const effectiveSettings = getVisualEffectiveSettings();
     if (effectiveSettings?.theme === "system") {
       applyTheme(effectiveSettings);
     }
@@ -492,7 +499,7 @@ function watchSystemTheme() {
 function watchReducedMotion() {
   if (reducedMotionCleanup) return;
   reducedMotionCleanup = onReducedMotionChange(() => {
-    const effectiveSettings = getEffectiveSettings();
+    const effectiveSettings = getVisualEffectiveSettings();
     const background = effectiveSettings?.background;
     const isLiveBackground =
       background?.enabled !== false &&
