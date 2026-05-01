@@ -150,6 +150,14 @@ const LOCALITY_VALUES = new Set([
   "meadow",
   "default"
 ]);
+const HOLIDAY_VALUES = new Set([
+  "halloween",
+  "christmas-eve",
+  "christmas-day",
+  "nye",
+  "new-year-day",
+  "birthday"
+]);
 
 function normalizeWeatherOverride(value) {
   return WEATHER_VALUES.has(value) ? value : null;
@@ -157,6 +165,10 @@ function normalizeWeatherOverride(value) {
 
 function normalizeLocalityOverride(value) {
   return LOCALITY_VALUES.has(value) ? value : null;
+}
+
+function normalizeHolidayOverride(value) {
+  return HOLIDAY_VALUES.has(value) ? value : null;
 }
 
 // Per-weather sky palette overrides. We replace the keyframe-computed
@@ -498,6 +510,16 @@ const MOON_VISIBLE_PHASES = new Set([
   "astronomical-dawn",
   "nautical-dawn"
 ]);
+const HOLIDAY_NIGHT_PHASES = new Set([
+  "dusk",
+  "nautical-dusk",
+  "astronomical-dusk",
+  "night",
+  "astronomical-night",
+  "astronomical-dawn",
+  "nautical-dawn",
+  "pre-dawn"
+]);
 
 function moonSVG(phase) {
   const R = 50;
@@ -562,6 +584,21 @@ function getHoliday(date, birthdayMMDD) {
     if (m === bm && d === bd) return "birthday";
   }
   return null;
+}
+
+function isHolidayNightPhase(phase) {
+  return HOLIDAY_NIGHT_PHASES.has(phase);
+}
+
+function parseBirthdayMMDD(value) {
+  if (typeof value !== "string") return null;
+  const match = value.match(/^(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  const maxDays = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (month < 1 || month > 12 || day < 1 || day > maxDays[month - 1]) return null;
+  return `${match[1]}-${match[2]}`;
 }
 
 function parseSceneDateOverride(value) {
@@ -784,6 +821,7 @@ const BACKGROUND_DATA_KEYS = [
   "locality",
   "region",
   "holiday",
+  "holidayPhase",
   "rainbow",
   "firstSnow",
   "backgroundState"
@@ -797,6 +835,7 @@ function resetBackgroundMount(mount) {
   mount._bgLat = null;
   mount._bgLon = null;
   mount._bgBirthday = null;
+  mount._bgHolidayOverride = null;
   mount._bgLocality = null;
   mount._bgDateOverride = null;
   mount._bgTimeOverride = null;
@@ -962,13 +1001,18 @@ export async function renderBackground(mount, settings, saveSettings) {
   let location = forcedLocation || settings.weather?.location || null;
   const qaDate = qaParams.get("qaDate");
   const qaTime = qaParams.get("qaTime");
+  const forcedHoliday = normalizeHolidayOverride(qaParams.get("qaHoliday") || settings.background?.qaHoliday);
+  const birthday = parseBirthdayMMDD(
+    qaParams.get("qaBirthday") || settings.background?.qaBirthday || settings.greeting?.birthday
+  );
 
   // Seed saved scene context before the first paint. Without this, the
   // immediate render defaults to generic meadow/default scenery and the real
   // locality then fades in over the long atmospheric transition.
   mount._bgLat          = location?.latitude  ?? null;
   mount._bgLon          = location?.longitude ?? null;
-  mount._bgBirthday     = settings.greeting?.birthday || null; // "MM-DD"
+  mount._bgBirthday     = birthday; // "MM-DD"
+  mount._bgHolidayOverride = forcedHoliday;
   mount._bgLocality     = forcedLocality || settings.appearance?.locality || "auto";
   mount._bgDateOverride = parseSceneDateOverride(qaDate || settings.background?.qaDate);
   mount._bgTimeOverride = parseSceneTimeOverride(qaTime || settings.background?.qaTime);
@@ -1009,10 +1053,12 @@ export async function renderBackground(mount, settings, saveSettings) {
   // biome/season/hemisphere/holiday without re-threading through args.
   mount._bgLat       = location?.latitude  ?? null;
   mount._bgLon       = location?.longitude ?? null;
-  mount._bgBirthday  = settings.greeting?.birthday || null; // "MM-DD"
+  mount._bgBirthday  = birthday; // "MM-DD"
+  mount._bgHolidayOverride = forcedHoliday;
   mount._bgLocality  = forcedLocality || settings.appearance?.locality || "auto";
-  // Hidden QA hook for screenshots: ?qaDate=YYYY-MM-DD forces seasonal and
-  // holiday evaluation without changing the user's clock.
+  // Hidden QA hooks for screenshots: ?qaDate=YYYY-MM-DD, ?qaTime=HH:mm,
+  // ?qaHoliday=nye, and ?qaBirthday=MM-DD force scene state without changing
+  // the user's clock or saved greeting.
   mount._bgDateOverride = parseSceneDateOverride(qaDate || settings.background?.qaDate);
   mount._bgTimeOverride = parseSceneTimeOverride(qaTime || settings.background?.qaTime);
 
@@ -1314,13 +1360,13 @@ export async function renderBackground(mount, settings, saveSettings) {
   }
   if (motionAllowed()) scheduleButterfly();
 
-  // ---- NYE fireworks: random bursts all day on Dec 31. Each burst is a
-  // single SVG bloom of N radial spikes spawned at a random sky position.
+  // ---- NYE fireworks: random bursts only during twilight/night. Each burst
+  // is a single SVG bloom of N radial spikes spawned at a random sky position.
   const fireworksHost = mount.querySelector(".bg-fireworks-host");
   let fireworksTimer = null;
   const fireworkBurstTimers = [];
   function spawnFirework() {
-    if (!fireworksHost || !motionAllowed() || !isFireworksHoliday()) return;
+    if (!fireworksHost || !motionAllowed() || !isFireworksScene()) return;
     const fw = document.createElement("div");
     fw.className = "bg-firework";
     fw.style.setProperty("--fw-x", `${10 + Math.random() * 80}%`);
@@ -1348,7 +1394,7 @@ export async function renderBackground(mount, settings, saveSettings) {
   function scheduleFirework() {
     const delay = 4000 + Math.random() * 9000; // 4-13s between bursts
     fireworksTimer = setTimeout(() => {
-      if (motionAllowed() && fireworksHost && isFireworksHoliday()) {
+      if (motionAllowed() && fireworksHost && isFireworksScene()) {
         spawnFirework();
         // Burst sometimes spawns 2-3 in quick succession for finale feel.
         if (Math.random() < 0.3) queueFirework(250);
@@ -1357,8 +1403,11 @@ export async function renderBackground(mount, settings, saveSettings) {
       scheduleFirework();
     }, delay);
   }
-  function isFireworksHoliday() {
-    return mount.dataset.holiday === "nye" || mount.dataset.holiday === "new-year-day";
+  function isFireworksScene() {
+    return (
+      mount.dataset.holidayPhase === "night" &&
+      (mount.dataset.holiday === "nye" || mount.dataset.holiday === "new-year-day")
+    );
   }
   if (motionAllowed()) {
     scheduleFirework();
@@ -1548,10 +1597,17 @@ function updateScene(mount, weather, sunTimes) {
     else delete mount.dataset.region;
 
     // Holiday: 24h banner — Halloween, Christmas Eve / Day, NYE, New Year,
-    // user birthday. CSS gates jack-o-lanterns / sleigh / fireworks / balloons.
-    const holiday = getHoliday(now, mount._bgBirthday);
-    if (holiday) mount.dataset.holiday = holiday;
-    else delete mount.dataset.holiday;
+    // user birthday. Holiday phase gates night-only accents such as sleighs
+    // and fireworks while keeping calmer all-day atmosphere.
+    const holiday = mount._bgHolidayOverride || getHoliday(now, mount._bgBirthday);
+    if (holiday) {
+      mount.dataset.holiday = holiday;
+      if (isHolidayNightPhase(phase)) mount.dataset.holidayPhase = "night";
+      else delete mount.dataset.holidayPhase;
+    } else {
+      delete mount.dataset.holiday;
+      delete mount.dataset.holidayPhase;
+    }
 
     // Moon phase: paint the moon SVG in 0.05 increments to avoid re-render
     // churn. Only update when the bucketed phase changes.
