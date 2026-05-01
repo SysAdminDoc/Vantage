@@ -158,6 +158,8 @@ const HOLIDAY_VALUES = new Set([
   "new-year-day",
   "birthday"
 ]);
+const MOTION_VALUES = new Set(["system", "still", "calm", "full"]);
+const ATMOSPHERE_VALUES = new Set(["soft", "balanced", "vivid"]);
 
 function normalizeWeatherOverride(value) {
   return WEATHER_VALUES.has(value) ? value : null;
@@ -169,6 +171,14 @@ function normalizeLocalityOverride(value) {
 
 function normalizeHolidayOverride(value) {
   return HOLIDAY_VALUES.has(value) ? value : null;
+}
+
+function normalizeMotionSetting(value) {
+  return MOTION_VALUES.has(value) ? value : "system";
+}
+
+function normalizeAtmosphereSetting(value) {
+  return ATMOSPHERE_VALUES.has(value) ? value : "balanced";
 }
 
 // Per-weather sky palette overrides. We replace the keyframe-computed
@@ -824,6 +834,8 @@ const BACKGROUND_DATA_KEYS = [
   "holidayPhase",
   "rainbow",
   "firstSnow",
+  "motion",
+  "atmosphere",
   "backgroundState"
 ];
 
@@ -844,6 +856,8 @@ function resetBackgroundMount(mount) {
   mount._bgRainbowUntil = 0;
   mount._meteorBoost = 1;
   mount._bgFirstScenePainted = false;
+  mount._bgMotionMode = "full";
+  mount._bgAtmosphere = "balanced";
 }
 
 function applyFallbackBackground(mount, state = "fallback") {
@@ -853,6 +867,13 @@ function applyFallbackBackground(mount, state = "fallback") {
 
 function prefersReducedMotion() {
   return globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
+}
+
+function resolveMotionMode(value) {
+  const motion = normalizeMotionSetting(value);
+  if (prefersReducedMotion()) return "still";
+  if (motion === "system") return "full";
+  return motion;
 }
 
 export async function renderBackground(mount, settings, saveSettings) {
@@ -927,6 +948,10 @@ export async function renderBackground(mount, settings, saveSettings) {
 
   // ---- Animated (default) ----
   resetBackgroundMount(mount);
+  mount._bgMotionMode = resolveMotionMode(bg.motion);
+  mount._bgAtmosphere = normalizeAtmosphereSetting(bg.atmosphere);
+  mount.dataset.motion = mount._bgMotionMode;
+  mount.dataset.atmosphere = mount._bgAtmosphere;
 
   // Build the scaffold once. Layers are ordered low-to-high so cascade
   // matches z-stacking — sky-tinted background first, foreground last.
@@ -1201,7 +1226,7 @@ export async function renderBackground(mount, settings, saveSettings) {
   };
   scheduleRollover();
 
-  const motionAllowed = () => !prefersReducedMotion();
+  const motionAllowed = () => mount._bgMotionMode === "full";
 
   // ---- Shooting stars: random transient streaks during night phases.
   // Frequency boosts on known meteor-shower peak dates. We always fire

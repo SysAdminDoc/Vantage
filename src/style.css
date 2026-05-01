@@ -1,6 +1,6 @@
 /* ============================================================
    Vantage v0.8.0 — design system
-   Catppuccin Mocha (default) + Latte
+   Catppuccin Mocha (default), Macchiato, Frappe + Latte
    ============================================================ */
 
 :root,
@@ -62,6 +62,66 @@
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.40);
   --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.50);
   --ring: 0 0 0 2px var(--bg-canvas), 0 0 0 4px var(--accent);
+}
+
+[data-theme="macchiato"] {
+  /* Catppuccin Macchiato */
+  --base: #24273a;
+  --mantle: #1e2030;
+  --crust: #181926;
+  --surface0: #363a4f;
+  --surface1: #494d64;
+  --surface2: #5b6078;
+  --overlay0: #6e738d;
+  --overlay1: #8087a2;
+  --overlay2: #939ab7;
+  --text: #cad3f5;
+  --subtext1: #b8c0e0;
+  --subtext0: #a5adcb;
+  --rosewater: #f4dbd6;
+  --flamingo: #f0c6c6;
+  --pink: #f5bde6;
+  --mauve: #c6a0f6;
+  --red: #ed8796;
+  --maroon: #ee99a0;
+  --peach: #f5a97f;
+  --yellow: #eed49f;
+  --green: #a6da95;
+  --teal: #8bd5ca;
+  --sky: #91d7e3;
+  --sapphire: #7dc4e4;
+  --blue: #8aadf4;
+  --lavender: #b7bdf8;
+}
+
+[data-theme="frappe"] {
+  /* Catppuccin Frappe */
+  --base: #303446;
+  --mantle: #292c3c;
+  --crust: #232634;
+  --surface0: #414559;
+  --surface1: #51576d;
+  --surface2: #626880;
+  --overlay0: #737994;
+  --overlay1: #838ba7;
+  --overlay2: #949cbb;
+  --text: #c6d0f5;
+  --subtext1: #b5bfe2;
+  --subtext0: #a5adce;
+  --rosewater: #f2d5cf;
+  --flamingo: #eebebe;
+  --pink: #f4b8e4;
+  --mauve: #ca9ee6;
+  --red: #e78284;
+  --maroon: #ea999c;
+  --peach: #ef9f76;
+  --yellow: #e5c890;
+  --green: #a6d189;
+  --teal: #81c8be;
+  --sky: #99d1db;
+  --sapphire: #85c1dc;
+  --blue: #8caaee;
+  --lavender: #babbf1;
 }
 
 /* Accent color overrides — set via data-accent on <html> */
@@ -357,7 +417,19 @@ a {
 
 .bg[data-phase]::after,
 .bg[data-background-state]::after {
-  opacity: 1;
+  opacity: var(--bg-readability-opacity, 1);
+}
+
+.bg[data-atmosphere="soft"] {
+  --bg-readability-opacity: 1;
+}
+
+.bg[data-atmosphere="balanced"] {
+  --bg-readability-opacity: 0.86;
+}
+
+.bg[data-atmosphere="vivid"] {
+  --bg-readability-opacity: 0.68;
 }
 
 .bg[data-background-state="fallback"],
@@ -3162,6 +3234,70 @@ a {
 .bg-mountains--far  { transform: translateX(calc(var(--parallax-x, 0) * 4px));  transition: transform 0.6s ease-out; }
 .bg-mountains--mid  { transform: translateX(calc(var(--parallax-x, 0) * 8px));  transition: transform 0.6s ease-out; }
 .bg-mountains--near { transform: translateX(calc(var(--parallax-x, 0) * 14px)); transition: transform 0.6s ease-out; }
+
+.bg[data-motion="calm"] .bg-stars { animation-duration: 11s; }
+.bg[data-motion="calm"] .bg-cloud--1 { --cloud-dur: 220s; }
+.bg[data-motion="calm"] .bg-cloud--2 { --cloud-dur: 280s; }
+.bg[data-motion="calm"] .bg-cloud--3 { --cloud-dur: 190s; }
+.bg[data-motion="calm"] .bg-rain { animation-duration: 0.9s; }
+.bg[data-motion="calm"] .bg-rain--2 { animation-duration: 1.25s; }
+.bg[data-motion="calm"] .bg-snow { animation-duration: 15s; }
+.bg[data-motion="calm"] .bg-tree svg { animation-duration: 14s; }
+.bg[data-motion="calm"] .bg-ocean::before,
+.bg[data-motion="calm"] .bg-ocean::after,
+.bg[data-motion="calm"] .bg-lake::before {
+  animation-duration: 140s;
+}
+.bg[data-motion="calm"] .bg-mountains--far,
+.bg[data-motion="calm"] .bg-mountains--mid,
+.bg[data-motion="calm"] .bg-mountains--near {
+  transition-duration: 1.8s;
+}
+
+.bg[data-motion="still"] .bg-stars,
+.bg[data-motion="still"] .bg-cloud,
+.bg[data-motion="still"] .bg-rain,
+.bg[data-motion="still"] .bg-snow,
+.bg[data-motion="still"] .bg-flash,
+.bg[data-motion="still"] .bg-tree svg,
+.bg[data-motion="still"] .bg-aurora,
+.bg[data-motion="still"] .bg-shooting-star,
+.bg[data-motion="still"] .bg-birds-host,
+.bg[data-motion="still"] .bg-birds-host .bird,
+.bg[data-motion="still"] .bg-petals,
+.bg[data-motion="still"] .bg-leaves,
+.bg[data-motion="still"] .bg-fireflies,
+.bg[data-motion="still"] .bg-horizon-flash,
+.bg[data-motion="still"] .bg-plane,
+.bg[data-motion="still"] .bg-bats-host,
+.bg[data-motion="still"] .bg-bats-host .bat,
+.bg[data-motion="still"] .bg-butterfly,
+.bg[data-motion="still"] .bg-whale,
+.bg[data-motion="still"] .bg-firework__core,
+.bg[data-motion="still"] .bg-firework .spike,
+.bg[data-motion="still"] .bg-sleigh,
+.bg[data-motion="still"] .bg-balloon,
+.bg[data-motion="still"] .bg-heat-shimmer,
+.bg[data-motion="still"] .bg-lighthouse svg .lighthouse-bulb,
+.bg[data-motion="still"] .bg-lighthouse::after,
+.bg[data-motion="still"] .bg-skyline svg .city-windows,
+.bg[data-motion="still"] .bg-ocean::before,
+.bg[data-motion="still"] .bg-ocean::after,
+.bg[data-motion="still"] .bg-lake::before,
+.bg[data-motion="still"] .bg-fireworks-host::before,
+.bg[data-motion="still"] .bg-fireworks-host::after {
+  animation: none !important;
+}
+
+.bg[data-motion="still"] .bg-sun,
+.bg[data-motion="still"] .bg-scene-depth,
+.bg[data-motion="still"] .bg-mountains--far,
+.bg[data-motion="still"] .bg-mountains--mid,
+.bg[data-motion="still"] .bg-mountains--near,
+.bg[data-motion="still"] .bg-ocean,
+.bg[data-motion="still"] .bg-skyline {
+  transition: none !important;
+}
 
 /* Honor reduced motion: keep colors + sun position, drop loops */
 @media (prefers-reduced-motion: reduce) {
