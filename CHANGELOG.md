@@ -2,6 +2,12 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+- **Theme expansion** — Appearance now supports System, Mocha, Macchiato, Frappe, and Latte. System resolves from `prefers-color-scheme` and updates live when the browser or OS color scheme changes.
+- **Animated background controls** — Live backgrounds now expose Motion (System, Still, Calm, Full) and Atmosphere (Soft, Balanced, Vivid) controls. Reduced-motion preferences always force Still; Calm keeps ambient sky/weather movement while disabling rare flyovers, bursts, and parallax.
+
 ## v0.8.0 — 2026-04-30
 
 ### Added

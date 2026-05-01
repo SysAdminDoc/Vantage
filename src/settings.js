@@ -7,6 +7,7 @@ import { SEARCH_ENGINES } from "./search-engines.js";
 import { geocodeCity } from "./widgets/weather.js";
 import { saveSettings, getDefaults } from "./storage.js";
 import { exportOPML, importOPML } from "./utils/opml.js";
+import { THEME_OPTIONS, applyThemePreference } from "./utils/theme.js";
 
 export function renderSettingsPanel(panel, settings, onChange, { showWizard } = {}) {
   clear(panel);
@@ -287,22 +288,19 @@ const ACCENT_COLORS = [
 function buildAppearance(settings, onChange) {
   const sec = section("Appearance", "palette", { defaultOpen: true });
   const g = group();
-  g.appendChild(row(
+  g.appendChild(rowColumn(
     "Theme",
-    "Catppuccin palette in dark or light.",
     segmented({
       ariaLabel: "Theme",
       value: settings.theme,
-      options: [
-        { value: "mocha", label: "Mocha" },
-        { value: "latte", label: "Latte" }
-      ],
+      options: THEME_OPTIONS,
       onChange: (v) => {
         settings.theme = v;
-        document.documentElement.setAttribute("data-theme", v);
+        applyThemePreference(v);
         onChange(settings);
       }
-    })
+    }),
+    "System follows your browser or OS color scheme. Mocha, Macchiato, and Frappe are dark; Latte is light."
   ));
 
   const currentAccent = settings.accent || "mauve";
@@ -365,7 +363,7 @@ function buildBackground(settings, onChange) {
       renderKindRows();
     }
   });
-  g.appendChild(row("Style", null, kindSeg));
+  g.appendChild(rowColumn("Style", kindSeg, "Choose a live scene, flat color, gradient, local image, URL image, or daily Bing wallpaper."));
   sec.appendChild(g);
 
   // Dynamic sub-options container
@@ -378,8 +376,43 @@ function buildBackground(settings, onChange) {
 
     if (kind === "animated") {
       kindHost.appendChild(el("p", { class: "settings-section__hint" }, [
-        "Live sky follows time, local weather, season, moon phase, and the Scenery setting. Motion follows your system reduced-motion setting."
+        "Live sky follows time, local weather, season, moon phase, and the Scenery setting."
       ]));
+      kindHost.appendChild(rowColumn(
+        "Motion",
+        segmented({
+          ariaLabel: "Animated background motion",
+          value: settings.background.motion || "system",
+          options: [
+            { value: "system", label: "System" },
+            { value: "still",  label: "Still"  },
+            { value: "calm",   label: "Calm"   },
+            { value: "full",   label: "Full"   }
+          ],
+          onChange: (v) => {
+            settings.background.motion = v;
+            onChange(settings);
+          }
+        }),
+        "Reduced-motion preferences always force Still. Calm keeps ambient sky/weather movement and disables rare flyovers, bursts, and parallax."
+      ));
+      kindHost.appendChild(rowColumn(
+        "Atmosphere",
+        segmented({
+          ariaLabel: "Animated background atmosphere",
+          value: settings.background.atmosphere || "balanced",
+          options: [
+            { value: "soft",     label: "Soft"     },
+            { value: "balanced", label: "Balanced" },
+            { value: "vivid",    label: "Vivid"    }
+          ],
+          onChange: (v) => {
+            settings.background.atmosphere = v;
+            onChange(settings);
+          }
+        }),
+        "Soft favors readability and haze. Vivid reduces the overlay so sky, weather, and foreground detail come through more strongly."
+      ));
     }
 
     if (kind === "solid") {
