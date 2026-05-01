@@ -8,7 +8,7 @@ import { renderWeather }    from "./widgets/weather.js";
 import { renderQuickLinks } from "./widgets/quicklinks.js";
 import { renderRss }        from "./widgets/rss.js";
 import { renderNews }       from "./widgets/news.js";
-import { renderBackground } from "./widgets/background.js";
+import { renderBackground, onReducedMotionChange } from "./widgets/background.js";
 import { renderAirQuality } from "./widgets/airquality.js";
 import { renderCalendar }   from "./widgets/calendar.js";
 import { renderWindy }      from "./widgets/windy.js";
@@ -41,7 +41,8 @@ let pomodoroTeardown   = null;
 let worldclockTeardown = null;
 let countdownTeardown  = null;
 let panelDragCleanup   = null;
-let systemThemeCleanup = null;
+let systemThemeCleanup   = null;
+let reducedMotionCleanup = null;
 
 // Fixed panel kinds (static mounts in newtab.html)
 const FIXED_PANEL_KINDS = [
@@ -84,6 +85,7 @@ async function init() {
   applyCustomCSS(currentSettings.customCSS);
   injectStaticIcons();
   watchSystemTheme();
+  watchReducedMotion();
 
   const isFirstInstall = !sharedImportedSettings && !(await hasStoredSettings());
   if (isFirstInstall && !currentSettings.onboardingComplete) {
@@ -469,6 +471,20 @@ function watchSystemTheme() {
     const effectiveSettings = getEffectiveSettings();
     if (effectiveSettings?.theme === "system") {
       applyTheme(effectiveSettings);
+    }
+  });
+}
+
+function watchReducedMotion() {
+  if (reducedMotionCleanup) return;
+  reducedMotionCleanup = onReducedMotionChange(() => {
+    const effectiveSettings = getEffectiveSettings();
+    const background = effectiveSettings?.background;
+    const isLiveBackground =
+      background?.enabled !== false &&
+      (background?.kind || "animated") === "animated";
+    if (isLiveBackground) {
+      mountAll();
     }
   });
 }
