@@ -157,6 +157,8 @@ function mountAll() {
   // Apply active workspace snapshot once; reused for all mounts below
   const activeWs = getActiveWorkspace(currentSettings);
   const effectiveSettings = activeWs ? applyWorkspace({ ...currentSettings }, activeWs) : currentSettings;
+  applyTheme(effectiveSettings);
+  applyAccent(effectiveSettings);
 
   // Background
   renderBackground(
