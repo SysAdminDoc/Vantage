@@ -338,15 +338,15 @@ body {
    Catppuccin gradient on the HTML root instead. */
 html:has(.bg:empty) {
   background:
-    radial-gradient(1100px 520px at 12% -10%, color-mix(in srgb, var(--mauve) 10%, transparent), transparent 60%),
-    radial-gradient(900px 480px at 110% 110%, color-mix(in srgb, var(--blue) 9%, transparent), transparent 60%),
+    radial-gradient(1100px 520px at 12% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%),
+    radial-gradient(900px 480px at 110% 110%, color-mix(in srgb, var(--accent-secondary) 9%, transparent), transparent 60%),
     var(--bg-canvas);
 }
 
 html[data-theme="latte"]:has(.bg:empty) {
   background:
-    radial-gradient(1100px 520px at 12% -10%, color-mix(in srgb, var(--mauve) 14%, transparent), transparent 60%),
-    radial-gradient(900px 480px at 110% 110%, color-mix(in srgb, var(--blue) 12%, transparent), transparent 60%),
+    radial-gradient(1100px 520px at 12% -10%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%),
+    radial-gradient(900px 480px at 110% 110%, color-mix(in srgb, var(--accent-secondary) 12%, transparent), transparent 60%),
     var(--bg-canvas);
 }
 
