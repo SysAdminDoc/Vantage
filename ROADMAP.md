@@ -1,6 +1,6 @@
 # Vantage Roadmap
 
-_Living document. Last revised 2026-04-29 against v0.5.0._
+_Living document. Last revised 2026-05-01 against v0.9.0._
 
 This roadmap is sourced — every Now / Next / Later item points to evidence in the Appendix. Versions are aspirational targets, not commitments. The aim is dense, skimmable, specific: an item without a sentence on **why now**, an effort sketch, and a citation gets cut.
 
@@ -56,205 +56,226 @@ If a feature would force breaking any of these, it's flagged "**⚠ contradicts 
 - [x] Shared Open-Meteo fetch with 10-minute cache; `prefers-reduced-motion` honored
 
 ### v0.5.0 — Animated background production-ready ✅ 2026-04-29
-- [x] Storm rendering: per-weather sky palette override (drizzle/overcast/rain/heavy-rain/storm/snow/heavy-snow), parent CSS `filter` removed (no longer dims the rain itself)
-- [x] Rain SVG tiles with discrete vertical streaks at scattered x-positions, 4° wind-shear tilt, two-layer parallax (eliminates the prior horizontal-stripe artifact)
-- [x] Sun hidden / palm hidden during wet weather
-- [x] NREL SPA sunrise/sunset via Open-Meteo (`±30s`), local NOAA-algorithm `sun-calc.js` fallback for offline + civil twilight (`dawn`/`dusk`)
-- [x] Civil-twilight phase boundaries (replaces fixed-hour offsets); polar regions handled
-- [x] Day-rollover watcher (recompute sunrise/sunset shortly after location-local midnight)
-- [x] Search input no longer renders box-inside-a-box on focus
+- [x] Storm rendering: per-weather sky palette override, parent CSS `filter` removed
+- [x] Rain SVG tiles with two-layer parallax + 4° wind-shear tilt
+- [x] NREL SPA sunrise/sunset via Open-Meteo (`±30s`), `sun-calc.js` fallback for offline
+- [x] Civil-twilight phase boundaries; polar-region handling
+- [x] Day-rollover watcher; search input box-in-box bug fixed
+
+### v0.6.0 — Vibe & lightweight productivity ✅ 2026-05-01
+- [x] Wallpaper subsystem (`background.kind`): animated / solid / gradient / image-url / image-upload / bing-daily / nasa-apod
+- [x] Bing daily image + NASA APOD backgrounds
+- [x] Local image upload (base64, 4 MB cap, quota warning)
+- [x] Solid color + gradient picker
+- [x] Quote-of-the-day widget (bundled offline pack)
+- [x] Custom accent color picker (Mocha/Macchiato/Frappé/Latte/Tokyonight/Gruvbox/Nord + hex)
+- [x] Background blur/saturation/brightness sliders
+- [x] Pomodoro timer (tab-blur pause, `<title>` alarm, Web Notifications, `navigator.locks`)
+- [x] Todo widget (drag-reorder, auto-focus mode)
+- [x] Notes widget (markdown: headings, lists, checkboxes, code spans; IndexedDB)
+- [x] `.ics` URL calendar widget (vendored micro-parser; no OAuth)
+- [x] World clocks strip
+- [x] Countdown widget
+- [x] Settings JSON export / import
+- [x] OPML import + export
+- [x] Storage quota panel
+- [x] First-run onboarding tour (3-step, dismissible)
+- [x] Skip-to-main link (WCAG 2.4.1)
+- [x] ARIA live regions for feed-update + Pomodoro state
+- [x] 24×24 tap-target audit (WCAG 2.5.8)
+- [x] Drag-alternative up/down buttons on panel grips (WCAG 2.5.7)
+
+### v0.6.2 — Radar & embedding ✅ 2026-05-01
+- [x] Windy radar embed widget
+- [x] Generic embed (iframe) widget with sandbox controls
+
+### v0.7.0 — Power-user features ✅ 2026-05-01
+- [x] 10 additional widgets: crypto, GitHub activity, photo (Unsplash), bookmarks, converter, per-widget instances
+- [x] Widget picker popover (searchable)
+- [x] Multiple embed instances
+- [x] Air quality + pollen panel (Open-Meteo Air Quality API)
+- [x] Animated RainViewer radar overlay (opt-in, personal-use disclaimer)
+- [x] Civil / nautical / astronomical twilight overlays in animated background
+- [x] Golden / blue hour visual bands
+- [x] View Transitions API for theme switch + panel open/close + mark-all-read
+- [x] Anchor positioning + Popover API for engine picker and tooltips
+- [x] CSS `@scope` for component-scoped selectors
+- [x] Privacy Table block in README (every endpoint documented)
+- [x] Geolocation disclosure banner (one-time, stored)
+- [x] Per-permission justification text drafted for CWS
+
+### v0.7.1 — Settings power-up ✅ 2026-05-01
+- [x] Collapsible settings sections
+- [x] Settings keyword filter (search within settings panel)
+- [x] Custom CSS injection (`<style>` in page, stored in `chrome.storage.local`)
+- [x] Quick-link folder groups (popover, recursive drag)
+- [x] Custom icon per quick link (auto / URL / upload)
+
+### v0.7.2 — Firefox ✅ 2026-05-01
+- [x] Firefox port (`browser_specific_settings`, MV3 with event-page fallback, browser-detect shim)
+- [x] Per-Firefox-container settings via `browser.contextualIdentities`
+
+### v0.8.0 — Workspaces & resilience ✅ 2026-05-01
+- [x] Multi-profile workspaces (Home / Work / Hobby; per-workspace widgets + links + theme + background)
+- [x] Firefox container → workspace auto-mapping
+- [x] Most-visited + recently-closed widgets (`chrome.topSites` + `chrome.sessions`)
+- [x] Top Sites widget
+- [x] Feed dedup by canonical URL
+- [x] Feed filter rules engine (regex mute/highlight/hide per feed)
+- [x] Reddit-as-feed integration (anonymous `.rss` endpoints, preset library)
+- [x] Multiple CORS-proxy fallback chain (allorigins.win → corsproxy.io → EveryOrigin)
+- [x] Self-hostable Cloudflare Worker CORS proxy (`scripts/cors-worker.js` + Deploy-to-Cloudflare link)
+- [x] Per-feed timeout + exponential retry (8s timeout, 1 retry + 5s backoff)
+- [x] `navigator.storage.persist()` call on init (prevents storage eviction)
+- [x] Storage migrations with `schemaVersion` in `loadSettings()`
+
+### v0.9.0 — Themes & scene polish ✅ 2026-05-01
+- [x] Theme expansion: System / Mocha / Macchiato / Frappé / Latte
+- [x] Animated background control panel: Motion / Atmosphere / Readability / Presets tabs
+- [x] Workspace visual profiles (per-workspace theme + scene override)
+- [x] Scene preview controls (QA gallery; all weather + time-of-day combinations)
+- [x] Keyboard shortcut configuration (`/` search, `Esc` close, all actions user-remappable)
 
 ---
 
-## v0.6.0 — Vibe & lightweight productivity (Now)
+## v1.0.0 — Store-ready & refined (Now)
 
-Ship these next. Each is ≤2 days of focused work, fits constraints cleanly, and has direct user demand from competitor issue trackers or HN/Reddit threads.
+These items unblock CWS/AMO listing and polish the product for a wider audience. Each is ≤2 days; none require new architecture.
 
-### Wallpapers & vibe
-- [ ] **Wallpaper subsystem** behind a single `background.kind` enum: `animated` (current), `solid`, `gradient`, `image-url`, `image-upload`, `bing-daily`, `nasa-apod`, `unsplash-collection`. One renderer per kind, all share the existing animated layer's z-index. — _Catches up to Tabliss/Bonjourr/Mue [Sources 2, 11, 17]; ~1.5d._
-- [ ] **Bing daily image** — anonymous endpoint `https://www.bing.com/HPImageArchive.aspx?format=js&n=1`. No auth, no CORS proxy needed. Add to host_permissions. — _[Source 11], 0.5d._
-- [ ] **Local image upload** — File API, store as base64 in `chrome.storage.local` (cap 4 MB; warn user above 2 MB to keep total under 5 MB quota). — _[Source 26], 0.5d._
-- [ ] **Solid color + gradient picker** — color tokens already exist; surface a small palette + custom hex input. — _[Source 39] (Brave parity), 0.5d._
-- [ ] **NASA APOD** — anonymous public endpoint `https://api.nasa.gov/planetary/apod` requires `DEMO_KEY` (50/day shared) or user-provided key in settings. Default to DEMO_KEY with a "rate limited — bring your own key" hint. — _[Source 2] (TablissNG ships it), 0.5d._
-- [ ] **Quote-of-the-day** — bundled offline JSON pack of ~365 entries (one per day-of-year), refreshes daily. Optional user-supplied gist URL for custom packs. — _[Sources 11, 17, 48], 0.5d._
-- [ ] **Custom accent color picker** beyond Mocha/Latte tokens — single accent applied via the existing CSS-variable system; presets (Catppuccin Frappé/Macchiato + Tokyonight + Gruvbox + Nord) plus arbitrary hex. — _[Sources 50, 75, 76], 0.5d._
-- [ ] **Background blur slider** + saturation/brightness — applied to image backgrounds only, not the animated weather layer (which already self-tunes). — _[Sources 6, 32], 0.5d._
+### UX polish
+- [ ] **Restore partial backup from settings import** — nightTab v7.3 pattern: when importing a settings JSON, let the user pick which sections to restore (theme, widgets, links, feeds) rather than all-or-nothing. Prevents accidental data loss on migration. ~0.5d. — _[Source 97] (nightTab v7.3.0 release notes); common user request._
+- [ ] **In-line multi-engine search switching** — small dropdown/toggle next to the search bar to switch engines per-query without opening settings. State: drop the selected engine into the search placeholder; last-used engine persists. ~1d. — _[Source 99] (Bonjourr issue #799, Apr 2026); high-demand, table-stakes in competitors._
+- [ ] **Right-click context menu** — right-click on background surface → quick-add quick link, open widget settings, cycle background, toggle dark/light mode. Bonjourr v22.0's most cited UX win; does not require keyboard shortcuts to trigger. ~1.5d. — _[Source 98] (Bonjourr docs v22 context-menu section); Bonjourr AMO reviews praise this specifically._
+- [ ] **Quick-link row configuration** — let users set items-per-row and manually place a link in a specific row even if the row above is not full. Removes the current "fill-row-first" constraint. ~0.75d. — _[Source 100] (Bonjourr issue #750, Jan 2026)._
+- [ ] **Pomodoro alarm tone customization** — upload a custom audio file (MP3/OGG, capped at 200 KB) or pick from 3 bundled tones (bell, chime, digital). Bonjourr v22.0 ships this with volume control. ~0.5d. — _[Source 98] (Bonjourr CHANGELOG v22.0.0)._
+- [ ] **Weather widget enrichment** — add feels-like temperature (`apparent_temperature`), precipitation probability (`precipitation_probability`), dew point (`dew_point_2m`), and visibility (`visibility`) to the weather widget. All four variables are already in Open-Meteo's current endpoint response; UI-only change. ~0.5d. — _[Sources 56, 57] (Open-Meteo docs; confirmed available in current response)._
+- [ ] **Quote widget author details** — clicking the quote expands an author info card (birth/death, short bio, link to Wikipedia). Mue v7.6.0 pattern. ~0.5d. — _[Source 101] (Mue v7.6.0 QuoteInfoModal feature)._
+- [ ] **`theme-color` meta tag tracking current background** — update `<meta name="theme-color">` whenever the background color changes; browser tab chrome reflects the current sky color in supporting browsers. Trivial polish, ~0.1d. — _[Source 98] (Bonjourr v22.0.0 CHANGELOG)._
 
-### Lightweight productivity widgets
-- [ ] **Pomodoro timer** with auto-pause on tab blur, alarm shown in `<title>`, Web Notifications API for completion, `navigator.locks` to keep state coherent across multiple new tabs. — _[Sources 41, 94, 95]; surging "table-stakes" pattern; ~1.5d._
-- [ ] **Todo widget** — Local-only, drag-to-reorder, click to toggle, "auto-focus" mode pulls next item into focus slot when current is checked. — _[Source 41] (Momentum's auto-focus mode); 1d._
-- [ ] **Notes widget with markdown** — minimum: headings, lists, links, checkboxes, code spans. localForage/IndexedDB (5 MB+ headroom; localStorage caps at 5 MB total for the whole extension). — _[Sources 11, 36, 44, 46], 1d._
-- [ ] **`.ics` URL calendar widget** — fetch any iCal URL (Google Calendar's secret ICS, Outlook share link, university timetables), parse with a vendored micro-parser (~50 LOC), render today's events. **No OAuth, no accounts.** Solves Bonjourr #416/#529. — _[Sources 15, 16, 47, 69]; underserved gap; ~1d._
-- [ ] **World clocks** — multi-zone strip in the utility bar; named labels. — _[Sources 4, 11, 41, 50], 0.5d._
-- [ ] **Countdown widget** — days/hours to a user-configured target date. — _[Sources 2, 17, 48], 0.5d._
+### Distribution readiness
+- [ ] **WCAG 2.2 AA full audit** — automated (axe-core) + manual screen-reader pass (NVDA + VoiceOver). All widget surfaces in scope; produce `docs/accessibility-report.md`. Required before CWS listing. ~3d. — _[Sources 70, 71]._
+- [ ] **i18n scaffolding** — `_locales/en/messages.json`, `__MSG_*__` in all user-visible strings; English authoritative; Weblate or PR-based translation pipeline. First non-English targets: es, de, fr, ja (translation completeness threshold: 95%). ~3d for scaffolding, ongoing for translations. — _[Source 69] (chrome.i18n reference)._
+- [ ] **RTL / `@@bidi_*` support** — Arabic, Hebrew. Logical-property CSS pass (`margin-inline-start`, `inset-inline-start`, etc.). ~1d on top of i18n scaffolding. — _[Source 69]._
+- [ ] **Chrome Web Store listing** — localized screenshots + description per locale; CWS Privacy Practices fields filled; single-purpose description drafted; all permissions justified. ~0.5d of paperwork. — _[Sources 66, 67, 68]._
+- [ ] **AMO (Firefox Add-ons) listing** — same package with `browser_specific_settings`. ~0.25d. — _[Sources 85, 86]._
+- [ ] **Microsoft Edge Add-ons listing** — trivial after CWS; one form. ~0.1d. — _Gap; no specific citation needed._
+- [ ] **Locked widget API** — declare the postMessage protocol stable at v1.0; write `docs/widget-api.md` with semver guarantees. — _Prerequisite for iframe-sandboxed third-party widgets._
 
-### Onboarding & data hygiene
-- [ ] **Settings JSON export / import** — round-trip backup; downloadable file; pasteable text. — _[Sources 22, 30, 90]; demanded across the space; 0.5d._
-- [ ] **OPML import** for RSS feeds (drop-in from Feedly, Inoreader, NetNewsWire, Smart RSS Reader). Preserves folders if any. — _[Sources 22, 96]; 0.5d._
-- [ ] **OPML export** — generate from current `rss.feeds` + `news.feeds`. — _[Sources 22, 96], 0.25d._
-- [ ] **Storage quota panel** in settings — "you've used X of 5 MB" with a per-bucket breakdown so users see what's eating the budget (notes, read-state arrays, custom backgrounds). — _[Source 17]; underserved; 0.5d._
-- [ ] **First-run onboarding tour** — three-step inline tour (search engine → location → first feed). Dismissible; never reappears. — _Gap; reduces "looks broken" first impression; 0.5d._
-
-### Accessibility & semantic web standards
-- [ ] **Skip-to-main link** — first focusable element on the page. — _[Source 70] (WCAG 2.4.1); 0.1d._
-- [ ] **ARIA live region for feed-update + Pomodoro state messages** ("Feed updated 2 minutes ago", "Pomodoro complete"). — _[Source 70]; 0.25d._
-- [ ] **24×24 minimum tap-target audit** — WCAG 2.2 SC 2.5.8. Sweep the icon-button + segmented control + drag-handle sizes. — _[Source 70]; 0.25d._
-- [ ] **Drag-alternative buttons** — keyboard-accessible "move up / move down" on the panel grip handles for users who can't drag. — _[Source 70] (WCAG 2.5.7); 0.5d._
-- [ ] **Focus-not-obscured audit** — WCAG 2.2 SC 2.4.11. Verify `position: sticky` and modal-dialog elements never cover a focused control. — _[Sources 70, 71]; 0.25d._
+### CoinGecko API key migration
+- [ ] **CoinGecko demo API key support** — CoinGecko now requires `x-cg-demo-api-key` (free tier, self-served registration) on the `/simple/price` endpoint. Update the crypto widget to accept a key in settings; show a "set up your free API key" prompt on first use with a one-click link to the CoinGecko dashboard. Without this the widget is broken for users on the current API revision. ~0.25d. — _[Source 102] (CoinGecko v3.0 API reference — `x-cg-pro-api-key` now required header)._
 
 ---
 
-## v0.7.0 — Power-user features (Next)
+## v1.1.0 — Platform leverage (Next)
 
-These need v0.6 to land first (settings export/import is a prerequisite for workspaces; the widget set must stabilize before the API can be locked).
+These require v1.0 to be listed; some require new browser API surface or are architectural.
 
-- [ ] **Multi-profile / workspaces** — switch between Home / Work / Hobby layouts, each with its own widgets, links, theme, and background. Storage shape: `vantageSettings.workspaces[].name + .layout`. Active workspace ID persisted separately so installs sync to a sane state. — _[Sources 7, 10, 41, 44]; surging pattern; ~3d._
-- [ ] **Keyboard shortcut configuration** — surface every action that already has a default binding (`/` for search, `Esc` for panel close, etc.) and let the user remap. Stored per-action. — _[Source 93] (Raycast-style); 1.5d._
-- [ ] **Firefox port** (`browser_specific_settings`, `manifest_version: 3` with event-page fallback) — split codebase via a tiny browser-detect shim; share 95% of the source. Mozilla AMO MV3 is GA. — _[Sources 85, 86]; ~2d._
-- [ ] **Per-Firefox-container settings** — directly addresses Tabliss #477 (years-stale). Use `browser.contextualIdentities` to detect container and load workspace-by-container. **Firefox-only.** — _[Source 7]; underserved gap; ~1d after Firefox port._
-- [ ] **Custom CSS injection** — text area in settings; injected as `<style>` into the page; saved to `chrome.storage.local`. Syntax-checked with a minimal CSS lexer; warning toast if blocked. **⚠ Lower-risk than custom HTML; no script execution.** — _[Sources 2, 11, 30]; 1d._
-- [ ] **Custom icon per quick link** — replace the auto-`s2/favicons` lookup with a user-uploaded image (or letter fallback). Three modes: auto / URL / upload. — _[Sources 8, 13, 15, 17, 30]; 1d._
-- [ ] **Quick-link folders / groups** — group expansion via popover. Same drag system, recursive. — _[Sources 12, 13, 14, 89]; ~1.5d._
-- [ ] **Local video as background** — File API + base64 (capped at 8 MB, encourages WebM small files). Pause-on-tab-blur, pause-on-battery (`navigator.getBattery`). — _[Sources 12, 52]; 1d._
-- [ ] **Most-visited + recently closed widgets** — `chrome.topSites` + `chrome.sessions`. Permission requested on first enable, not at install. — _[Sources 39, 91]; ~1d._
-- [ ] **History search inline** — `chrome.history.search` behind a settings opt-in. Respects browser history-clearing. — _[Source 39]; ~1d._
-
-### Accuracy & weather depth
-- [ ] **Air quality + pollens panel** — Open-Meteo Air Quality API; reuses location. EU AQI / US AQI / pm2.5 / pm10 / O3 / pollens. — _[Source 56]; 0.5d._
-- [ ] **Animated radar overlay** — RainViewer past + nowcast tile loop in the weather widget. **⚠ RainViewer 2025 terms restrict to "personal/educational use" so this is offered as opt-in for individuals; commercial users are warned in-app.** — _[Sources 60, 61]; 1d._
-- [ ] **Civil / nautical / astronomical twilight overlays** in the animated background — already computing civil twilight via `sun-calc.js`; expose nautical (-12°) and astronomical (-18°) bands as togglable layers. — _[Sources 82, 84, 88]; 0.5d._
-- [ ] **Golden / blue hour windows** — visual band that brightens during golden hour, cools during blue hour. Photographers love this. — _[Sources 83, 84]; 0.5d._
-
-### Modern web platform adoption
-- [ ] **View Transitions API** for theme switch, panel open/close, "mark all read" — `document.startViewTransition()` is Baseline late 2025. Single line each. — _[Sources 72, 73]; 0.5d total._
-- [ ] **Anchor positioning + Popover API** for the engine picker, quick-link context menu, and settings tooltips — declarative, replaces the JS focus-mgmt code. — _[Sources 72, 74]; ~1.5d._
-- [ ] **CSS `@scope`** for component-scoped selectors — applies to widget styles to avoid global selector creep. — _[Source 72]; 0.5d._
-
-### Privacy & store readiness (incremental)
-- [ ] **Privacy Table block in README** that itemizes every endpoint, the trigger, and the data sent — copy of the existing Privacy section formalized into the table format already present, audited per release. — _Per repo's privacy-first constraint #1; 0.25d._
-- [ ] **In-extension geolocation disclosure banner** — first time the weather widget asks for `navigator.geolocation`, show a one-time banner explaining what's stored (lat/lon, never sent except to Open-Meteo). — _[Source 63] (Chrome MV3 geolocation guidance); CWS-required for `geolocation` justification; 0.5d._
-- [ ] **Per-permission justification text** filed in CWS dashboard prep — one short sentence per declared permission and host. — _[Sources 66, 68]; 0.5d._
+- [ ] **Gist/URL settings sync** — export full settings as a JSON Gist (via GitHub's anonymous Gist API — no auth for public gists) and re-import by URL. Users paste the Gist URL into settings on a second device. Privacy-preserving: no accounts, no server, data is in the user's own GitHub storage. ~2d. — _[Source 98] (Bonjourr v21.0.0 sync feature); eliminates the biggest pain point for multi-device users without violating constraint #1._
+- [ ] **Side Panel feed reader** — surface the RSS/News feed in Chrome's `chrome.sidePanel` (Chrome 114+) so users can read headlines without replacing the current page. The NTP stays as-is; sidePanel is additive. Gated behind a settings toggle. ~2d. — _[Source 103] (chrome.sidePanel API docs, Chrome 114+ MV3); differentiator — no NTP competitor currently uses this._
+- [ ] **Local video backgrounds** — File API + base64 (WebM, capped at 8 MB; encourage short loops). Pause-on-tab-blur, pause-on-battery (`navigator.getBattery`). ~1d. — _[Sources 12, 52, 98] (Bonjourr docs video section; nightTab v6.1.1 bookmark background video)._
+- [ ] **Dashboard screenshot generator** — single button; uses `html2canvas` (vendored, ~30 KB) to export a styled PNG of the active dashboard for README screenshots, r/startpages sharing, etc. ~1d. — _Gap; community-growth tool. `chrome.tabs.captureVisibleTab` is overkill for this use-case._
+- [ ] **Multi-source aggregated dev feed** — preset bundle: HN frontpage + GitHub Trending (per-language, anonymous endpoint) + Lobsters. Single panel, date-sorted, deduped. ~1d. — _[Sources 32, 33]._
+- [ ] **Bookmarking inside the feed** — star icon on each headline row; "Starred" panel collects them. Persisted to `chrome.storage.local`. ~1d. — _[Sources 33, 82]._
+- [ ] **Keyword monitoring across all feeds** — user-defined alert words; Web Notifications when a keyword appears in any new feed item. opt-in only. ~1d. — _[Sources 55, 83]._
+- [ ] **Permanent feed archive with IndexedDB** — every item ever seen stored in IndexedDB, searchable. Cap at 10k items default (user-tunable). **⚠ Storage grows unbounded without the cap; document clearly.** ~2d. — _[Sources 55, 84]._
+- [ ] **YouTube subscriptions OPML recipe** — "Import YouTube subscriptions" button that walks users through Google Takeout OPML export and drops feeds into the RSS panel. ~0.25d. — _[Source 90]._
+- [ ] **Anchor Positioning for widget drop-zone tooltips** — `anchor-name` / `position-anchor` / `@position-try` fallback for contextual tooltips over the drag canvas; eliminates JS positioning math. ~0.5d. — _[Sources 72, 104] (CSS Anchor Positioning API, Chrome 125+; Interop 2026 priority)._
+- [ ] **`contrast-color()` CSS function for text over dynamic backgrounds** — automatic WCAG-passing text contrast over any accent color or background image; replaces manual light/dark token switching. ~0.5d when broadly supported (Interop 2026 target). — _[Source 72] (css-tricks Interop 2026)._
+- [ ] **Container style queries for widget theming** — `@container style(--vantage-theme: mocha)` to let widgets self-style per active theme without re-reading JS state. ~0.5d when cross-browser. — _[Source 72] (Interop 2026: container style queries)._
+- [ ] **Periodic Background Sync for feed pre-warming** — register a `periodicSync` task so the RSS cache is warm before the user's first new tab of the day. **⚠ Heavy permission surface; strict opt-in; document the Notifications-API-style permission prompt.** ~1d. — _Web platform reference (MDN: Background Sync API)._
+- [ ] **In-extension error logging with share-to-clipboard** — catch and log unhandled widget errors to a circular buffer in `chrome.storage.local`; expose a "Copy debug log" button in settings. Helps diagnose user-reported issues without telemetry. ~0.5d. — _[Source 105] (TablissNG v1.6.5 error-logging system)._
+- [ ] **Ambient sound widget** — looping ambient audio (rain, forest, café) via `<audio>` element; locally bundled short loops (≤200 KB each) or user-uploaded file. Pause-on-tab-blur. Complements Pomodoro focus sessions. ~1.5d. — _[Source 106] (mutabu extension, Mar 2026)._
 
 ---
 
-## v0.8.0 — Plugins, sharing, and platform leverage (Later)
+## v1.2.0+ — Architectural expansions (Later)
 
-Bigger architectural commitments. Should not start until v0.7 ships and the widget API has stabilized through 1–2 minor versions of internal use.
+Major efforts or waiting on ecosystem maturity. Ordering is not commitment.
 
-- [ ] **Iframe-sandboxed widget API** — Renewed Tab's pattern: third-party widgets run in `<iframe sandbox>` with `src` declared in user config; postMessage protocol for sub/pub; no remote code beyond what the user pasted into their own settings. **⚠ Constraint #4 stands: official "core" widgets stay in-tree; iframe widgets are user-pasted only, no marketplace fetch.** — _[Sources 2, 20, 21, 64]; ~5–8d to design + document._
-- [ ] **Theme bundle marketplace (PR-reviewed monorepo)** — Mue's pattern adapted: `vantage-themes` repo accepts PRs of `theme.json` (color tokens + accent + background pack URL + greeting copy + font pick). The extension fetches a generated `manifest.json` once on demand from `raw.githubusercontent.com`. **Constraint #1 holds because the user opts into the fetch and the data is plain JSON.** — _[Sources 17, 18, 19]; ~3d for monorepo + tooling, ongoing for review._
-- [ ] **Whole-config URL share link** — base64-encoded settings JSON in a fragment URL, `https://vantage.dashboard/import#cfg=...`, click to apply. r/startpages will explode with these. — _[Sources 50, 51]; viability proof in the startpage-emporium showcase culture; 1d._
-- [ ] **Dashboard sharing screenshot generator** — single button that captures a styled OG-image of the active dashboard. Uses `html2canvas` (vendored, ~30 KB) since `chrome.tabs.captureVisibleTab` is overkill. — _Gap; community-fueled growth; 1d._
-- [ ] **Vivaldi-style speed-dial groups + per-group widgets** — outer layer of "groups," inner layer of widgets. Two-step nesting; lots of design work. — _[Sources 37, 38, 89]; ~3d._
-- [ ] **OffscreenCanvas blur for backgrounds** — move CSS `filter: blur()` to OffscreenCanvas in a service worker for stable 60fps even at 4K and during heavy widget redraws. — _[Sources 52, 62]; ~1.5d._
-- [ ] **`navigator.locks` for true single-state across many open new tabs** — extends current cross-tab `chrome.storage.onChanged` strategy; needed for shared Pomodoro state, single live feed cache, single weather fetch in flight. — _Web platform reference (MDN: navigator.locks); ~1d._
-- [ ] **Periodic Background Sync for feed pre-fetching** — pre-warm the RSS cache so the user's next new tab is instant. **⚠ Permission warning surface is heavy; gate behind opt-in toggle.** — _Web platform reference (MDN: Background Sync API); ~1d._
-- [ ] **WCAG 2.2 AA full audit** — automated (axe-core) + manual screen-reader pass (NVDA + VoiceOver). All Now/Next a11y items must already be in. — _[Sources 70, 71]; ~3d._
-- [ ] **i18n scaffolding** — `_locales/en/messages.json`, `__MSG_*__` everywhere; English authoritative; community-translation pipeline via Weblate or PRs against `_locales/`. **First non-English target: es, de, fr, ja.** — _[Source 69]; ~3d for scaffolding, ongoing for translations._
-- [ ] **RTL / `@@bidi_*` support** — Arabic, Hebrew. Logical-property CSS pass (`margin-inline-start` etc.). — _[Source 69]; ~1d on top of i18n scaffolding._
+- [ ] **Iframe-sandboxed widget API** — Renewed Tab's model: third-party widgets in `<iframe sandbox>` with `src` declared in user config; postMessage pub/sub protocol for data + events; no remote code. **⚠ Constraint #4: official core widgets stay in-tree; iframe widgets are user-pasted only; no remote marketplace fetch.** ~5–8d to design + spec + document. — _[Sources 20, 21, 64]._
+- [ ] **Theme bundle marketplace (PR-reviewed monorepo)** — `vantage-themes` repo accepts PRs of `theme.json` (color tokens + accent + background URL + greeting copy + font choice); extension fetches `manifest.json` from `raw.githubusercontent.com` on user demand. ~3d for monorepo + tooling, ongoing for PR review. — _[Sources 17, 18, 19, 101] (Mue marketplace + suggested-packs pattern)._
+- [ ] **Whole-config URL share link** — base64-encoded settings JSON in a fragment URL (`#cfg=…`); one-click apply on another machine. 1d. — _[Sources 50, 51]._
+- [ ] **OPFS (Origin Private File System) for large media** — migrate base64-in-`chrome.storage` for backgrounds + audio to OPFS; eliminates the 5 MB quota pressure and enables larger local videos. ~1.5d. — _[Source 107] (MDN: Origin Private File System)._
+- [ ] **OffscreenCanvas blur for backgrounds** — move CSS `filter: blur()` to OffscreenCanvas in a service worker for stable 60fps at 4K with heavy widget redraws. ~1.5d. — _[Sources 52, 62]._
+- [ ] **Drag-resize widget layout editor** — iOS-style: press-and-hold to enter edit mode, drag to reorder, pinch/drag corners to resize, snap to grid. Replaces the current button-based panel order. ~5d; significant design work. — _[Source 108] (Bonjourr issue #804, Apr 2026 — users explicitly requesting this)._
+- [ ] **Online documentation site** — GitHub Pages or Cloudflare Pages site (`docs.vantage.dashboard`) with per-widget docs, screenshots, FAQ, and the widget API spec. Currently only README. ~1d setup + ongoing. — _[Source 109] (TablissNG docs site, v1.6.4)._
+- [ ] **History search inline** — `chrome.history.search` behind a settings opt-in; opt-in default off; respects browser history-clearing. ~1d. — _[Source 39]; kept deferred._
 
-### Reliability & resilience
-- [ ] **Multiple CORS-proxy fallback chain** (allorigins.win → corsproxy.io → EveryOrigin) — randomized, sticky-per-feed for 1 hour, telemetry-free. — _[Sources 80, 81]; ~0.5d._
-- [ ] **Self-hostable Cloudflare Worker recipe** for the CORS proxy — ship a `scripts/cors-worker.js` and a one-click "Deploy to Cloudflare" link; user pastes URL into settings. Eliminates the third-party-proxy dependency for power users. — _[Source 80]; ~0.5d._
-- [ ] **Per-feed timeout & exponential retry** — already partial; codify policy: 8s timeout, 1 retry with 5s backoff, then mark feed errored for 10 min. — _Gap (current implementation); 0.5d._
-- [ ] **Persistent storage** — call `navigator.storage.persist()` so the user's notes/read-state can't be evicted under disk pressure. — _Web platform reference (MDN: navigator.storage); 0.1d._
-
----
-
-## v0.9.0 — Reader power-tools (Later)
-
-A tightly scoped sub-roadmap for the RSS/News surface. Most demand is from r/RSS and Inoreader-refugee threads.
-
-- [ ] **Multi-source aggregated dev feed** — preset bundle: HN frontpage + GitHub Trending (per-language) + Product Hunt + Lobsters. Single panel, sorted. — _[Sources 32, 33, 79]; 1d._
-- [ ] **Reddit-as-feed integration** — subreddit RSS endpoints (anonymous, `https://reddit.com/r/<sub>/.rss`) presented as first-class feed sources. — _[Sources 33, 55, 88]; 0.25d._
-- [ ] **YouTube subscriptions OPML recipe** — point at the public OPML export from Google Takeout; settings-panel button "Import YouTube subscriptions" that walks the user through it. — _[Source 90]; 0.25d._
-- [ ] **Bookmarking inside the feed** — star icon on each row; bookmarks panel underneath unread. — _[Sources 33, 82]; ~1d._
-- [ ] **Filter rules engine** — mute / highlight / hide rules per feed using regex on title or domain. — _[Sources 55, 85]; ~1d._
-- [ ] **Keyword monitoring across all feeds** — alert via Web Notifications when "X" appears in any feed item. — _[Sources 55, 83]; ~1d._
-- [ ] **Feed dedupe by canonical URL** — same article cross-posted to two sources collapses into one row. — _Gap; common reader-feature in NetNewsWire/Inoreader [Sources 54, 55]; ~0.5d._
-- [ ] **Permanent feed archive** — IndexedDB store of every item ever seen, searchable. **⚠ Storage budget grows unbounded; cap at 10k items default with user-tunable limit.** — _[Sources 55, 84]; ~2d._
-
----
-
-## v1.0.0 — Stable release
-
-Locked APIs, full a11y, store-listed, internationalized.
-
-- [ ] **Locked widget API** — third-party widgets via the iframe-sandbox path declared 1.0-stable; semver guarantees on the postMessage protocol; documented in `docs/widget-api.md`. — _Built incrementally on v0.8 plugin work._
-- [ ] **WCAG 2.2 AA verified** — full report in `docs/accessibility-report.md` with all 86 SCs evaluated, axe-core CI artifact attached to each release. — _[Sources 70, 71]._
-- [ ] **i18n: en, es, de, fr, ja, plus a community-driven flag** for "more available" — translation completeness threshold for shipping a locale: 95%. — _[Source 69]._
-- [ ] **Chrome Web Store listing** with localized screenshots and descriptions per locale. CWS Privacy Practices fields filled per [Source 68]. — _[Sources 66, 67]._
-- [ ] **AMO (Firefox add-ons) listing** — same package with `browser_specific_settings`. — _[Sources 85, 86]._
-- [ ] **Microsoft Edge Add-ons listing** — same package re-listed; the cost is one form. — _Gap; trivial after CWS._
-
----
-
-## Always-on themes
+## Always-on
 
 Maintained continuously, not version-gated.
 
-- [ ] **Track Catppuccin palette versions** — re-import tokens when upstream ships a new flavor or revs colors. — _[Sources 75, 76]._
-- [ ] **Refresh `manifest.json host_permissions`** on every release — only request what's actually used; CWS scrutinizes `*://*/*`. — _[Sources 66, 68]._
-- [ ] **Re-capture README screenshots** whenever the UI shifts (per global rule). DPI-aware capture (system is 125%).
-- [ ] **Privacy Table audit** in README each release — every new outbound endpoint or new permission gets a row before shipping. — _Per repo's privacy-first constraint #1._
-- [ ] **Verify clean-profile install** before each release — extract ZIP into a fresh user-data-dir, smoke-test all six widgets.
-- [ ] **Track Open-Meteo changelog** — new variables (apparent_temperature_max, dew_point_2m, etc.) and new domains (air-quality, marine, climate, ensemble). — _[Sources 56, 57, 58, 59]._
-- [ ] **Track Chrome `chrome.*` API changes and what's-new posts** — e.g. Reading List API, Side Panel surface (we don't use them yet but they may unlock features). — _[Sources 62, 65]._
-- [ ] **Track Interop project highlights** — adopt View Transitions cross-doc, Anchor Positioning, CSS `@scope`, container style queries, Popover API as they ship cross-browser. — _[Source 72]._
-- [ ] **CORS proxy health monitoring** — quarterly check that `allorigins.win` + alternates are operational; document last-checked date in CLAUDE.md. — _[Sources 80, 81]._
-- [ ] **Manual smoke-test before each release** — by repo convention there are no automated tests; QA is a documented checklist (six widgets render, settings round-trips, drag works, weather + RSS fetch, Brave + Chrome + Edge + Vivaldi all load the unpacked extension). The clean-profile install item above is part of this. — _Per repo `CLAUDE.md` "no tests unless explicitly requested" rule._
-- [ ] **Storage migrations for breaking shape changes** — the `storage.js` deep-merge handles forward-additive fields automatically; any field rename or array→object change ships with a `migrate(prevSettings)` step in `loadSettings()` keyed off a `schemaVersion` field (added on first migration). — _Gap; required before workspaces (v0.7) since that change will move existing top-level keys under `workspaces[0]`._
+- **Track Catppuccin palette versions** — re-import tokens when upstream ships a new flavor. — _[Sources 75, 76]._
+- **Refresh `manifest.json host_permissions`** every release — only declare what is used; CWS scrutinizes `*://*/*`. — _[Sources 66, 68]._
+- **Re-capture README screenshots** whenever the UI shifts. DPI-aware capture required (system is 125%).
+- **Privacy Table audit** in README each release — every new outbound endpoint or permission gets a row before shipping. — _Constraint #1._
+- **Verify clean-profile install** before every release — extract ZIP into a fresh user-data-dir, smoke-test all widgets across Chrome + Edge + Brave + Vivaldi + Firefox.
+- **Track Open-Meteo changelog** — new variables (cloud cover altitude bands, new AQI metrics, additional pollen species) and new API domains. — _[Sources 56, 57, 58, 59]._
+- **Track Chrome Built-in AI origin trial status** — Prompt API, Summarizer API, Translator API (all gated behind Chrome 138+ / hardware check today); monitor for GA. — _[Source 110]._
+- **Track Chrome `chrome.*` API changes** — Reading List API, Side Panel updates, future `chrome.ai` namespace. — _[Sources 62, 65]._
+- **Track Interop 2026 shipping** — Anchor Positioning (Chrome 125+ now), `contrast-color()`, container style queries, Popover API interest invokers (`interestfor`). — _[Sources 72, 111, 112]._
+- **CORS proxy health check** — quarterly verify `allorigins.win` + alternates are operational; note last-checked date in CLAUDE.md. — _[Sources 80, 81]._
+- **Storage migration guard** — any field rename or structural change ships with a `migrate(prev)` step in `loadSettings()` keyed off `schemaVersion`; forward-additive changes are handled by existing deep-merge. — _Gap; required on any workspace schema change._
+- **CoinGecko API key monitoring** — CoinGecko has already changed free-tier authentication once (keyless → `x-cg-demo-api-key`); re-audit before each crypto-widget release. — _[Source 102]._
+- **Quotable API endpoint monitoring** — `/quotes/random` is current; `/random` is deprecated and may be removed. — _[Source 113]._
 
 ---
 
 ## Testing & quality
 
-This roadmap intentionally does not commit to an automated test suite. The repo's `CLAUDE.md` declares "No tests unless explicitly requested." For a no-build-step vanilla-JS extension, the cost/value of a Karma/Jest stack is poor; the reliable signal is the clean-profile manual smoke-test plus DevTools-protocol ad-hoc verification against a known-good live instance (the workflow used to debug v0.4.7-v0.4.14). If the project ever adopts the iframe widget API, that API surface should ship with a small Playwright suite to keep the postMessage protocol stable across browsers — at which point this section gets revised.
+No automated test suite is planned. The repo's `CLAUDE.md` declares "No tests unless explicitly requested." For a no-build-step vanilla-JS extension, a Karma/Jest/Playwright stack is high overhead against a manually smoke-tested, clean-profile install checklist. If the iframe widget API ever ships, that postMessage protocol surface warrants a small Playwright-extension integration test — at which point this section gets revised.
 
 ---
 
 ## Under Consideration
 
-Items with real merit but unresolved trade-offs. Decided per release window, not pre-committed.
+Items with real merit but unresolved trade-offs. Decided per release cycle, not pre-committed.
 
-- **AI chatbot widget on the new tab** — Brave Search Answers ($4/1k, OpenAI-compatible chat completions) is the cleanest BYOK path. **Tension with constraint #1**: every query is sent to a third party. Acceptable only if (a) opt-in default off, (b) BYOK so cost lives with user, (c) clear "this query is sent to Brave" UX. Decision deferred until v0.8. — _[Sources 67, 77, 78]._
-- **Search history dropdown via `chrome.history`** — declared deferred in the prior roadmap. Permission stigma + low repeat user-value vs. the work. Status: keep deferred unless the History API gets a per-page-only mode. — _Per existing v0.3 deferral note._
-- **Email inbox preview (Gmail / IMAP)** — heavy OAuth surface; Google's OAuth review process for Gmail scopes is a multi-month project. Likely not worth it; users already have Gmail open. — _[Source 41] (Momentum has it via OAuth)._
-- **Apple/Google Calendar OAuth** — same OAuth tax as Gmail; the `.ics` URL widget in v0.6 covers 90% of demand without it. Reconsider only if iCal turns out to be insufficient (e.g., users want event creation). — _[Sources 15, 16, 41, 47, 68]._
-- **Mood-of-day curated photo collections** — Bonjourr's pattern. Easy to build but overlaps with Unsplash topic feeds; deferred until we see whether topic feeds land first. — _[Source 11]._
-- **WebAuthn / passkey lock for the settings panel** — bio-lock the modify path so a shared device can't reset config. Real demand on family/work devices. Held in consideration only because the new-tab page isn't the strongest place for an auth boundary (you can still open an incognito tab). Reconsider after v0.7 workspaces ship. — _Web platform reference (MDN: Web Authentication API)._
-- **Hexagon / non-rectangular tile layouts** — fun aesthetically but breaks accessibility and drag-reorder. Probably never. — _[Source 50] (referenced in startpages-emporium aesthetic showcases)._
-- **GIPHY backgrounds** — animated GIF as wallpaper. Bandwidth-heavy, often offensive content surfaces. Skip unless requested. — _[Source 2] (TablissNG)._
-- **Brave-style sponsored backgrounds with revenue share** — opt-in ad model. **Direct contradiction of constraint #1** unless run as a separate fork; rejected here, but noting the existence of the model. — _[Source 40]._
+- **Chrome Prompt API (Gemini Nano) for contextual actions** — on-device, no server, no API key; privacy-aligned. Could power: feed item summarization, search query suggestion, custom greeting generation. Currently gated behind Chrome 138+ with hardware check (8 GB RAM + compatible NPU); market share too low for a Now item. Will re-evaluate when the hardware gating loosens. — _[Source 110] (Chrome Built-in AI docs, origin trial status)._
+- **Chrome Summarizer API for feed items** — on-device article summarization; hardware gating same as Prompt API. Potential "TL;DR" chip per headline. Monitor origin trial → GA pipeline. — _[Source 110]._
+- **Chrome Translator API for foreign-language feeds** — on-device translation (Chrome 138+); no third-party API required; privacy-safe. Could label non-English headlines in their detected language and offer inline translation. Same hardware caveat. — _[Source 110]._
+- **Zen Shelf / sticky note board widget** — text and image stickers placed anywhere on the new-tab canvas (EclipseTab's "Zen Shelf" model). Novel; high aesthetic appeal; design complexity is high (free-position vs. grid). Needs a layout strategy that doesn't conflict with the existing panel system. — _[Source 114] (EclipseTab v1.3 feature page)._
+- **`unlimitedStorage` manifest permission** — `chrome.storage.local` is not cleared by browser "Clear browsing data" (extension storage is isolated per Chrome Storage docs), but the `unlimitedStorage` permission removes the 5 MB soft quota. Worth adding once notes/audio assets grow beyond 3 MB in practice. Currently `navigator.storage.persist()` is already called. — _[Source 115] (Chrome Storage & Cookies doc)._
+- **AI chatbot widget (BYOK)** — Brave Search Answers or OpenAI-compatible endpoint. Tension with constraint #1: every query is sent off-device. Acceptable only if (a) opt-in + default off, (b) BYOK, (c) clear "this query goes to X" disclosure. On hold pending Chrome Prompt API GA — on-device is a much cleaner path. — _[Sources 67, 77, 78]._
+- **Search history dropdown via `chrome.history`** — permission stigma + low repeat value. Keep deferred unless `chrome.history` gets a per-domain-only mode. — _Existing deferral note._
+- **Email inbox preview (Gmail / IMAP)** — heavy OAuth surface; Google OAuth review for Gmail scopes is months long. Users who want this have Gmail open anyway. — _[Source 41]._
+- **Apple/Google Calendar OAuth** — same OAuth tax as Gmail; the `.ics` URL widget covers 90% of demand without accounts. Revisit only if users need event creation. — _[Sources 15, 16, 41, 47]._
+- **WebAuthn / passkey lock for settings** — bio-lock so a shared device can't reset config. Real demand but the new-tab page is a weak auth boundary (incognito tab bypasses it). Reconsider after workspaces establish a per-profile identity model. — _Web platform reference (MDN: Web Authentication API)._
 
 ---
 
 ## Rejected
 
-Each line is "feature — citation — one-sentence rejection."
+Each line: feature — citation — one-sentence rejection reason.
 
-- **Switch to a build pipeline (Bun, Vite, Astro, React, Vue)** — _[Sources 17, 19, 28, 50]._ ⚠ contradicts constraint #2; the no-build-step rule is core identity.
-- **Embed third-party hosted widgets (Apption-style remote-code marketplace)** — _[Source 48]._ ⚠ contradicts constraint #4; no remote code.
-- **Custom HTML widget** — _[Source 2]._ XSS surface that's hard to make safe inside the new-tab origin; the custom-CSS widget gives 80% of expressiveness with 5% of risk.
-- **TradingView embed** — _[Source 50]._ Pulls TradingView's analytics + cookies; contradicts constraint #1.
-- **Smart-home control (Hue) from new tab** — _[Source 50]._ Out of scope; needs local network discovery, breaks the "browser-extension only" model.
-- **ML-driven dynamic wallpapers** — _[Source 52]._ Inference cost on every load; no offline-friendly path; bloats install size.
-- **RGB hardware sync (iCUE/Chroma)** — _[Source 53]._ Out of scope for a browser extension; desktop-app feature.
-- **Companion mobile app** — _[Source 53]._ Defeats the privacy-first no-account stance unless it does nothing — and a no-op app is pointless.
-- **SSO / Keycloak / Authelia for settings** — _[Source 49]._ No multi-user / no auth in this product.
-- **Team workspaces with cloud-shared collections** — _[Sources 41, 43, 44]._ Multi-user + server requirement contradicts constraint #1; would require an entirely separate hosted product.
-- **SOC2 compliance work** — _[Source 44]._ Vantage has no server, no audit surface; nonsensical for this codebase.
-- **Custom iframe widget for arbitrary URLs without sandboxing** — _[Source 47] (Plus AI's pattern)._ Same XSS rationale as custom HTML widget; the v0.8 sandboxed-iframe API is the safe path.
-- **Bitcoin mempool / GitHub-contribution-calendar / IP info / jokes-API widgets** — _[Source 2]._ Niche, low repeat value, each adds an outbound endpoint; users can build one as iframe widgets after the v0.8 plugin API ships.
-- **Spotify currently-playing / Strava / Twitter X-feed / Fitbit metrics widgets** — _[Source 41]._ All require user-account OAuth; same heavy-tail justification as Gmail.
-- **Custom NoSQL / IndexedDB-backed sync server, peer-to-peer sync** — _[Source 89] (Group Speed Dial does this)._ No server. E2EE-via-WebDAV-or-Gist is the right shape (v0.8 candidate); a custom sync server is rejected.
-- **Audit log of config changes / crash log capture as a hosted service** — _Gap (no specific competitor cited)._ Local-only crash-log file is fine; a hosted service is rejected for the same constraint reasons.
+- **Switch to a build pipeline (Bun, Vite, Astro, React, Vue)** — _[Sources 17, 19, 28, 50]._ Contradicts constraint #2; no-build-step is core identity.
+- **Embed third-party hosted widgets (Apption-style remote-code marketplace)** — _[Source 48]._ Contradicts constraint #4; no remote code execution.
+- **Custom HTML widget** — _[Source 2]._ XSS surface in the new-tab origin; custom-CSS gives 80% of expressiveness with 5% of risk; the iframe sandbox API (Later) is the correct path.
+- **Remote video backgrounds from external APIs (Pixabay, Pexels)** — _[Sources 12, 98] (Bonjourr Pixabay video backgrounds)._ Outbound API call to third-party service on every new tab; contradicts constraint #1; local video upload is the right shape.
+- **TradingView embed** — _[Source 50]._ Pulls TradingView analytics + cookies into the new-tab origin; contradicts constraint #1.
+- **Smart-home control (Hue / Matter) from new tab** — _[Source 50]._ Needs local network discovery; out of scope for a browser extension.
+- **ML-driven dynamic wallpaper generation** — _[Source 52]._ Inference on every load without on-device hardware; no offline path; bloats install.
+- **RGB hardware sync (iCUE/Chroma)** — _[Source 53]._ Desktop-app feature, not achievable from a browser extension sandbox.
+- **Companion mobile app** — _[Source 53]._ No-account stance means the app has nothing to sync; defeats the purpose.
+- **SSO / Keycloak / Authelia for settings** — _[Source 49]._ No server, no multi-user model in this product.
+- **Team workspaces with cloud-shared collections** — _[Sources 41, 43, 44]._ Server + accounts required; entirely separate product.
+- **SOC2 compliance work** — _[Source 44]._ No server, no audit surface; inapplicable.
+- **Custom iframe widget with arbitrary unsandboxed URLs** — _[Source 47]._ Same XSS rationale as custom HTML; the v1.2 sandboxed-iframe API is the correct shape.
+- **Crypto price ticker from CoinGecko without any API key** — _[Source 102]._ CoinGecko has removed the keyless free tier; shipping a widget that immediately breaks for new users is not acceptable; the CoinGecko demo-key migration (Now) is the fix.
+- **Spotify / Strava / Twitter / Fitbit widgets** — _[Source 41]._ All require OAuth; contradicts constraint #1.
+- **Custom sync server or peer-to-peer sync** — _[Source 89]._ No server; Gist/URL sync (Next) is the correct privacy-preserving shape.
+- **Crash log as a hosted service / remote telemetry** — _Gap._ Local crash log + "copy debug log" button (Next) is sufficient; hosted service contradicts constraint #1.
+- **Brave-style sponsored background revenue share** — _[Source 40]._ Contradicts constraint #1 unless run as a separate fork; noting for completeness.
+- **Haptic / vibration feedback** — Web platform reference. New-tab page has no touch surface in typical use; inapplicable.
+- **Hexagon / non-rectangular tile layouts** — _[Source 50]._ Breaks accessibility and drag-reorder; low demand.
 
 ---
 
 ## Appendix — Sources
 
-Numbering is the same used inline above. URLs verified at research time (2026-04-29).
+Numbering matches citations inline. URLs verified at research time (2026-05-01).
+
+**New sources added in this revision: #97–#115.**
 
 ### Direct OSS competitors
 1. https://github.com/joelshepherd/tabliss — Tabliss; original; mostly dormant since 2022.
@@ -267,9 +288,9 @@ Numbering is the same used inline above. URLs verified at research time (2026-04
 8. https://github.com/joelshepherd/tabliss/issues/650 — Custom images for quick links.
 9. https://github.com/joelshepherd/tabliss/issues/653 — Time-based background changes.
 10. https://github.com/joelshepherd/tabliss/issues/704 — `moz-extension://` link support.
-11. https://github.com/victrme/Bonjourr — Bonjourr; iOS-inspired; videos as backgrounds, Pomodoro, Notes.
-12. https://github.com/victrme/Bonjourr/blob/master/CHANGELOG.md — Recent: context menu, custom greetings, video sound.
-13. https://bonjourr.fr/docs/overview/ — Link groups, world clocks, custom icons modes, custom CSS, Google Fonts.
+11. https://github.com/victrme/Bonjourr — Bonjourr; iOS-inspired; videos as backgrounds, Pomodoro, Notes, context menu, Gist sync.
+12. https://github.com/victrme/Bonjourr/blob/master/CHANGELOG.md — Bonjourr CHANGELOG v22.0.0 (context menu, video backgrounds, alarm tone customization, theme-color meta tag) and v21.0.0 (Gist/URL settings sync).
+13. https://bonjourr.fr/docs/overview/ — Bonjourr docs v22: link groups, world clocks, custom icon modes, right-click context menu actions, Google Fonts integration, Pixabay video backgrounds.
 14. https://github.com/victrme/Bonjourr/issues/130 — Folders for quick links.
 15. https://github.com/victrme/Bonjourr/issues/416 — Calendar/reminders integration.
 16. https://github.com/victrme/Bonjourr/issues/529 — Calendar widget with Google Calendar sync.
@@ -286,7 +307,7 @@ Numbering is the same used inline above. URLs verified at research time (2026-04
 27. https://github.com/topics/new-tab-extension — GitHub topic listing.
 28. https://github.com/topics/new-tab-page — GitHub topic listing including OSS speed-dial, Vue 3 + Vite stack.
 29. https://github.com/Thingbomb/Flowtide — Magic Search, todos, Pomodoro, soundscapes (GPLv3).
-30. https://github.com/zombieFox/nightTab — Customizable bookmark grid, JSON config import.
+30. https://github.com/zombieFox/nightTab — nightTab v7.3.0: modular rewrite, clipboard import/export, partial backup restore, new theming engine, group collapse, custom favicon.
 31. https://github.com/sourcetab/sourcetab — Drag-and-drop widget edit mode.
 32. https://github.com/karakanb/devo — Multi-source dev feed.
 33. https://addons.mozilla.org/en-US/firefox/addon/hackertab-dev/ — Hackertab.
@@ -390,11 +411,36 @@ Numbering is the same used inline above. URLs verified at research time (2026-04
 ### Reader extension reference
 96. https://www.ghacks.net/2020/03/10/smart-rss-reader-is-a-feed-reader-extension-for-firefox-and-chrome/ — Smart RSS Reader (OPML import preserves folders).
 
+### Sources added 2026-05-01 (revision against v0.9.0)
+
+97. https://github.com/zombieFox/nightTab/releases/tag/v7.3.0 — nightTab v7.3.0 release notes: partial backup restore, clipboard import/export, modular theming rewrite, group collapse.
+98. https://github.com/victrme/Bonjourr/blob/master/CHANGELOG.md — Bonjourr v22.0.0 (context menu, Pixabay video backgrounds, alarm tones, theme-color meta tag); v21.0.0 (Gist/URL settings sync).
+99. https://github.com/victrme/Bonjourr/issues/799 — Bonjourr issue #799: inline per-query search engine switching request (Apr 2026, open, high engagement).
+100. https://github.com/victrme/Bonjourr/issues/750 — Bonjourr issue #750: quick-link items-per-row control request (Jan 2026, open).
+101. https://github.com/mue/mue/releases — Mue v7.6.0: QuoteInfoModal (author + source details), suggested starter packs, dynamic storage quota, blurhash metadata, accessibility improvements.
+102. https://docs.coingecko.com/reference/introduction — CoinGecko API v3 reference: `x-cg-demo-api-key` header now required on free tier; demo key self-served from CoinGecko dashboard; previously keyless endpoint is now gated.
+103. https://developer.chrome.com/docs/extensions/reference/api/sidePanel — chrome.sidePanel API (Chrome 114+, MV3): persistent sidebar panel for extensions; does not require NTP to be the active tab.
+104. https://developer.chrome.com/blog/anchor-positioning-api — CSS Anchor Positioning: `anchor-name`, `position-anchor`, `@position-try` fallbacks; Chrome 125+; Interop 2026 cross-browser target.
+105. https://github.com/BookCatKid/TablissNG/releases/tag/v1.6.5 — TablissNG v1.6.5: error-logging system with clipboard copy for user-submitted bug reports.
+106. https://github.com/topics/new-tab-extension — mutabu ambient sounds extension discovered via GitHub topic search (rain, forest, café looping audio via `<audio>`).
+107. https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system — MDN: Origin Private File System (OPFS); replaces base64-in-chrome.storage for large media files; no quota pressure.
+108. https://github.com/victrme/Bonjourr/issues/804 — Bonjourr issue #804: iOS-style drag-and-resize widget layout editor request (Apr 2026, open, high engagement).
+109. https://github.com/BookCatKid/TablissNG/releases/tag/v1.6.4 — TablissNG v1.6.4: online documentation site launched; confirms documentation site as table-stakes for store-ready NTP extension.
+110. https://developer.chrome.com/docs/ai/built-in — Chrome Built-in AI: Prompt API, Summarizer API, Writer API, Rewriter API, Translator API, Language Detector API — all Gemini Nano, Chrome 138+, on-device, in origin trial as of 2026-05-01.
+111. https://developer.mozilla.org/en-US/docs/Web/API/Popover_API — Popover API MDN: `popover="hint"`, `interestfor` attribute (hover-triggered popovers), `interest-delay` CSS property — Baseline 2026.
+112. https://css-tricks.com/interop-2026/ — Interop 2026 confirmed priorities: `contrast-color()`, container style queries, CSS Anchor Positioning, Popover API interest invokers, Custom Highlights (`::search-text`, `::target-text`), advanced `attr()` with type conversion.
+113. https://github.com/lukePeavey/quotable — Quotable API docs: `/quotes/random` is current canonical endpoint; `/random` marked deprecated and subject to removal; 180 req/min rate limit.
+114. https://github.com/ENCRE0520/EclipseTab — EclipseTab v1.3: "Zen Shelf" (free-position text + image sticky notes), "Focus Spaces" (per-context workspace switching); listed on CWS + AMO + Edge Add-ons.
+115. https://developer.chrome.com/docs/extensions/develop/concepts/storage-and-cookies — Chrome extension storage: `chrome.storage.local` is NOT cleared by "Clear browsing data"; `unlimitedStorage` permission removes 5 MB soft quota entirely.
+
 ---
 
-## Notes on this revision
+## Notes on this revision (2026-05-01)
 
-- v0.5.0 (current ship) closes out the v0.4 animated-background branch by promoting the v0.4.7–v0.4.14 patch series into a stable minor.
-- Items that were on the prior roadmap but are reframed below: **wallpapers + greeting + quote** (was v0.5, now v0.6 with a clearer renderer-per-kind architecture); **Notes + Pomodoro + Todo + Calendar** (was v0.6, now v0.6 with concrete API choices: localForage, `navigator.locks`, `.ics` URL); **settings JSON / OPML / multi-profile / Firefox port** (was v0.7, kept on v0.7 but split — settings + OPML moved earlier to v0.6 since they unblock workspaces).
-- The prior roadmap's v1.0 items (locked widget API, WCAG AA, i18n, CWS) survive intact.
-- Always-on items expanded to include CORS-proxy health, Open-Meteo changelog tracking, and Interop project tracking — all are zero-maintenance per release but real risks if neglected.
+- **Prior roadmap (2026-04-29, v0.5.0) was fully superseded.** All Now / Next / Later items from that revision shipped in v0.6.0–v0.9.0 and are moved to the Shipped section above with their actual ship dates.
+- **v1.0.0** is now the first open milestone. It is scoped tightly: the critical CoinGecko API key fix, a cluster of low-effort UX wins, and the distribution work (WCAG, i18n, store listings) needed to reach a wider audience.
+- **v1.1.0** adds platform leverage (Gist sync, Side Panel, video backgrounds) and the reader power-tools that were deferred from v0.9.
+- **v1.2.0+** holds large architectural commitments (widget API, drag-resize layout, OPFS migration) until v1.0 proves the widget set is stable.
+- **Fourteen new sources (#97–#115)** added from the 2026-05-01 research pass. The appendix now totals 115 numbered citations.
+- **CoinGecko API break** is the highest-urgency item: the free endpoint now requires `x-cg-demo-api-key` and the current widget is broken for users who haven't already set a key. This is a Now item, not a polish item.
+- **Chrome Built-in AI** (Sources 110) is tracked in Under Consideration rather than the roadmap tiers — the hardware gating (`Chrome 138+ + 8 GB RAM + compatible NPU`) makes market share too low for a committed item today, but it is the privacy-safe path for feed summarization and will be re-evaluated each release cycle.
