@@ -2,7 +2,7 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## v0.9.0 — 2026-05-01
 
 ### Added
 - **Theme expansion** — Appearance now supports System, Mocha, Macchiato, Frappe, and Latte. System resolves from `prefers-color-scheme` and updates live when the browser or OS color scheme changes.
