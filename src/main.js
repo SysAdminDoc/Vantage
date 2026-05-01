@@ -31,7 +31,7 @@ import { renderWidgetPicker } from "./widget-picker.js";
 import { toast } from "./utils/dom.js";
 import { makeReorderable, arrayMove } from "./utils/drag.js";
 import { applyThemePreference, onSystemThemeChange } from "./utils/theme.js";
-import { applyWorkspace, getActiveWorkspace, captureSnapshot } from "./utils/workspace.js";
+import { applyWorkspace, getActiveWorkspace, captureSnapshot, resolveWorkspaceSettings } from "./utils/workspace.js";
 window._vantageWorkspaceHelpers = { captureSnapshot: () => captureSnapshot(currentSettings) };
 
 let currentSettings;
@@ -155,8 +155,7 @@ function mountAll() {
   if (cryptoMount?._cryptoCleanup) { cryptoMount._cryptoCleanup(); cryptoMount._cryptoCleanup = null; }
 
   // Apply active workspace snapshot once; reused for all mounts below
-  const activeWs = getActiveWorkspace(currentSettings);
-  const effectiveSettings = activeWs ? applyWorkspace({ ...currentSettings }, activeWs) : currentSettings;
+  const effectiveSettings = getEffectiveSettings();
   applyTheme(effectiveSettings);
   applyAccent(effectiveSettings);
 
@@ -460,11 +459,16 @@ function applyTheme(settings) {
   applyThemePreference(settings?.theme || "mocha");
 }
 
+function getEffectiveSettings() {
+  return resolveWorkspaceSettings(currentSettings);
+}
+
 function watchSystemTheme() {
   if (systemThemeCleanup) return;
   systemThemeCleanup = onSystemThemeChange(() => {
-    if (currentSettings?.theme === "system") {
-      applyTheme(currentSettings);
+    const effectiveSettings = getEffectiveSettings();
+    if (effectiveSettings?.theme === "system") {
+      applyTheme(effectiveSettings);
     }
   });
 }

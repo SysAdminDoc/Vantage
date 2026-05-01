@@ -691,7 +691,7 @@ function buildWorkspacesSection(settings, onChange) {
       });
       const captureBtn = el("button", {
         type: "button", class: "button button--ghost button--small",
-        title: "Save current layout to this workspace",
+        title: "Save current visual profile and layout to this workspace",
         onClick: () => {
           const { captureSnapshot } = window._vantageWorkspaceHelpers || {};
           if (captureSnapshot) {
