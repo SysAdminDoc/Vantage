@@ -16,6 +16,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Scene preview controls and state badges** — Live background settings now show resolved theme/motion/weather/scenery state badges and session-only preview controls for time, season, weather, scenery, and holiday variants.
 - **Background QA gallery** — `qa-scenes.html` renders a grid of forced live-scene variants, with `node scripts/qa-scenes-smoke.mjs` covering the gallery and visual-control hooks.
 - **Local visual QA shim** — local-server runs now get a guarded `chrome.storage` shim so the new tab and QA gallery can render outside the extension runtime without changing installed-extension behavior.
+- **Visual QA URL overrides** — QA URLs now support deterministic theme, accent, motion, atmosphere, readability, and scenery overrides without saving those choices to user settings.
 
 ## v0.8.0 — 2026-04-30
 
