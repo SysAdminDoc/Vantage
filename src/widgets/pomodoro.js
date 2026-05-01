@@ -17,14 +17,16 @@ const STORAGE_KEY = "vantagePomodoro";
 // ---- State helpers -------------------------------------------------------
 
 async function readState() {
-  if (!chrome?.storage?.local) return null;
-  const d = await chrome.storage.local.get(STORAGE_KEY);
+  const chromeApi = globalThis.chrome;
+  if (!chromeApi?.storage?.local) return null;
+  const d = await chromeApi.storage.local.get(STORAGE_KEY);
   return d[STORAGE_KEY] || null;
 }
 
 async function writeState(state) {
-  if (!chrome?.storage?.local) return;
-  await chrome.storage.local.set({ [STORAGE_KEY]: state });
+  const chromeApi = globalThis.chrome;
+  if (!chromeApi?.storage?.local) return;
+  await chromeApi.storage.local.set({ [STORAGE_KEY]: state });
 }
 
 function freshState(cfg) {
@@ -280,7 +282,8 @@ export function renderPomodoro(mount, settings) {
   // ---- Cross-tab sync via storage.onChanged ----------------------------
 
   let storageUnlisten = null;
-  if (chrome?.storage?.onChanged) {
+  const chromeApi = globalThis.chrome;
+  if (chromeApi?.storage?.onChanged) {
     const handler = (changes, area) => {
       if (area !== "local" || !changes[STORAGE_KEY]) return;
       const newState = changes[STORAGE_KEY].newValue;
@@ -291,8 +294,8 @@ export function renderPomodoro(mount, settings) {
         stopTick();
       }
     };
-    chrome.storage.onChanged.addListener(handler);
-    storageUnlisten = () => chrome.storage.onChanged.removeListener(handler);
+    chromeApi.storage.onChanged.addListener(handler);
+    storageUnlisten = () => chromeApi.storage.onChanged.removeListener(handler);
   }
 
   // ---- Initial load -------------------------------------------------------
