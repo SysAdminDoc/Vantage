@@ -470,20 +470,35 @@ function getMoonPhase(date) {
  *  offset circle to carve the dark side out of the bright disc. The
  *  offset formula is correct for both waxing (mask on left, light on
  *  right) and waning (mask on right, light on left). */
+const MOON_VISIBLE_PHASES = new Set([
+  "dusk",
+  "nautical-dusk",
+  "astronomical-dusk",
+  "night",
+  "astronomical-night",
+  "astronomical-dawn",
+  "nautical-dawn"
+]);
+
 function moonSVG(phase) {
   const R = 50;
   const d = phase < 0.5 ? -4 * R * phase : 4 * R * (1 - phase);
   // Unique mask id per render so multiple SVGs in the document don't clash.
   const mid = "moonM_" + Math.random().toString(36).slice(2, 8);
+  const pid = "moonT_" + Math.random().toString(36).slice(2, 8);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
     <defs>
       <mask id="${mid}">
         <rect width="100" height="100" fill="white"/>
         <circle cx="${50 + d}" cy="50" r="50" fill="black"/>
       </mask>
+      <pattern id="${pid}" patternUnits="userSpaceOnUse" width="100" height="100">
+        <image href="assets/backgrounds/moon-surface.png" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice"/>
+      </pattern>
     </defs>
     <circle cx="50" cy="50" r="48" fill="#f0f0f5" mask="url(#${mid})"/>
-    <g fill="#d8d8e0" mask="url(#${mid})" opacity="0.5">
+    <circle cx="50" cy="50" r="48" fill="url(#${pid})" mask="url(#${mid})" opacity="0.82"/>
+    <g fill="#d8d8e0" mask="url(#${mid})" opacity="0.16">
       <circle cx="36" cy="38" r="4"/>
       <circle cx="58" cy="32" r="3"/>
       <circle cx="68" cy="56" r="5"/>
@@ -1451,12 +1466,20 @@ function updateScene(mount, weather, sunTimes) {
     // churn. Only update when the bucketed phase changes.
     const moon = mount.querySelector(".bg-moon");
     if (moon) {
-      const phaseFrac = getMoonPhase(now);
-      const bucket = Math.round(phaseFrac * 20) / 20; // 21 distinct values
-      if (moon._phase !== bucket) {
-        moon._phase = bucket;
-        moon.innerHTML = moonSVG(bucket);
-        moon.dataset.phaseFrac = bucket.toFixed(2);
+      if (!MOON_VISIBLE_PHASES.has(phase)) {
+        if (moon._phase !== null) {
+          moon._phase = null;
+          moon.innerHTML = "";
+          delete moon.dataset.phaseFrac;
+        }
+      } else {
+        const phaseFrac = getMoonPhase(now);
+        const bucket = Math.round(phaseFrac * 20) / 20; // 21 distinct values
+        if (moon._phase !== bucket) {
+          moon._phase = bucket;
+          moon.innerHTML = moonSVG(bucket);
+          moon.dataset.phaseFrac = bucket.toFixed(2);
+        }
       }
     }
 
