@@ -16,7 +16,8 @@
 //   .bg-fireflies     summer twilight fireflies (temperate, summer)
 //   .bg-flash         full lightning flash (storm)
 //   .bg-horizon-flash distant lightning at horizon (rain without storm)
-//   .bg-sun           sun or moon disc, positioned along an arc
+//   .bg-sun           sun disc, positioned along the daytime arc
+//   .bg-moon          textured lunar phase disc for twilight/night
 //   .bg-birds         V-formation flock crossing sky (clear daylight)
 //   .bg-mountains     distant atmospheric mountain ridges (3-layer parallax)
 //   .bg-scene-depth   locality-aware haze and ground atmosphere
@@ -135,9 +136,26 @@ const CODE_TO_WEATHER = {
 };
 
 const WEATHER_VALUES = new Set(Object.values(CODE_TO_WEATHER));
+const LOCALITY_VALUES = new Set([
+  "auto",
+  "coastal",
+  "urban",
+  "forest",
+  "lake",
+  "mountain",
+  "desert",
+  "polar",
+  "tropical",
+  "meadow",
+  "default"
+]);
 
 function normalizeWeatherOverride(value) {
   return WEATHER_VALUES.has(value) ? value : null;
+}
+
+function normalizeLocalityOverride(value) {
+  return LOCALITY_VALUES.has(value) ? value : null;
 }
 
 // Per-weather sky palette overrides. We replace the keyframe-computed
@@ -243,16 +261,16 @@ const OAK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 320" p
 // Distant mountain ranges — three atmospheric ridge layers for parallax. Each
 // layer is its own SVG so it can be opacity/blur tuned independently in CSS.
 const MOUNTAINS_FAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" preserveAspectRatio="xMidYMax slice">
-  <path fill="currentColor" d="M0 200 L0 152 L70 136 L132 146 L205 112 L268 132 L335 96 L404 122 L470 88 L545 116 L612 84 L690 118 L760 98 L832 126 L900 90 L982 122 L1058 104 L1130 132 L1200 118 L1200 200 Z"/>
-  <path class="mountain-snowcap" fill="#edf4f7" opacity="0.12" d="M448 98 L470 88 L498 102 L480 100 L470 94 L462 102 Z M592 98 L612 84 L638 103 L622 100 L612 91 L604 102 Z M878 104 L900 90 L926 106 L910 102 L900 97 L892 106 Z"/>
+  <path fill="currentColor" d="M0 200 L0 150 C62 143 106 145 150 132 C210 116 252 120 306 100 C372 76 436 102 492 82 C558 58 626 96 690 80 C748 66 798 102 856 88 C924 70 982 110 1048 98 C1104 88 1156 104 1200 98 L1200 200 Z"/>
+  <path class="mountain-snowcap" fill="#edf4f7" opacity="0.12" d="M462 91 C474 84 486 84 500 91 L485 90 L474 86 L466 94 Z M604 88 C618 79 632 82 648 95 L630 92 L616 85 L608 96 Z M910 98 C924 89 940 92 958 106 L936 102 L924 94 L916 108 Z"/>
 </svg>`;
 const MOUNTAINS_MID_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" preserveAspectRatio="xMidYMax slice">
-  <path fill="currentColor" d="M0 220 L0 168 L80 148 L145 160 L220 118 L288 144 L360 96 L430 132 L510 88 L586 138 L665 96 L742 134 L824 92 L910 144 L990 112 L1065 136 L1138 116 L1200 126 L1200 220 Z"/>
-  <path class="mountain-snowcap" fill="#eff6f8" opacity="0.16" d="M326 122 L360 96 L398 128 L374 120 L360 107 L344 126 Z M478 122 L510 88 L552 128 L524 118 L510 102 L494 126 Z M790 122 L824 92 L866 132 L838 124 L824 104 L806 130 Z"/>
+  <path fill="currentColor" d="M0 220 L0 174 C66 160 126 166 188 138 C250 110 304 134 358 94 C420 52 480 126 536 88 C600 46 660 118 728 86 C790 56 850 130 920 102 C990 74 1040 136 1104 112 C1142 98 1174 112 1200 126 L1200 220 Z"/>
+  <path class="mountain-snowcap" fill="#eff6f8" opacity="0.17" d="M326 120 C344 101 360 94 380 105 L362 107 L348 118 L336 130 Z M492 114 C510 90 528 86 552 104 L528 100 L512 94 L500 122 Z M788 112 C814 88 838 88 866 118 L838 108 L820 98 L804 130 Z"/>
 </svg>`;
 const MOUNTAINS_NEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" preserveAspectRatio="xMidYMax slice">
-  <path fill="currentColor" d="M0 240 L0 210 L82 176 L152 196 L232 128 L292 168 L372 98 L456 164 L535 122 L622 172 L710 94 L785 160 L874 112 L960 178 L1042 138 L1120 164 L1200 150 L1200 240 Z"/>
-  <path class="mountain-snowcap" fill="#f1f7f8" opacity="0.20" d="M212 154 L232 128 L260 162 L240 152 L232 139 L220 158 Z M330 132 L372 98 L414 138 L388 126 L372 112 L352 136 Z M674 132 L710 94 L752 138 L724 128 L710 108 L692 136 Z M846 132 L874 112 L906 144 L884 136 L874 122 L860 140 Z"/>
+  <path fill="currentColor" d="M0 240 L0 214 C72 194 126 202 196 154 C260 108 318 160 382 104 C448 46 522 154 590 118 C664 80 718 168 790 114 C862 60 930 168 1008 134 C1088 98 1144 138 1200 150 L1200 240 Z"/>
+  <path class="mountain-snowcap" fill="#f1f7f8" opacity="0.20" d="M206 160 C224 136 238 128 262 146 L240 144 L228 134 L216 166 Z M338 134 C356 108 376 96 406 116 L378 114 L360 106 L346 142 Z M678 136 C696 108 716 94 746 116 L720 112 L706 104 L690 144 Z M846 132 C864 116 882 112 910 138 L884 134 L870 122 L858 144 Z"/>
 </svg>`;
 
 // V-formation bird flock. Each bird is two arcs forming the wing-flap shape.
@@ -556,16 +574,33 @@ function parseSceneDateOverride(value) {
   return date;
 }
 
+function parseSceneTimeOverride(value) {
+  if (typeof value !== "string") return null;
+  const match = value.match(/^(\d{1,2})(?::(\d{2}))?$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = match[2] ? Number(match[2]) : 0;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  return { hours, minutes };
+}
+
+function parseSceneCoordinate(value, min, max) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= min && n <= max ? n : null;
+}
+
 function sceneNow(mount) {
-  const override = mount?._bgDateOverride;
-  if (!override) return new Date();
   const current = new Date();
+  const override = mount?._bgDateOverride;
+  const timeOverride = mount?._bgTimeOverride;
+  if (!override && !timeOverride) return current;
+  const source = override || current;
   return new Date(
-    override.getFullYear(),
-    override.getMonth(),
-    override.getDate(),
-    current.getHours(),
-    current.getMinutes(),
+    source.getFullYear(),
+    source.getMonth(),
+    source.getDate(),
+    timeOverride?.hours ?? current.getHours(),
+    timeOverride?.minutes ?? current.getMinutes(),
     current.getSeconds(),
     current.getMilliseconds()
   );
@@ -602,8 +637,16 @@ const URBAN_REGIONS = [
   [33.6, 34.4, -118.75, -117.60, "los-angeles"],
   [37.2, 38.2, -122.75, -121.70, "san-francisco-bay"],
   [41.5, 42.2,  -88.10,  -87.30, "chicago"],
+  [38.6, 39.1,  -77.35,  -76.80, "washington-dc"],
+  [42.1, 42.6,  -71.35,  -70.80, "boston"],
+  [43.4, 44.0,  -79.85,  -79.05, "toronto"],
+  [47.3, 47.9, -122.55, -121.95, "seattle"],
   [51.2, 51.8,   -0.55,    0.35, "london"],
   [48.6, 49.1,    2.00,    2.70, "paris"],
+  [52.2, 52.8,   13.00,   13.80, "berlin"],
+  [41.6, 42.0,   12.25,   12.75, "rome"],
+  [40.2, 40.7,   -3.95,   -3.45, "madrid"],
+  [1.15, 1.55,  103.55,  104.10, "singapore"],
   [35.4, 36.0,  139.30,  140.20, "tokyo"]
 ];
 
@@ -615,8 +658,14 @@ const COASTAL_REGIONS = [
   [36.7, 37.3,  -76.50,  -75.70, "virginia-beach"],
   [43.0, 49.5, -125.20, -122.00, "pacific-northwest"],
   [41.0, 42.9,  -71.60,  -69.80, "new-england"],
+  [36.4, 38.8, -123.10, -121.70, "central-california"],
+  [51.0, 52.0,    3.70,    4.70, "dutch-coast"],
+  [38.3, 39.2,   -9.60,   -8.70, "lisbon"],
+  [41.1, 41.7,    1.75,    2.55, "barcelona"],
   [33.4, 34.2,  150.50,  151.50, "sydney"],
-  [-23.2, -22.5, -43.80,  -42.70, "rio"]
+  [-23.2, -22.5, -43.80,  -42.70, "rio"],
+  [-34.4, -33.4,  18.00,   19.00, "cape-town"],
+  [-37.2, -36.4, 174.40,  175.20, "auckland"]
 ];
 
 const LAKE_REGIONS = [
@@ -624,16 +673,22 @@ const LAKE_REGIONS = [
   [41.3, 49.2,  -93.20,  -75.00, "great-lakes"],
   [38.7, 39.4, -120.30, -119.75, "tahoe"],
   [45.6, 46.3,    8.40,   10.10, "italian-lakes"],
-  [46.0, 47.2,    6.00,    7.80, "geneva"]
+  [46.0, 47.2,    6.00,    7.80, "geneva"],
+  [47.4, 47.9,    8.20,    8.80, "zurich"],
+  [45.1, 45.7,    5.60,    6.30, "annecy"],
+  [35.0, 36.8,  137.80,  139.10, "fuji-five-lakes"]
 ];
 
 const MOUNTAIN_REGIONS = [
   // [latMin, latMax, lonMin, lonMax, name]
   [35.0, 49.5, -118.00, -104.00, "rockies"],
+  [31.0, 36.8, -112.80, -105.00, "southwest-highlands"],
   [44.0, 48.5,    5.00,   16.50, "alps"],
   [27.0, 36.5,   72.00,   95.00, "himalaya"],
   [-45.0, -5.0,  -75.50,  -65.00, "andes"],
-  [35.0, 37.0,  137.00,  139.50, "japanese-alps"]
+  [35.0, 37.0,  137.00,  139.50, "japanese-alps"],
+  [60.0, 69.5,    5.00,   31.00, "scandes"],
+  [-46.0, -40.0, 167.00,  174.00, "southern-alps-nz"]
 ];
 
 /** Returns true if (lat, lon) falls inside a known desert region. */
@@ -721,6 +776,7 @@ function resetBackgroundMount(mount) {
   mount._bgBirthday = null;
   mount._bgLocality = null;
   mount._bgDateOverride = null;
+  mount._bgTimeOverride = null;
   mount._bgFirstSnowAt = 0;
   mount._bgPrevWeather = null;
   mount._bgRainbowUntil = 0;
@@ -873,9 +929,16 @@ export async function renderBackground(mount, settings, saveSettings) {
   // We refine in place once real data arrives.
   const qaParams = new URLSearchParams(globalThis.location?.search || "");
   const forcedWeather = normalizeWeatherOverride(qaParams.get("qaWeather"));
+  const forcedLocality = normalizeLocalityOverride(qaParams.get("qaLocality"));
+  const forcedLat = parseSceneCoordinate(qaParams.get("qaLat"), -90, 90);
+  const forcedLon = parseSceneCoordinate(qaParams.get("qaLon"), -180, 180);
+  const forcedLocation = forcedLat == null || forcedLon == null
+    ? null
+    : { latitude: forcedLat, longitude: forcedLon, label: "QA scene" };
   let weather = forcedWeather || "clear";
-  let location = settings.weather?.location || null;
+  let location = forcedLocation || settings.weather?.location || null;
   const qaDate = qaParams.get("qaDate");
+  const qaTime = qaParams.get("qaTime");
 
   // Seed saved scene context before the first paint. Without this, the
   // immediate render defaults to generic meadow/default scenery and the real
@@ -883,8 +946,9 @@ export async function renderBackground(mount, settings, saveSettings) {
   mount._bgLat          = location?.latitude  ?? null;
   mount._bgLon          = location?.longitude ?? null;
   mount._bgBirthday     = settings.greeting?.birthday || null; // "MM-DD"
-  mount._bgLocality     = settings.appearance?.locality || "auto";
+  mount._bgLocality     = forcedLocality || settings.appearance?.locality || "auto";
   mount._bgDateOverride = parseSceneDateOverride(qaDate || settings.background?.qaDate);
+  mount._bgTimeOverride = parseSceneTimeOverride(qaTime || settings.background?.qaTime);
 
   // Sun-event times for the location, recomputed daily. Default values
   // are placeholder times for "today, somewhere temperate" — they get
@@ -908,7 +972,7 @@ export async function renderBackground(mount, settings, saveSettings) {
   updateScene(mount, weather, sunTimes);
 
   // ---- Now resolve real location + weather in the background.
-  if (!location) {
+  if (!location && !forcedLocation) {
     try {
       location = await detectLocation();
       if (settings.weather) {
@@ -923,10 +987,11 @@ export async function renderBackground(mount, settings, saveSettings) {
   mount._bgLat       = location?.latitude  ?? null;
   mount._bgLon       = location?.longitude ?? null;
   mount._bgBirthday  = settings.greeting?.birthday || null; // "MM-DD"
-  mount._bgLocality  = settings.appearance?.locality || "auto";
+  mount._bgLocality  = forcedLocality || settings.appearance?.locality || "auto";
   // Hidden QA hook for screenshots: ?qaDate=YYYY-MM-DD forces seasonal and
   // holiday evaluation without changing the user's clock.
   mount._bgDateOverride = parseSceneDateOverride(qaDate || settings.background?.qaDate);
+  mount._bgTimeOverride = parseSceneTimeOverride(qaTime || settings.background?.qaTime);
 
   // Compute sun-event times. Strategy:
   //   1) Open-Meteo's `daily.sunrise[0]` / `daily.sunset[0]` (requested
@@ -1499,10 +1564,9 @@ function updateScene(mount, weather, sunTimes) {
       (now.getTime() - firstSnowAt) < 86400000;
     mount.dataset.firstSnow = inFirstSnowWindow ? "on" : "off";
 
-    // Wet/heavy weather hides or dims the sun behind the cloud deck. Rain
-    // gets full hide because a visible warm sun behind rain streaks reads
-    // unnatural. Drizzle keeps a faint sun (it's light rain). Overcast and
-    // heavy-snow dim heavily but leave a cool diffuse disc.
+    // Wet/heavy weather hides or dims the solar disc behind the cloud deck.
+    // The moon is rendered by .bg-moon; .bg-sun is always hidden below the
+    // horizon so twilight/night never produces duplicate lunar discs.
     const sunHide = weather === "storm" || weather === "heavy-rain" || weather === "rain";
     const sunDim  = weather === "overcast" || weather === "heavy-snow" || weather === "drizzle";
 
@@ -1511,15 +1575,14 @@ function updateScene(mount, weather, sunTimes) {
       if (sunPos) {
         sun.style.left = `${(sunPos.x * 100).toFixed(2)}%`;
         sun.style.top  = `${(sunPos.y * 100).toFixed(2)}%`;
+        mount.style.setProperty("--solar-x", `${(sunPos.x * 100).toFixed(2)}%`);
+        mount.style.setProperty("--solar-y", `${(sunPos.y * 100).toFixed(2)}%`);
+        const solarOpacity = computeSolarOpacity(phase, sunPos);
         if (sunHide)      sun.style.opacity = "0";
-        else if (sunDim)  sun.style.opacity = "0.3";
-        else              sun.style.opacity = "1";
+        else if (sunDim)  sun.style.opacity = Math.min(solarOpacity, 0.3).toFixed(2);
+        else              sun.style.opacity = solarOpacity.toFixed(2);
       } else {
-        sun.style.left = "82%";
-        sun.style.top  = "16%";
-        if (sunHide)                sun.style.opacity = "0";
-        else if (phase === "night") sun.style.opacity = "1";
-        else                        sun.style.opacity = "0.4";
+        sun.style.opacity = "0";
       }
     }
   };
@@ -1609,6 +1672,20 @@ function computeSunPosition(now, sunrise, sunset) {
   if (t < 0 || t > 1) return null;
   const x = 0.06 + t * 0.88;                   // 6% to 94% horizontal
   const arc = Math.sin(t * Math.PI);            // 0..1..0 (peaks at noon)
-  const y = 0.86 - arc * 0.72;                  // 86% (low horizon) → 14% (high noon)
+  const y = 0.84 - arc * 0.76;                  // 84% (low horizon) -> 8% (high noon)
   return { x, y };
+}
+
+function computeSolarOpacity(phase, sunPos) {
+  let opacity = 0.78;
+  if (phase === "morning" || phase === "afternoon") opacity = 0.72;
+  if (phase === "sunrise" || phase === "golden-hour" || phase === "sunset") opacity = 0.58;
+
+  // Keep the solar disc atmospheric when its arc crosses the greeting band.
+  // The UI keeps contrast, while the rays/halo still preserve time-of-day mood.
+  if (sunPos && sunPos.x > 0.36 && sunPos.x < 0.72 && sunPos.y > 0.16 && sunPos.y < 0.34) {
+    opacity *= 0.72;
+  }
+
+  return Math.max(0.38, Math.min(0.86, opacity));
 }
