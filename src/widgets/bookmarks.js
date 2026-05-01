@@ -27,14 +27,15 @@ export function renderBookmarks(mount, settings, { onAttachDragHandle } = {}) {
 
   if (onAttachDragHandle) onAttachDragHandle(header.querySelector(".panel-header__drag"));
 
-  if (!chrome?.bookmarks) {
+  const chromeApi = globalThis.chrome;
+  if (!chromeApi?.bookmarks) {
     body.appendChild(el("p", { class: "panel-empty" }, [
       "Bookmarks unavailable — grant the bookmarks permission in your browser's extension settings."
     ]));
     return;
   }
 
-  chrome.bookmarks.getTree().then((tree) => {
+  chromeApi.bookmarks.getTree().then((tree) => {
     const flat = flattenBookmarks(tree, cfg.maxItems || 24);
     if (flat.length === 0) {
       body.appendChild(el("p", { class: "panel-empty" }, ["No bookmarks found."]));
