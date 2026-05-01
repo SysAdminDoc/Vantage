@@ -106,7 +106,7 @@ Animated mode includes **Motion** controls (System / Still / Calm / Full) and **
 - **System, Catppuccin Mocha, Macchiato, Frappe, and Latte themes** with full design-token system, careful tonal layering, refined shadows, and ambient gradient backdrop.
 - **9-color accent picker** — Mauve · Blue · Green · Peach · Teal · Lavender · Red · Flamingo · Sky.
 - **Custom CSS injection** — paste any CSS into the textarea; live-applies as you type.
-- **Locality scenery override** — pick coastal / urban / desert / default, or auto.
+- **Locality scenery override** — pick auto, coastal, urban, forest, mountain, lake, meadow, tropical, desert, polar, or none.
 - **Multi-profile workspaces** — snapshot your current theme, scenery, background, and layout, then switch profiles with View Transitions. (Firefox: optional container → workspace mapping.)
 - **Onboarding wizard** on first run — three layout presets (Minimal, Standard, Full) plus optional name + weather location.
 - **Reddit feed presets** — one-click add for popular subreddits.
@@ -197,7 +197,7 @@ Highlights:
 - **Theme** — System, Mocha, Macchiato, Frappe, or Latte, plus 9 accent colors and a custom CSS textarea.
 - **Background** — Animated / Solid / Gradient / Image URL / Image upload / Bing daily. Animated includes Motion and Atmosphere controls.
 - **Greeting** — display name + birthday (MM-DD; triggers all-day balloons on the day).
-- **Scenery** — Auto / Coastal / Urban / Desert / None — overrides the auto-detected biome scenery.
+- **Scenery** — Auto / Coastal / Urban / Forest / Mountain / Lake / Meadow / Tropical / Desert / Polar / None — overrides the auto-detected biome scenery.
 - **Search** — pick the default engine, or supply a custom URL like `https://my-searx.example.com/search?q=%s`.
 - **Weather** — type a city name and hit "Set", or click "Reset to auto-detect" to use geolocation.
 - **Workspaces** — name multiple visual/layout profiles, snapshot the current one, switch between them.
