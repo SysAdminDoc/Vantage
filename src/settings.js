@@ -8,6 +8,17 @@ import { geocodeCity } from "./widgets/weather.js";
 import { saveSettings, getDefaults } from "./storage.js";
 import { exportOPML, importOPML } from "./utils/opml.js";
 import { THEME_OPTIONS, applyThemePreference } from "./utils/theme.js";
+import {
+  clearBackgroundPreview,
+  getBackgroundPreview,
+  hasBackgroundPreview,
+  PREVIEW_DATE_OPTIONS,
+  PREVIEW_HOLIDAY_OPTIONS,
+  PREVIEW_LOCALITY_OPTIONS,
+  PREVIEW_TIME_OPTIONS,
+  PREVIEW_WEATHER_OPTIONS,
+  setBackgroundPreview
+} from "./utils/background-preview.js";
 
 export function renderSettingsPanel(panel, settings, onChange, { showWizard } = {}) {
   clear(panel);
@@ -330,9 +341,213 @@ function buildAppearance(settings, onChange) {
 
 /* ---- Background -------------------------------------------------------- */
 
+const THEME_WALLPAPER_DEFAULTS = {
+  mocha: {
+    solid: "#1e1e2e",
+    gradient: { from: "#1e1e2e", to: "#313244", angle: 135 }
+  },
+  macchiato: {
+    solid: "#24273a",
+    gradient: { from: "#24273a", to: "#363a4f", angle: 140 }
+  },
+  frappe: {
+    solid: "#303446",
+    gradient: { from: "#303446", to: "#414559", angle: 145 }
+  },
+  latte: {
+    solid: "#eff1f5",
+    gradient: { from: "#eff1f5", to: "#dce0e8", angle: 135 }
+  }
+};
+
+const BACKGROUND_PRESETS = [
+  {
+    id: "focus",
+    title: "Focus",
+    hint: "Still, soft, high contrast",
+    patch: {
+      motion: "still",
+      atmosphere: "soft",
+      readability: "high",
+      locality: "default"
+    }
+  },
+  {
+    id: "ambient",
+    title: "Ambient",
+    hint: "Calm live scene",
+    patch: {
+      motion: "calm",
+      atmosphere: "balanced",
+      readability: "standard",
+      locality: "auto"
+    }
+  },
+  {
+    id: "showcase",
+    title: "Showcase",
+    hint: "Full motion, vivid sky",
+    patch: {
+      motion: "full",
+      atmosphere: "vivid",
+      readability: "minimal",
+      locality: "auto"
+    }
+  },
+  {
+    id: "wallpaper",
+    title: "Wallpaper",
+    hint: "Coastal, vivid, minimal overlay",
+    patch: {
+      motion: "full",
+      atmosphere: "vivid",
+      readability: "minimal",
+      locality: "coastal"
+    }
+  }
+];
+
+function ensureVisualSettings(settings) {
+  const defaults = getDefaults();
+  settings.background = { ...defaults.background, ...(settings.background || {}) };
+  settings.appearance = { ...defaults.appearance, ...(settings.appearance || {}) };
+  return settings.background;
+}
+
+function resolvedThemeId(settings) {
+  const requested = settings.theme || "mocha";
+  if (requested === "system") {
+    const resolved = document.documentElement.dataset.theme;
+    return THEME_WALLPAPER_DEFAULTS[resolved] ? resolved : "mocha";
+  }
+  return THEME_WALLPAPER_DEFAULTS[requested] ? requested : "mocha";
+}
+
+function themeWallpaperDefaults(settings) {
+  return THEME_WALLPAPER_DEFAULTS[resolvedThemeId(settings)] || THEME_WALLPAPER_DEFAULTS.mocha;
+}
+
+function titleCaseToken(value) {
+  return String(value || "auto")
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function themeLabel(settings) {
+  const requested = settings.theme || "mocha";
+  const base = THEME_OPTIONS.find((item) => item.value === requested)?.label || titleCaseToken(requested);
+  return requested === "system"
+    ? `${base} (${titleCaseToken(resolvedThemeId(settings))})`
+    : base;
+}
+
+function applyBackgroundPreset(settings, preset) {
+  ensureVisualSettings(settings);
+  settings.background = {
+    ...settings.background,
+    enabled: true,
+    kind: "animated",
+    motion: preset.patch.motion,
+    atmosphere: preset.patch.atmosphere,
+    readability: preset.patch.readability
+  };
+  settings.appearance = {
+    ...settings.appearance,
+    locality: preset.patch.locality
+  };
+}
+
+function buildBackgroundPresets(settings, onChange, rerender) {
+  const wrap = el("div", { class: "visual-preset-grid" });
+  for (const preset of BACKGROUND_PRESETS) {
+    wrap.appendChild(el("button", {
+      type: "button",
+      class: "visual-preset",
+      onClick: () => {
+        applyBackgroundPreset(settings, preset);
+        onChange(settings);
+        rerender();
+        toast(`Applied ${preset.title} background preset.`, "success");
+      }
+    }, [
+      el("strong", {}, [preset.title]),
+      el("span", {}, [preset.hint])
+    ]));
+  }
+  return wrap;
+}
+
+function stateBadge(label, value, tone = "") {
+  return el("span", { class: `visual-state-badge${tone ? ` visual-state-badge--${tone}` : ""}` }, [
+    el("span", { class: "visual-state-badge__label" }, [label]),
+    el("strong", {}, [value || "Auto"])
+  ]);
+}
+
+function buildBackgroundStateGrid(settings) {
+  const bg = settings.background || {};
+  const mount = document.getElementById("background-mount");
+  const preview = getBackgroundPreview();
+  const items = [
+    stateBadge("Theme", themeLabel(settings)),
+    stateBadge("Accent", titleCaseToken(settings.accent || "mauve")),
+    stateBadge("Style", titleCaseToken(bg.kind || "animated")),
+    stateBadge("Motion", titleCaseToken(mount?.dataset.motion || bg.motion || "system")),
+    stateBadge("Atmosphere", titleCaseToken(mount?.dataset.atmosphere || bg.atmosphere || "balanced")),
+    stateBadge("Readability", titleCaseToken(mount?.dataset.readability || bg.readability || "standard")),
+    stateBadge("Scenery", titleCaseToken(mount?.dataset.locality || settings.appearance?.locality || "auto")),
+    stateBadge("Weather", titleCaseToken(mount?.dataset.weather || "pending")),
+    stateBadge("Phase", titleCaseToken(mount?.dataset.phase || "pending"))
+  ];
+  if (hasBackgroundPreview(preview)) items.push(stateBadge("Preview", "On", "active"));
+  return el("div", { class: "visual-state-grid" }, items);
+}
+
+function previewSegment(label, key, options, preview, rerender) {
+  return el("div", { class: "preview-control" }, [
+    el("span", { class: "preview-control__label" }, [label]),
+    segmented({
+      ariaLabel: `${label} preview`,
+      value: preview[key] || "",
+      options,
+      onChange: (v) => {
+        setBackgroundPreview({ [key]: v });
+        rerender();
+      }
+    })
+  ]);
+}
+
+function buildScenePreviewControls(rerender) {
+  const preview = getBackgroundPreview();
+  const clearBtn = el("button", {
+    type: "button",
+    class: "button button--ghost",
+    disabled: !hasBackgroundPreview(preview),
+    onClick: () => {
+      clearBackgroundPreview();
+      rerender();
+      toast("Background preview cleared.", "info");
+    }
+  }, [iconNode("refresh", { size: 14 }), " Reset preview"]);
+
+  return el("div", { class: "scene-preview" }, [
+    el("div", { class: "scene-preview__grid" }, [
+      previewSegment("Time", "time", PREVIEW_TIME_OPTIONS, preview, rerender),
+      previewSegment("Season", "date", PREVIEW_DATE_OPTIONS, preview, rerender),
+      previewSegment("Weather", "weather", PREVIEW_WEATHER_OPTIONS, preview, rerender),
+      previewSegment("Scenery", "locality", PREVIEW_LOCALITY_OPTIONS, preview, rerender),
+      previewSegment("Event", "holiday", PREVIEW_HOLIDAY_OPTIONS, preview, rerender)
+    ]),
+    clearBtn
+  ]);
+}
+
 function buildBackground(settings, onChange) {
   const sec = section("Background", "image");
-  const bg  = settings.background || {};
+  const bg  = ensureVisualSettings(settings);
   const g   = group();
 
   g.appendChild(row(
@@ -364,6 +579,11 @@ function buildBackground(settings, onChange) {
     }
   });
   g.appendChild(rowColumn("Style", kindSeg, "Choose a live scene, flat color, gradient, local image, URL image, or daily Bing wallpaper."));
+  g.appendChild(rowColumn(
+    "Presets",
+    buildBackgroundPresets(settings, onChange, renderKindRows),
+    "Apply a complete motion, atmosphere, readability, and scenery profile."
+  ));
   sec.appendChild(g);
 
   // Dynamic sub-options container
@@ -373,6 +593,13 @@ function buildBackground(settings, onChange) {
   function renderKindRows() {
     clear(kindHost);
     const kind = settings.background.kind || "animated";
+    const themeDefaults = themeWallpaperDefaults(settings);
+
+    kindHost.appendChild(rowColumn(
+      "Current state",
+      buildBackgroundStateGrid(settings),
+      "Resolved values after theme, system motion, weather, scenery, and preview overrides."
+    ));
 
     if (kind === "animated") {
       const reducedMotionActive =
@@ -383,6 +610,11 @@ function buildBackground(settings, onChange) {
       kindHost.appendChild(el("p", { class: "settings-section__hint" }, [
         "Live sky follows time, local weather, season, moon phase, and the Scenery setting."
       ]));
+      kindHost.appendChild(rowColumn(
+        "Preview scene",
+        buildScenePreviewControls(renderKindRows),
+        "Session-only preview controls for testing live background variants without saving them."
+      ));
       kindHost.appendChild(rowColumn(
         "Motion",
         segmented({
@@ -397,6 +629,7 @@ function buildBackground(settings, onChange) {
           onChange: (v) => {
             settings.background.motion = v;
             onChange(settings);
+            renderKindRows();
           }
         }),
         motionHint
@@ -414,24 +647,53 @@ function buildBackground(settings, onChange) {
           onChange: (v) => {
             settings.background.atmosphere = v;
             onChange(settings);
+            renderKindRows();
           }
         }),
         "Soft favors readability and haze. Vivid reduces the overlay so sky, weather, and foreground detail come through more strongly."
+      ));
+      kindHost.appendChild(rowColumn(
+        "Readability",
+        segmented({
+          ariaLabel: "Animated background readability",
+          value: settings.background.readability || "standard",
+          options: [
+            { value: "minimal",  label: "Minimal"  },
+            { value: "standard", label: "Standard" },
+            { value: "high",     label: "High"     }
+          ],
+          onChange: (v) => {
+            settings.background.readability = v;
+            onChange(settings);
+            renderKindRows();
+          }
+        }),
+        "High strengthens the page overlay independent of sky intensity. Minimal gives live scenes more room."
       ));
     }
 
     if (kind === "solid") {
       const inp = el("input", {
         type: "color", class: "color-input",
-        value: settings.background.solid || "#1e1e2e",
+        value: settings.background.solid || themeDefaults.solid,
         "aria-label": "Background color",
         onInput: (e) => { settings.background.solid = e.target.value; onChange(settings); }
       });
+      const defaultBtn = el("button", {
+        type: "button",
+        class: "button button--ghost",
+        onClick: () => {
+          settings.background.solid = themeDefaults.solid;
+          onChange(settings);
+          renderKindRows();
+        }
+      }, [iconNode("palette", { size: 14 }), " Use theme color"]);
       kindHost.appendChild(row("Color", null, inp));
+      kindHost.appendChild(row("", null, defaultBtn));
     }
 
     if (kind === "gradient") {
-      const gd = settings.background.gradient || { from: "#1e1e2e", to: "#313244", angle: 135 };
+      const gd = settings.background.gradient || themeDefaults.gradient;
       const fromIn = el("input", {
         type: "color", class: "color-input",
         value: gd.from,
@@ -456,6 +718,16 @@ function buildBackground(settings, onChange) {
       kindHost.appendChild(row("From color", null, fromIn));
       kindHost.appendChild(row("To color", null, toIn));
       kindHost.appendChild(row("Angle (deg)", "0–360°", angleIn));
+      const defaultBtn = el("button", {
+        type: "button",
+        class: "button button--ghost",
+        onClick: () => {
+          settings.background.gradient = cloneValue(themeDefaults.gradient);
+          onChange(settings);
+          renderKindRows();
+        }
+      }, [iconNode("palette", { size: 14 }), " Use theme gradient"]);
+      kindHost.appendChild(row("", null, defaultBtn));
     }
 
     if (kind === "image-url") {

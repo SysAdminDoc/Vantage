@@ -36,6 +36,7 @@ const DEFAULTS = {
     kind: "animated",       // "animated" | "solid" | "gradient" | "image-url" | "image-upload" | "bing-daily"
     motion: "system",        // "system" | "still" | "calm" | "full"
     atmosphere: "balanced",  // "soft" | "balanced" | "vivid"
+    readability: "standard", // "minimal" | "standard" | "high"
     solid: "#1e1e2e",
     gradient: { from: "#1e1e2e", to: "#313244", angle: 135 },
     imageUrl: "",

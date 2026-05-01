@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vantage Background QA Scenes</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #11111b;
+      --panel: #181825;
+      --border: #313244;
+      --text: #cdd6f4;
+      --muted: #a6adc8;
+      --accent: #cba6f7;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      backdrop-filter: blur(16px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    code {
+      color: var(--accent);
+      font-size: 12px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(390px, 1fr));
+      gap: 18px;
+      padding: 18px;
+    }
+
+    article {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+    }
+
+    article h2 {
+      margin: 0;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    iframe {
+      display: block;
+      width: 100%;
+      height: 360px;
+      border: 0;
+      background: #1e1e2e;
+    }
+
+    @media (max-width: 520px) {
+      header {
+        display: block;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+        padding: 12px;
+      }
+
+      iframe {
+        height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Background QA Scenes</h1>
+      <p>Live-scene matrix using <code>qaWeather</code>, <code>qaTime</code>, <code>qaDate</code>, and <code>qaLocality</code>.</p>
+    </div>
+    <code>node scripts/qa-scenes-smoke.mjs</code>
+  </header>
+
+  <main>
+    <article>
+      <h2>Urban clear day</h2>
+      <iframe title="Urban clear day" src="newtab.html?qaLat=40.7128&amp;qaLon=-74.0060&amp;qaWeather=clear&amp;qaTime=14:00&amp;qaDate=2026-06-21&amp;qaLocality=urban"></iframe>
+    </article>
+    <article>
+      <h2>Coastal golden hour</h2>
+      <iframe title="Coastal golden hour" src="newtab.html?qaLat=36.6002&amp;qaLon=-121.8947&amp;qaWeather=clear&amp;qaTime=19:15&amp;qaDate=2026-07-15&amp;qaLocality=coastal"></iframe>
+    </article>
+    <article>
+      <h2>Forest rain</h2>
+      <iframe title="Forest rain" src="newtab.html?qaLat=47.6062&amp;qaLon=-122.3321&amp;qaWeather=rain&amp;qaTime=15:30&amp;qaDate=2026-10-10&amp;qaLocality=forest"></iframe>
+    </article>
+    <article>
+      <h2>Polar aurora night</h2>
+      <iframe title="Polar aurora night" src="newtab.html?qaLat=64.1466&amp;qaLon=-21.9426&amp;qaWeather=clear&amp;qaTime=23:00&amp;qaDate=2026-12-21&amp;qaLocality=polar"></iframe>
+    </article>
+    <article>
+      <h2>Desert midday</h2>
+      <iframe title="Desert midday" src="newtab.html?qaLat=24.7136&amp;qaLon=46.6753&amp;qaWeather=clear&amp;qaTime=13:30&amp;qaDate=2026-08-01&amp;qaLocality=desert"></iframe>
+    </article>
+    <article>
+      <h2>Mountain snow morning</h2>
+      <iframe title="Mountain snow morning" src="newtab.html?qaLat=46.8182&amp;qaLon=8.2275&amp;qaWeather=snow&amp;qaTime=08:10&amp;qaDate=2026-01-18&amp;qaLocality=mountain"></iframe>
+    </article>
+    <article>
+      <h2>Halloween dusk</h2>
+      <iframe title="Halloween dusk" src="newtab.html?qaLat=42.3601&amp;qaLon=-71.0589&amp;qaWeather=cloudy&amp;qaTime=18:15&amp;qaDate=2026-10-31&amp;qaLocality=urban&amp;qaHoliday=halloween"></iframe>
+    </article>
+    <article>
+      <h2>Christmas forest night</h2>
+      <iframe title="Christmas forest night" src="newtab.html?qaLat=45.5152&amp;qaLon=-122.6784&amp;qaWeather=snow&amp;qaTime=22:30&amp;qaDate=2026-12-25&amp;qaLocality=forest&amp;qaHoliday=christmas-day"></iframe>
+    </article>
+    <article>
+      <h2>New Year's fireworks</h2>
+      <iframe title="New Year's fireworks" src="newtab.html?qaLat=35.6762&amp;qaLon=139.6503&amp;qaWeather=clear&amp;qaTime=23:55&amp;qaDate=2026-12-31&amp;qaLocality=urban&amp;qaHoliday=nye"></iframe>
+    </article>
+  </main>
+</body>
+</html>
