@@ -2838,12 +2838,17 @@ a {
 
 .bg[data-holiday="nye"] .bg-holiday-glow,
 .bg[data-holiday="new-year-day"] .bg-holiday-glow {
-  opacity: 0.52;
+  opacity: 0.24;
   background:
     radial-gradient(250px 250px at 24% 20%, rgba(137, 180, 250, 0.18), transparent 64%),
     radial-gradient(280px 280px at 72% 24%, rgba(249, 226, 175, 0.18), transparent 64%),
     radial-gradient(80% 28% at 50% 100%, rgba(180, 190, 254, 0.10), transparent 72%);
   mix-blend-mode: screen;
+}
+
+.bg[data-holiday="nye"][data-holiday-phase="night"] .bg-holiday-glow,
+.bg[data-holiday="new-year-day"][data-holiday-phase="night"] .bg-holiday-glow {
+  opacity: 0.52;
 }
 
 .bg[data-holiday="birthday"] .bg-holiday-glow {
@@ -2893,7 +2898,13 @@ a {
 }
 
 .bg[data-holiday="halloween"] .bg-pumpkins {
-  opacity: 0.86;
+  opacity: 0.54;
+  filter: drop-shadow(0 8px 12px rgba(28, 10, 4, 0.22)) saturate(0.74) brightness(0.86);
+}
+
+.bg[data-holiday="halloween"][data-holiday-phase="night"] .bg-pumpkins {
+  opacity: 0.88;
+  filter: drop-shadow(0 0 8px rgba(255, 140, 30, 0.34)) saturate(0.88);
 }
 
 .bg[data-holiday="halloween"] .bg-pumpkins::before {
@@ -2903,8 +2914,14 @@ a {
   right: 8%;
   bottom: -16px;
   height: 38px;
+  opacity: 0.28;
   background: radial-gradient(ellipse at center, rgba(255, 128, 42, 0.28), transparent 68%);
   filter: blur(12px);
+  transition: opacity 14s linear;
+}
+
+.bg[data-holiday="halloween"][data-holiday-phase="night"] .bg-pumpkins::before {
+  opacity: 1;
 }
 
 /* ============================================================
@@ -2926,7 +2943,7 @@ a {
 
 .bg-sleigh svg { width: 100%; height: 100%; }
 
-.bg[data-holiday="christmas-eve"] .bg-sleigh {
+.bg[data-holiday="christmas-eve"][data-holiday-phase="night"] .bg-sleigh {
   opacity: 0.68;
   animation: sleigh-cross 60s linear infinite;
   animation-delay: -18s;
@@ -2940,7 +2957,7 @@ a {
 
 /* Christmas Day keeps the sleigh visible too (sometimes Santa is
    still on his way in your timezone). */
-.bg[data-holiday="christmas-day"] .bg-sleigh {
+.bg[data-holiday="christmas-day"][data-holiday-phase="night"] .bg-sleigh {
   opacity: 0.48;
   animation: sleigh-cross 90s linear infinite;
   animation-delay: -30s;
@@ -2990,10 +3007,10 @@ a {
   animation-delay: -1.4s;
 }
 
-.bg[data-holiday="nye"] .bg-fireworks-host::before,
-.bg[data-holiday="nye"] .bg-fireworks-host::after,
-.bg[data-holiday="new-year-day"] .bg-fireworks-host::before,
-.bg[data-holiday="new-year-day"] .bg-fireworks-host::after {
+.bg[data-holiday="nye"][data-holiday-phase="night"] .bg-fireworks-host::before,
+.bg[data-holiday="nye"][data-holiday-phase="night"] .bg-fireworks-host::after,
+.bg[data-holiday="new-year-day"][data-holiday-phase="night"] .bg-fireworks-host::before,
+.bg[data-holiday="new-year-day"][data-holiday-phase="night"] .bg-fireworks-host::after {
   opacity: 0.38;
   animation: holiday-burst 3.2s ease-in-out infinite alternate;
 }
@@ -3056,7 +3073,7 @@ a {
 }
 
 /* New Year's Day still fires a few celebration bursts. */
-.bg[data-holiday="new-year-day"] .bg-fireworks-host {
+.bg[data-holiday="new-year-day"][data-holiday-phase="night"] .bg-fireworks-host {
   opacity: 0.7;
 }
 
