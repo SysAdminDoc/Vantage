@@ -8,14 +8,15 @@ export async function renderTopsites(mount, settings) {
   if (!cfg?.enabled) { mount.style.display = "none"; return; }
   mount.style.display = "";
 
-  if (!chrome?.topSites?.get) {
+  const chromeApi = globalThis.chrome;
+  if (!chromeApi?.topSites?.get) {
     mount.style.display = "none";
     return;
   }
 
   let sites = [];
   try {
-    sites = await chrome.topSites.get();
+    sites = await chromeApi.topSites.get();
   } catch {
     mount.style.display = "none";
     return;

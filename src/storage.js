@@ -175,18 +175,20 @@ export function pushRead(existingArr, urls) {
 }
 
 export async function hasStoredSettings() {
-  if (!chrome?.storage?.local) return false;
-  const stored = await chrome.storage.local.get("vantageSettings");
+  const chromeApi = globalThis.chrome;
+  if (!chromeApi?.storage?.local) return false;
+  const stored = await chromeApi.storage.local.get("vantageSettings");
   return !!stored.vantageSettings;
 }
 
 export async function loadSettings() {
   navigator.storage?.persist?.();
 
-  if (!chrome?.storage?.local) {
+  const chromeApi = globalThis.chrome;
+  if (!chromeApi?.storage?.local) {
     return structuredClone(DEFAULTS);
   }
-  const stored = await chrome.storage.local.get("vantageSettings");
+  const stored = await chromeApi.storage.local.get("vantageSettings");
   const merged = mergeDeep(structuredClone(DEFAULTS), stored.vantageSettings || {});
 
   // v0.6.x → v0.7.0: singular embed → embeds array
@@ -213,8 +215,9 @@ export async function loadSettings() {
 }
 
 export async function saveSettings(settings) {
-  if (!chrome?.storage?.local) return;
-  await chrome.storage.local.set({ vantageSettings: settings });
+  const chromeApi = globalThis.chrome;
+  if (!chromeApi?.storage?.local) return;
+  await chromeApi.storage.local.set({ vantageSettings: settings });
 }
 
 export function getDefaults() {
@@ -222,14 +225,15 @@ export function getDefaults() {
 }
 
 export function onSettingsChanged(callback) {
-  if (!chrome?.storage?.onChanged) return () => {};
+  const chromeApi = globalThis.chrome;
+  if (!chromeApi?.storage?.onChanged) return () => {};
   const handler = (changes, area) => {
     if (area === "local" && changes.vantageSettings) {
       callback(changes.vantageSettings.newValue);
     }
   };
-  chrome.storage.onChanged.addListener(handler);
-  return () => chrome.storage.onChanged.removeListener(handler);
+  chromeApi.storage.onChanged.addListener(handler);
+  return () => chromeApi.storage.onChanged.removeListener(handler);
 }
 
 function mergeDeep(target, source) {
