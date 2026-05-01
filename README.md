@@ -100,7 +100,7 @@ Six wallpaper modes:
 - **Image upload** — local file → base64 in storage
 - **Bing daily** — pulls the current Bing image of the day, cached per-day
 
-Animated mode includes **Motion** controls (System / Still / Calm / Full) and **Atmosphere** controls (Soft / Balanced / Vivid), so the live scene can be calmer, fully still, or more visually present without changing the dashboard layout.
+Animated mode includes **Motion** controls (System / Still / Calm / Full) and **Atmosphere** controls (Soft / Balanced / Vivid), so the live scene can be calmer, fully still, or more visually present without changing the dashboard layout. Browser/OS reduced-motion changes are picked up while Vantage is open.
 
 ### Personalization
 - **System, Catppuccin Mocha, Macchiato, Frappe, and Latte themes** with full design-token system, careful tonal layering, refined shadows, and ambient gradient backdrop.
