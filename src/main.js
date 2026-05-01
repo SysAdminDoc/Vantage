@@ -30,6 +30,7 @@ import { showOnboarding } from "./onboarding.js";
 import { renderWidgetPicker } from "./widget-picker.js";
 import { toast } from "./utils/dom.js";
 import { makeReorderable, arrayMove } from "./utils/drag.js";
+import { applyThemePreference, onSystemThemeChange } from "./utils/theme.js";
 import { applyWorkspace, getActiveWorkspace, captureSnapshot } from "./utils/workspace.js";
 window._vantageWorkspaceHelpers = { captureSnapshot: () => captureSnapshot(currentSettings) };
 
@@ -40,6 +41,7 @@ let pomodoroTeardown   = null;
 let worldclockTeardown = null;
 let countdownTeardown  = null;
 let panelDragCleanup   = null;
+let systemThemeCleanup = null;
 
 // Fixed panel kinds (static mounts in newtab.html)
 const FIXED_PANEL_KINDS = [
@@ -77,17 +79,18 @@ async function init() {
   // Firefox container mapping — detect active container, apply workspace
   await applyContainerWorkspace();
 
-  document.documentElement.setAttribute("data-theme", currentSettings.theme);
+  applyTheme(currentSettings);
   applyAccent(currentSettings);
   applyCustomCSS(currentSettings.customCSS);
   injectStaticIcons();
+  watchSystemTheme();
 
   const isFirstInstall = !sharedImportedSettings && !(await hasStoredSettings());
   if (isFirstInstall && !currentSettings.onboardingComplete) {
     await new Promise((resolve) => {
       showOnboarding(currentSettings, async (next) => {
         currentSettings = next;
-        document.documentElement.setAttribute("data-theme", currentSettings.theme);
+        applyTheme(currentSettings);
         await saveSettings(currentSettings);
         resolve();
       });
@@ -104,7 +107,7 @@ async function init() {
   onSettingsChanged((next) => {
     if (!next) return;
     currentSettings = next;
-    document.documentElement.setAttribute("data-theme", currentSettings.theme);
+    applyTheme(currentSettings);
     applyAccent(currentSettings);
     applyCustomCSS(currentSettings.customCSS);
     mountAll();
@@ -379,7 +382,7 @@ function launchWizard() {
   toggle.setAttribute("aria-expanded", "false");
   showOnboarding(currentSettings, async (next) => {
     currentSettings = next;
-    document.documentElement.setAttribute("data-theme", currentSettings.theme);
+    applyTheme(currentSettings);
     await saveSettings(currentSettings);
     mountAll();
   });
@@ -392,7 +395,7 @@ function wireSettings() {
 
   const onChange = async (next) => {
     currentSettings = next;
-    document.documentElement.setAttribute("data-theme", currentSettings.theme);
+    applyTheme(currentSettings);
     applyAccent(currentSettings);
     applyCustomCSS(currentSettings.customCSS);
     await saveSettings(currentSettings);
@@ -449,6 +452,19 @@ function applyAccent(settings, animate = false) {
   } else {
     apply();
   }
+}
+
+function applyTheme(settings) {
+  applyThemePreference(settings?.theme || "mocha");
+}
+
+function watchSystemTheme() {
+  if (systemThemeCleanup) return;
+  systemThemeCleanup = onSystemThemeChange(() => {
+    if (currentSettings?.theme === "system") {
+      applyTheme(currentSettings);
+    }
+  });
 }
 
 function applyCustomCSS(css) {
