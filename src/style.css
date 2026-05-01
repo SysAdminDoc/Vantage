@@ -379,7 +379,7 @@ a {
 }
 
 /* Shared scene atmosphere. Locality-specific rules below paint horizon haze,
-   ground bounce, and faint texture without adding new assets. */
+   ground bounce, and generated raster texture assets. */
 .bg-scene-depth {
   position: absolute;
   inset: 0;
@@ -387,6 +387,7 @@ a {
   pointer-events: none;
   transition: opacity 18s linear, filter 18s linear, background 18s linear;
   background:
+    url("../assets/backgrounds/atmosphere-grain.png") center / cover no-repeat,
     radial-gradient(70% 28% at 50% 78%, rgba(255, 255, 255, 0.08), transparent 72%),
     linear-gradient(180deg, transparent 0 52%, rgba(255, 255, 255, 0.06) 66%, transparent 88%);
 }
@@ -961,6 +962,8 @@ a {
 .bg-lake {
   height: 34%;
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 100%);
   background:
     radial-gradient(80% 22% at 62% 0%, rgba(255, 232, 176, 0.14), transparent 74%),
     radial-gradient(55% 22% at 18% 4%, rgba(184, 219, 232, 0.18), transparent 72%),
@@ -995,6 +998,8 @@ a {
 
 .bg-dunes {
   height: 36%;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 100%);
   background:
     radial-gradient(92% 56% at 16% 104%, rgba(176, 112, 61, 0.58), transparent 70%),
     radial-gradient(86% 48% at 72% 98%, rgba(229, 168, 94, 0.46), transparent 72%),
@@ -1024,6 +1029,8 @@ a {
 
 .bg-icefield {
   height: 35%;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%);
   background:
     radial-gradient(72% 18% at 22% 48%, rgba(255, 255, 255, 0.30), transparent 74%),
     radial-gradient(68% 18% at 78% 54%, rgba(194, 221, 235, 0.22), transparent 74%),
@@ -1060,6 +1067,7 @@ a {
 .bg[data-locality="forest"] .bg-forestline {
   opacity: 0.86;
   background:
+    url("../assets/backgrounds/forest-canopy.png") center bottom / 100% 100% no-repeat,
     radial-gradient(24% 30% at 10% 36%, rgba(18, 54, 36, 0.56), transparent 72%),
     radial-gradient(28% 34% at 30% 30%, rgba(26, 70, 46, 0.54), transparent 72%),
     radial-gradient(30% 36% at 54% 34%, rgba(13, 45, 31, 0.58), transparent 74%),
@@ -1071,6 +1079,14 @@ a {
 
 .bg[data-locality="lake"] .bg-lake {
   opacity: 0.92;
+}
+
+.bg[data-locality="lake"] .bg-lake::before {
+  background:
+    url("../assets/backgrounds/lake-surface.png") center top / cover no-repeat,
+    radial-gradient(65% 16% at 72% 14%, rgba(255, 242, 190, 0.20), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 20px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 52px);
 }
 
 .bg[data-locality="lake"] .bg-mountains--far {
@@ -1095,8 +1111,22 @@ a {
   opacity: 0.84;
 }
 
+.bg[data-locality="desert"] .bg-dunes::before {
+  background:
+    url("../assets/backgrounds/dune-grain.png") center / cover no-repeat,
+    repeating-linear-gradient(164deg, rgba(255, 232, 164, 0.09) 0 1px, transparent 1px 18px),
+    repeating-linear-gradient(14deg, rgba(73, 47, 35, 0.09) 0 1px, transparent 1px 34px);
+}
+
 .bg[data-locality="polar"] .bg-icefield {
   opacity: 0.86;
+}
+
+.bg[data-locality="polar"] .bg-icefield::before {
+  background:
+    url("../assets/backgrounds/icefield-grain.png") center / cover no-repeat,
+    repeating-linear-gradient(176deg, rgba(255, 255, 255, 0.09) 0 1px, transparent 1px 112px),
+    repeating-linear-gradient(4deg, rgba(83, 128, 156, 0.04) 0 1px, transparent 1px 140px);
 }
 
 .bg[data-locality="lake"] .bg-mountains,
@@ -1192,6 +1222,8 @@ a {
 .bg[data-locality="mountain"] .bg-scene-depth,
 .bg[data-locality="lake"] .bg-scene-depth {
   background:
+    url("../assets/backgrounds/mountain-atmosphere.png") center 72% / 110% auto no-repeat,
+    url("../assets/backgrounds/atmosphere-grain.png") center / cover no-repeat,
     radial-gradient(92% 24% at 50% 58%, rgba(236, 244, 245, 0.28), transparent 70%),
     linear-gradient(180deg, transparent 0 42%, rgba(222, 230, 230, 0.20) 58%, rgba(14, 24, 34, 0.10) 100%);
   filter: saturate(0.78);
@@ -1200,6 +1232,7 @@ a {
 .bg[data-locality="forest"] .bg-scene-depth,
 .bg[data-locality="meadow"] .bg-scene-depth {
   background:
+    url("../assets/backgrounds/atmosphere-grain.png") center / cover no-repeat,
     radial-gradient(68% 20% at 50% 66%, rgba(235, 244, 216, 0.12), transparent 72%),
     linear-gradient(180deg, transparent 0 50%, rgba(68, 92, 64, 0.12) 72%, rgba(8, 24, 16, 0.18) 100%);
   filter: saturate(0.82);
@@ -1207,6 +1240,7 @@ a {
 
 .bg[data-locality="desert"] .bg-scene-depth {
   background:
+    url("../assets/backgrounds/atmosphere-grain.png") center / cover no-repeat,
     radial-gradient(74% 18% at 52% 64%, rgba(255, 226, 154, 0.24), transparent 72%),
     linear-gradient(180deg, transparent 0 48%, rgba(218, 145, 74, 0.18) 72%, rgba(70, 44, 34, 0.16) 100%);
   filter: saturate(0.74);
@@ -1215,6 +1249,7 @@ a {
 .bg[data-locality="coastal"] .bg-scene-depth,
 .bg[data-locality="tropical"] .bg-scene-depth {
   background:
+    url("../assets/backgrounds/atmosphere-grain.png") center / cover no-repeat,
     radial-gradient(72% 22% at 56% 63%, rgba(242, 247, 235, 0.16), transparent 72%),
     linear-gradient(180deg, transparent 0 48%, rgba(160, 206, 213, 0.12) 70%, rgba(8, 35, 49, 0.14) 100%);
   filter: saturate(0.82);
@@ -1222,6 +1257,8 @@ a {
 
 .bg[data-locality="polar"] .bg-scene-depth {
   background:
+    url("../assets/backgrounds/mountain-atmosphere.png") center 72% / 110% auto no-repeat,
+    url("../assets/backgrounds/atmosphere-grain.png") center / cover no-repeat,
     radial-gradient(78% 20% at 50% 60%, rgba(255, 255, 255, 0.24), transparent 70%),
     linear-gradient(180deg, transparent 0 46%, rgba(226, 242, 249, 0.18) 70%, rgba(102, 144, 171, 0.12) 100%);
   filter: saturate(0.58) brightness(1.04);
@@ -1245,6 +1282,8 @@ a {
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%);
   background:
     radial-gradient(70% 22% at 62% 2%, rgba(255, 232, 176, 0.14), transparent 74%),
     radial-gradient(82% 28% at 18% 8%, rgba(184, 226, 224, 0.14), transparent 72%),
@@ -1290,6 +1329,16 @@ a {
 .bg[data-locality="coastal"][data-phase="golden-hour"] .bg-ocean,
 .bg[data-locality="coastal"][data-phase="sunset"]      .bg-ocean {
   opacity: 0.94;
+}
+
+.bg[data-locality="coastal"] .bg-ocean::before,
+.bg[data-locality="tropical"] .bg-ocean::before {
+  background:
+    url("../assets/backgrounds/ocean-surface.png") center top / cover no-repeat,
+    radial-gradient(70% 14% at 56% 6%, rgba(255, 244, 202, 0.18), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.10) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 53px),
+    repeating-radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 34px);
 }
 
 .bg[data-locality="tropical"][data-phase="sunrise"]     .bg-ocean,
