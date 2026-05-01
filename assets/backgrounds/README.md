@@ -13,6 +13,8 @@ They are procedural PNG overlays, not third-party photos:
 - `icefield-grain.png` - frost, snow, and ice grain texture.
 - `starfield.png` - denser night-sky star plate.
 - `moon-surface.png` - cratered moon surface used inside the SVG phase mask.
+- `mountain-ridge-detail.png` - rocky striation and snow-haze detail for distant ridge SVGs.
+- `water-highlight.png` - low-opacity wave highlights shared by lake and ocean planes.
 - `cloud-wisps.png` - weather-gated cloud texture for cloudy and wet scenes.
 - `meadow-grass.png` - grass and small wildflower foreground texture.
 - `city-atmosphere.png` - urban haze and distant warm light texture.

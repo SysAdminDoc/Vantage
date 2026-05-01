@@ -339,6 +339,8 @@ a {
     --sky-bottom 60s linear,
     --sun-color  60s linear,
     --sun-glow   60s linear;
+  --moon-x: 14%;
+  --moon-y: 14%;
   contain: strict;
 }
 
@@ -433,7 +435,7 @@ a {
   filter: saturate(0.55) brightness(0.92);
 }
 
-/* --- Sun / Moon --- */
+/* --- Sun --- */
 .bg-sun {
   position: absolute;
   width: 130px;
@@ -465,16 +467,15 @@ a {
   opacity: 0.68;
 }
 
+.bg[data-phase="dusk"]               .bg-sun,
+.bg[data-phase="nautical-dusk"]      .bg-sun,
+.bg[data-phase="astronomical-dusk"]  .bg-sun,
 .bg[data-phase="night"]              .bg-sun,
 .bg[data-phase="astronomical-night"] .bg-sun,
 .bg[data-phase="astronomical-dawn"]  .bg-sun,
-.bg[data-phase="astronomical-dusk"]  .bg-sun,
-.bg[data-phase="dusk"]               .bg-sun {
-  width: 80px;
-  height: 80px;
-  background: radial-gradient(circle at 50% 50%,
-    #f0f0f5 0%, #d8d8e8 45%, rgba(255,255,255,0.3) 70%, transparent 95%);
-  box-shadow: 0 0 30px rgba(255,255,255,0.18);
+.bg[data-phase="nautical-dawn"]      .bg-sun,
+.bg[data-phase="pre-dawn"]           .bg-sun {
+  opacity: 0 !important;
 }
 
 /* --- Stars (visible at dusk + night) --- */
@@ -552,7 +553,7 @@ a {
     rgba(255,255,255,0.55) 0%,
     rgba(255,255,255,0.30) 35%,
     transparent 75%);
-  filter: blur(28px);
+  filter: blur(22px);
   opacity: 0;
   transition: opacity 15s linear;
   animation: cloud-drift var(--cloud-dur, 90s) linear infinite;
@@ -589,14 +590,14 @@ a {
       transparent 75%);
 }
 
-.bg[data-weather="cloudy"]     .bg-cloud { opacity: 0.55; }
-.bg[data-weather="overcast"]   .bg-cloud { opacity: 0.85; filter: blur(36px); }
-.bg[data-weather="rain"]       .bg-cloud { opacity: 0.88; filter: blur(36px) brightness(0.55); }
-.bg[data-weather="heavy-rain"] .bg-cloud { opacity: 0.95; filter: blur(40px) brightness(0.45); }
-.bg[data-weather="storm"]      .bg-cloud { opacity: 1;    filter: blur(42px) brightness(0.35); }
-.bg[data-weather="snow"]       .bg-cloud { opacity: 0.7;  filter: blur(34px) brightness(0.85); }
-.bg[data-weather="heavy-snow"] .bg-cloud { opacity: 0.85; filter: blur(36px) brightness(0.8); }
-.bg[data-weather="drizzle"]    .bg-cloud { opacity: 0.7;  filter: blur(32px) brightness(0.8); }
+.bg[data-weather="cloudy"]     .bg-cloud { opacity: 0.48; filter: blur(24px) saturate(0.92); }
+.bg[data-weather="overcast"]   .bg-cloud { opacity: 0.82; filter: blur(30px) saturate(0.72); }
+.bg[data-weather="rain"]       .bg-cloud { opacity: 0.86; filter: blur(32px) brightness(0.58) saturate(0.72); }
+.bg[data-weather="heavy-rain"] .bg-cloud { opacity: 0.94; filter: blur(36px) brightness(0.46) saturate(0.70); }
+.bg[data-weather="storm"]      .bg-cloud { opacity: 1;    filter: blur(38px) brightness(0.36) saturate(0.66); }
+.bg[data-weather="snow"]       .bg-cloud { opacity: 0.68; filter: blur(30px) brightness(0.88) saturate(0.72); }
+.bg[data-weather="heavy-snow"] .bg-cloud { opacity: 0.82; filter: blur(34px) brightness(0.82) saturate(0.68); }
+.bg[data-weather="drizzle"]    .bg-cloud { opacity: 0.62; filter: blur(28px) brightness(0.84) saturate(0.82); }
 .bg[data-weather="fog"]        .bg-cloud { opacity: 0; }
 
 /* --- Fog overlay --- */
@@ -822,12 +823,24 @@ a {
   color: rgba(15, 18, 26, 0.56);
   transition: opacity 30s linear;
   transform-origin: center bottom;
+  overflow: hidden;
+}
+
+.bg-mountains::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../assets/backgrounds/mountain-ridge-detail.png") center bottom / cover no-repeat;
+  mix-blend-mode: soft-light;
+  opacity: 0.22;
+  pointer-events: none;
 }
 
 .bg-mountains svg {
   width: 100%;
   height: 100%;
   display: block;
+  position: relative;
 }
 
 .bg-mountains svg .mountain-snowcap {
@@ -838,22 +851,22 @@ a {
   bottom: 20%;
   height: 16%;
   opacity: 0;
-  color: rgba(74, 83, 98, 0.34);
-  filter: blur(9px) saturate(0.78);
+  color: rgba(96, 111, 126, 0.24);
+  filter: blur(13px) saturate(0.66);
 }
 
 .bg-mountains--mid {
   bottom: 11%;
   height: 18%;
-  color: rgba(37, 43, 55, 0.46);
-  filter: blur(4px) saturate(0.78);
+  color: rgba(48, 62, 77, 0.36);
+  filter: blur(6px) saturate(0.68);
 }
 
 .bg-mountains--near {
   bottom: -1%;
   height: 24%;
-  color: rgba(13, 17, 26, 0.64);
-  filter: blur(0.8px) saturate(0.72);
+  color: rgba(22, 30, 40, 0.46);
+  filter: blur(2px) saturate(0.68) contrast(0.92);
 }
 
 /* Mountains visible in non-tropical biomes during daylight phases. */
@@ -1004,11 +1017,11 @@ a {
   -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 100%);
   mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 100%);
   background:
-    radial-gradient(80% 22% at 62% 0%, rgba(255, 232, 176, 0.14), transparent 74%),
-    radial-gradient(55% 22% at 18% 4%, rgba(184, 219, 232, 0.18), transparent 72%),
-    linear-gradient(180deg, #579bbb, #155d83 44%, #062b49);
+    radial-gradient(80% 22% at 62% 0%, rgba(239, 222, 178, 0.11), transparent 74%),
+    radial-gradient(55% 22% at 18% 4%, rgba(178, 208, 220, 0.14), transparent 72%),
+    linear-gradient(180deg, #5f8393, #315c71 46%, #122c3b);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  filter: saturate(0.78) contrast(0.94);
+  filter: saturate(0.68) contrast(0.92);
 }
 
 .bg-lake::before {
@@ -1016,10 +1029,11 @@ a {
   position: absolute;
   inset: 9% -10% 0;
   background:
-    radial-gradient(65% 16% at 72% 14%, rgba(255, 242, 190, 0.20), transparent 72%),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 20px),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 52px);
-  opacity: 0.34;
+    url("../assets/backgrounds/water-highlight.png") center top / cover no-repeat,
+    radial-gradient(65% 16% at 72% 14%, rgba(238, 229, 190, 0.16), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.055) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 62px);
+  opacity: 0.24;
   animation: lake-drift 70s linear infinite;
 }
 
@@ -1032,7 +1046,7 @@ a {
     linear-gradient(96deg, transparent 0 44%, rgba(255, 245, 205, 0.08) 48%, transparent 56%),
     radial-gradient(64% 48% at 50% -12%, rgba(21, 42, 59, 0.18), transparent 76%);
   mix-blend-mode: screen;
-  opacity: 0.72;
+  opacity: 0.58;
 }
 
 .bg-dunes {
@@ -1040,10 +1054,10 @@ a {
   -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 100%);
   mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 100%);
   background:
-    radial-gradient(92% 56% at 16% 104%, rgba(176, 112, 61, 0.58), transparent 70%),
-    radial-gradient(86% 48% at 72% 98%, rgba(229, 168, 94, 0.46), transparent 72%),
-    linear-gradient(180deg, rgba(235, 169, 89, 0.00), rgba(178, 114, 64, 0.42) 50%, rgba(91, 60, 44, 0.70));
-  filter: saturate(0.76) contrast(0.94);
+    radial-gradient(92% 58% at 14% 104%, rgba(176, 126, 77, 0.56), transparent 70%),
+    radial-gradient(86% 52% at 72% 98%, rgba(218, 171, 108, 0.44), transparent 72%),
+    linear-gradient(180deg, rgba(224, 174, 109, 0.00), rgba(174, 121, 77, 0.40) 50%, rgba(88, 65, 49, 0.66));
+  filter: saturate(0.74) contrast(0.94);
 }
 
 .bg-dunes::before {
@@ -1051,9 +1065,9 @@ a {
   position: absolute;
   inset: 18% -6% 0;
   background:
-    repeating-linear-gradient(164deg, rgba(255, 232, 164, 0.09) 0 1px, transparent 1px 18px),
-    repeating-linear-gradient(14deg, rgba(73, 47, 35, 0.09) 0 1px, transparent 1px 34px);
-  opacity: 0.7;
+    repeating-linear-gradient(164deg, rgba(255, 232, 164, 0.035) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(14deg, rgba(73, 47, 35, 0.035) 0 1px, transparent 1px 48px);
+  opacity: 0.34;
 }
 
 .bg-dunes::after {
@@ -1061,7 +1075,10 @@ a {
   position: absolute;
   inset: 0 0 auto;
   height: 34%;
-  background: linear-gradient(180deg, rgba(255, 220, 146, 0.22), transparent 78%);
+  background:
+    radial-gradient(96% 130% at 18% 104%, rgba(255, 224, 150, 0.18), transparent 62%),
+    radial-gradient(110% 140% at 82% 102%, rgba(98, 63, 42, 0.16), transparent 64%),
+    linear-gradient(180deg, rgba(255, 220, 146, 0.18), transparent 78%);
   mix-blend-mode: screen;
   opacity: 0.56;
 }
@@ -1071,10 +1088,10 @@ a {
   -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%);
   mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%);
   background:
-    radial-gradient(72% 18% at 22% 48%, rgba(255, 255, 255, 0.30), transparent 74%),
-    radial-gradient(68% 18% at 78% 54%, rgba(194, 221, 235, 0.22), transparent 74%),
-    linear-gradient(180deg, rgba(238, 248, 251, 0.00), rgba(222, 239, 247, 0.36) 34%, rgba(135, 177, 201, 0.48));
-  filter: saturate(0.62) brightness(1.06);
+    radial-gradient(72% 18% at 22% 48%, rgba(255, 255, 255, 0.26), transparent 74%),
+    radial-gradient(68% 18% at 78% 54%, rgba(190, 215, 228, 0.18), transparent 74%),
+    linear-gradient(180deg, rgba(238, 248, 251, 0.00), rgba(216, 235, 244, 0.32) 34%, rgba(132, 164, 184, 0.42));
+  filter: saturate(0.52) brightness(1.04);
 }
 
 .bg-icefield::before {
@@ -1136,9 +1153,10 @@ a {
 .bg[data-locality="lake"] .bg-lake::before {
   background:
     url("../assets/backgrounds/lake-surface.png") center top / cover no-repeat,
-    radial-gradient(65% 16% at 72% 14%, rgba(255, 242, 190, 0.20), transparent 72%),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 20px),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 52px);
+    url("../assets/backgrounds/water-highlight.png") center top / cover no-repeat,
+    radial-gradient(65% 16% at 72% 14%, rgba(238, 229, 190, 0.15), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.055) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 62px);
 }
 
 .bg[data-locality="lake"] .bg-mountains--far {
@@ -1166,8 +1184,9 @@ a {
 .bg[data-locality="desert"] .bg-dunes::before {
   background:
     url("../assets/backgrounds/dune-grain.png") center / cover no-repeat,
-    repeating-linear-gradient(164deg, rgba(255, 232, 164, 0.09) 0 1px, transparent 1px 18px),
-    repeating-linear-gradient(14deg, rgba(73, 47, 35, 0.09) 0 1px, transparent 1px 34px);
+    repeating-linear-gradient(164deg, rgba(255, 232, 164, 0.035) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(14deg, rgba(73, 47, 35, 0.035) 0 1px, transparent 1px 48px);
+  opacity: 0.28;
 }
 
 .bg[data-locality="polar"] .bg-icefield {
@@ -1197,28 +1216,60 @@ a {
 .bg[data-locality="lake"] .bg-mountains--far,
 .bg[data-locality="polar"] .bg-mountains--far {
   color: rgba(122, 132, 142, 0.24);
-  filter: blur(14px) saturate(0.58);
+  filter: blur(15px) saturate(0.54);
 }
 
 .bg[data-locality="mountain"] .bg-mountains--mid,
 .bg[data-locality="lake"] .bg-mountains--mid,
 .bg[data-locality="polar"] .bg-mountains--mid {
   color: rgba(58, 70, 82, 0.26);
-  filter: blur(9px) saturate(0.56);
-  opacity: 0.32;
+  filter: blur(10px) saturate(0.54);
+  opacity: 0.28;
 }
 
 .bg[data-locality="mountain"] .bg-mountains--near,
 .bg[data-locality="lake"] .bg-mountains--near,
 .bg[data-locality="polar"] .bg-mountains--near {
   color: rgba(24, 33, 44, 0.32);
-  filter: blur(4px) saturate(0.54) contrast(0.88);
-  opacity: 0.34;
+  filter: blur(5px) saturate(0.52) contrast(0.86);
+  opacity: 0.30;
 }
 
 .bg[data-locality="mountain"] .bg-meadow {
   opacity: 0.52;
   filter: saturate(0.62) brightness(0.92);
+}
+
+.bg[data-locality="mountain"] .bg-scene-depth {
+  opacity: 0.72;
+  filter: saturate(0.80) contrast(0.94);
+}
+
+.bg[data-locality="lake"] .bg-scene-depth,
+.bg[data-locality="polar"] .bg-scene-depth {
+  opacity: 0.86;
+}
+
+.bg[data-locality="mountain"] .bg-mountains {
+  opacity: 0.78;
+}
+
+.bg[data-locality="mountain"] .bg-mountains--far {
+  opacity: 0.52;
+  color: rgba(118, 130, 143, 0.36);
+  filter: blur(9px) saturate(0.62);
+}
+
+.bg[data-locality="mountain"] .bg-mountains--mid {
+  opacity: 0.50;
+  color: rgba(50, 64, 78, 0.46);
+  filter: blur(4px) saturate(0.60);
+}
+
+.bg[data-locality="mountain"] .bg-mountains--near {
+  opacity: 0.48;
+  color: rgba(21, 30, 41, 0.48);
+  filter: blur(1.8px) saturate(0.58) contrast(0.90);
 }
 
 .bg[data-weather="fog"] .bg-meadow,
@@ -1327,8 +1378,8 @@ a {
 }
 
 @keyframes lake-drift {
-  0%   { background-position: 0 0, 0 0; }
-  100% { background-position: -120px 12px, 90px 18px; }
+  0%   { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+  100% { background-position: -90px 12px, 54px 8px, 0 0, 18px 10px, -24px 4px; }
 }
 
 /* ============================================================
@@ -1347,11 +1398,11 @@ a {
   -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%);
   mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%);
   background:
-    radial-gradient(70% 22% at 62% 2%, rgba(255, 232, 176, 0.14), transparent 74%),
-    radial-gradient(82% 28% at 18% 8%, rgba(184, 226, 224, 0.14), transparent 72%),
-    linear-gradient(180deg, #4fb2d2, #09658c 50%, #032d4b);
+    radial-gradient(70% 22% at 62% 2%, rgba(240, 222, 177, 0.11), transparent 74%),
+    radial-gradient(82% 28% at 18% 8%, rgba(164, 208, 208, 0.12), transparent 72%),
+    linear-gradient(180deg, #4f91a3, #1c6178 50%, #082f42);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  filter: saturate(0.86) contrast(0.96);
+  filter: saturate(0.72) contrast(0.94);
   transition: opacity 18s linear;
 }
 
@@ -1360,11 +1411,12 @@ a {
   position: absolute;
   inset: 8% -10% 0;
   background:
+    url("../assets/backgrounds/water-highlight.png") center top / cover no-repeat,
     radial-gradient(70% 14% at 56% 6%, rgba(255, 244, 202, 0.18), transparent 72%),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.10) 0 1px, transparent 1px 22px),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 53px),
-    repeating-radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 34px);
-  opacity: 0.30;
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 68px),
+    repeating-radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 40px);
+  opacity: 0.20;
   animation: ocean-drift 78s linear infinite;
 }
 
@@ -1380,7 +1432,7 @@ a {
     linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 16%),
     linear-gradient(94deg, transparent 0 42%, rgba(255, 247, 214, 0.08) 48%, transparent 58%);
   mix-blend-mode: screen;
-  opacity: 0.58;
+  opacity: 0.46;
   animation: ocean-glow 24s ease-in-out infinite alternate;
 }
 
@@ -1397,10 +1449,11 @@ a {
 .bg[data-locality="tropical"] .bg-ocean::before {
   background:
     url("../assets/backgrounds/ocean-surface.png") center top / cover no-repeat,
-    radial-gradient(70% 14% at 56% 6%, rgba(255, 244, 202, 0.18), transparent 72%),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.10) 0 1px, transparent 1px 22px),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 53px),
-    repeating-radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 34px);
+    url("../assets/backgrounds/water-highlight.png") center top / cover no-repeat,
+    radial-gradient(70% 14% at 56% 6%, rgba(255, 244, 202, 0.14), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 68px),
+    repeating-radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 40px);
 }
 
 .bg[data-locality="tropical"][data-phase="sunrise"]     .bg-ocean,
@@ -1411,10 +1464,10 @@ a {
 .bg[data-locality="tropical"][data-phase="sunset"]      .bg-ocean {
   opacity: 0.90;
   background:
-    radial-gradient(70% 22% at 62% 2%, rgba(255, 238, 190, 0.16), transparent 74%),
-    radial-gradient(90% 30% at 18% 8%, rgba(138, 232, 222, 0.16), transparent 72%),
-    linear-gradient(180deg, #27d5d8, #0099a6 52%, #005c76);
-  filter: saturate(0.90) contrast(0.94);
+    radial-gradient(70% 22% at 62% 2%, rgba(255, 238, 190, 0.13), transparent 74%),
+    radial-gradient(90% 30% at 18% 8%, rgba(128, 212, 202, 0.13), transparent 72%),
+    linear-gradient(180deg, #45b6b2, #187f86 52%, #075064);
+  filter: saturate(0.78) contrast(0.92);
 }
 
 .bg[data-locality="coastal"][data-phase="dusk"]              .bg-ocean,
@@ -1436,8 +1489,8 @@ a {
 .bg[data-locality="tropical"][data-phase="nautical-dawn"]     .bg-ocean {
   opacity: 0.74;
   background:
-    radial-gradient(70% 22% at 62% 2%, rgba(255, 238, 190, 0.12), transparent 74%),
-    linear-gradient(180deg, #1d9eae, #087087 52%, #043c58);
+    radial-gradient(70% 22% at 62% 2%, rgba(255, 238, 190, 0.10), transparent 74%),
+    linear-gradient(180deg, #2f8591, #155f74 52%, #06384f);
 }
 
 .bg[data-locality="coastal"][data-weather="fog"]        .bg-ocean,
@@ -1451,8 +1504,8 @@ a {
 }
 
 @keyframes ocean-drift {
-  0%   { background-position: 0 0, 0 0; }
-  100% { background-position: 120px 18px, -90px 12px; }
+  0%   { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+  100% { background-position: 120px 18px, -72px 12px, 0 0, 28px 6px, -34px 10px; }
 }
 
 @keyframes ocean-glow {
@@ -1715,7 +1768,7 @@ a {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: conic-gradient(from 90deg at var(--rays-x, 80%) var(--rays-y, 25%),
+  background: conic-gradient(from 90deg at var(--solar-x, 80%) var(--solar-y, 25%),
     transparent 0deg,
     rgba(255, 230, 180, 0.0) 5deg,
     rgba(255, 230, 180, 0.18) 10deg,
@@ -1761,7 +1814,7 @@ a {
   inset: -18% 0 0 0;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='520' height='620' viewBox='0 0 520 620'><g fill-opacity='0.68'><path fill='%23e79ab2' d='M54 76 C42 66 45 48 61 42 C77 54 70 72 54 76 Z' transform='rotate(18 58 60)'/><path fill='%23f0b5c5' d='M214 128 C202 118 205 101 221 94 C237 106 229 124 214 128 Z' transform='rotate(-28 220 112)'/><path fill='%23d9829f' d='M406 82 C394 72 397 54 413 48 C429 60 422 78 406 82 Z' transform='rotate(42 412 66)'/><path fill='%23efafc0' d='M126 318 C112 307 116 288 134 282 C152 296 144 314 126 318 Z' transform='rotate(68 134 300)'/><path fill='%23d889a5' d='M340 404 C328 394 331 376 348 370 C364 383 357 400 340 404 Z' transform='rotate(-46 348 388)'/><path fill='%23e9a4b8' d='M456 520 C443 510 447 492 464 486 C480 499 472 516 456 520 Z' transform='rotate(22 464 504)'/></g><g fill='%23b85f7b' fill-opacity='0.28'><circle cx='68' cy='66' r='2'/><circle cx='226' cy='110' r='2'/><circle cx='420' cy='64' r='2'/><circle cx='138' cy='302' r='2'/><circle cx='352' cy='386' r='2'/><circle cx='468' cy='502' r='2'/></g></svg>");
   background-size: 520px 620px;
-  filter: drop-shadow(0 1px 2px rgba(92, 45, 62, 0.16));
+  filter: drop-shadow(0 1px 2px rgba(92, 45, 62, 0.16)) saturate(1.18);
   animation: petal-fall 46s linear infinite;
 }
 
@@ -1783,7 +1836,7 @@ a {
 
 .bg[data-biome="temperate"][data-season="spring"][data-weather="clear"]  .bg-petals,
 .bg[data-biome="temperate"][data-season="spring"][data-weather="cloudy"] .bg-petals {
-  opacity: 0.34;
+  opacity: 0.18;
 }
 
 .bg[data-locality="urban"] .bg-petals,
@@ -1858,8 +1911,8 @@ a {
 
 .bg-moon {
   position: absolute;
-  top: 14%;
-  left: 14%;
+  top: var(--moon-y, 14%);
+  left: var(--moon-x, 14%);
   width: 90px;
   height: 90px;
   pointer-events: none;
@@ -1995,8 +2048,8 @@ a {
   position: absolute;
   width: 280px;
   height: 280px;
-  left: 82%;
-  top: 16%;
+  left: var(--solar-x, 82%);
+  top: var(--solar-y, 16%);
   transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 2px solid rgba(255, 240, 200, 0.0);
@@ -2007,12 +2060,26 @@ a {
   mix-blend-mode: screen;
 }
 
+.bg[data-phase="dusk"]              .bg-halo,
+.bg[data-phase="nautical-dusk"]     .bg-halo,
+.bg[data-phase="astronomical-dusk"] .bg-halo,
+.bg[data-phase="night"]             .bg-halo,
+.bg[data-phase="astronomical-night"] .bg-halo,
+.bg[data-phase="astronomical-dawn"] .bg-halo,
+.bg[data-phase="nautical-dawn"]     .bg-halo {
+  width: 190px;
+  height: 190px;
+  left: var(--moon-x, 14%);
+  top: var(--moon-y, 14%);
+  background: radial-gradient(circle, transparent 46%, rgba(225,230,255,0.14) 50%, transparent 57%);
+}
+
 .bg[data-weather="cloudy"][data-phase="morning"]   .bg-halo,
 .bg[data-weather="cloudy"][data-phase="midday"]    .bg-halo,
 .bg[data-weather="cloudy"][data-phase="afternoon"] .bg-halo,
 .bg[data-weather="cloudy"][data-phase="night"]     .bg-halo,
 .bg[data-weather="cloudy"][data-phase="astronomical-night"] .bg-halo {
-  opacity: 0.85;
+  opacity: 0.42;
 }
 
 /* ============================================================
@@ -2023,7 +2090,7 @@ a {
 .bg-sun-pillar {
   position: absolute;
   bottom: 0;
-  left: 82%;
+  left: var(--solar-x, 82%);
   width: 28px;
   height: 70vh;
   transform: translateX(-50%);
@@ -2443,6 +2510,30 @@ a {
   transition: opacity 16s linear;
 }
 
+.bg-holiday-glow::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 6%;
+  height: 88px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 16s linear;
+}
+
+.bg-holiday-glow::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 148px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 16s linear;
+}
+
 .bg[data-holiday="halloween"] .bg-holiday-glow {
   opacity: 0.54;
   background:
@@ -2454,11 +2545,69 @@ a {
 
 .bg[data-holiday="christmas-eve"] .bg-holiday-glow,
 .bg[data-holiday="christmas-day"] .bg-holiday-glow {
-  opacity: 0.46;
+  opacity: 0.62;
   background:
-    radial-gradient(520px 220px at 78% 18%, rgba(255, 236, 188, 0.18), transparent 72%),
-    radial-gradient(80% 26% at 50% 100%, rgba(214, 235, 245, 0.18), transparent 72%);
+    radial-gradient(520px 220px at 78% 18%, rgba(255, 236, 188, 0.22), transparent 72%),
+    radial-gradient(70% 22% at 22% 82%, rgba(145, 205, 186, 0.12), transparent 72%),
+    radial-gradient(80% 26% at 50% 100%, rgba(214, 235, 245, 0.24), transparent 72%);
   mix-blend-mode: screen;
+}
+
+.bg[data-holiday="christmas-eve"] .bg-holiday-glow::before,
+.bg[data-holiday="christmas-day"] .bg-holiday-glow::before {
+  opacity: 0.86;
+  background:
+    radial-gradient(5px 5px at 8% 58%, rgba(255, 232, 168, 0.72), transparent 70%),
+    radial-gradient(4px 4px at 18% 44%, rgba(180, 225, 202, 0.62), transparent 70%),
+    radial-gradient(5px 5px at 31% 62%, rgba(255, 232, 168, 0.68), transparent 70%),
+    radial-gradient(4px 4px at 43% 48%, rgba(198, 72, 72, 0.48), transparent 70%),
+    radial-gradient(5px 5px at 56% 60%, rgba(255, 232, 168, 0.68), transparent 70%),
+    radial-gradient(4px 4px at 69% 45%, rgba(180, 225, 202, 0.58), transparent 70%),
+    radial-gradient(5px 5px at 82% 56%, rgba(255, 232, 168, 0.72), transparent 70%),
+    radial-gradient(4px 4px at 93% 50%, rgba(198, 72, 72, 0.42), transparent 70%),
+    linear-gradient(180deg, transparent 0 40%, rgba(255, 255, 255, 0.10) 42%, transparent 62%);
+  filter: drop-shadow(0 0 8px rgba(255, 235, 180, 0.32)) blur(0.2px);
+}
+
+.bg[data-holiday="christmas-eve"] .bg-holiday-glow::after,
+.bg[data-holiday="christmas-day"] .bg-holiday-glow::after {
+  opacity: 0.74;
+  background:
+    radial-gradient(5px 5px at 10% 54%, rgba(255, 236, 170, 0.76), transparent 68%),
+    radial-gradient(4px 4px at 18% 45%, rgba(207, 84, 84, 0.54), transparent 68%),
+    radial-gradient(5px 5px at 28% 58%, rgba(255, 236, 170, 0.72), transparent 68%),
+    radial-gradient(4px 4px at 42% 48%, rgba(165, 215, 188, 0.58), transparent 68%),
+    radial-gradient(5px 5px at 56% 56%, rgba(255, 236, 170, 0.74), transparent 68%),
+    radial-gradient(4px 4px at 70% 44%, rgba(207, 84, 84, 0.48), transparent 68%),
+    radial-gradient(5px 5px at 84% 57%, rgba(255, 236, 170, 0.76), transparent 68%),
+    linear-gradient(162deg, transparent 0 34%, rgba(24, 62, 46, 0.28) 35% 50%, transparent 51% 100%),
+    linear-gradient(198deg, transparent 0 36%, rgba(16, 45, 36, 0.24) 37% 52%, transparent 53% 100%),
+    linear-gradient(180deg, transparent 0 18%, rgba(20, 54, 42, 0.22) 56%, rgba(2, 8, 10, 0.50) 100%);
+  background-size:
+    auto,
+    auto,
+    auto,
+    auto,
+    auto,
+    auto,
+    auto,
+    96px 118px,
+    124px 130px,
+    auto;
+  background-position:
+    center,
+    center,
+    center,
+    center,
+    center,
+    center,
+    center,
+    0 28px,
+    18px 24px,
+    center;
+  filter: drop-shadow(0 -2px 10px rgba(255, 230, 180, 0.14)) saturate(0.82);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, black 24%, black 100%);
+  mask-image: linear-gradient(180deg, transparent 0, black 24%, black 100%);
 }
 
 .bg[data-holiday="nye"] .bg-holiday-glow,
@@ -2513,12 +2662,12 @@ a {
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50' width='50' height='50'><ellipse cx='25' cy='30' rx='20' ry='17' fill='%23e87b1c'/><path d='M22 12 Q 22 6 28 6 L 26 12 Z' fill='%233a5e2a'/><path d='M16 28 L 22 24 L 22 32 Z' fill='%23ffc94a'/><path d='M34 28 L 28 24 L 28 32 Z' fill='%23ffc94a'/><path d='M14 38 Q 25 32 36 38 L 36 42 Q 25 36 14 42 Z' fill='%23ffc94a'/></svg>");
   background-repeat: no-repeat;
   background-position: 12% bottom, 50% bottom, 88% bottom;
-  background-size: 50px 50px, 58px 58px, 50px 50px;
+  background-size: 62px 62px, 72px 72px, 62px 62px;
   filter: drop-shadow(0 0 8px rgba(255, 140, 30, 0.34)) saturate(0.82);
 }
 
 .bg[data-holiday="halloween"] .bg-pumpkins {
-  opacity: 0.74;
+  opacity: 0.86;
 }
 
 .bg[data-holiday="halloween"] .bg-pumpkins::before {
@@ -2541,8 +2690,8 @@ a {
   position: absolute;
   top: 12%;
   left: -320px;
-  width: 140px;
-  height: 46px;
+  width: 168px;
+  height: 56px;
   opacity: 0;
   pointer-events: none;
   filter: blur(0.35px) drop-shadow(0 0 14px rgba(255, 236, 190, 0.18)) saturate(0.70);
@@ -2552,7 +2701,7 @@ a {
 .bg-sleigh svg { width: 100%; height: 100%; }
 
 .bg[data-holiday="christmas-eve"] .bg-sleigh {
-  opacity: 0.30;
+  opacity: 0.68;
   animation: sleigh-cross 60s linear infinite;
   animation-delay: -18s;
 }
@@ -2566,7 +2715,7 @@ a {
 /* Christmas Day keeps the sleigh visible too (sometimes Santa is
    still on his way in your timezone). */
 .bg[data-holiday="christmas-day"] .bg-sleigh {
-  opacity: 0.24;
+  opacity: 0.48;
   animation: sleigh-cross 90s linear infinite;
   animation-delay: -30s;
 }
@@ -4316,6 +4465,11 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
    ============================================================ */
 
 @media (max-width: 720px) {
+  .bg {
+    --moon-x: 3%;
+    --moon-y: 12%;
+  }
+
   .bg-sun {
     width: 86px;
     height: 86px;
@@ -4331,10 +4485,8 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   }
 
   .bg-moon {
-    top: 18%;
-    left: 7%;
-    width: 70px;
-    height: 70px;
+    width: 56px;
+    height: 56px;
   }
 
   .bg[data-phase="dusk"]              .bg-moon,
