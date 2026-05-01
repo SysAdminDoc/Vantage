@@ -102,7 +102,7 @@ Six wallpaper modes:
 
 Animated mode includes **Presets** (Focus / Ambient / Showcase / Wallpaper), **Motion** controls (System / Still / Calm / Full), **Atmosphere** controls (Soft / Balanced / Vivid), and a separate **Readability** control (Minimal / Standard / High), so the live scene can be calmer, fully still, more visible, or more legible without changing the dashboard layout. Browser/OS reduced-motion changes are picked up while Vantage is open. The settings panel also exposes resolved scene badges and session-only preview controls for time, season, weather, scenery, and holiday states.
 
-For visual QA, open `qa-scenes.html` from the same local server as `newtab.html` to review a grid of forced animated-background states. Local server runs use a small browser API shim for `chrome.storage`; extension installs keep the native browser APIs. Run `node scripts/qa-scenes-smoke.mjs` to verify the scene gallery and background-control hooks are present.
+For visual QA, open `qa-scenes.html` from the same local server as `newtab.html` to review a grid of forced animated-background states. QA URLs support `qaTheme`, `qaAccent`, `qaMotion`, `qaAtmosphere`, and `qaReadability` in addition to scene overrides, so gallery cards are deterministic across saved settings. Local server runs use a small browser API shim for `chrome.storage`; extension installs keep the native browser APIs. Run `node scripts/qa-scenes-smoke.mjs` to verify the scene gallery and background-control hooks are present.
 
 ### Personalization
 - **System, Catppuccin Mocha, Macchiato, Frappe, and Latte themes** with full design-token system, careful tonal layering, refined shadows, and ambient gradient backdrop.
