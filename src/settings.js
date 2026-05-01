@@ -378,7 +378,7 @@ function buildBackground(settings, onChange) {
 
     if (kind === "animated") {
       kindHost.appendChild(el("p", { class: "settings-section__hint" }, [
-        "Live sky follows time, weather, season, moon phase, and scenery. Motion follows your system reduced-motion setting."
+        "Live sky follows time, local weather, season, moon phase, and the Scenery setting. Motion follows your system reduced-motion setting."
       ]));
     }
 
