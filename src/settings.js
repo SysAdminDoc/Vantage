@@ -375,6 +375,11 @@ function buildBackground(settings, onChange) {
     const kind = settings.background.kind || "animated";
 
     if (kind === "animated") {
+      const reducedMotionActive =
+        globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
+      const motionHint = reducedMotionActive
+        ? "System is currently Still because browser/OS reduced motion is on. Calm keeps ambient sky/weather movement and disables rare flyovers, bursts, and parallax."
+        : "System currently uses Full motion. Calm keeps ambient sky/weather movement and disables rare flyovers, bursts, and parallax.";
       kindHost.appendChild(el("p", { class: "settings-section__hint" }, [
         "Live sky follows time, local weather, season, moon phase, and the Scenery setting."
       ]));
@@ -394,7 +399,7 @@ function buildBackground(settings, onChange) {
             onChange(settings);
           }
         }),
-        "Reduced-motion preferences always force Still. Calm keeps ambient sky/weather movement and disables rare flyovers, bursts, and parallax."
+        motionHint
       ));
       kindHost.appendChild(rowColumn(
         "Atmosphere",
