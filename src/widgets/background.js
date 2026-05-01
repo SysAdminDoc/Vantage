@@ -869,6 +869,21 @@ function prefersReducedMotion() {
   return globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
 }
 
+export function onReducedMotionChange(callback) {
+  const media = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)");
+  if (!media || typeof callback !== "function") return () => {};
+  const handler = () => callback(media.matches === true);
+  if (media.addEventListener) {
+    media.addEventListener("change", handler);
+    return () => media.removeEventListener("change", handler);
+  }
+  if (media.addListener) {
+    media.addListener(handler);
+    return () => media.removeListener(handler);
+  }
+  return () => {};
+}
+
 function resolveMotionMode(value) {
   const motion = normalizeMotionSetting(value);
   if (prefersReducedMotion()) return "still";

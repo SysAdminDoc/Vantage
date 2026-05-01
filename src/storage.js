@@ -10,7 +10,9 @@ const DEFAULTS = {
     birthday: ""           // "MM-DD" — when set, triggers balloons all day
   },
   appearance: {
-    locality: "auto"       // "auto"|"coastal"|"urban"|"desert"|"default"
+    // "auto" | "coastal" | "urban" | "forest" | "lake" | "mountain"
+    // | "desert" | "polar" | "tropical" | "meadow" | "default"
+    locality: "auto"
   },
   search: {
     engine: "google",
