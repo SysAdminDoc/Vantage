@@ -12,6 +12,7 @@ They are procedural PNG overlays, not third-party photos:
 - `dune-grain.png` - sand grain and dune contour texture.
 - `icefield-grain.png` - frost, snow, and ice grain texture.
 - `starfield.png` - denser night-sky star plate.
+- `moon-surface.png` - cratered moon surface used inside the SVG phase mask.
 - `cloud-wisps.png` - weather-gated cloud texture for cloudy and wet scenes.
 - `meadow-grass.png` - grass and small wildflower foreground texture.
 - `city-atmosphere.png` - urban haze and distant warm light texture.
