@@ -442,12 +442,14 @@ a {
   height: 130px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  background: radial-gradient(circle at 50% 50%,
-    var(--sun-color) 0%,
-    var(--sun-color) 28%,
-    var(--sun-glow) 45%,
-    transparent 75%);
-  filter: blur(0.5px);
+  background:
+    radial-gradient(circle at 42% 36%, rgba(255, 255, 255, 0.72) 0 7%, transparent 13%),
+    radial-gradient(circle at 50% 50%,
+      color-mix(in srgb, var(--sun-color) 88%, #fff8bc) 0%,
+      color-mix(in srgb, var(--sun-color) 72%, #ffd16a) 28%,
+      var(--sun-glow) 48%,
+      transparent 76%);
+  filter: blur(0.45px) saturate(1.06);
   transition:
     left 60s linear,
     top  60s linear,
@@ -1377,6 +1379,195 @@ a {
   filter: saturate(0.58) brightness(1.04);
 }
 
+/* Regional microclimates. The broad locality chooses the scene; data-region
+   adds place-specific atmosphere without adding heavier scene systems. */
+.bg[data-region="new-york"] .bg-scene-depth,
+.bg[data-region="chicago"] .bg-scene-depth,
+.bg[data-region="boston"] .bg-scene-depth,
+.bg[data-region="toronto"] .bg-scene-depth,
+.bg[data-region="london"] .bg-scene-depth,
+.bg[data-region="berlin"] .bg-scene-depth,
+.bg[data-region="washington-dc"] .bg-scene-depth {
+  background:
+    url("../assets/backgrounds/city-atmosphere.png") center bottom / cover no-repeat,
+    url("../assets/backgrounds/atmosphere-grain.png") center / cover no-repeat,
+    radial-gradient(54% 18% at 48% 78%, rgba(201, 222, 236, 0.15), transparent 74%),
+    linear-gradient(180deg, transparent 0 48%, rgba(138, 163, 176, 0.12) 68%, rgba(10, 16, 24, 0.16) 100%);
+  filter: saturate(0.72) contrast(0.98);
+}
+
+.bg[data-region="los-angeles"] .bg-scene-depth,
+.bg[data-region="san-francisco-bay"] .bg-scene-depth,
+.bg[data-region="seattle"] .bg-scene-depth,
+.bg[data-region="madrid"] .bg-scene-depth,
+.bg[data-region="rome"] .bg-scene-depth {
+  background:
+    url("../assets/backgrounds/city-atmosphere.png") center bottom / cover no-repeat,
+    url("../assets/backgrounds/atmosphere-grain.png") center / cover no-repeat,
+    radial-gradient(66% 22% at 52% 72%, rgba(244, 213, 166, 0.15), transparent 74%),
+    linear-gradient(180deg, transparent 0 48%, rgba(219, 176, 126, 0.12) 70%, rgba(62, 44, 35, 0.12) 100%);
+  filter: saturate(0.82) contrast(0.94);
+}
+
+.bg[data-region="tokyo"] .bg-scene-depth,
+.bg[data-region="singapore"] .bg-scene-depth {
+  background:
+    url("../assets/backgrounds/city-atmosphere.png") center bottom / cover no-repeat,
+    url("../assets/backgrounds/atmosphere-grain.png") center / cover no-repeat,
+    radial-gradient(52% 18% at 70% 70%, rgba(141, 215, 226, 0.14), transparent 70%),
+    radial-gradient(48% 16% at 26% 76%, rgba(220, 154, 210, 0.10), transparent 72%),
+    linear-gradient(180deg, transparent 0 48%, rgba(72, 96, 124, 0.14) 72%, rgba(8, 14, 26, 0.15) 100%);
+  filter: saturate(0.86) contrast(0.96);
+}
+
+.bg[data-region="new-york"] .bg-skyline::before,
+.bg[data-region="chicago"] .bg-skyline::before,
+.bg[data-region="toronto"] .bg-skyline::before {
+  background:
+    linear-gradient(180deg, transparent 0 12%, rgba(22, 29, 39, 0.18) 12% 100%),
+    repeating-linear-gradient(90deg, transparent 0 34px, rgba(14, 20, 30, 0.30) 34px 58px, transparent 58px 98px);
+  clip-path: polygon(0 100%, 0 44%, 7% 40%, 12% 56%, 18% 24%, 25% 54%, 31% 34%, 38% 58%, 45% 18%, 53% 58%, 61% 30%, 68% 54%, 75% 20%, 84% 56%, 92% 38%, 100% 50%, 100% 100%);
+}
+
+.bg[data-region="tokyo"] .bg-skyline::after,
+.bg[data-region="singapore"] .bg-skyline::after {
+  background:
+    radial-gradient(54% 28% at 72% 0%, rgba(137, 220, 235, 0.14), transparent 72%),
+    radial-gradient(42% 24% at 28% 6%, rgba(245, 194, 231, 0.10), transparent 74%),
+    linear-gradient(180deg, rgba(200, 220, 235, 0.10), rgba(4, 7, 14, 0.24));
+}
+
+.bg[data-region="honolulu"] .bg-ocean,
+.bg[data-region="miami"] .bg-ocean,
+.bg[data-region="rio"] .bg-ocean {
+  background:
+    radial-gradient(70% 22% at 64% 2%, rgba(255, 238, 190, 0.16), transparent 74%),
+    radial-gradient(82% 30% at 18% 8%, rgba(138, 220, 210, 0.16), transparent 72%),
+    linear-gradient(180deg, #5aaea9, #247b84 52%, #09465a);
+  filter: saturate(0.84) contrast(0.93);
+}
+
+.bg[data-region="pacific-northwest"] .bg-ocean,
+.bg[data-region="new-england"] .bg-ocean,
+.bg[data-region="dutch-coast"] .bg-ocean {
+  background:
+    radial-gradient(70% 20% at 58% 2%, rgba(205, 216, 208, 0.10), transparent 74%),
+    linear-gradient(180deg, #557987, #2c5366 52%, #122d3c);
+  filter: saturate(0.58) contrast(0.96);
+}
+
+.bg[data-region="lisbon"] .bg-ocean,
+.bg[data-region="barcelona"] .bg-ocean,
+.bg[data-region="cape-town"] .bg-ocean,
+.bg[data-region="auckland"] .bg-ocean {
+  background:
+    radial-gradient(74% 22% at 62% 2%, rgba(255, 231, 176, 0.14), transparent 74%),
+    radial-gradient(76% 26% at 16% 8%, rgba(154, 196, 199, 0.13), transparent 72%),
+    linear-gradient(180deg, #5f929b, #246070 52%, #0b3444);
+  filter: saturate(0.70) contrast(0.94);
+}
+
+.bg[data-region="geneva"] .bg-lake,
+.bg[data-region="zurich"] .bg-lake,
+.bg[data-region="annecy"] .bg-lake,
+.bg[data-region="italian-lakes"] .bg-lake {
+  background:
+    radial-gradient(80% 22% at 62% 0%, rgba(230, 226, 190, 0.13), transparent 74%),
+    radial-gradient(55% 22% at 18% 4%, rgba(164, 204, 196, 0.13), transparent 72%),
+    linear-gradient(180deg, #638b8f, #355f66 46%, #172f39);
+}
+
+.bg[data-region="geneva"] .bg-mountains,
+.bg[data-region="zurich"] .bg-mountains,
+.bg[data-region="annecy"] .bg-mountains,
+.bg[data-region="italian-lakes"] .bg-mountains,
+.bg[data-region="tahoe"] .bg-mountains,
+.bg[data-region="fuji-five-lakes"] .bg-mountains {
+  opacity: 0.66;
+}
+
+.bg[data-locality="lake"][data-region="great-lakes"] .bg-mountains {
+  opacity: 0.16;
+}
+
+.bg[data-locality="lake"][data-region="great-lakes"] .bg-mountains--far {
+  opacity: 0.12;
+}
+
+.bg[data-locality="lake"][data-region="great-lakes"] .bg-mountains--mid {
+  opacity: 0.08;
+}
+
+.bg[data-locality="lake"][data-region="great-lakes"] .bg-mountains--near {
+  opacity: 0.06;
+}
+
+.bg[data-region="great-lakes"] .bg-lake {
+  background:
+    radial-gradient(80% 20% at 62% 0%, rgba(217, 224, 219, 0.10), transparent 74%),
+    linear-gradient(180deg, #5b7f8e, #335b6d 46%, #172e3c);
+  filter: saturate(0.56) contrast(0.96);
+}
+
+.bg[data-region="alps"] .bg-mountains svg .mountain-snowcap,
+.bg[data-region="himalaya"] .bg-mountains svg .mountain-snowcap,
+.bg[data-region="scandes"] .bg-mountains svg .mountain-snowcap,
+.bg[data-region="southern-alps-nz"] .bg-mountains svg .mountain-snowcap,
+.bg[data-region="japanese-alps"] .bg-mountains svg .mountain-snowcap,
+.bg[data-region="fuji-five-lakes"] .bg-mountains svg .mountain-snowcap {
+  opacity: 0.34;
+}
+
+.bg[data-region="alps"] .bg-mountains--near,
+.bg[data-region="himalaya"] .bg-mountains--near,
+.bg[data-region="scandes"] .bg-mountains--near,
+.bg[data-region="southern-alps-nz"] .bg-mountains--near {
+  color: rgba(28, 42, 58, 0.52);
+  filter: blur(1.5px) saturate(0.54) contrast(0.92);
+}
+
+.bg[data-region="rockies"] .bg-mountains--near,
+.bg[data-region="southwest-highlands"] .bg-mountains--near,
+.bg[data-region="andes"] .bg-mountains--near {
+  color: rgba(52, 42, 34, 0.46);
+  filter: blur(1.4px) saturate(0.66) contrast(0.92);
+}
+
+.bg[data-region="rockies"] .bg-scene-depth,
+.bg[data-region="southwest-highlands"] .bg-scene-depth,
+.bg[data-region="andes"] .bg-scene-depth {
+  background:
+    url("../assets/backgrounds/mountain-atmosphere.png") center 72% / 110% auto no-repeat,
+    url("../assets/backgrounds/atmosphere-grain.png") center / cover no-repeat,
+    radial-gradient(90% 22% at 50% 58%, rgba(226, 218, 190, 0.20), transparent 70%),
+    linear-gradient(180deg, transparent 0 42%, rgba(188, 154, 106, 0.14) 58%, rgba(34, 24, 18, 0.12) 100%);
+  filter: saturate(0.74) contrast(0.94);
+}
+
+.bg[data-locality="desert"]:not([data-region="sonoran"]) .bg-tree--saguaro {
+  opacity: 0 !important;
+  transform: translateY(24px) scale(0.86) !important;
+}
+
+.bg[data-region="sahara"] .bg-dunes,
+.bg[data-region="arabian"] .bg-dunes {
+  background:
+    radial-gradient(92% 58% at 14% 104%, rgba(194, 144, 82, 0.58), transparent 70%),
+    radial-gradient(86% 52% at 72% 98%, rgba(232, 186, 116, 0.42), transparent 72%),
+    linear-gradient(180deg, rgba(232, 184, 110, 0.00), rgba(186, 126, 72, 0.40) 50%, rgba(92, 62, 44, 0.64));
+}
+
+.bg[data-region="atacama"] .bg-dunes,
+.bg[data-region="central-asia"] .bg-dunes,
+.bg[data-region="australian"] .bg-dunes,
+.bg[data-region="kalahari"] .bg-dunes {
+  background:
+    radial-gradient(92% 58% at 14% 104%, rgba(162, 122, 88, 0.52), transparent 70%),
+    radial-gradient(86% 52% at 72% 98%, rgba(198, 154, 110, 0.36), transparent 72%),
+    linear-gradient(180deg, rgba(209, 166, 120, 0.00), rgba(136, 104, 80, 0.38) 50%, rgba(66, 54, 48, 0.62));
+  filter: saturate(0.58) contrast(0.94);
+}
+
 @keyframes lake-drift {
   0%   { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
   100% { background-position: -90px 12px, 54px 8px, 0 0, 18px 10px, -24px 4px; }
@@ -1491,6 +1682,37 @@ a {
   background:
     radial-gradient(70% 22% at 62% 2%, rgba(255, 238, 190, 0.10), transparent 74%),
     linear-gradient(180deg, #2f8591, #155f74 52%, #06384f);
+}
+
+/* Re-apply region water palettes after phase rules. */
+.bg[data-region="honolulu"] .bg-ocean,
+.bg[data-region="miami"] .bg-ocean,
+.bg[data-region="rio"] .bg-ocean {
+  background:
+    radial-gradient(70% 22% at 64% 2%, rgba(255, 238, 190, 0.16), transparent 74%),
+    radial-gradient(82% 30% at 18% 8%, rgba(138, 220, 210, 0.16), transparent 72%),
+    linear-gradient(180deg, #5aaea9, #247b84 52%, #09465a);
+  filter: saturate(0.84) contrast(0.93);
+}
+
+.bg[data-region="pacific-northwest"] .bg-ocean,
+.bg[data-region="new-england"] .bg-ocean,
+.bg[data-region="dutch-coast"] .bg-ocean {
+  background:
+    radial-gradient(70% 20% at 58% 2%, rgba(205, 216, 208, 0.10), transparent 74%),
+    linear-gradient(180deg, #557987, #2c5366 52%, #122d3c);
+  filter: saturate(0.58) contrast(0.96);
+}
+
+.bg[data-region="lisbon"] .bg-ocean,
+.bg[data-region="barcelona"] .bg-ocean,
+.bg[data-region="cape-town"] .bg-ocean,
+.bg[data-region="auckland"] .bg-ocean {
+  background:
+    radial-gradient(74% 22% at 62% 2%, rgba(255, 231, 176, 0.14), transparent 74%),
+    radial-gradient(76% 26% at 16% 8%, rgba(154, 196, 199, 0.13), transparent 72%),
+    linear-gradient(180deg, #5f929b, #246070 52%, #0b3444);
+  filter: saturate(0.70) contrast(0.94);
 }
 
 .bg[data-locality="coastal"][data-weather="fog"]        .bg-ocean,
@@ -1922,6 +2144,10 @@ a {
 }
 
 .bg-moon svg { width: 100%; height: 100%; }
+
+.bg-moon[hidden] {
+  display: none !important;
+}
 
 .bg[data-phase="dusk"]              .bg-moon,
 .bg[data-phase="nautical-dusk"]     .bg-moon,

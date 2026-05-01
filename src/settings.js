@@ -897,7 +897,7 @@ function buildLocalitySection(settings, onChange) {
         onChange(settings);
       }
     }),
-    "Auto blends location, biome, and region into urban, coastal, lake, mountain, forest, desert, tropical, polar, or meadow scenery."
+    "Auto blends location, biome, and region into urban, coastal, lake, mountain, forest, desert, tropical, polar, or meadow scenery, with regional atmosphere variants where available."
   ));
   sec.appendChild(g);
   return sec;

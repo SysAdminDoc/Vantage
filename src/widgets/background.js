@@ -31,7 +31,8 @@
 //   .bg-holiday-glow  holiday-specific atmosphere accents
 //
 // The mount carries data-phase + data-weather + data-biome + data-season
-// + data-hemisphere attributes so all visual styling lives in CSS.
+// + data-hemisphere + data-locality + data-region attributes so all visual
+// styling lives in CSS.
 // JS only sets state and positions the sun + spawns transient particles.
 
 import { getWeatherData, detectLocation } from "../utils/weather-source.js";
@@ -691,21 +692,42 @@ const MOUNTAIN_REGIONS = [
   [-46.0, -40.0, 167.00,  174.00, "southern-alps-nz"]
 ];
 
+function matchRegion(regions, lat, lon) {
+  if (lat == null || lon == null) return null;
+  const match = regions.find(([la, lb, oa, ob]) => lat >= la && lat <= lb && lon >= oa && lon <= ob);
+  return match?.[4] || null;
+}
+
 /** Returns true if (lat, lon) falls inside a known desert region. */
 function isDesertLocation(lat, lon) {
-  if (lat == null || lon == null) return false;
-  return DESERT_REGIONS.some(([la, lb, oa, ob]) => lat >= la && lat <= lb && lon >= oa && lon <= ob);
+  return !!matchRegion(DESERT_REGIONS, lat, lon);
 }
 
 /** Returns true if (lat, lon) falls inside a known major metro region. */
 function isUrbanLocation(lat, lon) {
-  if (lat == null || lon == null) return false;
-  return URBAN_REGIONS.some(([la, lb, oa, ob]) => lat >= la && lat <= lb && lon >= oa && lon <= ob);
+  return !!matchRegion(URBAN_REGIONS, lat, lon);
 }
 
 function isRegionMatch(regions, lat, lon) {
-  if (lat == null || lon == null) return false;
-  return regions.some(([la, lb, oa, ob]) => lat >= la && lat <= lb && lon >= oa && lon <= ob);
+  return !!matchRegion(regions, lat, lon);
+}
+
+function inferSceneRegion(lat, lon, locality = null) {
+  if (locality === "urban") return matchRegion(URBAN_REGIONS, lat, lon);
+  if (locality === "coastal" || locality === "tropical") return matchRegion(COASTAL_REGIONS, lat, lon);
+  if (locality === "lake") return matchRegion(LAKE_REGIONS, lat, lon);
+  if (locality === "mountain") return matchRegion(MOUNTAIN_REGIONS, lat, lon);
+  if (locality === "desert") return matchRegion(DESERT_REGIONS, lat, lon);
+  if (locality && locality !== "auto") return null;
+
+  return (
+    matchRegion(URBAN_REGIONS, lat, lon) ||
+    matchRegion(COASTAL_REGIONS, lat, lon) ||
+    matchRegion(LAKE_REGIONS, lat, lon) ||
+    matchRegion(MOUNTAIN_REGIONS, lat, lon) ||
+    matchRegion(DESERT_REGIONS, lat, lon) ||
+    null
+  );
 }
 
 function inferLocality(lat, lon, biome) {
@@ -760,6 +782,7 @@ const BACKGROUND_DATA_KEYS = [
   "aurora",
   "milkyWay",
   "locality",
+  "region",
   "holiday",
   "rainbow",
   "firstSnow",
@@ -1512,14 +1535,17 @@ function updateScene(mount, weather, sunTimes) {
       mount.dataset.milkyWay   = "off";
     }
 
-    // Locality override (settings.appearance.locality): user can pin
-    // coastal/urban/desert/default. Auto can infer known metro regions.
+    // Locality override (settings.appearance.locality): user can pin broad
+    // scene families. Auto can infer known metro/coast/lake/mountain regions.
     const localityOverride = mount._bgLocality;
     if (localityOverride && localityOverride !== "auto") {
       mount.dataset.locality = localityOverride;
     } else {
       mount.dataset.locality = inferLocality(lat, lon, mount.dataset.biome);
     }
+    const region = inferSceneRegion(lat, lon, mount.dataset.locality);
+    if (region) mount.dataset.region = region;
+    else delete mount.dataset.region;
 
     // Holiday: 24h banner — Halloween, Christmas Eve / Day, NYE, New Year,
     // user birthday. CSS gates jack-o-lanterns / sleigh / fireworks / balloons.
@@ -1532,12 +1558,14 @@ function updateScene(mount, weather, sunTimes) {
     const moon = mount.querySelector(".bg-moon");
     if (moon) {
       if (!MOON_VISIBLE_PHASES.has(phase)) {
+        moon.hidden = true;
         if (moon._phase !== null) {
           moon._phase = null;
           moon.innerHTML = "";
           delete moon.dataset.phaseFrac;
         }
       } else {
+        moon.hidden = false;
         const phaseFrac = getMoonPhase(now);
         const bucket = Math.round(phaseFrac * 20) / 20; // 21 distinct values
         if (moon._phase !== bucket) {
@@ -1592,9 +1620,18 @@ function updateScene(mount, weather, sunTimes) {
     // transition from the @property dark-gray initial values.
     mount.classList.add("bg--no-transition");
     apply();
-    // Force a reflow before re-enabling transitions.
+    // Force a reflow, then release transitions after the first painted frame.
+    // Typed custom properties can otherwise animate from their CSS initial
+    // values, leaving a midday scene visually stuck in night for seconds.
     void mount.offsetWidth;
-    mount.classList.remove("bg--no-transition");
+    const releaseTransitions = () => mount.classList.remove("bg--no-transition");
+    if (typeof globalThis.requestAnimationFrame === "function") {
+      globalThis.requestAnimationFrame(() => {
+        globalThis.requestAnimationFrame(releaseTransitions);
+      });
+    } else {
+      setTimeout(releaseTransitions, 0);
+    }
     mount._bgFirstScenePainted = true;
   } else {
     apply();
