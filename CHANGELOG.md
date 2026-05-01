@@ -12,6 +12,10 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Live reduced-motion refresh** — animated backgrounds now re-resolve Motion when browser/OS reduced-motion preferences change while Vantage is open.
 - **Motion settings clarity** — the Background panel now explains whether System motion currently resolves to Full or Still.
 - **Accent-aware fallback atmosphere** — the theme gradient shown when backgrounds are off now follows the active accent color instead of fixed mauve/blue tones.
+- **Visual background presets and readability** — Background settings now include Focus, Ambient, Showcase, and Wallpaper presets, plus a Readability control that tunes overlay strength independently from Atmosphere.
+- **Scene preview controls and state badges** — Live background settings now show resolved theme/motion/weather/scenery state badges and session-only preview controls for time, season, weather, scenery, and holiday variants.
+- **Background QA gallery** — `qa-scenes.html` renders a grid of forced live-scene variants, with `node scripts/qa-scenes-smoke.mjs` covering the gallery and visual-control hooks.
+- **Local visual QA shim** — local-server runs now get a guarded `chrome.storage` shim so the new tab and QA gallery can render outside the extension runtime without changing installed-extension behavior.
 
 ## v0.8.0 — 2026-04-30
 

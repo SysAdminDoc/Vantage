@@ -32,6 +32,7 @@ import { toast } from "./utils/dom.js";
 import { makeReorderable, arrayMove } from "./utils/drag.js";
 import { applyThemePreference, onSystemThemeChange } from "./utils/theme.js";
 import { applyWorkspace, getActiveWorkspace, captureSnapshot, resolveWorkspaceSettings } from "./utils/workspace.js";
+import { BACKGROUND_PREVIEW_EVENT } from "./utils/background-preview.js";
 window._vantageWorkspaceHelpers = { captureSnapshot: () => captureSnapshot(currentSettings) };
 
 let currentSettings;
@@ -43,6 +44,7 @@ let countdownTeardown  = null;
 let panelDragCleanup   = null;
 let systemThemeCleanup   = null;
 let reducedMotionCleanup = null;
+let settingsPanelOnChange = null;
 
 // Fixed panel kinds (static mounts in newtab.html)
 const FIXED_PANEL_KINDS = [
@@ -404,6 +406,7 @@ function wireSettings() {
     await saveSettings(currentSettings);
     mountAll();
   };
+  settingsPanelOnChange = onChange;
 
   const open = () => {
     renderSettingsPanel(panel, currentSettings, onChange, { showWizard: launchWizard });
@@ -420,6 +423,11 @@ function wireSettings() {
   });
 
   backdrop.addEventListener("click", close);
+
+  globalThis.addEventListener(BACKGROUND_PREVIEW_EVENT, () => {
+    mountAll();
+    rerenderSettingsPanelIfOpen();
+  });
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && panel.dataset.open === "true") {
@@ -457,6 +465,12 @@ function applyAccent(settings, animate = false) {
   }
 }
 
+function rerenderSettingsPanelIfOpen() {
+  const panel = document.getElementById("settings-panel");
+  if (panel?.dataset.open !== "true" || !settingsPanelOnChange) return;
+  renderSettingsPanel(panel, currentSettings, settingsPanelOnChange, { showWizard: launchWizard });
+}
+
 function applyTheme(settings) {
   applyThemePreference(settings?.theme || "mocha");
 }
@@ -485,6 +499,7 @@ function watchReducedMotion() {
       (background?.kind || "animated") === "animated";
     if (isLiveBackground) {
       mountAll();
+      rerenderSettingsPanelIfOpen();
     }
   });
 }
