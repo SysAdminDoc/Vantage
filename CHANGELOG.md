@@ -4,6 +4,12 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 
 ## Unreleased
 
+## v0.13.0 — 2026-05-02
+
+### Added
+- **Per-query engine switch** — Shift+Enter (or Shift+click submit) on the search box opens a quick-pick popover listing every other configured engine. Pick → search this query with that engine; saved default stays unchanged. Closes the ROADMAP item that was partial-shipped in v0.10.0 (the placeholder-reflects-engine half). Custom engine surfaces its hostname in the option label so destination is verifiable; the default `https://example.com/...` sentinel is excluded so fresh installs don't see a fake "Custom" option. Keyboard navigable (ArrowUp/Down, Home/End, Esc). Touch-only devices without Shift fall through to the existing engine picker.
+- **In-extension error log** — Vantage now catches `window.onerror` + `unhandledrejection` into a 50-entry ring buffer in `chrome.storage.local`. Settings → Data exposes "Copy debug log" (clipboard) and "Clear log" buttons. Copied output is wrapped in a `​```log`` ​Markdown fence and control-character-stripped so pasting into GitHub / Slack / Discord can't render attacker-controlled error text as links or formatting. Includes manifest version + userAgent + entry count + generated timestamp so users don't need to gather environment info separately. Strict opt-in to copy; nothing leaves the browser unless the user explicitly pastes it somewhere.
+
 ## v0.12.0 — 2026-05-02
 
 ### Added
