@@ -1298,7 +1298,7 @@ function buildSearchSection(settings, onChange) {
   const customRow = rowColumn(
     "Custom URL",
     customInput,
-    "Must be https:// (or http://localhost for self-hosted). Use %s where the query goes. Invalid URLs fall back to DuckDuckGo."
+    "Must be https:// for public hosts. http:// is allowed for localhost, RFC1918 private IPs, .local mDNS, and Tailscale CGNAT. Use %s where the query goes. Invalid URLs fall back to DuckDuckGo."
   );
   customRow.style.display = settings.search.engine === "custom" ? "" : "none";
   g.appendChild(customRow);
