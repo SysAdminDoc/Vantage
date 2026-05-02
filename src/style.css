@@ -56,6 +56,13 @@
   --accent-strong: color-mix(in srgb, var(--mauve) 92%, white);
   --accent-fg: var(--crust);
 
+  /* Dynamic contrast text on accent background
+     Progressive enhancement: contrast-color() for Chrome 147+, Firefox 146+, Safari 26+, Edge 147+
+     Fallback to --accent-fg for older browsers */
+  @supports (color: contrast-color(var(--accent))) {
+    --accent-fg: contrast-color(white, black from var(--accent));
+  }
+
   /* Shadows tuned for dark canvas */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.30);
@@ -95,6 +102,11 @@
   --bg-readability-overlay:
     radial-gradient(900px 520px at 50% 28%, rgba(9, 10, 23, 0.06), transparent 62%),
     linear-gradient(180deg, rgba(12, 13, 28, 0.19), rgba(12, 13, 28, 0.09) 45%, rgba(12, 13, 28, 0.27));
+
+  /* Dynamic contrast text on accent background */
+  @supports (color: contrast-color(var(--accent))) {
+    --accent-fg: contrast-color(white, black from var(--accent));
+  }
 }
 
 [data-theme="frappe"] {
@@ -128,6 +140,11 @@
   --bg-readability-overlay:
     radial-gradient(900px 520px at 50% 28%, rgba(15, 17, 35, 0.05), transparent 62%),
     linear-gradient(180deg, rgba(18, 20, 38, 0.17), rgba(18, 20, 38, 0.08) 45%, rgba(18, 20, 38, 0.24));
+
+  /* Dynamic contrast text on accent background */
+  @supports (color: contrast-color(var(--accent))) {
+    --accent-fg: contrast-color(white, black from var(--accent));
+  }
 }
 
 /* Accent color overrides — set via data-accent on <html> */
@@ -189,6 +206,11 @@
   --accent-secondary: var(--blue);
   --accent-strong: color-mix(in srgb, var(--mauve) 90%, black);
   --accent-fg: white;
+
+  /* Dynamic contrast text on accent background */
+  @supports (color: contrast-color(var(--accent))) {
+    --accent-fg: contrast-color(white, black from var(--accent));
+  }
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
