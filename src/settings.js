@@ -2301,6 +2301,36 @@ function buildDataSection(settings, onChange, showWizard) {
     }, [iconNode("share", { size: 14 }), " Copy share link"])
   ));
 
+  // Debug log — local-only ring buffer of unhandled errors for issue
+  // reports. Strict opt-in to copy; never auto-uploaded anywhere.
+  g.appendChild(row(
+    "Debug log",
+    "Vantage logs unhandled errors locally (max 50 entries). Copy includes browser version + extension version. Nothing leaves your browser unless you paste it somewhere yourself.",
+    el("div", { class: "compose__row" }, [
+      el("button", {
+        type: "button", class: "button button--ghost",
+        onClick: async () => {
+          const { formatErrorLog } = await import("./utils/error-log.js");
+          const text = await formatErrorLog();
+          try {
+            await navigator.clipboard.writeText(text);
+            toast(`Debug log copied (${text.length} chars).`, "success");
+          } catch {
+            toast("Clipboard access denied. Tip: open the dev console and paste from settings storage.", "error");
+          }
+        }
+      }, [iconNode("download", { size: 14 }), " Copy debug log"]),
+      el("button", {
+        type: "button", class: "button button--ghost",
+        onClick: async () => {
+          const { clearErrorLog } = await import("./utils/error-log.js");
+          await clearErrorLog();
+          toast("Debug log cleared.", "success");
+        }
+      }, [iconNode("trash", { size: 14 }), " Clear log"])
+    ])
+  ));
+
   sec.appendChild(g);
   return sec;
 }

@@ -38,6 +38,7 @@ import { applyVisualQaOverrides } from "./utils/visual-qa.js";
 import { attachThemeColorListener, applyThemeColorFromSettings } from "./utils/theme-color.js";
 import { attachContextMenu } from "./utils/context-menu.js";
 import { THEME_OPTIONS } from "./utils/theme.js";
+import { attachErrorListeners } from "./utils/error-log.js";
 window._vantageWorkspaceHelpers = { captureSnapshot: () => captureSnapshot(currentSettings) };
 
 let currentSettings;
@@ -64,6 +65,10 @@ function getPanelKinds() {
 }
 
 async function init() {
+  // Wire global error listeners FIRST so any failure in init() itself
+  // gets logged for the Copy-debug-log button to surface.
+  attachErrorListeners();
+
   // Handle shared-config URL fragment (#import=<base64-json>) — gated
   // through the partial-import dialog so users see what would change
   // before anything is overwritten (Q1 audit follow-up).
