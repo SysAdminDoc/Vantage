@@ -1608,6 +1608,15 @@ function updateScene(mount, weather, sunTimes) {
     mount.style.setProperty("--sky-bottom", colors.bot);
     mount.style.setProperty("--sun-color",  colors.sun);
     mount.style.setProperty("--sun-glow",   colors.glow);
+    // Surface the closest-to-viewer sky color to the rest of the page so
+    // <meta name="theme-color"> can keep the browser chrome in sync. Picking
+    // sky-bottom matches what the user sees behind widgets — the top of the
+    // sky drifts to deep colors at night which would clash with the chrome.
+    try {
+      window.dispatchEvent(new CustomEvent("vantage:bg-color", {
+        detail: { color: colors.bot, phase, weather }
+      }));
+    } catch { /* CustomEvent unavailable in odd test runtimes — ignore */ }
 
     // Locality-driven attributes — read by CSS to choose tree/mountains/aurora/season particles.
     // We attach the latitude on the mount as a closure-shared field so the

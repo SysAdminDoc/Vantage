@@ -34,6 +34,7 @@ import { applyThemePreference, onSystemThemeChange } from "./utils/theme.js";
 import { applyWorkspace, getActiveWorkspace, captureSnapshot, resolveWorkspaceSettings } from "./utils/workspace.js";
 import { BACKGROUND_PREVIEW_EVENT } from "./utils/background-preview.js";
 import { applyVisualQaOverrides } from "./utils/visual-qa.js";
+import { attachThemeColorListener, applyThemeColorFromSettings } from "./utils/theme-color.js";
 window._vantageWorkspaceHelpers = { captureSnapshot: () => captureSnapshot(currentSettings) };
 
 let currentSettings;
@@ -88,6 +89,8 @@ async function init() {
   applyAccent(initialEffectiveSettings);
   applyCustomCSS(currentSettings.customCSS);
   injectStaticIcons();
+  attachThemeColorListener();
+  applyThemeColorFromSettings(initialEffectiveSettings);
   watchSystemTheme();
   watchReducedMotion();
 
@@ -167,6 +170,7 @@ function mountAll() {
   applyAccent(visualSettings);
 
   // Background
+  applyThemeColorFromSettings(visualSettings);
   renderBackground(
     document.getElementById("background-mount"),
     visualSettings,
