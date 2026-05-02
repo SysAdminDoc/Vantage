@@ -1731,7 +1731,16 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
     el("div", { class: "compose__row" }, [urlInput, addBtn])
   ]));
 
-  // Reddit presets
+  // Preset bundles — collapsible groups of one-click feed adds. Reddit
+  // (anonymous .rss) shipped in v0.8.0; the Dev bundle (HN + Lobsters +
+  // GitHub Trending + DEV.to) closes the v1.1.0 ROADMAP "Multi-source
+  // aggregated dev feed" item — single panel, deduped + date-sorted by
+  // the existing feed-list path.
+  //
+  // GitHub Trending has no native RSS; mshibanami.github.io/GitHubTrendingRSS
+  // is the de-facto unofficial mirror (static GH Pages, no auth, scraped
+  // daily). All five GH-Trending presets below cover the most-used
+  // languages plus the language-agnostic "all" feed.
   const REDDIT_PRESETS = [
     { title: "Reddit — All",           url: "https://www.reddit.com/r/all/.rss" },
     { title: "Reddit — Popular",       url: "https://www.reddit.com/r/popular/.rss" },
@@ -1741,10 +1750,37 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
     { title: "Reddit — Science",       url: "https://www.reddit.com/r/science/.rss" },
   ];
 
-  const presetWrap = el("details", { class: "feed-presets" }, [
-    el("summary", { class: "feed-presets__toggle" }, ["Reddit presets"])
+  const DEV_PRESETS = [
+    { title: "Hacker News — Front page",  url: "https://news.ycombinator.com/rss" },
+    { title: "Hacker News — Best",        url: "https://hnrss.org/best" },
+    { title: "Hacker News — Show HN",     url: "https://hnrss.org/show" },
+    { title: "Hacker News — Ask HN",      url: "https://hnrss.org/ask" },
+    { title: "Lobsters",                  url: "https://lobste.rs/rss" },
+    { title: "DEV.to",                    url: "https://dev.to/feed" },
+    { title: "GitHub Trending — All",     url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml" },
+    { title: "GitHub Trending — JavaScript", url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/javascript.xml" },
+    { title: "GitHub Trending — TypeScript", url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/typescript.xml" },
+    { title: "GitHub Trending — Python",  url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/python.xml" },
+    { title: "GitHub Trending — Rust",    url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/rust.xml" },
+    { title: "GitHub Trending — Go",      url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/go.xml" },
+  ];
+
+  sec.appendChild(buildPresetGroup("Dev presets",    DEV_PRESETS,    cfg, onChange, refreshList, settings));
+  sec.appendChild(buildPresetGroup("Reddit presets", REDDIT_PRESETS, cfg, onChange, refreshList, settings));
+
+  return sec;
+}
+
+/** Render a collapsible <details> group of one-click feed-add buttons.
+ *  Buttons that match an already-subscribed URL are disabled and show a
+ *  check mark instead of a plus, mirroring the original Reddit-presets
+ *  pattern — extracted so the Dev presets reuse it without duplication.
+ */
+function buildPresetGroup(label, presets, cfg, onChange, refreshList, settings) {
+  const wrap = el("details", { class: "feed-presets" }, [
+    el("summary", { class: "feed-presets__toggle" }, [label])
   ]);
-  for (const p of REDDIT_PRESETS) {
+  for (const p of presets) {
     const already = cfg.feeds.some(f => f.url === p.url);
     const btn = el("button", {
       type: "button",
@@ -1758,11 +1794,9 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
         toast(`${p.title} added.`, "success");
       }
     }, [already ? iconNode("check", { size: 12 }) : iconNode("plus", { size: 12 }), ` ${p.title}`]);
-    presetWrap.appendChild(btn);
+    wrap.appendChild(btn);
   }
-  sec.appendChild(presetWrap);
-
-  return sec;
+  return wrap;
 }
 
 /* ---- Air quality ------------------------------------------------------- */
