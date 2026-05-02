@@ -52,6 +52,12 @@ function formatVisibility(meters, units) {
   return `${miles.toFixed(miles < 1 ? 2 : 1)} mi`;
 }
 
+function formatPressure(hpa) {
+  if (hpa == null) return null;
+  // Standard atmospheric pressure is ~1013 hPa; display as-is
+  return `${Math.round(hpa)} hPa`;
+}
+
 export async function renderWeather(mount, settings, saveSettings) {
   clear(mount);
   if (!settings.weather.enabled) {
@@ -100,6 +106,8 @@ export async function renderWeather(mount, settings, saveSettings) {
     const dewPoint = cur.dew_point_2m;
     const humidity = cur.relative_humidity_2m;
     const visibility = formatVisibility(cur.visibility, settings.weather.units);
+    const uvIndex = cur.uv_index;
+    const pressure = formatPressure(cur.pressure_msl);
 
     // Build the title (hover) and aria-label (spoken). Title is dense, aria
     // stays terse to avoid SR fatigue.
@@ -108,6 +116,8 @@ export async function renderWeather(mount, settings, saveSettings) {
     if (dewPoint != null) titleParts.push(`dew ${Math.round(dewPoint)}${unit}`);
     if (humidity != null) titleParts.push(`humidity ${Math.round(humidity)}%`);
     if (visibility) titleParts.push(`visibility ${visibility}`);
+    if (uvIndex != null) titleParts.push(`UV index ${Math.round(uvIndex * 10) / 10}`);
+    if (pressure) titleParts.push(`pressure ${pressure}`);
     const title = titleParts.join(" · ");
 
     const ariaParts = [`${temp} degrees ${unitLabel}`, meta.label, locName];
