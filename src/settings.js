@@ -1563,6 +1563,19 @@ function buildWeatherSection(settings, onChange) {
     })
   ));
 
+  // Agricultural / atmospheric variable set — appends CAPE, VPD, soil
+  // moisture (3 depths), and soil temperature (3 depths) to the weather
+  // chip's hover title. No new endpoint, no new permissions.
+  g.appendChild(row(
+    "Agricultural / atmospheric variables",
+    "Adds CAPE (thunderstorm potential), vapour-pressure deficit, and soil moisture / temperature at 3 depths to the weather hover title. Useful for gardeners, cyclists, and allergy sufferers.",
+    toggle({
+      checked: settings.weather.showAgricultural || false,
+      ariaLabel: "Show agricultural variables",
+      onChange: (v) => { settings.weather.showAgricultural = v; onChange(settings); }
+    })
+  ));
+
   // Current location chip
   const chipHost = el("div", { class: "settings-row__control", style: { flexWrap: "wrap" } });
   const refreshChip = () => {

@@ -242,6 +242,52 @@ export function showPartialImportDialog(current, imported, source) {
       el("p", {}, [`From ${source}. Unchecked sections keep your current values.`])
     ]);
 
+    // Surface keys in the imported payload that aren't covered by any
+    // known section. These are usually fields from a newer version of
+    // Vantage (e.g. someone exporting from v1.2 importing into v1.1)
+    // or the `notifiedUrls` LRU and other private state that isn't
+    // worth showing in the section list. We list them as a heads-up
+    // so the user knows the backup is a strict superset of what we
+    // can restore — the fields stay in storage, we just won't
+    // overwrite them.
+    //
+    // Uses `chrome.storage.local.getKeys()` (Chrome 132+) when
+    // available to also flag keys that exist in current storage but
+    // aren't in the imported payload (downgrade scenario). Graceful
+    // no-op on Firefox / older Chrome — the section-level diff is
+    // already sufficient for the normal case.
+    const importedTopKeys = new Set(Object.keys(imported || {}));
+    const unknownInImport = [...importedTopKeys].filter(k => !ALL_KEYS.has(k) && k !== "schemaVersion");
+    let extraNote = null;
+    if (unknownInImport.length) {
+      extraNote = el("p", { class: "import-dialog__extra-note" }, [
+        `Heads up: the import has ${unknownInImport.length} key${unknownInImport.length === 1 ? "" : "s"} (${unknownInImport.slice(0, 4).join(", ")}${unknownInImport.length > 4 ? "…" : ""}) outside the sections above — usually from a newer version of Vantage. They'll be left untouched in your storage.`
+      ]);
+    }
+
+    // Optional getKeys() probe — if supported, additionally flag keys
+    // currently in storage that the import doesn't include. Useful for
+    // diagnosing "I imported but my X is gone" reports — they're not
+    // gone, the import just didn't carry them and we kept the existing
+    // values per the section-level merge.
+    try {
+      const sa = globalThis.chrome?.storage?.local;
+      if (sa?.getKeys) {
+        const liveKeys = await sa.getKeys();
+        const settingsBlob = liveKeys.find(k => k === "vantageSettings");
+        if (settingsBlob) {
+          const currentTopKeys = new Set(Object.keys(current || {}));
+          const missingInImport = [...currentTopKeys].filter(k => !importedTopKeys.has(k) && !ALL_KEYS.has(k));
+          if (missingInImport.length && extraNote) {
+            extraNote.appendChild(el("br"));
+            extraNote.appendChild(document.createTextNode(
+              ` ${missingInImport.length} private key${missingInImport.length === 1 ? "" : "s"} only on this device (${missingInImport.slice(0, 3).join(", ")}${missingInImport.length > 3 ? "…" : ""}) will stay.`
+            ));
+          }
+        }
+      }
+    } catch { /* getKeys not supported — no-op */ }
+
     const list = el("div", { class: "import-dialog__sections" });
     for (const sec of SECTIONS) {
       const differs = sectionDiffers.get(sec.id);
@@ -299,6 +345,7 @@ export function showPartialImportDialog(current, imported, source) {
 
     dialog.appendChild(header);
     dialog.appendChild(list);
+    if (extraNote) dialog.appendChild(extraNote);
     dialog.appendChild(actions);
 
     document.body.appendChild(backdrop);
