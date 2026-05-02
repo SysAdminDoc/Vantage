@@ -99,10 +99,21 @@ export function showPartialImportDialog(current, imported, source) {
   return new Promise((resolve) => {
     // Detect which sections have anything DIFFERENT in imported. Sections
     // that are byte-identical to current are pre-unchecked because there's
-    // nothing to restore there.
+    // nothing to restore there. Secret-only diffs (apiKey/nasaKey blanked
+    // by export's stripSecrets) are normalised to current's values before
+    // diffing — otherwise re-importing your own export looks like the
+    // info section "changed" when in reality only the export-scrub did.
+    const importedForDiff = JSON.parse(JSON.stringify(imported || {}));
+    for (const [section, field] of PRESERVE_IF_IMPORTED_EMPTY) {
+      const v = importedForDiff?.[section]?.[field];
+      if ((v === "" || v == null) && current?.[section]) {
+        importedForDiff[section] = importedForDiff[section] || {};
+        importedForDiff[section][field] = current[section][field] || "";
+      }
+    }
     const sectionDiffers = new Map();
     for (const sec of SECTIONS) {
-      const diffs = sec.keys.some(k => !shallowEqual(current?.[k], imported?.[k]));
+      const diffs = sec.keys.some(k => !shallowEqual(current?.[k], importedForDiff?.[k]));
       sectionDiffers.set(sec.id, diffs);
     }
 
@@ -195,6 +206,17 @@ export function showPartialImportDialog(current, imported, source) {
   });
 }
 
+// Fields that are intentionally cleared by the export/share scrub
+// (stripSecrets in settings.js). When the user re-imports their own
+// export onto the same device, we want the imported value to win for
+// everything EXCEPT these — re-importing should never wipe an API key
+// the user is currently using just because the export form had it
+// blanked out for sharing safety.
+const PRESERVE_IF_IMPORTED_EMPTY = [
+  ["crypto", "apiKey"],
+  ["photo",  "nasaKey"]
+];
+
 function applySelected(current, imported, checkboxes) {
   // Start with a clone of current so unchecked sections are preserved.
   const merged = JSON.parse(JSON.stringify(current));
@@ -205,6 +227,18 @@ function applySelected(current, imported, checkboxes) {
       if (key in imported) {
         merged[key] = JSON.parse(JSON.stringify(imported[key]));
       }
+    }
+  }
+  // Carry secrets forward from current when the imported payload had
+  // them blanked. Closes the round-trip footgun: export -> import on
+  // same device must not wipe live API keys.
+  for (const [section, field] of PRESERVE_IF_IMPORTED_EMPTY) {
+    const importedSection = imported?.[section];
+    const importedHasKey = importedSection && typeof importedSection === "object";
+    const importedVal = importedHasKey ? importedSection[field] : undefined;
+    const importedIsEmpty = importedVal === "" || importedVal == null;
+    if (importedIsEmpty && current?.[section] && merged[section]) {
+      merged[section][field] = current[section][field] || "";
     }
   }
   // Top-level keys that aren't covered by any section (e.g. onboardingComplete)
