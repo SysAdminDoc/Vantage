@@ -1,0 +1,46 @@
+# Vantage documentation site — Jekyll config for GitHub Pages.
+#
+# Activation (one-time, in the GitHub repo settings):
+#   Settings → Pages → Source: "Deploy from a branch"
+#   Branch: main · /docs · Save
+#
+# After activation the site is served from
+# https://sysadmindoc.github.io/Vantage/
+
+title: Vantage
+description: >-
+  Customizable new tab dashboard for Chromium + Firefox.
+  Privacy-first. No accounts. No telemetry.
+url: "https://sysadmindoc.github.io"
+baseurl: "/Vantage"
+
+theme: jekyll-theme-minimal
+
+# Order of pages in the sidebar nav.
+header_pages:
+  - getting-started.md
+  - widgets.md
+  - faq.md
+  - widget-api.md
+  - privacy-practices-cws.md
+
+# Markdown rendering — GFM tables + fenced code.
+markdown: kramdown
+kramdown:
+  syntax_highlighter: rouge
+  input: GFM
+
+# Distribution-readiness, RTL roadmap, and accessibility report
+# files are intentionally excluded from the public site — they're
+# internal working docs (mark them in a plugin-aware way once the
+# site grows).
+exclude:
+  - rtl-support-roadmap.md
+  - i18n-strategy.md
+  - store-listing-content.md
+  - store-submission-guide.md
+  - accessibility-report.md
+
+# GitHub-flavored repo metadata for the theme footer.
+github_username: SysAdminDoc
+repository: SysAdminDoc/Vantage
