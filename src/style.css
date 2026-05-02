@@ -7381,46 +7381,49 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: var(--s-3);
-  padding: var(--s-2) var(--s-1);
+  padding: var(--s-3) var(--s-2);
   border-radius: var(--r-2);
-  transition: background var(--t-micro);
+  transition: all var(--t-micro);
 }
 
 .crypto-row:hover {
-  background: color-mix(in srgb, var(--surface0) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .crypto-name {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 4px;
 }
 
 .crypto-symbol {
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
   text-transform: uppercase;
+  letter-spacing: -0.2px;
 }
 
 .crypto-fullname {
   font-size: var(--text-xs);
   color: var(--subtext0);
+  font-weight: 500;
 }
 
 .crypto-price {
   font-size: var(--text-base);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
   font-variant-numeric: tabular-nums;
   text-align: right;
+  letter-spacing: -0.15px;
 }
 
 .crypto-change {
   font-size: var(--text-xs);
-  font-weight: 500;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  min-width: 52px;
+  min-width: 56px;
   text-align: right;
 }
 
@@ -7522,8 +7525,13 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   align-items: baseline;
   justify-content: space-between;
   gap: var(--s-3);
-  padding: var(--s-2) var(--s-1);
+  padding: var(--s-3) var(--s-2);
   border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--t-micro);
+}
+
+.github-item:hover {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
 .github-item:last-child {
@@ -7537,15 +7545,18 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 
 .github-item__label {
   font-size: var(--text-sm);
+  font-weight: 600;
   color: var(--accent);
   text-decoration: none;
   display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color var(--t-micro);
 }
 
 .github-item__label:hover {
+  color: var(--accent-secondary);
   text-decoration: underline;
 }
 
@@ -7556,13 +7567,15 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 500;
 }
 
 .github-item__time {
   font-size: var(--text-xs);
-  color: var(--overlay1);
+  color: var(--overlay0);
   white-space: nowrap;
   flex-shrink: 0;
+  font-weight: 500;
 }
 
 .github-item__meta {
@@ -7574,14 +7587,17 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 
 .github-lang-chip {
   font-size: var(--text-xs);
-  padding: 1px var(--s-2);
+  font-weight: 600;
+  padding: 3px var(--s-2);
   border-radius: var(--r-pill);
-  background: color-mix(in srgb, var(--surface1) 60%, transparent);
+  background: color-mix(in srgb, var(--surface1) 70%, transparent);
   color: var(--subtext0);
+  border: 1px solid var(--border-subtle);
 }
 
 .github-stars {
   font-size: var(--text-xs);
+  font-weight: 600;
   color: var(--yellow);
 }
 
