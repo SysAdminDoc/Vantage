@@ -337,6 +337,20 @@ function buildAppearance(settings, onChange) {
   }
   g.appendChild(row("Accent color", "Color for buttons, toggles, and highlights.", accentRow));
 
+  if (!settings.contextMenu) settings.contextMenu = { enabled: true };
+  g.appendChild(row(
+    "Right-click context menu",
+    "Right-click on the dashboard surface for quick actions (cycle theme, accent, background; open settings or widget picker). Right-clicks on text, links, and inputs always fall through to the browser's native menu.",
+    toggle({
+      checked: settings.contextMenu.enabled !== false,
+      ariaLabel: "Right-click context menu",
+      onChange: (v) => {
+        settings.contextMenu = { ...settings.contextMenu, enabled: v };
+        onChange(settings);
+      }
+    })
+  ));
+
   sec.appendChild(g);
   return sec;
 }

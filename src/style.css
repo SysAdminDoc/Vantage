@@ -4335,6 +4335,78 @@ a {
   pointer-events: none;
 }
 
+/* Right-click context menu. Same z-band as the import dialog so a
+   stray right-click on top of it doesn't open a competing menu.
+   No animation — it's a hard pop-in, like the browser's native menu. */
+.context-menu {
+  position: fixed;
+  z-index: 130;
+  min-width: 220px;
+  max-width: 320px;
+  padding: var(--s-1);
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-2);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+
+.context-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-1);
+  color: var(--text);
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.context-menu__item:hover:not(:disabled),
+.context-menu__item:focus-visible:not(:disabled) {
+  background: var(--bg-button-hover);
+  color: var(--accent);
+  outline: none;
+}
+.context-menu__item--disabled,
+.context-menu__item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.context-menu__icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--subtext1);
+}
+.context-menu__item:hover .context-menu__icon,
+.context-menu__item:focus-visible .context-menu__icon {
+  color: var(--accent);
+}
+
+.context-menu__label {
+  flex: 1;
+}
+
+.context-menu__hint {
+  font-size: var(--text-xs);
+  color: var(--subtext0);
+  flex-shrink: 0;
+}
+
+.context-menu__divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--s-1) var(--s-2);
+}
+
 /* Partial-import dialog. Sits above the settings panel (z=100) so it
    gates both the file-picker import flow and the URL-hash share flow.
    No animation on the dialog itself — opens fast since it's a hard
