@@ -39,7 +39,7 @@ const DEFAULTS = {
   },
   background: {
     enabled: true,
-    kind: "animated",       // "animated" | "solid" | "gradient" | "image-url" | "image-upload" | "bing-daily"
+    kind: "animated",       // "animated" | "solid" | "gradient" | "image-url" | "image-upload" | "bing-daily" | "video-upload"
     motion: "system",        // "system" | "still" | "calm" | "full"
     atmosphere: "balanced",  // "soft" | "balanced" | "vivid"
     readability: "standard", // "minimal" | "standard" | "high"
@@ -47,9 +47,10 @@ const DEFAULTS = {
     gradient: { from: "#1e1e2e", to: "#313244", angle: 135 },
     imageUrl: "",
     imageData: null,         // base64 data-uri for uploaded image
+    videoData: null,         // base64 data-uri for uploaded WebM video (8 MB cap)
     bingDailyCache: null,    // { url: string, date: "YYYY-MM-DD" }
-    blur: 0,                 // 0–20 px  (image/bing/upload only)
-    brightness: 100          // 50–150 % (image/bing/upload only)
+    blur: 0,                 // 0–20 px  (image/bing/upload/video only)
+    brightness: 100          // 50–150 % (image/bing/upload/video only)
   },
   quicklinks: {
     enabled: true,
