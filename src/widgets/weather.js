@@ -3,7 +3,7 @@
 // hit Open-Meteo at most once per 10 minutes.
 
 import { el, clear } from "../utils/dom.js";
-import { getWeatherData, detectLocation, geocodeCity } from "../utils/weather-source.js";
+import { getWeatherData, getEnsembleSpread, detectLocation, geocodeCity } from "../utils/weather-source.js";
 
 export { geocodeCity }; // re-export so settings panel can keep its existing import path
 
@@ -120,6 +120,27 @@ export async function renderWeather(mount, settings, saveSettings) {
     if (visibility) titleParts.push(`visibility ${visibility}`);
     if (uvIndex != null) titleParts.push(`UV index ${Math.round(uvIndex * 10) / 10}`);
     if (pressure) titleParts.push(`pressure ${pressure}`);
+
+    // Ensemble forecast-confidence chip — narrow spread = high
+    // confidence, wide spread = uncertain. Computed lazily so users
+    // who don't enable it never pay the extra fetch cost. Bands are
+    // chosen so `°F` and `°C` modes both produce sensible labels.
+    if (settings.weather.showEnsembleConfidence) {
+      try {
+        const spread = await getEnsembleSpread(location, settings.weather.units);
+        if (spread != null) {
+          // Bands tuned for the temperature unit at hand:
+          //   °F: <4 → high · 4-8 → moderate · >8 → low
+          //   °C: <2 → high · 2-4 → moderate · >4 → low
+          const isCelsius = settings.weather.units === "celsius";
+          const lowCutoff = isCelsius ? 2 : 4;
+          const highCutoff = isCelsius ? 4 : 8;
+          const conf = spread < lowCutoff ? "high" : spread < highCutoff ? "moderate" : "low";
+          const unitTxt = isCelsius ? "°C" : "°F";
+          titleParts.push(`forecast confidence ${conf} (±${spread.toFixed(1)}${unitTxt})`);
+        }
+      } catch { /* Ensemble fetch is non-fatal — continue without the chip. */ }
+    }
 
     // Agricultural / atmospheric variable set (gated on settings).
     // Cap-style "0 J/kg" CAPE values are the most common output for
