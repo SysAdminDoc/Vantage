@@ -9,6 +9,7 @@ import { SEARCH_ENGINES, validateCustomSearchUrl } from "./search-engines.js";
 import { geocodeCity } from "./widgets/weather.js";
 import { saveSettings, getDefaults } from "./storage.js";
 import { exportOPML, importOPML } from "./utils/opml.js";
+import { createSettingsGist, loadSettingsFromGist, generateShareUrl } from "./utils/gist-sync.js";
 import { THEME_OPTIONS, applyThemePreference } from "./utils/theme.js";
 import { clearFaviconCache, getFaviconCacheStats } from "./utils/favicon-cache.js";
 import {
@@ -2340,6 +2341,57 @@ This will add all your YouTube channels as RSS feeds (when available).`;
         } catch { toast("Couldn't generate share link.", "error"); }
       }
     }, [iconNode("share", { size: 14 }), " Copy share link"])
+  ));
+
+  // Gist-based settings sync (v1.1.0+) — multi-device friendly
+  g.appendChild(row(
+    "Sync via GitHub Gist",
+    "Export settings to a public GitHub Gist (no account needed) or import from a Gist URL. Secrets are NOT included in the Gist — re-enter API keys on destination devices.",
+    el("div", { class: "compose__row" }, [
+      el("button", {
+        type: "button", class: "button button--ghost",
+        onClick: async () => {
+          try {
+            toast("Creating Gist…", "info");
+            const safe = stripSecrets(settings);
+            const { gistUrl } = await createSettingsGist(safe);
+            navigator.clipboard.writeText(gistUrl).then(() => {
+              toast(`Gist created and URL copied. Share with: ${gistUrl}`, "success", 8000);
+            }).catch(() => {
+              toast(`Gist created:\n${gistUrl}`, "success", 8000);
+            });
+          } catch (err) {
+            toast(err.message || "Failed to create Gist.", "error");
+          }
+        }
+      }, [iconNode("upload", { size: 14 }), " Export to Gist"]),
+      el("button", {
+        type: "button", class: "button button--ghost",
+        onClick: async () => {
+          const gistUrl = prompt("Paste Gist URL or ID:\n\nExamples:\nhttps://gist.github.com/abc123\nabc123");
+          if (!gistUrl?.trim()) return;
+          try {
+            toast("Loading Gist…", "info");
+            const loaded = await loadSettingsFromGist(gistUrl);
+            const previous = cloneValue(settings);
+            // Merge loaded settings into current, but skip if loads have secrets
+            Object.assign(settings, loaded);
+            await saveSettings(settings);
+            onChange(settings);
+            toast(`Settings loaded from Gist. Secrets (API keys) must be re-entered.`, "success", 8000, {
+              label: "Undo",
+              onClick: async () => {
+                await saveSettings(previous);
+                onChange(previous);
+                toast("Gist import undone.", "success");
+              }
+            });
+          } catch (err) {
+            toast(err.message || "Failed to load Gist.", "error");
+          }
+        }
+      }, [iconNode("download", { size: 14 }), " Import from Gist"])
+    ])
   ));
 
   // Debug log — local-only ring buffer of unhandled errors for issue
