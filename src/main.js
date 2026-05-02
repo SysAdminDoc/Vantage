@@ -121,6 +121,8 @@ async function init() {
   applyTheme(initialEffectiveSettings);
   applyAccent(initialEffectiveSettings);
   applyCustomCSS(currentSettings.customCSS);
+  applyFontPreferenceFromSettings(currentSettings);
+  applySpeculationRulesFromSettings(currentSettings);
   injectStaticIcons();
   attachThemeColorListener();
   applyThemeColorFromSettings(initialEffectiveSettings);
@@ -633,6 +635,29 @@ function rerenderSettingsPanelIfOpen() {
 
 function applyTheme(settings) {
   applyThemePreference(settings?.theme || "mocha");
+}
+
+/** Apply Local-Font-Access selections to the live page. Called from
+ *  init() and from settings.js after the user picks a font. Empty
+ *  values restore the default font stack via removeProperty. */
+async function applyFontPreferenceFromSettings(settings) {
+  const fontPref = settings?.appearance?.font;
+  if (!fontPref) return;
+  if (!fontPref.body && !fontPref.display) return;
+  try {
+    const { applyFontPreference } = await import("./utils/local-fonts.js");
+    applyFontPreference(fontPref);
+  } catch { /* helper unavailable — keep default font stack */ }
+}
+
+/** Install / remove the <script type="speculationrules"> hover-prefetch
+ *  block based on `quicklinks.speculate`. Chrome/Edge act on it;
+ *  Firefox + Safari silently ignore. */
+async function applySpeculationRulesFromSettings(settings) {
+  try {
+    const { applySpeculationRules } = await import("./utils/speculation-rules.js");
+    applySpeculationRules(!!settings?.quicklinks?.speculate);
+  } catch { /* ignore */ }
 }
 
 function getEffectiveSettings() {

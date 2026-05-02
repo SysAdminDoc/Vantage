@@ -177,9 +177,23 @@ export async function renderWeather(mount, settings, saveSettings) {
     if (showPrecip) ariaParts.push(`${precipProb}% chance of precipitation`);
     const ariaLabel = ariaParts.join(", ");
 
+    // Dual-units rendering: when enabled, append the converted other-
+    // unit alongside the headline temperature (e.g. "72°F · 22°C").
+    // Conversion happens client-side from the unit Open-Meteo
+    // returned, so we don't pay a second fetch.
+    let headline = `${temp}${unit}`;
+    if (settings.weather.dualUnits) {
+      const isCelsius = settings.weather.units === "celsius";
+      const otherUnit = isCelsius ? "°F" : "°C";
+      const otherTemp = isCelsius
+        ? Math.round((temp * 9 / 5) + 32)
+        : Math.round((temp - 32) * 5 / 9);
+      headline = `${temp}${unit} · ${otherTemp}${otherUnit}`;
+    }
+
     const children = [
       el("span", { class: "weather__icon", "aria-hidden": "true" }, [meta.icon]),
-      el("span", { class: "weather__temp" }, [`${temp}${unit}`])
+      el("span", { class: "weather__temp" }, [headline])
     ];
     if (showFeelsLike) {
       children.push(el("span", {
