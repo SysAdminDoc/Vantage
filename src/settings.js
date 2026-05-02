@@ -3,7 +3,7 @@
 
 import { el, clear, toggle, segmented, toast, hostnameLabel } from "./utils/dom.js";
 import { iconNode } from "./icons.js";
-import { SEARCH_ENGINES } from "./search-engines.js";
+import { SEARCH_ENGINES, validateCustomSearchUrl } from "./search-engines.js";
 import { geocodeCity } from "./widgets/weather.js";
 import { saveSettings, getDefaults } from "./storage.js";
 import { exportOPML, importOPML } from "./utils/opml.js";
@@ -1281,12 +1281,22 @@ function buildSearchSection(settings, onChange) {
     class: "text-input",
     placeholder: "https://example.com/search?q=%s",
     value: settings.search.customUrl || "",
-    onChange: (e) => { settings.search.customUrl = e.target.value; onChange(settings); }
+    onChange: (e) => {
+      const next = e.target.value;
+      const v = validateCustomSearchUrl(next);
+      if (!v.ok) {
+        toast(v.reason, "error");
+        e.target.value = settings.search.customUrl || "";
+        return;
+      }
+      settings.search.customUrl = v.normalized;
+      onChange(settings);
+    }
   });
   const customRow = rowColumn(
     "Custom URL",
     customInput,
-    "Use %s where the query goes. Falls back to DuckDuckGo if missing."
+    "Must be https:// (or http://localhost for self-hosted). Use %s where the query goes. Invalid URLs fall back to DuckDuckGo."
   );
   customRow.style.display = settings.search.engine === "custom" ? "" : "none";
   g.appendChild(customRow);
