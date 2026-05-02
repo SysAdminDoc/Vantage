@@ -1,5 +1,5 @@
 // Vantage — background subsystem.
-// background.kind dispatch: "animated" | "solid" | "gradient" | "image-url" | "image-upload" | "bing-daily"
+// background.kind dispatch: "animated" | "solid" | "gradient" | "image-url" | "image-upload" | "video-upload" | "bing-daily"
 //
 // Animated-mode layers (z-index inside the mount, low to high):
 //   .bg-stars         night-sky stars (twinkle)
@@ -934,6 +934,16 @@ export async function renderBackground(mount, settings, saveSettings) {
     return () => {};
   }
 
+  if (kind === "video-upload") {
+    const src = bg.videoData;
+    if (!src) {
+      applyFallbackBackground(mount, "missing");
+      return () => {};
+    }
+    applyVideoBackground(mount, src, bg);
+    return () => {};
+  }
+
   if (kind === "bing-daily") {
     applyFallbackBackground(mount, "loading");
 
@@ -1569,6 +1579,48 @@ function applyImageBackground(mount, src, bg) {
   mount.style.filter = (blur > 0 || brightness !== 100)
     ? `blur(${blur}px) brightness(${brightness / 100})`
     : "";
+}
+
+function applyVideoBackground(mount, src, bg) {
+  resetBackgroundMount(mount);
+  mount.dataset.backgroundState = "video";
+  const blur = Math.min(20, Math.max(0, bg.blur ?? 0));
+  const brightness = Math.min(150, Math.max(50, bg.brightness ?? 100));
+  
+  // Create a <video> element as the background
+  const video = document.createElement("video");
+  video.src = src;
+  video.autoplay = true;
+  video.loop = true;
+  video.muted = true;
+  video.style.position = "absolute";
+  video.style.inset = "0";
+  video.style.width = "100%";
+  video.style.height = "100%";
+  video.style.objectFit = "cover";
+  video.style.zIndex = "-1";
+  if (blur > 0 || brightness !== 100) {
+    video.style.filter = `blur(${blur}px) brightness(${brightness / 100})`;
+  }
+  
+  // Pause video when tab loses focus (save battery/data)
+  const handleVisibility = () => {
+    if (document.hidden) {
+      video.pause();
+    } else {
+      video.play().catch(() => {
+        // Autoplay may be blocked — the video will still show first frame
+      });
+    }
+  };
+  document.addEventListener("visibilitychange", handleVisibility);
+  
+  mount.appendChild(video);
+  
+  // Attempt to play; some browsers require user interaction
+  video.play().catch(() => {
+    // Autoplay blocked by browser policy — show first frame
+  });
 }
 
 function updateScene(mount, weather, sunTimes) {
