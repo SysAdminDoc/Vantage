@@ -2602,7 +2602,83 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
   sec.appendChild(list);
 
   const titleInput = el("input", { type: "text", class: "text-input", placeholder: "Label, e.g. BBC" });
-  const urlInput = el("input", { type: "text", class: "text-input", placeholder: "https://example.com/feed.xml" });
+  const urlInput = el("input", { type: "text", class: "text-input", placeholder: "https://example.com or https://example.com/feed" });
+  
+  let discoveredFeeds = [];
+  const discoveredList = el("ul", { class: "item-list item-list--discovered" });
+  const discoveryStatus = el("div", { class: "discovery-status", style: "display: none; padding: var(--s-2) var(--s-3); background: var(--bg-elevated); border-radius: var(--r-md); color: var(--subtext0); font-size: var(--text-sm);" }, []);
+  
+  const discoverBtn = el("button", {
+    type: "button",
+    class: "icon-button icon-button--ghost",
+    title: "Auto-detect feeds on this website",
+    "aria-label": "Discover feeds",
+    onClick: async () => {
+      const u = urlInput.value.trim();
+      if (!u) {
+        toast("Website URL is required.", "error");
+        return;
+      }
+      let url;
+      try { 
+        url = new URL(u);
+        // If user entered just a domain, assume https://
+        if (!url.protocol) url = new URL("https://" + u);
+      } catch {
+        toast("That doesn't look like a valid URL.", "error");
+        return;
+      }
+      
+      discoverBtn.disabled = true;
+      discoveryStatus.style.display = "block";
+      discoveryStatus.textContent = "Discovering feeds...";
+      
+      try {
+        const { discoverFeeds } = await import("./utils/feed-discovery.js");
+        discoveredFeeds = await discoverFeeds(url.href);
+        
+        clear(discoveredList);
+        if (!discoveredFeeds.length) {
+          discoveryStatus.textContent = "No feeds found on this website. Try entering a feed URL directly.";
+          return;
+        }
+        
+        discoveryStatus.textContent = `Found ${discoveredFeeds.length} feed(s):`;
+        
+        discoveredFeeds.forEach((feed) => {
+          const li = el("li", { class: "item-list__row" }, [
+            el("div", { class: "item-list__row-content" }, [
+              el("span", { class: "item-list__title" }, [feed.title]),
+              el("span", { class: "item-list__hint" }, [hostnameLabel(feed.url)])
+            ]),
+            el("button", {
+              type: "button",
+              class: "icon-button icon-button--primary icon-button--small",
+              "aria-label": `Subscribe to ${feed.title}`,
+              title: "Subscribe",
+              onClick: () => {
+                cfg.feeds.push({ title: feed.title, url: feed.url });
+                onChange(settings);
+                clear(discoveredList);
+                discoveryStatus.style.display = "none";
+                urlInput.value = "";
+                titleInput.value = "";
+                refreshList();
+                toast(`"${feed.title}" added.`, "success");
+              }
+            }, [iconNode("plus", { size: 14 })])
+          ]);
+          discoveredList.appendChild(li);
+        });
+      } catch (e) {
+        console.error("Feed discovery error:", e);
+        discoveryStatus.textContent = `Error: ${e.message}`;
+      } finally {
+        discoverBtn.disabled = false;
+      }
+    }
+  }, [iconNode("search", { size: 14 })]);
+  
   const addBtn = el("button", {
     type: "button",
     class: "button button--primary",
@@ -2621,6 +2697,8 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
       onChange(settings);
       titleInput.value = "";
       urlInput.value = "";
+      clear(discoveredList);
+      discoveryStatus.style.display = "none";
       refreshList();
       toast(`Feed added.`, "success");
     }
@@ -2628,7 +2706,9 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
 
   sec.appendChild(el("div", { class: "compose" }, [
     titleInput,
-    el("div", { class: "compose__row" }, [urlInput, addBtn])
+    el("div", { class: "compose__row" }, [urlInput, discoverBtn, addBtn]),
+    discoveryStatus,
+    discoveredList
   ]));
 
   // Preset bundles — collapsible groups of one-click feed adds. Reddit
