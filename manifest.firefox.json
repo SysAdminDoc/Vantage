@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Vantage",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Customizable new tab dashboard — search engines, RSS, news, weather, and quick links. Privacy-first. No API keys required.",
   "browser_specific_settings": {
     "gecko": {

@@ -4,6 +4,11 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 
 ## Unreleased
 
+## v0.12.0 — 2026-05-02
+
+### Added
+- **Right-click context menu on the dashboard surface** — Bonjourr v22's most-cited UX win. Right-click on the background opens a quick-action menu with: Cycle theme (System → Mocha → Macchiato → Frappé → Latte → System), Cycle accent (Mauve → Blue → Green → Peach → Teal → Lavender → Red → Flamingo → Sky), Cycle background kind (Animated → Solid → Gradient → Image URL → Image Upload → Bing Daily), Customize widgets (opens picker), Open settings. Each cycle action shows the next destination as a hint so users see what they're about to switch to. Right-clicks on text, links, inputs, panels, feed items, the settings panel, the widget picker, the import dialog, and the onboarding wizard fall through to the browser's native menu so users keep copy / paste / spell-check / save-link-as on those elements. Keyboard-accessible (ArrowUp/Down, Home/End, Esc, Tab, Enter). Settings → Appearance → "Right-click context menu" toggles the feature; when disabled, the browser's native menu wins everywhere. Touch devices don't fire `contextmenu` so the feature is a graceful no-op there.
+
 ## v0.11.0 — 2026-05-02
 
 ### Added
