@@ -91,6 +91,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildFeedsSection(settings, onChange, "news", "News", "newspaper",
     "Curated headlines and news sources."));
   body.appendChild(buildFeedFiltersSection(settings, onChange));
+  body.appendChild(buildFeedAlertsSection(settings, onChange));
   body.appendChild(buildAirQualitySection(settings, onChange));
   body.appendChild(buildWindySection(settings, onChange));
   body.appendChild(buildEmbedsSection(settings, onChange));
@@ -994,6 +995,113 @@ function buildFeedFiltersSection(settings, onChange) {
     }
   }, [iconNode("plus", { size: 14 }), " Add rule"]);
   sec.appendChild(addBtn);
+  return sec;
+}
+
+/* ---- Feed alerts (keyword Web Notifications) -------------------------- */
+
+function buildFeedAlertsSection(settings, onChange) {
+  const cfg = settings.feedAlerts || { enabled: false, keywords: [], caseSensitive: false, notifiedUrls: [] };
+  const sec = section("Feed alerts", "alert");
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    "Get a Web Notification when a News or Reading list headline contains one of your keywords. Strict opt-in: requires browser notification permission. Each item is notified only once."
+  ]));
+
+  const g = group();
+
+  // Enable toggle
+  g.appendChild(row(
+    "Enable alerts",
+    "When enabled, Vantage scans newly-loaded items and fires a notification on the first match per article.",
+    toggle({
+      checked: cfg.enabled || false,
+      ariaLabel: "Enable feed alerts",
+      onChange: async (v) => {
+        if (v) {
+          // Lazy-import so the helper isn't pulled into settings.js's
+          // hot path for users who never enable alerts.
+          const { requestNotificationPermission } = await import("./utils/feed-alerts.js");
+          const result = await requestNotificationPermission();
+          if (result !== "granted") {
+            toast(`Notification permission ${result}. Enable it in your browser's site settings to receive alerts.`, "warning", 6000);
+            return;
+          }
+        }
+        settings.feedAlerts = { ...cfg, enabled: v };
+        onChange(settings);
+      }
+    })
+  ));
+
+  // Keywords textarea — one per line for readability
+  const kwArea = el("textarea", {
+    class: "text-input",
+    rows: "4",
+    placeholder: "One keyword per line\nExamples:\nNVIDIA\nlayoffs\nHacker News",
+    "aria-label": "Alert keywords",
+    style: { width: "100%", fontFamily: "var(--font-mono, monospace)" }
+  });
+  kwArea.value = (cfg.keywords || []).join("\n");
+  kwArea.addEventListener("change", () => {
+    const kws = kwArea.value.split(/\r?\n/).map(k => k.trim()).filter(Boolean);
+    settings.feedAlerts = { ...cfg, keywords: kws };
+    onChange(settings);
+  });
+  g.appendChild(row(
+    "Keywords",
+    "Plain-text matching, case-insensitive by default. One per line.",
+    kwArea
+  ));
+
+  // Case-sensitive toggle
+  g.appendChild(row(
+    "Case-sensitive matching",
+    "When off, “nvidia” matches “NVIDIA” and vice versa.",
+    toggle({
+      checked: cfg.caseSensitive || false,
+      ariaLabel: "Case-sensitive keyword matching",
+      onChange: (v) => {
+        settings.feedAlerts = { ...cfg, caseSensitive: v };
+        onChange(settings);
+      }
+    })
+  ));
+
+  // Test + reset
+  const notifiedCount = (cfg.notifiedUrls || []).length;
+  g.appendChild(row(
+    "Already notified",
+    `${notifiedCount} item${notifiedCount === 1 ? "" : "s"} marked as notified. Reset to re-fire on next match.`,
+    el("div", { class: "compose__row" }, [
+      el("button", {
+        type: "button", class: "button button--ghost",
+        onClick: async () => {
+          const { fireAlerts, requestNotificationPermission } = await import("./utils/feed-alerts.js");
+          const perm = await requestNotificationPermission();
+          if (perm !== "granted") {
+            toast(`Notification permission ${perm}.`, "warning");
+            return;
+          }
+          fireAlerts([{
+            keyword: "demo",
+            item: { title: "This is what a Vantage feed alert looks like.", link: "https://example.com" }
+          }]);
+          toast("Test notification fired.", "success");
+        }
+      }, [iconNode("alert", { size: 14 }), " Send test"]),
+      el("button", {
+        type: "button", class: "button button--ghost",
+        disabled: notifiedCount === 0,
+        onClick: () => {
+          settings.feedAlerts = { ...cfg, notifiedUrls: [] };
+          onChange(settings);
+          toast("Alert history cleared.", "success");
+        }
+      }, [iconNode("trash", { size: 14 }), " Reset history"])
+    ])
+  ));
+
+  sec.appendChild(g);
   return sec;
 }
 
