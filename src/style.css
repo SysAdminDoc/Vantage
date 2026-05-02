@@ -6022,6 +6022,18 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   font-style: normal;
 }
 
+.quote-author--link {
+  text-decoration: none;
+  border-bottom: 1px dotted color-mix(in srgb, var(--subtext0) 50%, transparent);
+  transition: color var(--t-fast), border-color var(--t-fast);
+}
+
+.quote-author--link:hover,
+.quote-author--link:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 .quote-refresh {
   position: absolute;
   top: var(--s-2);
