@@ -6973,6 +6973,49 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   text-decoration: underline;
 }
 
+/* APOD video fallback — thumbnail (when available) overlaid with a
+   play badge, or a centered icon + label when NASA omits the
+   thumbnail_url. Click anywhere navigates to the upstream APOD page. */
+.photo-video-fallback {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--surface0);
+  text-decoration: none;
+  color: var(--text);
+  overflow: hidden;
+}
+.photo-video-fallback .photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-video-fallback__overlay,
+.photo-video-fallback__icon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--accent-fg, #ffffff);
+}
+.photo-video-fallback__overlay {
+  background: rgba(0, 0, 0, 0.35);
+  transition: background var(--t-fast);
+}
+.photo-video-fallback:hover .photo-video-fallback__overlay {
+  background: rgba(0, 0, 0, 0.45);
+}
+.photo-video-fallback__label {
+  position: absolute;
+  bottom: var(--s-3);
+  left: var(--s-3);
+  right: var(--s-3);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--subtext1);
+}
+
 /* ═══════════════════════════════════════════════════════════
    Countdown Panel
    ═══════════════════════════════════════════════════════════ */
@@ -7836,4 +7879,36 @@ html[dir="rtl"] .workflow-pill {
   height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   @starting-style entry animations (Baseline 2024)
+   Chrome 117+ / Firefox 129+ / Safari 17.5+ — all target browsers.
+   Lets the existing transitions run on first display: animatable
+   property changes (display:none → block, opacity 0 → 1, transform
+   off-screen → on-screen) without the setTimeout(0) + classList.add
+   boot sequence the JS used to need. Older browsers ignore the
+   @starting-style at-rule and fall back to the previous behavior.
+   ═══════════════════════════════════════════════════════════ */
+
+@supports (transition-behavior: allow-discrete) {
+  .widget-picker,
+  .context-menu,
+  .partial-import-dialog {
+    transition-behavior: allow-discrete;
+  }
+
+  .widget-picker--open {
+    @starting-style {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.97);
+    }
+  }
+
+  .context-menu {
+    @starting-style {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
 }
