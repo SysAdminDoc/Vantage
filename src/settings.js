@@ -98,6 +98,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildEmbedsSection(settings, onChange));
   body.appendChild(buildCalendarSection(settings, onChange));
   body.appendChild(buildPomodoroSection(settings, onChange));
+  body.appendChild(buildAmbientSection(settings, onChange));
   body.appendChild(buildTodoSection(settings, onChange));
   body.appendChild(buildNotesSection(settings, onChange));
   body.appendChild(buildBookmarksSection(settings, onChange));
@@ -2858,6 +2859,25 @@ function mergeSettings(base, incoming) {
     }
   }
   return base;
+}
+
+/* ---- Ambient sounds --------------------------------------------------- */
+
+function buildAmbientSection(settings, onChange) {
+  const cfg = settings.ambient || {};
+  const sec = section("Ambient sounds", "play");
+  const g   = group();
+  g.appendChild(row(
+    "Show Ambient panel",
+    "Five Web-Audio-synthesized soundscapes (rain, white / pink / brown noise, café). No shipped audio assets — all generated on the fly.",
+    toggle({
+      checked: cfg.enabled || false,
+      ariaLabel: "Show ambient panel",
+      onChange: (v) => { settings.ambient = { ...cfg, enabled: v }; onChange(settings); }
+    })
+  ));
+  sec.appendChild(g);
+  return sec;
 }
 
 /* ---- To-Do ------------------------------------------------------------- */
