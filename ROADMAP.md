@@ -1,6 +1,6 @@
 # Vantage Roadmap
 
-_Living document. Last revised 2026-05-11 (v1.1.0 shipped; Phase 1–2 exhaustive research + feature harvesting complete; v1.2.0+ roadmap expanded with 20+ new items; 186+ sources; cross-browser modern-web API integration roadmap finalized) against v1.1.0._
+_Living document. Last revised 2026-05-11 (v1.1.0 shipped; Phases 1–5 complete: 160+ sources researched, 20+ features harvested, gap analysis verified, ROADMAP updated, self-audit passed) against v1.1.0._
 
 This roadmap is sourced — every Now / Next / Later item points to evidence in the Appendix. Versions are aspirational targets, not commitments. The aim is dense, skimmable, specific: an item without a sentence on **why now**, an effort sketch, and a citation gets cut.
 
