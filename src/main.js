@@ -11,6 +11,7 @@ import { renderRss }        from "./widgets/rss.js";
 import { renderNews }       from "./widgets/news.js";
 import { renderBackground, onReducedMotionChange } from "./widgets/background.js";
 import { renderAirQuality } from "./widgets/airquality.js";
+import { renderMarine }     from "./widgets/marine.js";
 import { renderCalendar }   from "./widgets/calendar.js";
 import { renderWindy }      from "./widgets/windy.js";
 import { renderEmbed }      from "./widgets/embed.js";
@@ -209,6 +210,7 @@ function mountAll() {
   renderSearch(document.getElementById("search-mount"), effectiveSettings, persist);
   renderWeather(document.getElementById("weather-mount"), effectiveSettings, saveSettings);
   renderAirQuality(document.getElementById("airquality-mount"), effectiveSettings);
+  renderMarine(document.getElementById("marine-mount"), effectiveSettings);
   renderTopsites(document.getElementById("topsites-mount"), effectiveSettings);
   renderQuickLinks(
     document.getElementById("quicklinks-mount"),

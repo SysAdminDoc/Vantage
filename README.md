@@ -270,6 +270,7 @@ Vantage/
 | `api.open-meteo.com` | Weather | Current temperature + sunrise/sunset (NREL SPA) |
 | `geocoding-api.open-meteo.com` | Settings ("Set city") | Resolve city name to lat/lon |
 | `air-quality-api.open-meteo.com` | Air quality widget | AQI / PM / pollen |
+| `marine-api.open-meteo.com` | Marine weather pill | Wave height / SST / ocean current (coastal locations) |
 | Each configured RSS / News feed URL | RSS / News widgets | Direct fetch first |
 | Each configured iCal feed URL | Calendar widget | Direct fetch first |
 | `api.allorigins.win` | RSS / News / Calendar (fallback) | Used **only** when direct fetch is blocked by CORS |
