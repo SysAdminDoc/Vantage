@@ -128,6 +128,16 @@ const DEFAULTS = {
     maxItems: 10,
     daysAhead: 7
   },
+  ambient: {
+    // Web Audio synthesized ambient soundscapes (white/pink/brown
+    // noise, rain, cafe murmur). No shipped audio assets — all
+    // generated on-the-fly to keep the install ≤ 1 MB. Pauses on
+    // tab blur; never auto-plays.
+    enabled: false,
+    sound: "rain",           // "white" | "pink" | "brown" | "rain" | "cafe"
+    volume: 50,              // 0-100
+    autoStart: false         // resume last sound on tab open
+  },
   pomodoro: {
     enabled: false,
     workMinutes: 25,

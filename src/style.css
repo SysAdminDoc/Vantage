@@ -8011,3 +8011,47 @@ html[dir="rtl"] .workflow-pill {
   .notes-focus__speed { display: none; }
   .notes-focus__bar-label { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Ambient sound panel (v1.1.0)
+   Compact: sound select + play/stop button on one row,
+   volume slider beneath. Mirrors Pomodoro panel density.
+   ═══════════════════════════════════════════════════════════ */
+
+.ambient-controls {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+  margin-bottom: var(--s-3);
+}
+
+.ambient-sound-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.ambient-play-btn {
+  flex-shrink: 0;
+}
+
+.ambient-play-btn--playing {
+  background: var(--bg-button-hover);
+  color: var(--green, var(--accent));
+  border-color: color-mix(in srgb, var(--green, var(--accent)) 50%, var(--border-default));
+}
+
+.ambient-volume-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.ambient-volume-label {
+  font-size: var(--text-xs);
+  color: var(--subtext1);
+  min-width: 24px;
+}
+
+.ambient-volume-slider {
+  flex: 1;
+}
