@@ -588,6 +588,7 @@ function buildBackground(settings, onChange) {
       { value: "gradient",      label: "Gradient" },
       { value: "image-url",     label: "URL" },
       { value: "image-upload",  label: "Upload" },
+      { value: "video-upload",  label: "Video" },
       { value: "bing-daily",    label: "Bing Daily" },
     ],
     onChange: (v) => {
@@ -596,7 +597,7 @@ function buildBackground(settings, onChange) {
       renderKindRows();
     }
   });
-  g.appendChild(rowColumn("Style", kindSeg, "Choose a live scene, flat color, gradient, local image, URL image, or daily Bing wallpaper."));
+  g.appendChild(rowColumn("Style", kindSeg, "Choose a live scene, flat color, gradient, local image, URL image, video, or daily Bing wallpaper."));
   g.appendChild(rowColumn(
     "Presets",
     buildBackgroundPresets(settings, onChange, renderKindRows),
@@ -794,7 +795,42 @@ function buildBackground(settings, onChange) {
       }
     }
 
-    if (kind === "image-url" || kind === "image-upload" || kind === "bing-daily") {
+    if (kind === "video-upload") {
+      const fileIn = el("input", {
+        type: "file", accept: "video/webm,video/mp4",
+        style: { display: "none" },
+        onChange: (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          if (file.size > 8 * 1024 * 1024) {
+            toast("Video must be under 8 MB.", "error");
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            settings.background.videoData = ev.target.result;
+            onChange(settings);
+            toast("Video set. Loops automatically. Pauses when tab is hidden.", "success");
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      const uploadBtn = el("button", {
+        type: "button", class: "button button--ghost",
+        onClick: () => fileIn.click()
+      }, [iconNode("upload", { size: 14 }), " Choose video"]);
+      kindHost.appendChild(fileIn);
+      kindHost.appendChild(row("Upload video", "WebM or MP4 (max 8 MB). Stored locally. Loops automatically and pauses when tab is hidden.", uploadBtn));
+      if (settings.background.videoData) {
+        const clearBtn = el("button", {
+          type: "button", class: "button button--ghost",
+          onClick: () => { settings.background.videoData = null; onChange(settings); renderKindRows(); }
+        }, [iconNode("trash", { size: 14 }), " Clear video"]);
+        kindHost.appendChild(row("", null, clearBtn));
+      }
+    }
+
+    if (kind === "image-url" || kind === "image-upload" || kind === "video-upload" || kind === "bing-daily") {
       const blurIn = rangeWithValue({
         min: 0,
         max: 20,
@@ -813,8 +849,8 @@ function buildBackground(settings, onChange) {
         format: (v) => `${v}%`,
         onInput: (v) => { settings.background.brightness = v; onChange(settings); }
       });
-      kindHost.appendChild(row("Blur", "Softens image wallpapers only.", blurIn));
-      kindHost.appendChild(row("Brightness", "Tunes image wallpapers behind panels.", brightIn));
+      kindHost.appendChild(row("Blur", "Softens image and video wallpapers only.", blurIn));
+      kindHost.appendChild(row("Brightness", "Tunes image and video wallpapers behind panels.", brightIn));
     }
 
     if (kind === "bing-daily") {
