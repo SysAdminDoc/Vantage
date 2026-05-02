@@ -26,6 +26,7 @@ import { renderCountdown }  from "./widgets/countdown.js";
 import { renderConverter }  from "./widgets/converter.js";
 import { renderTopsites }   from "./widgets/topsites.js";
 import { renderSettingsPanel, openPanel, closePanel, normalizeImportedSettings } from "./settings.js";
+import { showPartialImportDialog } from "./utils/partial-import.js";
 import { showOnboarding } from "./onboarding.js";
 import { renderWidgetPicker } from "./widget-picker.js";
 import { toast } from "./utils/dom.js";
@@ -60,7 +61,9 @@ function getPanelKinds() {
 }
 
 async function init() {
-  // Handle shared-config URL fragment (#import=<base64-json>)
+  // Handle shared-config URL fragment (#import=<base64-json>) — gated
+  // through the partial-import dialog so users see what would change
+  // before anything is overwritten (Q1 audit follow-up).
   let sharedImportNotice = null;
   let sharedImportedSettings = null;
   const hash = location.hash;
@@ -68,9 +71,15 @@ async function init() {
     try {
       const encoded = hash.slice(8);
       const imported = normalizeImportedSettings(JSON.parse(decodeURIComponent(escape(atob(encoded)))));
-      await saveSettings(imported);
-      sharedImportedSettings = imported;
-      sharedImportNotice = { message: "Shared settings imported.", kind: "success" };
+      const existing = await loadSettings();
+      const merged = await showPartialImportDialog(existing, imported, "the shared link");
+      if (merged) {
+        await saveSettings(merged);
+        sharedImportedSettings = merged;
+        sharedImportNotice = { message: "Shared settings imported.", kind: "success" };
+      } else {
+        sharedImportNotice = { message: "Shared import canceled.", kind: "info" };
+      }
     } catch (err) {
       console.warn("[Vantage] Failed to import shared config from URL hash", err);
       sharedImportNotice = { message: "Couldn't import shared settings. The link may be invalid.", kind: "error" };
