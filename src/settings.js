@@ -1175,6 +1175,44 @@ function buildGreeting(settings, onChange) {
     birthdayInput
   ));
   sec.appendChild(g);
+
+  // Custom greetings per time slot. Empty input falls back to the
+  // built-in "Good morning / afternoon / evening / night" phrasing.
+  // The literal `[name]` token expands inline; if a custom string omits
+  // the token but a display name is set, the name is appended after
+  // a comma exactly like the default greeting would do.
+  if (!settings.greeting.custom) {
+    settings.greeting.custom = { morning: "", afternoon: "", evening: "", night: "" };
+  }
+  const customGroup = group();
+  customGroup.appendChild(el("p", { class: "settings-row__hint" }, [
+    "Override the built-in greeting for any time slot. Use [name] to drop your display name into the phrase. Leave blank to keep the default."
+  ]));
+  const slotLabels = [
+    ["morning",   "Morning",   "5:00 a.m. – 11:59 a.m.", "e.g. Rise and shine, [name]"],
+    ["afternoon", "Afternoon", "12:00 p.m. – 4:59 p.m.", "e.g. Hey [name], make it count"],
+    ["evening",   "Evening",   "5:00 p.m. – 9:59 p.m.",  "e.g. Welcome back, [name]"],
+    ["night",     "Night",     "10:00 p.m. – 4:59 a.m.", "e.g. Burning the midnight oil, [name]"]
+  ];
+  for (const [slot, title, hint, placeholder] of slotLabels) {
+    const input = el("input", {
+      type: "text",
+      class: "text-input",
+      maxlength: "120",
+      value: settings.greeting.custom[slot] || "",
+      placeholder,
+      "aria-label": `${title} greeting override`,
+      onChange: (e) => {
+        settings.greeting.custom = {
+          ...settings.greeting.custom,
+          [slot]: e.target.value
+        };
+        onChange(settings);
+      }
+    });
+    customGroup.appendChild(rowColumn(`${title} greeting`, input, hint));
+  }
+  sec.appendChild(customGroup);
   return sec;
 }
 
