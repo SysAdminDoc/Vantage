@@ -4656,6 +4656,7 @@ a {
   gap: var(--s-6);
   scrollbar-width: thin;
   scrollbar-color: var(--surface1) transparent;
+  scroll-padding-top: 70px;
 }
 
 .settings-panel__body::-webkit-scrollbar {
