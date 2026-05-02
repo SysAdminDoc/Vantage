@@ -61,7 +61,8 @@ const DEFAULTS = {
       { title: "Gmail", url: "https://mail.google.com" },
       { title: "Calendar", url: "https://calendar.google.com" }
     ],
-    groups: []               // [{ id, name, items: [{ title, url }] }]
+    groups: [],              // [{ id, name, items: [{ title, url }] }]
+    itemsPerRow: "auto"      // "auto" | 3 | 4 | 5 | 6 | 8 | 10
   },
   topsites: {
     enabled: false,

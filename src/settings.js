@@ -1465,6 +1465,27 @@ function buildLinksSection(settings, onChange) {
       onChange: (v) => { settings.quicklinks.enabled = v; onChange(settings); }
     })
   ));
+  if (settings.quicklinks.itemsPerRow == null) settings.quicklinks.itemsPerRow = "auto";
+  g.appendChild(row(
+    "Items per row",
+    "Auto fills the row based on pill width. A fixed count gives a tidy grid regardless of label length.",
+    segmented({
+      ariaLabel: "Quick links per row",
+      value: String(settings.quicklinks.itemsPerRow),
+      options: [
+        { value: "auto", label: "Auto" },
+        { value: "3",    label: "3"    },
+        { value: "4",    label: "4"    },
+        { value: "5",    label: "5"    },
+        { value: "6",    label: "6"    },
+        { value: "8",    label: "8"    }
+      ],
+      onChange: (v) => {
+        settings.quicklinks.itemsPerRow = v === "auto" ? "auto" : parseInt(v, 10);
+        onChange(settings);
+      }
+    })
+  ));
   sec.appendChild(g);
 
   const list = el("ul", { class: "item-list" });

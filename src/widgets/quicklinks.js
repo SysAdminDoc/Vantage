@@ -9,9 +9,19 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
   const cfg = settings.quicklinks;
   if (!cfg?.enabled || (!cfg.items?.length && !cfg.groups?.length)) {
     mount.style.display = "none";
+    mount.removeAttribute("data-cols");
     return;
   }
   mount.style.display = "";
+
+  // Items-per-row: drives a CSS grid via [data-cols=N] when explicit. Auto
+  // falls back to the historic flex-wrap centered layout.
+  const cols = cfg.itemsPerRow;
+  if (cols === "auto" || cols == null) {
+    mount.removeAttribute("data-cols");
+  } else {
+    mount.setAttribute("data-cols", String(cols));
+  }
 
   // Flat pills
   const pills = (cfg.items || []).map((item) => {
