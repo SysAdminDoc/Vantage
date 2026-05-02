@@ -175,7 +175,12 @@ const DEFAULTS = {
     list: []                 // [{ id, name, snapshot: { theme, accent, appearance, background, layout, quicklinks, enabled:{} } }]
   },
   containerMap: {},          // Firefox-only: { cookieStoreId: workspaceId }
-  onboardingComplete: false
+  onboardingComplete: false,
+  // Right-click context menu on the dashboard surface. When disabled
+  // the browser's native menu always wins, even on the background.
+  contextMenu: {
+    enabled: true
+  }
 };
 
 export const READ_CAP = 500;
