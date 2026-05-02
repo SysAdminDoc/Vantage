@@ -5604,6 +5604,42 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   flex: 1;
 }
 
+.compose__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+/* Discovered feeds list (v1.2.0): Feed auto-discovery results */
+
+.item-list--discovered {
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  margin: var(--s-2) 0 0 0;
+}
+
+.item-list--discovered .item-list__empty {
+  text-align: center;
+  padding: var(--s-3);
+  color: var(--subtext0);
+  font-size: var(--text-sm);
+}
+
+.item-list--discovered .item-list__row {
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--accent) 3%, transparent);
+}
+
+.item-list--discovered .item-list__row:last-child {
+  border-bottom: none;
+}
+
+.discovery-status {
+  color: var(--subtext0);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
 /* Tab Groups section (v1.2.0): Pin Tab Groups from chrome.tabGroups API */
 
 .tab-groups-section {
