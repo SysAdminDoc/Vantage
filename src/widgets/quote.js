@@ -61,13 +61,43 @@ export async function renderQuote(mount, settings, { onSave } = {}) {
     }
   }, [iconNode("refresh", { size: 12 })]);
 
+  // Author name links to Wikipedia. Direct slug first; if Wikipedia
+  // doesn't have the article the user lands on the search page, which
+  // is still better than a dead anchor. We don't fetch from Wikipedia
+  // here — that would mean adding wikipedia.org to host_permissions
+  // and an extra request on every new tab. Click-through-to-Wikipedia
+  // gives users the bio + dates the ROADMAP item asked for, with zero
+  // privacy / permission cost.
+  const authorHref = wikipediaLinkFor(quote.author);
+  const authorEl = authorHref
+    ? el("a", {
+        class: "quote-author quote-author--link",
+        href: authorHref,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        title: `Look up ${quote.author} on Wikipedia`
+      }, ["\u2014 ", quote.author])
+    : el("cite", { class: "quote-author" }, ["\u2014 ", quote.author]);
+
   mount.appendChild(el("div", { class: "quote-banner", role: "complementary", "aria-label": "Quote of the day" }, [
     el("div", { class: "quote-content" }, [
       el("q", { class: "quote-text" }, [quote.content]),
-      el("cite", { class: "quote-author" }, ["\u2014 ", quote.author])
+      authorEl
     ]),
     refreshBtn
   ]));
+}
+
+function wikipediaLinkFor(author) {
+  if (!author || typeof author !== "string") return null;
+  const trimmed = author.trim();
+  if (!trimmed || trimmed.toLowerCase() === "unknown" || trimmed.toLowerCase() === "anonymous") {
+    return null;
+  }
+  // Wikipedia article slugs use underscores; encodeURIComponent handles the
+  // rest (accents, ampersands, em-dashes in pen names, etc.).
+  const slug = encodeURIComponent(trimmed.replace(/\s+/g, "_"));
+  return `https://en.wikipedia.org/wiki/${slug}`;
 }
 
 async function fetchQuote(category) {
