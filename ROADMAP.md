@@ -1,6 +1,6 @@
 # Vantage Roadmap
 
-_Living document. Last revised 2026-05-02 (round 3) against v0.10.0._
+_Living document. Last revised 2026-05-02 (round 3) against v0.11.0._
 
 This roadmap is sourced — every Now / Next / Later item points to evidence in the Appendix. Versions are aspirational targets, not commitments. The aim is dense, skimmable, specific: an item without a sentence on **why now**, an effort sketch, and a citation gets cut.
 
@@ -188,8 +188,8 @@ These require v1.0 to be listed; some require new browser API surface or are arc
 - [ ] **Periodic Background Sync for feed pre-warming** — register a `periodicSync` task so the RSS cache is warm before the user's first new tab of the day. **⚠ Heavy permission surface; strict opt-in; document the Notifications-API-style permission prompt.** ~1d. — _Web platform reference (MDN: Background Sync API)._
 - [ ] **In-extension error logging with share-to-clipboard** — catch and log unhandled widget errors to a circular buffer in `chrome.storage.local`; expose a "Copy debug log" button in settings. Helps diagnose user-reported issues without telemetry. ~0.5d. — _[Source 105] (TablissNG v1.6.5 error-logging system)._
 - [ ] **Ambient sound widget** — looping ambient audio (rain, forest, café) via `<audio>` element; locally bundled short loops (≤200 KB each) or user-uploaded file. Pause-on-tab-blur. Complements Pomodoro focus sessions. ~1.5d. — _[Source 106] (mutabu extension, Mar 2026)._
-- [ ] **JSON Feed v1.1 support in rss-parser** — detect `application/feed+json` `Content-Type` (or `{"version":"https://jsonfeed.org/..."}` probe) before the XML DOMParser path; map `items[].title`, `content_html`/`content_text`, `url`, `date_published` → existing item shape; zero new runtime deps (~0.5d in `src/rss-parser.js`). Most modern Micro.blog, Ghost, and Kagi-published feeds ship JSON Feed alongside RSS; currently silently fails on those. — _[Source 116] (JSON Feed v1.1 spec)._
-- [ ] **`chrome.readingList` save integration** — "Save to Reading List" icon on each headline row; calls `chrome.readingList.addEntry({title, url, hasBeenRead: false})`; requires adding `"readingList"` to manifest permissions; graceful-no-op on Firefox (API absent). Chrome 120+ only. ~0.5d; no competitor NTP currently uses this. — _[Source 117] (chrome.readingList API docs, Chrome 120+ MV3)._
+- [x] **JSON Feed v1.1 support in rss-parser** — detect `application/feed+json` `Content-Type` (or `{"version":"https://jsonfeed.org/..."}` probe) before the XML DOMParser path; map `items[].title`, `content_html`/`content_text`, `url`, `date_published` → existing item shape; zero new runtime deps (~0.5d in `src/rss-parser.js`). Most modern Micro.blog, Ghost, and Kagi-published feeds ship JSON Feed alongside RSS; currently silently fails on those. — _[Source 116] (JSON Feed v1.1 spec)._ ✅ shipped (v0.11.0) — content-type sniff + body sniff for proxies; v1.0 + v1.1 author shapes both supported; missing titles fall back to content snippet.
+- [x] **`chrome.readingList` save integration** — "Save to Reading List" icon on each headline row; calls `chrome.readingList.addEntry({title, url, hasBeenRead: false})`; requires adding `"readingList"` to manifest permissions; graceful-no-op on Firefox (API absent). Chrome 120+ only. ~0.5d; no competitor NTP currently uses this. — _[Source 117] (chrome.readingList API docs, Chrome 120+ MV3)._ ✅ shipped (v0.11.0) — hover-revealed bookmark icon per feed item; duplicate-URL handled as success.
 
 ---
 
