@@ -1,11 +1,12 @@
-// Vantage v0.8.0 — shared multi-feed renderer with dedupe + feed filter rules.
-// Adds: per-item favicons, click-to-mark-read state (with cross-tab persistence),
+// Vantage v0.8.0 → v1.0.0 — shared multi-feed renderer with dedupe + feed filter rules + favicon caching.
+// Adds: per-item favicons (cached), click-to-mark-read state (with cross-tab persistence),
 // unread count badge, "mark all read" button, skeleton loading, last-updated stamp,
 // URL-based deduplication, mute/highlight feed filter rules.
 
 import { el, clear, relativeTime, hostnameLabel, toast } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
 import { fetchFeed } from "../utils/rss-parser.js";
+import { getFaviconUrl } from "../utils/favicon-cache.js";
 
 // chrome.readingList requires Chrome 120+ and the "readingList" manifest
 // permission. Firefox has no equivalent yet — the addEntry button stays
@@ -161,12 +162,24 @@ export async function renderFeedList(mount, options) {
     const titleEl = el("p", { class: "feed-item__title" }, [item.title]);
     const favicon = el("img", {
       class: "feed-item__favicon",
-      src: faviconUrl(item.link),
+      src: "", // Will be populated async
       alt: "",
       loading: "lazy",
       referrerpolicy: "no-referrer",
       onError: (e) => { e.target.style.display = "none"; }
     });
+    
+    // Populate favicon asynchronously using cache
+    getFaviconUrl(item.link).then(dataUrl => {
+      if (dataUrl) {
+        favicon.src = dataUrl;
+      } else {
+        favicon.style.display = "none";
+      }
+    }).catch(() => {
+      favicon.style.display = "none";
+    });
+    
     const link = el("a", {
       href: item.link,
       target: "_blank",
@@ -397,9 +410,4 @@ function buildEmpty(iconName, title, hint) {
   ]);
 }
 
-function faviconUrl(url) {
-  try {
-    const u = new URL(url);
-    return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=32`;
-  } catch { return ""; }
-}
+// Favicon loading moved to favicon-cache.js for shared use and caching (v1.0.0+)

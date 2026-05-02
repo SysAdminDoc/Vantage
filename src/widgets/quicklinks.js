@@ -1,8 +1,9 @@
-// Vantage v0.8.0 — quick-link pills + folder groups with drag-to-reorder.
+// Vantage v0.8.0 → v1.0.0 — quick-link pills + folder groups with drag-to-reorder + favicon caching.
 
 import { el, clear, hostnameLabel } from "../utils/dom.js";
 import { makeReorderable, arrayMove } from "../utils/drag.js";
 import { iconNode } from "../icons.js";
+import { getFaviconUrl } from "../utils/favicon-cache.js";
 
 export function renderQuickLinks(mount, settings, { onChange } = {}) {
   clear(mount);
@@ -23,7 +24,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
     mount.setAttribute("data-cols", String(cols));
   }
 
-  // Flat pills
+  // Flat pills — favicons loaded via caching system (v1.0.0+)
   const pills = (cfg.items || []).map((item) => {
     const link = el("a", {
       class: "quicklink",
@@ -33,7 +34,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
     }, [
       el("img", {
         class: "quicklink__favicon",
-        src: faviconFor(item.url),
+        src: "", // Will be populated async
         alt: "",
         loading: "lazy",
         referrerpolicy: "no-referrer",
@@ -41,6 +42,20 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
       }),
       el("span", {}, [item.title])
     ]);
+    
+    // Populate favicon asynchronously (cache hit = instant, miss = fallback)
+    const imgEl = link.querySelector("img");
+    getFaviconUrl(item.url).then(dataUrl => {
+      if (dataUrl) {
+        imgEl.src = dataUrl;
+      } else {
+        // No favicon available; show text label letter icon
+        imgEl.style.display = "none";
+      }
+    }).catch(() => {
+      imgEl.style.display = "none";
+    });
+    
     link.addEventListener("dragstart", () => link.classList.add("quicklink--dragging-self"));
     return link;
   });
@@ -134,7 +149,7 @@ function buildGroupButton(group, mount) {
       }, [
         el("img", {
           class: "ql-group-item__favicon",
-          src: faviconFor(item.url),
+          src: "", // Will be populated async
           alt: "",
           loading: "lazy",
           referrerpolicy: "no-referrer",
@@ -142,6 +157,19 @@ function buildGroupButton(group, mount) {
         }),
         el("span", {}, [item.title])
       ]);
+      
+      // Populate favicon asynchronously
+      const imgEl = a.querySelector("img");
+      getFaviconUrl(item.url).then(dataUrl => {
+        if (dataUrl) {
+          imgEl.src = dataUrl;
+        } else {
+          imgEl.style.display = "none";
+        }
+      }).catch(() => {
+        imgEl.style.display = "none";
+      });
+      
       a.addEventListener("click", () => closePopover());
       a.addEventListener("keydown", onMenuKeydown);
       popover.appendChild(a);
@@ -228,9 +256,5 @@ function buildGroupButton(group, mount) {
   return wrap;
 }
 
-function faviconFor(url) {
-  try {
-    const u = new URL(url);
-    return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=64`;
-  } catch { return ""; }
-}
+// Favicon loading moved to favicon-cache.js for shared use by all widgets
+// and to implement caching + fallback system (v1.0.0+ reliability)
