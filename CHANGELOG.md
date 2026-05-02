@@ -4,6 +4,10 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 
 ## Unreleased
 
+### Added
+- **Dashboard screenshot generator** — Settings → Data → "Capture screenshot" button rasterizes the live `#vantage-root` to a downloadable PNG. Implemented via SVG `<foreignObject>` + canvas (no `tabs` permission required, no `html2canvas` vendoring). All page stylesheets are inlined into the export, transient surfaces (toast host, settings panel, widget picker, skip-to-main link) are stripped before serialization, and `html[dir]` / `html[lang]` are mirrored onto the wrapper so RTL screenshots render right-to-left correctly. Exports are 2× DPI by default for crisp r/startpages / README captures. Cross-origin background images (Bing daily, NASA APOD, favicons via s2/favicons) and iframe widgets won't appear — browsers taint canvases that touch CORS-restricted pixels — and the row hint documents this. Closes the v1.1.0 ROADMAP "Dashboard screenshot generator" item.
+- **RTL `setupRTL()` wired into init** — the `setupRTL()` helper that mirrors browser UI language onto `<html dir>` / `<html lang>` was documented as shipped in v1.0.0 but its export and call site were never committed. Now in `src/utils/i18n.js` and called from `init()` in `src/main.js`. RTL locales (ar / he / fa / ur) get `dir="rtl"`; everything else falls through to `dir="ltr"`. Companion `docs/rtl-support-roadmap.md` outlines the v1.1.0 logical-property migration plan.
+
 ## v1.0.0 — 2026-05-02
 
 ### Added
