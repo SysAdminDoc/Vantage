@@ -105,6 +105,7 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
     body.innerHTML = "";
     const table = el("div", { class: "crypto-table" });
 
+    let rendered = 0;
     for (const id of coins) {
       const entry = data[id];
       if (!entry) continue;
@@ -125,6 +126,24 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
         el("div", { class: "crypto-price" }, [priceStr]),
         el("div", { class: `crypto-change crypto-change--${up ? "up" : "down"}` }, [changeStr])
       ]));
+      rendered++;
+    }
+
+    // CoinGecko sometimes returns 200 with an empty body for delisted /
+    // typo'd coin IDs. Don't render an empty table + healthy "Updated"
+    // footer — that looks like the panel is working when it isn't.
+    if (rendered === 0) {
+      body.appendChild(el("div", { class: "panel-empty" }, [
+        el("div", { class: "crypto-empty__inner" }, [
+          el("p", { class: "crypto-empty__lead" }, ["No prices returned for the configured coins."]),
+          el("p", { class: "crypto-empty__hint" }, [
+            "Check the coin IDs in Settings → Crypto. CoinGecko expects lowercase IDs (e.g. ",
+            el("code", {}, ["bitcoin"]), ", ", el("code", {}, ["ethereum"]),
+            "), and some IDs change when projects rebrand."
+          ])
+        ])
+      ]));
+      return;
     }
 
     const footer = el("div", { class: "crypto-footer" }, [

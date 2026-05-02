@@ -5,16 +5,22 @@ import { el, clear } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
 import { SEARCH_ENGINES, buildSearchUrl } from "../search-engines.js";
 
+// The stock customUrl shipped in storage.js DEFAULTS — using it as a real
+// destination is almost certainly accidental. Treat it as "not configured".
+const CUSTOM_URL_SENTINEL = "https://example.com/search?q=%s";
+
 /** Build the placeholder string for the search input from the active engine.
  *  Custom engines surface the host so users can verify which destination
- *  their typed query will hit (e.g. "Search example.com"). */
+ *  their typed query will hit (e.g. "Search kagi.com"). The default
+ *  example.com sentinel is treated as unconfigured. */
 function placeholderFor(engineKey, customUrl) {
   if (engineKey === "custom") {
+    if (!customUrl || customUrl === CUSTOM_URL_SENTINEL || !customUrl.includes("%s")) {
+      return "Set a custom search URL in settings";
+    }
     try {
-      if (customUrl && customUrl.includes("%s")) {
-        const host = new URL(customUrl).hostname.replace(/^www\./, "");
-        if (host) return `Search ${host}`;
-      }
+      const host = new URL(customUrl).hostname.replace(/^www\./, "");
+      if (host && host !== "example.com") return `Search ${host}`;
     } catch { /* malformed customUrl — fall through */ }
     return "Search the web";
   }
