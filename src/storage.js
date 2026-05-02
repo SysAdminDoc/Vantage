@@ -239,6 +239,13 @@ const DEFAULTS = {
   // the browser's native menu always wins, even on the background.
   contextMenu: {
     enabled: true
+  },
+  sidePanel: {
+    // Chrome 114+ side panel — feed reader rendered inside the
+    // browser's side panel surface. Default off; the manifest still
+    // declares the panel so power users can open it via the native
+    // Chrome side-panel button without ever visiting Settings.
+    openOnActionClick: false
   }
 };
 
