@@ -15,6 +15,7 @@ dist/
 CLAUDE.md
 CODEX_CHANGELOG.md
 .claude/
+.factory/
 
 # OS noise
 Thumbs.db
