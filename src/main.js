@@ -496,6 +496,10 @@ function watchSystemTheme() {
     const effectiveSettings = getVisualEffectiveSettings();
     if (effectiveSettings?.theme === "system") {
       applyTheme(effectiveSettings);
+      // Keep <meta name=theme-color> in sync — backgrounds that read --base
+      // (image/upload/bing/disabled) otherwise leave the browser chrome on
+      // the prior light/dark color until a full remount.
+      applyThemeColorFromSettings(effectiveSettings);
     }
   });
 }
