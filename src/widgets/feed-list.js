@@ -191,7 +191,9 @@ export async function renderFeedList(mount, options) {
       const saveBtn = el("button", {
         type: "button",
         class: "feed-item__action feed-item__action--save",
-        "aria-label": `Save \"${item.title}\" to Reading list`,
+        // Keep aria-label terse — long feed titles produce noisy SR
+        // announcements; the row link itself already names the article.
+        "aria-label": "Save to Reading list",
         title: "Save to Reading list",
         onClick: (e) => {
           e.preventDefault();
@@ -312,19 +314,41 @@ function compileRule(pattern) {
   // regexes that run on every render; an imported settings file with a
   // pathological pattern could lock the UI thread (ReDoS).
   //
-  // Heuristics: cap pattern length, reject deeply-nested unbounded
-  // quantifiers, reject backreferences. Real user filters are simple
-  // — these limits are conservative and let a bad regex fail closed
-  // rather than block the renderer.
-  if (pattern.length > 256)                        { RULE_RE_CACHE.set(pattern, null); return null; }
-  if (/(\(.*?\)){4,}/.test(pattern))                { RULE_RE_CACHE.set(pattern, null); return null; }
-  if (/(\([^)]*[*+]\)){2,}/.test(pattern))          { RULE_RE_CACHE.set(pattern, null); return null; }
-  if (/(\\\d|\(\?[Pi]?<[^>]+>)/.test(pattern))      { RULE_RE_CACHE.set(pattern, null); return null; }
+  // Real user filters are simple text/URL matches. We reject the
+  // canonical "evil regex" shapes — nested unbounded quantifiers
+  // (a+)+, (a*)+, (a+)*, etc. The 1024-byte haystack cap below is the
+  // belt to this suspenders: even if a pattern slips through, the
+  // bounded input keeps execution time finite.
+  if (pattern.length > 256) { RULE_RE_CACHE.set(pattern, null); return null; }
+  if (looksCatastrophic(pattern)) { RULE_RE_CACHE.set(pattern, null); return null; }
   let re;
   try { re = new RegExp(pattern, "i"); }
   catch { RULE_RE_CACHE.set(pattern, null); return null; }
   RULE_RE_CACHE.set(pattern, re);
   return re;
+}
+
+// Look for "nested quantifier" shapes: a group whose body ends in an
+// unbounded quantifier, where the group itself is followed by another
+// quantifier (or {n,}). Those are the patterns most likely to produce
+// catastrophic backtracking on hostile input. Examples that should be
+// rejected: `(.+)+`, `(.*)+`, `(a*)*`, `(\w+)+`, `(\S*)+`,
+// `((ab)+)+`, `([abc]+){2,}`, `(.+)*$`.
+//
+// Examples that should NOT be rejected (false-positive guard):
+// `^(?:foo|bar){0,5}$`, `https?://[^/]+/path`, `(\w+\d+){2}` (the inner
+// group ends in {2}, not a bare * or +), `(.{10,20})` (bounded inner).
+// Match only TRUE unbounded outer quantifiers: `*`, `+`, or `{N,}`.
+// `{2}` and `{2,5}` have an upper bound, so a sequence like `(\w+\d+){2}`
+// is finite-time and must NOT trip this gate (that case was an
+// audit-cited false-positive).
+const NESTED_QUANTIFIER_RE =
+  /\([^()]*?[+*][^()]*?\)\s*(?:[*+]|\{\d+,\})/;
+
+function looksCatastrophic(pattern) {
+  // Strip escaped parens so `\(` / `\)` literals don't trick the check.
+  const stripped = pattern.replace(/\\[(){}*+?]/g, "");
+  return NESTED_QUANTIFIER_RE.test(stripped);
 }
 
 // Apply a compiled regex to a string with a hard wall-clock budget.
