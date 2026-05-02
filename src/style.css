@@ -4343,6 +4343,11 @@ a {
   z-index: 130;
   min-width: 220px;
   max-width: 320px;
+  /* Cap height to viewport so a tall menu on a short tab gets a scroll
+     instead of clipping items off-screen. The auto-position flip
+     above already handles wide menus. */
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
   padding: var(--s-1);
   background: var(--bg-canvas);
   border: 1px solid var(--border-default);

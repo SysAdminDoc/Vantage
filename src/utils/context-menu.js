@@ -20,13 +20,18 @@ import { iconNode } from "../icons.js";
 // Selectors for elements where the native browser context menu must win.
 // Right-clicks ON these elements fall through unchanged so users keep
 // their native copy / paste / spell-check / save-link-as flows.
+//
+// Class list reflects what's actually rendered (audited against
+// onboarding.js + widget-picker.js + settings.js). If a new modal
+// surface is added, add its root class here to preserve the policy.
 const NATIVE_MENU_SELECTOR = [
   "input", "textarea", "select",
   "a", "button",
   "[contenteditable='true']",
   ".feed-item", ".panel", ".weather", ".airquality-mount",
   ".settings-panel", ".widget-picker", ".import-dialog",
-  ".onboard", ".toast", ".onboard-modal"
+  ".onboard-overlay", ".onboard-card",
+  ".toast"
 ].join(",");
 
 let activeMenu = null;
@@ -44,7 +49,9 @@ function closeMenu() {
  *
  * @param {() => Array<{label: string, icon?: string, hint?: string, onSelect: () => void}>} actionsFn
  *   Called fresh on every open so the menu can reflect current state.
- *   Items with `onSelect: null` render as disabled.
+ *   Returning an empty array signals "feature disabled" — the listener
+ *   then NO-OPs (does NOT preventDefault) so the browser's native menu
+ *   wins on the dashboard surface.
  */
 export function attachContextMenu(actionsFn) {
   const onContextMenu = (e) => {
@@ -53,10 +60,21 @@ export function attachContextMenu(actionsFn) {
     // Suppress when any modal-ish surface is open.
     if (document.getElementById("settings-panel")?.dataset.open === "true") return;
     if (document.querySelector(".import-dialog")) return;
-    if (document.querySelector(".onboard")) return;
+    if (document.querySelector(".onboard-overlay")) return;
+    // Widget-picker is a floating overlay; while it's open we let the
+    // user dismiss-by-right-click via native + don't compete for focus.
+    const picker = document.getElementById("widget-picker");
+    if (picker && picker.hidden === false) return;
+
+    // Resolve actions FIRST so we can no-op cleanly when the feature is
+    // disabled. Calling preventDefault() before this would suppress the
+    // browser's native menu without offering a replacement — the
+    // documented contract for `enabled: false` is "native menu wins".
+    const actions = actionsFn();
+    if (!Array.isArray(actions) || !actions.length) return;
 
     e.preventDefault();
-    openMenu(e.clientX, e.clientY, actionsFn());
+    openMenu(e.clientX, e.clientY, actions);
   };
 
   document.addEventListener("contextmenu", onContextMenu);
@@ -95,8 +113,18 @@ function openMenu(x, y, actions) {
         const fn = action.onSelect;
         // Close BEFORE invoking so the action's own UI (toast, settings
         // panel, etc.) gets focus / paint without fighting the menu.
+        // Async handlers (theme/accent/background cycle each await
+        // saveSettings) need explicit rejection handling — sync try/catch
+        // wouldn't catch a thrown Promise.
         closeMenu();
-        try { fn(); } catch (err) { console.warn("[Vantage] context-menu action failed", err); }
+        try {
+          const result = fn();
+          if (result && typeof result.catch === "function") {
+            result.catch((err) => console.warn("[Vantage] context-menu action failed", err));
+          }
+        } catch (err) {
+          console.warn("[Vantage] context-menu action failed", err);
+        }
       }
     }, [
       action.icon ? el("span", { class: "context-menu__icon", "aria-hidden": "true" }, [iconNode(action.icon, { size: 14 })]) : null,
