@@ -7,7 +7,13 @@ const DEFAULTS = {
   greeting: {
     enabled: true,
     name: "",
-    birthday: ""           // "MM-DD" — when set, triggers balloons all day
+    birthday: "",          // "MM-DD" — when set, triggers balloons all day
+    custom: {              // Per-slot override; empty string falls back to defaults
+      morning: "",
+      afternoon: "",
+      evening: "",
+      night: ""
+    }
   },
   appearance: {
     // "auto" | "coastal" | "urban" | "forest" | "lake" | "mountain"
@@ -131,7 +137,8 @@ const DEFAULTS = {
     enabled: false,
     coins: ["bitcoin", "ethereum", "solana"],
     currency: "usd",
-    refreshMinutes: 5
+    refreshMinutes: 5,
+    apiKey: ""               // CoinGecko demo API key (x-cg-demo-api-key)
   },
   github: {
     enabled: false,

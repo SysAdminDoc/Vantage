@@ -2274,9 +2274,24 @@ function buildCryptoSection(settings, onChange) {
   const cfg = settings.crypto || {};
   const sec = section("Crypto Prices", "trending-up");
   const g   = group();
-  g.appendChild(row("Show crypto panel", "Live prices from CoinGecko (no API key required).",
+  g.appendChild(row("Show crypto panel", "Live prices from CoinGecko. A free demo API key is recommended — without one, CoinGecko rate-limits aggressively.",
     toggle({ checked: cfg.enabled || false, ariaLabel: "Show crypto panel",
       onChange: (v) => { settings.crypto = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+
+  const apiKeyIn = el("input", {
+    type: "text", class: "text-input",
+    value: cfg.apiKey || "",
+    placeholder: "CG-XXXX… (optional but strongly recommended)",
+    "aria-label": "CoinGecko demo API key",
+    autocomplete: "off",
+    spellcheck: false,
+    onChange: (e) => { settings.crypto = { ...cfg, apiKey: e.target.value.trim() }; onChange(settings); }
+  });
+  g.appendChild(rowColumn(
+    "Demo API key",
+    apiKeyIn,
+    "Sign up free at coingecko.com/en/api → My Account → Demo API key. Sent as the x-cg-demo-api-key header. Stored locally; never leaves your browser except to CoinGecko."
   ));
 
   const coinsIn = el("input", {
