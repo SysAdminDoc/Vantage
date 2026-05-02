@@ -2176,6 +2176,18 @@ function buildWeatherSection(settings, onChange) {
     })
   ));
 
+  // 5-day extended forecast — min/max temps, precipitation, UV index,
+  // wind speed, weather code. No new API host; reuses api.open-meteo.com.
+  g.appendChild(row(
+    "Show 5-day forecast",
+    "Renders a 5-day extended forecast panel below the current weather (min/max temps, precipitation chance, UV index, wind). Adds one extra outbound call per location every 10-min cache cycle.",
+    toggle({
+      checked: settings.weather.forecastEnabled || false,
+      ariaLabel: "Show 5-day forecast",
+      onChange: (v) => { settings.weather.forecastEnabled = v; onChange(settings); }
+    })
+  ));
+
   // Current location chip
   const chipHost = el("div", { class: "settings-row__control", style: { flexWrap: "wrap" } });
   const refreshChip = () => {
