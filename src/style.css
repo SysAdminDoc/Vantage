@@ -8280,3 +8280,126 @@ html[dir="rtl"] .workflow-pill {
     animation: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Scroll-driven feed item reveal (Chrome 115+ animation-timeline)
+   Replaces what would have been a JS IntersectionObserver path.
+   The sibling-index() block above handles the initial-render
+   stagger; this block adds the on-scroll reveal for items that
+   came in below the fold (e.g. very long combined feeds in the
+   side panel). Firefox + Safari fall through silently.
+   ═══════════════════════════════════════════════════════════ */
+
+@supports (animation-timeline: view()) {
+  @keyframes vantage-feed-item-scroll-reveal {
+    from { opacity: 0.35; transform: translateY(6px); }
+    20%  { opacity: 1;    transform: none; }
+    to   { opacity: 1;    transform: none; }
+  }
+
+  .feed-list .feed-item {
+    /* Don't override the sibling-index entry stagger above — that
+       block sets `animation` directly. This rule only kicks in on
+       browsers that DON'T support sibling-index() but DO support
+       animation-timeline (rare overlap, but Safari ships
+       animation-timeline ahead of sibling-index, so it covers
+       Safari users specifically). */
+    animation: vantage-feed-item-scroll-reveal linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 30%;
+  }
+}
+
+@supports (animation-timeline: view()) and (animation-delay: calc(0.05s * sibling-index())) {
+  /* When BOTH are supported (Chrome 138+), the sibling-index entry
+     stagger wins; the scroll-driven reveal is then redundant.
+     Disable it so we don't get a double-animation. */
+  .feed-list .feed-item {
+    animation-timeline: auto;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CSS attr() typed for quick-link grid columns (Interop 2026)
+   Replaces inline-style data-cols injection from quicklinks.js
+   on browsers that ship CSS attr() with type(). The widget's JS
+   path still sets data-cols, so the live-rendered grid works on
+   every browser — this @supports block just lets the CSS
+   declaratively read the value where the engine supports it.
+   ═══════════════════════════════════════════════════════════ */
+
+@supports (grid-template-columns: repeat(attr(data-cols type(<integer>), 4), 1fr)) {
+  .quicklinks[data-cols] {
+    display: grid;
+    grid-template-columns: repeat(attr(data-cols type(<integer>), 4), 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Custom Highlights API for archive search (v1.1.0)
+   The highlight registry name is 'vantage-search'.
+   ═══════════════════════════════════════════════════════════ */
+
+::highlight(vantage-search) {
+  background-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--accent-fg, var(--text));
+  border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Anchor-positioned workspace pill tooltip (v1.1.0)
+   Chrome 125+ / Firefox 147+ / Edge 125+. Falls through to the
+   `title` attribute fallback applied in main.js for older
+   browsers.
+   ═══════════════════════════════════════════════════════════ */
+
+@supports (anchor-name: --x) {
+  .workspace-pill {
+    /* anchor-name is set inline per-pill in main.js (e.g.
+       --ws-1717084800000) so each pill has its own anchor reference. */
+    overflow: visible;
+  }
+
+  .workspace-pill__tooltip {
+    position: absolute;
+    bottom: anchor(top);
+    left: anchor(50%);
+    translate: -50% calc(-1 * var(--s-2));
+    padding: var(--s-1) var(--s-3);
+    background: var(--bg-elevated);
+    color: var(--text);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-1);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 100ms var(--ease-out);
+    z-index: 50;
+    box-shadow: var(--shadow-md);
+  }
+
+  .workspace-pill:hover .workspace-pill__tooltip,
+  .workspace-pill:focus-visible .workspace-pill__tooltip {
+    opacity: 1;
+  }
+
+  /* @position-try fallback: when the tooltip would clip off the top
+     of the viewport (workspace bar near top of dashboard), flip below
+     the pill instead. */
+  @position-try --ws-tooltip-below {
+    bottom: auto;
+    top: anchor(bottom);
+    translate: -50% var(--s-2);
+  }
+
+  .workspace-pill__tooltip {
+    position-try-fallbacks: --ws-tooltip-below;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-pill__tooltip {
+    transition: none;
+  }
+}

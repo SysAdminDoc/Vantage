@@ -355,17 +355,57 @@ function renderWorkspaceBar(settings) {
   });
   bar.appendChild(baseBtn);
 
+  // Feature-detect CSS Anchor Positioning so we can render a stylable
+  // tooltip on supporting browsers (Chrome 125+ / Firefox 147+ / Edge
+  // 125+). Falls back to the native title attribute everywhere else.
+  const supportsAnchor = CSS.supports?.("anchor-name", "--x") || false;
+
   for (const ws of list) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = `workspace-pill${ws.id === activeId ? " workspace-pill--active" : ""}`;
-    btn.textContent = ws.name;
+    // Plain text node, not textContent on the button, so we can append
+    // a tooltip span as a child without nuking the label.
+    btn.appendChild(document.createTextNode(ws.name));
     btn.setAttribute("aria-pressed", String(ws.id === activeId));
     btn.addEventListener("click", async () => {
       await switchWorkspace(ws.id);
     });
+
+    // Build a one-line snapshot summary so the user can confirm what
+    // they're switching to before clicking.
+    const summary = describeWorkspaceSnapshot(ws);
+    if (summary) {
+      if (supportsAnchor) {
+        const anchorName = `--ws-${ws.id}`;
+        btn.style.setProperty("anchor-name", anchorName);
+        const tip = document.createElement("span");
+        tip.className = "workspace-pill__tooltip";
+        tip.textContent = summary;
+        tip.setAttribute("role", "tooltip");
+        tip.style.setProperty("position-anchor", anchorName);
+        btn.appendChild(tip);
+      } else {
+        btn.title = summary;
+      }
+    }
+
     bar.appendChild(btn);
   }
+}
+
+/** One-line summary of a workspace snapshot for the hover tooltip. */
+function describeWorkspaceSnapshot(ws) {
+  const s = ws?.snapshot;
+  if (!s) return "No snapshot captured yet — click to switch and capture later.";
+  const parts = [];
+  if (s.theme)             parts.push(s.theme);
+  if (s.background?.kind)  parts.push(s.background.kind.replace(/-/g, " "));
+  if (Array.isArray(s.quicklinks?.items)) {
+    const n = s.quicklinks.items.length;
+    if (n) parts.push(`${n} quick link${n === 1 ? "" : "s"}`);
+  }
+  return parts.join(" · ");
 }
 
 async function switchWorkspace(id) {
