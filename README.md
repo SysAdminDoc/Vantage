@@ -6,7 +6,7 @@
 
 **A new tab dashboard for Chromium and Firefox — bring your search engine, your feeds, your weather, your links.**
 
-[![Version](https://img.shields.io/badge/version-0.9.0-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
+[![Version](https://img.shields.io/badge/version-0.10.0-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
 [![License](https://img.shields.io/badge/license-MIT-89b4fa?style=flat-square)](LICENSE)
 [![Manifest](https://img.shields.io/badge/manifest-V3-a6e3a1?style=flat-square)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![Platform](https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave%20%7C%20Firefox-94e2d5?style=flat-square)](#install)
@@ -115,8 +115,8 @@ For visual QA, open `qa-scenes.html` from the same local server as `newtab.html`
 
 ### Productivity
 - **OPML import + export** — one-click export of all RSS + News feeds; merge-import from any OPML file (Feedly, Inoreader, NetNewsWire compatible).
-- **Settings JSON export / import** — download your full config as JSON, restore it on any device.
-- **Config share link** — copy a URL that encodes your entire settings as a base64 fragment; open it on any device with Vantage installed.
+- **Settings JSON export / import with partial restore** — download your config as JSON; on import, a section-checklist dialog lets you pick which parts to overwrite (theme, widgets, links, feeds, workspaces, etc.) so accidental imports never wipe your in-progress state. API keys (CoinGecko, NASA APOD) are stripped from exports and share links and re-applied automatically when you import your own backup on the same device.
+- **Config share link** — copy a URL that encodes your settings as a base64 fragment (secrets stripped) and open it on any device with Vantage installed; the same partial-restore dialog gates the apply.
 - **Pomodoro timer** — focus / break / long-break cycles with tab-blur auto-pause, cross-tab `navigator.locks` single-completion guarantee, Web Notifications on phase change, and live `<title>` countdown.
 - **Storage quota panel** — see how much of your `chrome.storage.local` quota you're using.
 
