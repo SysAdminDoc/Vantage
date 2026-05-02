@@ -1,4 +1,7 @@
-// Vantage — Cryptocurrency price panel widget. Data: CoinGecko free API (no key).
+// Vantage — Cryptocurrency price panel widget. Data: CoinGecko free API.
+// CoinGecko v3 now requires `x-cg-demo-api-key` for the public demo tier;
+// keyless requests still succeed but are rate-limited harshly. Users can
+// register a free demo key at https://www.coingecko.com/en/api.
 
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
@@ -17,6 +20,8 @@ const COIN_META = {
   "shiba-inu":{ symbol: "SHIB", name: "Shiba Inu" },
 };
 
+const COINGECKO_DASHBOARD = "https://www.coingecko.com/en/api";
+
 export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
   clear(mount);
   const cfg = settings.crypto;
@@ -29,6 +34,7 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
   const coins    = cfg.coins?.length ? cfg.coins : ["bitcoin", "ethereum", "solana"];
   const currency = cfg.currency || "usd";
   const symbol   = currency === "usd" ? "$" : currency.toUpperCase() + " ";
+  const apiKey   = (cfg.apiKey || "").trim();
 
   let lastFetch = null;
   let refreshInterval = null;
@@ -54,7 +60,13 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
     try {
       const ids  = coins.join(",");
       const url  = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=${currency}&include_24hr_change=true&include_market_cap=false`;
-      const resp = await fetch(url);
+      const headers = { "Accept": "application/json" };
+      if (apiKey) headers["x-cg-demo-api-key"] = apiKey;
+      const resp = await fetch(url, { headers });
+      if (resp.status === 401 || resp.status === 429) {
+        showApiKeyPrompt(resp.status);
+        return;
+      }
       if (!resp.ok) throw new Error(`CoinGecko ${resp.status}`);
       const data = await resp.json();
       lastFetch  = new Date();
@@ -65,6 +77,28 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
         `Couldn't load prices — ${err.message.toLowerCase()}.`
       ]));
     }
+  }
+
+  function showApiKeyPrompt(status) {
+    body.innerHTML = "";
+    const reason = status === 401
+      ? "CoinGecko rejected the request — your API key may be invalid or missing."
+      : "CoinGecko rate-limited this request — keyless quota exhausted.";
+    body.appendChild(el("div", { class: "panel-empty crypto-empty--keyprompt" }, [
+      el("div", { class: "crypto-empty__inner" }, [
+        el("p", { class: "crypto-empty__lead" }, [reason]),
+        el("p", { class: "crypto-empty__hint" }, [
+          "Set up a free CoinGecko demo API key (no credit card) at ",
+          el("a", {
+            href: COINGECKO_DASHBOARD,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            class: "crypto-empty__link"
+          }, ["coingecko.com/en/api"]),
+          ", then paste it into Settings → Crypto."
+        ])
+      ])
+    ]));
   }
 
   function renderRows(data) {
