@@ -153,11 +153,114 @@ function buildEditor(note, items, cfg, settings, saveItems, rerender, onAttachDr
     onClick: () => { note.updatedAt = Date.now(); saveItems(); rerender(null); }
   }, ["Done"]);
 
+  // Focus / teleprompter mode — full-screen overlay with large type and
+  // optional auto-scroll. Distraction-free for long notes / cue cards.
+  const focusBtn = el("button", {
+    type: "button",
+    class: "icon-button icon-button--ghost icon-button--small",
+    title: "Focus mode (full-screen)",
+    "aria-label": "Open note in focus mode",
+    onClick: () => openFocusMode(note, () => { saveItems(); rerender(note.id); })
+  }, [iconNode("layout-grid", { size: 14 })]);
+
   card.appendChild(colorRow);
   card.appendChild(titleInput);
   card.appendChild(contentArea);
-  card.appendChild(el("div", { class: "note-actions" }, [delBtn, doneBtn]));
+  card.appendChild(el("div", { class: "note-actions" }, [delBtn, focusBtn, doneBtn]));
 
   requestAnimationFrame(() => titleInput.focus({ preventScroll: true }));
   return card;
+}
+
+/** Open a note in a full-screen overlay with large centered text and an
+ *  optional auto-scroll teleprompter. Closes on Esc / click-outside /
+ *  the close button. Edits flow back through the supplied saver. */
+function openFocusMode(note, onSave) {
+  // Reuse if already open (multi-click guard).
+  if (document.getElementById("notes-focus-overlay")) return;
+
+  let scrollTimer = null;
+  let scrollSpeed = 0;             // px / tick — 0 = paused
+
+  const titleEl = el("input", {
+    type: "text",
+    class: "notes-focus__title",
+    value: note.title || "",
+    placeholder: "Untitled",
+    "aria-label": "Note title",
+    onInput: (e) => { note.title = e.target.value; },
+    onBlur: () => { onSave?.(); }
+  });
+
+  const bodyEl = el("textarea", {
+    class: "notes-focus__body",
+    rows: "20",
+    spellcheck: "true",
+    "aria-label": "Note content",
+    placeholder: "Type… or paste lyrics, a script, a speech.",
+    onInput: (e) => { note.content = e.target.value; },
+    onBlur: () => { onSave?.(); }
+  });
+  bodyEl.value = note.content || "";
+
+  const speedSlider = el("input", {
+    type: "range",
+    min: "0", max: "100", step: "1", value: "0",
+    class: "notes-focus__speed",
+    "aria-label": "Auto-scroll speed",
+    onInput: (e) => {
+      scrollSpeed = (parseInt(e.target.value, 10) || 0) / 25; // 0–4 px / tick
+    }
+  });
+
+  const close = () => {
+    onSave?.();
+    if (scrollTimer) { clearInterval(scrollTimer); scrollTimer = null; }
+    overlay.remove();
+    document.removeEventListener("keydown", onKey);
+  };
+
+  const onKey = (e) => {
+    if (e.key === "Escape") { e.preventDefault(); close(); }
+  };
+
+  const closeBtn = el("button", {
+    type: "button",
+    class: "icon-button icon-button--ghost",
+    "aria-label": "Close focus mode",
+    title: "Close (Esc)",
+    onClick: close
+  }, [iconNode("close", { size: 18 })]);
+
+  const overlay = el("div", {
+    id: "notes-focus-overlay",
+    class: `notes-focus notes-focus--${note.color || "blue"}`,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": "Focus mode"
+  }, [
+    el("div", { class: "notes-focus__bar" }, [
+      el("span", { class: "notes-focus__bar-label" }, ["Auto-scroll"]),
+      speedSlider,
+      closeBtn
+    ]),
+    titleEl,
+    bodyEl
+  ]);
+
+  // Click outside the editor surfaces (title / body) closes.
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) close();
+  });
+
+  document.body.appendChild(overlay);
+  document.addEventListener("keydown", onKey);
+
+  scrollTimer = setInterval(() => {
+    if (scrollSpeed > 0 && bodyEl) {
+      bodyEl.scrollTop = Math.min(bodyEl.scrollHeight, bodyEl.scrollTop + scrollSpeed);
+    }
+  }, 30);
+
+  requestAnimationFrame(() => bodyEl.focus({ preventScroll: false }));
 }
