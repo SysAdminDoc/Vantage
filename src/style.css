@@ -8102,3 +8102,31 @@ html[dir="rtl"] .workflow-pill {
   font-size: var(--text-xs);
   color: var(--subtext1);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Per-widget clipboard export grid (Settings -> Data, v1.1.0)
+   ═══════════════════════════════════════════════════════════ */
+
+.widget-export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--s-1) var(--s-3);
+  padding: var(--s-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-2);
+  background: var(--bg-elevated);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.widget-export-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--text-sm);
+  color: var(--text);
+  cursor: pointer;
+}
+.widget-export-row:hover {
+  color: var(--accent);
+}
