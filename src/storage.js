@@ -102,6 +102,16 @@ const DEFAULTS = {
   feedFilters: {
     rules: []                // [{ id, pattern, field:"title"|"url", action:"mute"|"highlight", color:null }]
   },
+  feedPreWarm: {
+    // Periodic background fetch of all RSS + News feeds via
+    // chrome.alarms (preferred over Periodic Background Sync API
+    // because chrome.alarms is already permitted and avoids the
+    // sensitive permission prompt). Off by default. Cached results
+    // live in chrome.storage.local; fetchFeed consults the cache
+    // first when fresh.
+    enabled: false,
+    intervalMinutes: 60      // 15-720 (15 min to 12 h)
+  },
   feedArchive: {
     // Permanent IndexedDB archive of every feed item ever rendered,
     // searchable from Settings → Feed archive. Strict opt-in (default

@@ -27,3 +27,51 @@ ext.runtime?.onInstalled?.addListener?.(applySidePanelBehavior);
 ext.storage?.onChanged?.addListener?.((changes, area) => {
   if (area === "local" && changes.vantageSettings) applySidePanelBehavior();
 });
+
+// Feed pre-warming — chrome.alarms periodic alarm refreshes the
+// RSS / News feed cache on a user-configured interval (default 1 h).
+// Off by default; opt-in via Settings -> Feed pre-warming. Uses
+// chrome.alarms (already permitted) instead of the Periodic
+// Background Sync API to skip the sensitive permission prompt.
+const PREWARM_ALARM = "vantage-feed-prewarm";
+
+async function syncPrewarmAlarm() {
+  if (!ext.alarms) return;
+  try {
+    const stored = await ext.storage.local.get("vantageSettings");
+    const cfg = stored?.vantageSettings?.feedPreWarm || {};
+    const enabled = !!cfg.enabled;
+    const minutes = Math.max(15, Math.min(720, parseInt(cfg.intervalMinutes, 10) || 60));
+    if (enabled) {
+      // Reuse-or-create — alarm.create with the same name overwrites.
+      ext.alarms.create(PREWARM_ALARM, { periodInMinutes: minutes });
+    } else {
+      ext.alarms.clear(PREWARM_ALARM);
+    }
+  } catch { /* ignore */ }
+}
+syncPrewarmAlarm();
+ext.runtime?.onStartup?.addListener?.(syncPrewarmAlarm);
+ext.runtime?.onInstalled?.addListener?.(syncPrewarmAlarm);
+ext.storage?.onChanged?.addListener?.((changes, area) => {
+  if (area === "local" && changes.vantageSettings) syncPrewarmAlarm();
+});
+
+if (ext.alarms?.onAlarm) {
+  ext.alarms.onAlarm.addListener(async (alarm) => {
+    if (alarm.name !== PREWARM_ALARM) return;
+    try {
+      const stored = await ext.storage.local.get("vantageSettings");
+      const settings = stored?.vantageSettings || {};
+      const urls = [
+        ...(settings.rss?.feeds  || []).map(f => f.url),
+        ...(settings.news?.feeds || []).map(f => f.url)
+      ].filter(Boolean);
+      if (!urls.length) return;
+      const { prewarmAll } = await import("./utils/feed-prewarm.js");
+      await prewarmAll(urls);
+    } catch (err) {
+      console.warn("[vantage] feed pre-warm tick failed:", err.message);
+    }
+  });
+}
