@@ -4,6 +4,7 @@ import { renderFeedList } from "./feed-list.js";
 import { saveSettings, pushRead } from "../storage.js";
 import { toggleStar, canonicalize as canonicalizeStarred } from "../utils/starred-feed.js";
 import { findAlertMatches, fireAlerts, markNotified } from "../utils/feed-alerts.js";
+import { archiveItems, pruneToCap } from "../utils/feed-archive.js";
 
 export function renderRss(mount, settings, { onAttachDragHandle } = {}) {
   if (!settings.rss.enabled) {
@@ -37,6 +38,20 @@ export function renderRss(mount, settings, { onAttachDragHandle } = {}) {
       return nowStarred;
     },
     onItemsLoaded: async (items) => {
+      // Archive first — alerts shouldn't gate persistence.
+      if (settings.feedArchive?.enabled) {
+        try {
+          await archiveItems(items);
+          // Lazy prune — no need to do this on every render. Once per
+          // 25-render burst at random keeps the cap honest without
+          // blowing latency on every refresh.
+          if (Math.random() < 0.04) {
+            await pruneToCap(settings.feedArchive.cap || 10000);
+          }
+        } catch (err) {
+          console.warn("[archive] rss persist failed:", err.message);
+        }
+      }
       const matches = findAlertMatches(items, settings.feedAlerts);
       if (!matches.length) return;
       const fired = fireAlerts(matches);

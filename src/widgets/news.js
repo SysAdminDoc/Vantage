@@ -4,6 +4,7 @@ import { renderFeedList } from "./feed-list.js";
 import { saveSettings, pushRead } from "../storage.js";
 import { toggleStar, canonicalize as canonicalizeStarred } from "../utils/starred-feed.js";
 import { findAlertMatches, fireAlerts, markNotified } from "../utils/feed-alerts.js";
+import { archiveItems, pruneToCap } from "../utils/feed-archive.js";
 
 export function renderNews(mount, settings, { onAttachDragHandle } = {}) {
   if (!settings.news.enabled) {
@@ -37,6 +38,16 @@ export function renderNews(mount, settings, { onAttachDragHandle } = {}) {
       return nowStarred;
     },
     onItemsLoaded: async (items) => {
+      if (settings.feedArchive?.enabled) {
+        try {
+          await archiveItems(items);
+          if (Math.random() < 0.04) {
+            await pruneToCap(settings.feedArchive.cap || 10000);
+          }
+        } catch (err) {
+          console.warn("[archive] news persist failed:", err.message);
+        }
+      }
       const matches = findAlertMatches(items, settings.feedAlerts);
       if (!matches.length) return;
       const fired = fireAlerts(matches);
