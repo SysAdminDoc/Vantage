@@ -4,6 +4,15 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 
 ## Unreleased
 
+## v0.11.0 — 2026-05-02
+
+### Added
+- **JSON Feed v1.1 support in the RSS parser** — Modern Micro.blog, Ghost, Kagi, and many static-site generators publish JSON Feed alongside or instead of RSS; Vantage now reads them. Detection runs `Content-Type` sniff first, then body sniff (handles CORS proxies that drop the upstream header), then falls back to the XML path. JSON Feed v1.0 (single `author`) and v1.1 (`authors[]`) are both accepted; items without a title fall back to a content snippet derived from `content_text` or stripped `content_html` so microblog entries still render usefully. No new endpoints, no new permissions.
+- **`chrome.readingList` save integration** — Each feed item now shows a hover-revealed bookmark icon on the right edge. Click → `chrome.readingList.addEntry({title, url, hasBeenRead: false})`. Saved state shows a green-bordered persistent icon. Duplicate-URL rejection is treated as success ("Already in Reading list"). Chrome 120+ only — feature-detected at module load so Firefox builds simply don't render the button. Requires the new `readingList` manifest permission.
+
+### Security
+- **Bounded feed-filter regex execution** — Q1 audit follow-up. Feed-filter rules are user-supplied regexes that run on every item × every render; an imported settings file with a pathological pattern could lock the UI thread (catastrophic backtracking). The new `compileRule()` rejects: pattern strings > 256 chars, and the canonical "evil regex" shape — a group whose body contains an unbounded quantifier (`*` / `+`) immediately followed by another unbounded quantifier on the group itself (`*` / `+` / `{N,}`). Bounded outer quantifiers (`{2}`, `{2,5}`) are explicitly allowed so legitimate patterns like `(\w+\d+){2}` pass. The detector was tuned against 13 canonical cases. Compiled regexes are cached per pattern string so the same pattern is never compiled twice. The haystack is also capped at 1 KB before `.test()` since JS regex execution can't be preempted — bounded input is the only reliable defense.
+
 ## v0.10.0 — 2026-05-02
 
 ### Added
