@@ -34,6 +34,24 @@ const WMO_CODES = {
   99: { label: "Severe thunderstorm",   icon: "⛈️"  }
 };
 
+// Precipitation chip kicks in past 30%. Below that the chip just adds noise.
+const PRECIP_CHIP_THRESHOLD = 30;
+// Feels-like chip only renders when the delta from temperature exceeds 3°
+// in either direction — otherwise it's redundant with the headline temp.
+const FEELS_LIKE_DELTA = 3;
+
+function formatVisibility(meters, units) {
+  if (meters == null) return null;
+  if (units === "celsius") {
+    const km = meters / 1000;
+    if (km >= 10) return "10+ km";
+    return `${km.toFixed(km < 1 ? 2 : 1)} km`;
+  }
+  const miles = meters / 1609.344;
+  if (miles >= 10) return "10+ mi";
+  return `${miles.toFixed(miles < 1 ? 2 : 1)} mi`;
+}
+
 export async function renderWeather(mount, settings, saveSettings) {
   clear(mount);
   if (!settings.weather.enabled) {
@@ -65,23 +83,61 @@ export async function renderWeather(mount, settings, saveSettings) {
   try {
     const data = await getWeatherData(location, settings.weather.units);
     clear(mount);
-    const code = data.current.weather_code;
+    const cur = data.current || {};
+    const code = cur.weather_code;
     const meta = WMO_CODES[code] || { label: "Unknown", icon: "❓" };
     const unit = settings.weather.units === "celsius" ? "°C" : "°F";
     const unitLabel = settings.weather.units === "celsius" ? "Celsius" : "Fahrenheit";
     const locName = location.name || "Current location";
-    const temp = Math.round(data.current.temperature_2m);
-    const feelsLike = Math.round(data.current.apparent_temperature);
+    const temp = Math.round(cur.temperature_2m);
+    const feelsLike = Math.round(cur.apparent_temperature);
+    const feelsDelta = feelsLike - temp;
+    const showFeelsLike = Math.abs(feelsDelta) >= FEELS_LIKE_DELTA;
+
+    const precipProb = cur.precipitation_probability;
+    const showPrecip = typeof precipProb === "number" && precipProb >= PRECIP_CHIP_THRESHOLD;
+
+    const dewPoint = cur.dew_point_2m;
+    const humidity = cur.relative_humidity_2m;
+    const visibility = formatVisibility(cur.visibility, settings.weather.units);
+
+    // Build the title (hover) and aria-label (spoken). Title is dense, aria
+    // stays terse to avoid SR fatigue.
+    const titleParts = [`${meta.label}`, `feels like ${feelsLike}${unit}`];
+    if (showPrecip) titleParts.push(`precip ${precipProb}%`);
+    if (dewPoint != null) titleParts.push(`dew ${Math.round(dewPoint)}${unit}`);
+    if (humidity != null) titleParts.push(`humidity ${Math.round(humidity)}%`);
+    if (visibility) titleParts.push(`visibility ${visibility}`);
+    const title = titleParts.join(" · ");
+
+    const ariaParts = [`${temp} degrees ${unitLabel}`, meta.label, locName];
+    if (showFeelsLike) ariaParts.push(`feels like ${feelsLike} degrees`);
+    if (showPrecip) ariaParts.push(`${precipProb}% chance of precipitation`);
+    const ariaLabel = ariaParts.join(", ");
+
+    const children = [
+      el("span", { class: "weather__icon", "aria-hidden": "true" }, [meta.icon]),
+      el("span", { class: "weather__temp" }, [`${temp}${unit}`])
+    ];
+    if (showFeelsLike) {
+      children.push(el("span", {
+        class: "weather__chip weather__chip--feels",
+        "aria-hidden": "true"
+      }, [`feels ${feelsLike}${unit}`]));
+    }
+    if (showPrecip) {
+      children.push(el("span", {
+        class: "weather__chip weather__chip--precip",
+        "aria-hidden": "true"
+      }, [`💧 ${precipProb}%`]));
+    }
+    children.push(el("span", { class: "weather__loc" }, [locName]));
 
     mount.appendChild(el("div", {
       class: "weather",
-      title: `${meta.label} · feels like ${feelsLike}${unit}`,
-      "aria-label": `${temp} degrees ${unitLabel}, ${meta.label}, ${locName}`
-    }, [
-      el("span", { class: "weather__icon", "aria-hidden": "true" }, [meta.icon]),
-      el("span", { class: "weather__temp" }, [`${temp}${unit}`]),
-      el("span", { class: "weather__loc" }, [locName])
-    ]));
+      title,
+      "aria-label": ariaLabel
+    }, children));
   } catch (err) {
     clear(mount);
     mount.appendChild(el("div", {

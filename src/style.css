@@ -3731,6 +3731,30 @@ a {
   color: var(--subtext0);
 }
 
+/* Compact secondary signals next to the temperature (feels-like delta,
+   precipitation probability). Render only when meaningful — see
+   FEELS_LIKE_DELTA / PRECIP_CHIP_THRESHOLD in weather.js. */
+.weather__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--surface1) 70%, transparent);
+  color: var(--subtext1);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+.weather__chip--feels {
+  color: var(--subtext0);
+}
+.weather__chip--precip {
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+}
+
 .weather--skeleton {
   width: 140px;
   height: 32px;
