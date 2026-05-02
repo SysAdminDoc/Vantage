@@ -93,6 +93,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildFeedFiltersSection(settings, onChange));
   body.appendChild(buildFeedAlertsSection(settings, onChange));
   body.appendChild(buildFeedArchiveSection(settings, onChange));
+  body.appendChild(buildFeedPreWarmSection(settings, onChange));
   body.appendChild(buildAirQualitySection(settings, onChange));
   body.appendChild(buildMarineSection(settings, onChange));
   body.appendChild(buildFloodSection(settings, onChange));
@@ -1247,6 +1248,62 @@ function buildFeedArchiveSection(settings, onChange) {
     "Search archive",
     "Substring match on title + source. Newest first; up to 50 results.",
     el("div", { class: "compose__column" }, [searchInput, resultsHost])
+  ));
+
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Feed pre-warming ------------------------------------------------- */
+
+function buildFeedPreWarmSection(settings, onChange) {
+  const cfg = settings.feedPreWarm || { enabled: false, intervalMinutes: 60 };
+  const sec = section("Feed pre-warming", "rss");
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    "Background-fetch all RSS + News feeds on a periodic interval (chrome.alarms — no extra permission). The cache is consulted before every render so a fresh new tab paints feeds instantly. Off by default; the alarm runs at most every 15 minutes."
+  ]));
+
+  const g = group();
+
+  g.appendChild(row(
+    "Enable pre-warming",
+    "When on, the service worker fetches all configured feed URLs at the chosen interval and stores the parsed result in chrome.storage.local for the next new tab.",
+    toggle({
+      checked: cfg.enabled || false,
+      ariaLabel: "Enable feed pre-warming",
+      onChange: (v) => {
+        settings.feedPreWarm = { ...cfg, enabled: v };
+        onChange(settings);
+      }
+    })
+  ));
+
+  const intervalIn = el("input", {
+    type: "number", min: "15", max: "720", step: "5",
+    value: String(cfg.intervalMinutes ?? 60),
+    class: "text-input number-input",
+    "aria-label": "Pre-warm interval in minutes",
+    onChange: (e) => {
+      const v = parseInt(e.target.value, 10);
+      if (!isNaN(v) && v >= 15 && v <= 720) {
+        settings.feedPreWarm = { ...cfg, intervalMinutes: v };
+        onChange(settings);
+      }
+    }
+  });
+  g.appendChild(row("Interval (minutes)", "Between 15 (4×/h) and 720 (twice a day).", intervalIn));
+
+  g.appendChild(row(
+    "Cache",
+    "Clearing wipes the pre-warm cache without disabling the alarm. Useful if a stale entry persists past the TTL.",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: async () => {
+        const { clearPrewarmCache } = await import("./utils/feed-prewarm.js");
+        await clearPrewarmCache();
+        toast("Pre-warm cache cleared.", "success");
+      }
+    }, [iconNode("trash", { size: 14 }), " Clear pre-warm cache"])
   ));
 
   sec.appendChild(g);

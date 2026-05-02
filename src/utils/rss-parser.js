@@ -17,7 +17,20 @@ const PROXIES = [
   (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
 ];
 
-export async function fetchFeed(url) {
+export async function fetchFeed(url, opts = {}) {
+  // Pre-warm cache short-circuit. Background.js maintains this when
+  // the user enables Settings → Feed pre-warming. The recursive
+  // skipPrewarmRead flag is what the pre-warm helper itself passes
+  // when it calls back into fetchFeed to refresh the cache —
+  // otherwise we'd serve the soon-to-be-overwritten stale entry.
+  if (!opts.skipPrewarmRead) {
+    try {
+      const { getPrewarmed } = await import("./feed-prewarm.js");
+      const cached = await getPrewarmed(url);
+      if (cached) return cached;
+    } catch { /* cache lookup failures fall through to network */ }
+  }
+
   let body;
   let contentType = "";
 
