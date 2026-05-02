@@ -50,14 +50,42 @@ export function validateCustomSearchUrl(raw) {
   // comparing so http://[::1]/... is accepted as the documented loopback.
   let host = parsed.hostname.toLowerCase();
   if (host.startsWith("[") && host.endsWith("]")) host = host.slice(1, -1);
-  const isLoopback = host === "localhost" || host === "127.0.0.1" || host === "::1";
-  if (scheme === "http:" && !isLoopback) {
-    return { ok: false, reason: "Use https:// (or http://localhost for self-hosted)." };
-  }
   if (!host) {
     return { ok: false, reason: "Custom URL is missing a hostname." };
   }
+  if (scheme === "http:" && !isLocalNetworkHost(host)) {
+    return { ok: false, reason: "Use https:// (or http://localhost / RFC1918 / .local for self-hosted)." };
+  }
   return { ok: true, normalized: trimmed };
+}
+
+// Hosts that are safe for plain HTTP because they're addressable only on the
+// user's own machine or LAN. Goes wider than just `localhost` so existing
+// users running a self-hosted SearXNG / Whoogle / Kagi bridge on
+// 192.168.x.x or 10.x.x.x or `mybox.local` aren't silently downgraded to
+// DuckDuckGo by the post-Iter2 validator. Public IP space and arbitrary
+// names still require https.
+function isLocalNetworkHost(host) {
+  if (host === "localhost" || host === "127.0.0.1" || host === "::1") return true;
+  // mDNS / Bonjour: anything ending in `.local`
+  if (host.endsWith(".local")) return true;
+  // RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
+  const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4) {
+    const a = +ipv4[1], b = +ipv4[2];
+    if (a === 10) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    // CGNAT 100.64.0.0/10 — common with Tailscale
+    if (a === 100 && b >= 64 && b <= 127) return true;
+    // Link-local 169.254.0.0/16
+    if (a === 169 && b === 254) return true;
+  }
+  // IPv6 unique-local (fc00::/7) and link-local (fe80::/10)
+  if (host.startsWith("fc") || host.startsWith("fd") || host.startsWith("fe8") || host.startsWith("fe9") || host.startsWith("fea") || host.startsWith("feb")) {
+    if (host.includes(":")) return true;
+  }
+  return false;
 }
 
 export function buildSearchUrl(engineKey, query, customUrl) {

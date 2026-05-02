@@ -378,6 +378,19 @@
   .icon-button--ghost:hover {
     border-color: var(--border-default);
   }
+
+  /* Partial-import dialog — section cards have hairline borders and
+     subtext0 hint copy by default; both get the same lift as the rest
+     of the contrast pass so the new surface doesn't read weaker than
+     the rest of settings. */
+  .import-dialog,
+  .import-dialog__section {
+    border-color: var(--border-default);
+  }
+  .import-dialog__header p,
+  .import-dialog__section-hint {
+    color: var(--subtext1);
+  }
 }
 
 /* ============================================================
