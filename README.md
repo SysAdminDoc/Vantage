@@ -271,6 +271,8 @@ Vantage/
 | `geocoding-api.open-meteo.com` | Settings ("Set city") | Resolve city name to lat/lon |
 | `air-quality-api.open-meteo.com` | Air quality widget | AQI / PM / pollen |
 | `marine-api.open-meteo.com` | Marine weather pill | Wave height / SST / ocean current (coastal locations) |
+| `flood-api.open-meteo.com` | River flood risk pill | GloFAS v4 river discharge (locations near a major river) |
+| `ensemble-api.open-meteo.com` | Weather forecast-confidence chip (opt-in) | 50-member ICON-EU ensemble for current-hour spread |
 | Each configured RSS / News feed URL | RSS / News widgets | Direct fetch first |
 | Each configured iCal feed URL | Calendar widget | Direct fetch first |
 | `api.allorigins.win` | RSS / News / Calendar (fallback) | Used **only** when direct fetch is blocked by CORS |

@@ -71,6 +71,77 @@ export async function getWeatherData(location, units = "fahrenheit", { force = f
   return fetchPromise;
 }
 
+const ENSEMBLE_TTL_MS = 30 * 60 * 1000;
+const ensembleCache = new Map();
+
+/** Fetch a 51-member ensemble temperature forecast for the next 12 h
+ *  and return the current-hour spread (max - min) in the requested
+ *  units. Used by the weather widget's forecast-confidence chip
+ *  when `weather.showEnsembleConfidence` is on. Cached 30 min per
+ *  (lat, lon, units) tuple — ensemble runs every ~6 h upstream so
+ *  this is plenty fresh.
+ *
+ *  Returns null on any error so the caller falls back to the
+ *  baseline forecast cleanly.
+ */
+export async function getEnsembleSpread(location, units = "fahrenheit") {
+  const tempUnit = units === "celsius" ? "celsius" : "fahrenheit";
+  const key = `${location.latitude},${location.longitude},${tempUnit}`;
+  const hit = ensembleCache.get(key);
+  if (hit && (Date.now() - hit.ts) < ENSEMBLE_TTL_MS) return hit.spread;
+
+  // Members 01..50 (m00 is the deterministic control run; we exclude
+  // it from the spread so the metric reflects ensemble disagreement
+  // rather than control vs. mean drift).
+  const members = Array.from({ length: 50 }, (_, i) =>
+    `temperature_2m_member${String(i + 1).padStart(2, "0")}`
+  ).join(",");
+  const url =
+    `https://ensemble-api.open-meteo.com/v1/ensemble` +
+    `?latitude=${location.latitude}&longitude=${location.longitude}` +
+    `&hourly=${members}` +
+    `&forecast_days=1` +
+    `&temperature_unit=${tempUnit}` +
+    `&timezone=auto`;
+
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const hourly = data.hourly || {};
+    // Find the current-hour index. The `time` array is naive ISO
+    // strings in the location's local time; pick the closest entry
+    // to the user's current local hour.
+    const times = hourly.time || [];
+    if (!times.length) throw new Error("Empty ensemble response");
+    const now = new Date();
+    let idx = 0;
+    let bestDelta = Infinity;
+    for (let i = 0; i < times.length; i++) {
+      const t = new Date(times[i]);
+      const delta = Math.abs(t.getTime() - now.getTime());
+      if (delta < bestDelta) { bestDelta = delta; idx = i; }
+    }
+    const samples = [];
+    for (let i = 1; i <= 50; i++) {
+      const k = `temperature_2m_member${String(i).padStart(2, "0")}`;
+      const arr = hourly[k];
+      if (Array.isArray(arr) && typeof arr[idx] === "number") samples.push(arr[idx]);
+    }
+    if (samples.length < 5) throw new Error("Too few ensemble members");
+    const max = Math.max(...samples);
+    const min = Math.min(...samples);
+    const spread = max - min;
+    ensembleCache.set(key, { ts: Date.now(), spread });
+    return spread;
+  } catch (err) {
+    // Cache the failure for one minute to avoid hammering on repeated
+    // renders when the API is unreachable.
+    ensembleCache.set(key, { ts: Date.now() - ENSEMBLE_TTL_MS + 60_000, spread: null });
+    return null;
+  }
+}
+
 /** Geolocation API → location. Wraps the browser API as a Promise. */
 export function detectLocation() {
   return new Promise((resolve, reject) => {
