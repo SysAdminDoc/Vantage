@@ -115,6 +115,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   if (containerSec) body.appendChild(containerSec);
   body.appendChild(buildCustomCSSSection(settings, onChange));
   body.appendChild(buildStorageQuotaSection(settings));
+  body.appendChild(buildSecuritySection(settings, onChange));
   body.appendChild(buildDataSection(settings, onChange, showWizard));
   body.appendChild(buildResetSection(onChange));
 }
@@ -1276,6 +1277,101 @@ function buildStorageQuotaSection(settings) {
     }).catch(() => { label.textContent = "Estimate unavailable."; });
   } else {
     label.textContent = "Not available in this browser.";
+  }
+
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Security (encrypted API key vault) ------------------------------- */
+
+function buildSecuritySection(settings, onChange) {
+  const sec = section("Security", "alert");
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    "Encrypt API keys (CoinGecko, NASA APOD) at rest with a passphrase. AES-GCM-256 + PBKDF2 (600k iterations). Strict opt-in. Re-prompts once per browser session — keys are decrypted in memory only. Lose the passphrase, lose the keys (no recovery)."
+  ]));
+
+  const sec2 = settings.security || {};
+  const encrypted = !!sec2.encryptKeys;
+
+  const g = group();
+
+  if (!encrypted) {
+    // Not yet configured — render the enable flow.
+    const ppInput  = el("input", { type: "password", class: "text-input", placeholder: "Choose a passphrase (≥8 chars)", "aria-label": "Vault passphrase" });
+    const ppConfirm = el("input", { type: "password", class: "text-input", placeholder: "Confirm passphrase", "aria-label": "Confirm passphrase" });
+    const enableBtn = el("button", {
+      type: "button", class: "button button--primary",
+      onClick: async () => {
+        const pp1 = ppInput.value;
+        const pp2 = ppConfirm.value;
+        if (!pp1 || pp1.length < 8) { toast("Passphrase must be at least 8 characters.", "error"); return; }
+        if (pp1 !== pp2) { toast("Passphrases don't match.", "error"); return; }
+        try {
+          const { encryptKeys, cacheDecrypted } = await import("./utils/api-key-vault.js");
+          // Capture the ORIGINAL plaintext BEFORE we zero the storage
+          // fields — otherwise we'd cache empty strings and the
+          // current-page widgets would lose access to their keys.
+          const originalCrypto = settings.crypto?.apiKey || "";
+          const originalNasa   = settings.photo?.nasaKey  || "";
+          const payload = await encryptKeys(pp1, {
+            cryptoApiKey: originalCrypto,
+            photoNasaKey: originalNasa
+          });
+          settings.security = payload;
+          if (settings.crypto) settings.crypto = { ...settings.crypto, apiKey: "" };
+          if (settings.photo)  settings.photo  = { ...settings.photo,  nasaKey: "" };
+          // Cache the original plaintext in session storage so widgets
+          // continue to function until the browser restarts (at which
+          // point the user gets the unlock prompt).
+          await cacheDecrypted({ crypto: originalCrypto, nasa: originalNasa });
+          onChange(settings);
+          toast("API keys encrypted. Re-prompt on next browser session.", "success", 6000);
+        } catch (err) {
+          toast(`Couldn't encrypt — ${err?.message?.toLowerCase() || "unknown error"}.`, "error");
+        }
+      }
+    }, [iconNode("alert", { size: 14 }), " Encrypt API keys"]);
+
+    g.appendChild(row(
+      "Enable encryption",
+      "Choose a passphrase. The plaintext API key fields will be cleared from storage and replaced with ciphertext.",
+      el("div", { class: "compose__column" }, [ppInput, ppConfirm, enableBtn])
+    ));
+  } else {
+    // Already configured — show status + disable flow.
+    g.appendChild(row(
+      "Status",
+      "API keys are encrypted at rest. Decryption happens once per browser session.",
+      el("span", { class: "chip", style: { background: "var(--green)", color: "var(--accent-fg)" } }, [
+        iconNode("check", { size: 12 }), " Encrypted"
+      ])
+    ));
+
+    const disableBtn = el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: async () => {
+        const pp = prompt("Enter your vault passphrase to decrypt and disable encryption:");
+        if (!pp) return;
+        try {
+          const { decryptKeys, clearCached } = await import("./utils/api-key-vault.js");
+          const decrypted = await decryptKeys(pp, settings.security);
+          if (settings.crypto) settings.crypto = { ...settings.crypto, apiKey: decrypted.crypto || "" };
+          if (settings.photo)  settings.photo  = { ...settings.photo,  nasaKey: decrypted.nasa  || "" };
+          settings.security = { encryptKeys: false, salt: null, iv: null, encryptedBlob: null };
+          await clearCached();
+          onChange(settings);
+          toast("API keys decrypted and stored as plaintext. You can re-encrypt anytime.", "success", 6000);
+        } catch (err) {
+          toast(err?.message || "Decryption failed.", "error");
+        }
+      }
+    }, [iconNode("trash", { size: 14 }), " Disable encryption"]);
+    g.appendChild(row(
+      "Disable encryption",
+      "Enter your passphrase to decrypt the keys and store them as plaintext again.",
+      disableBtn
+    ));
   }
 
   sec.appendChild(g);
@@ -2780,6 +2876,12 @@ function stripSecrets(s) {
   const c = cloneValue(s);
   if (c.crypto && typeof c.crypto === "object") c.crypto.apiKey = "";
   if (c.photo  && typeof c.photo  === "object") c.photo.nasaKey = "";
+  // Encrypted vault is also a secret — pass-phrase-derived ciphertext
+  // is useless on a destination device but exposes the salt + IV +
+  // existence of a vault, none of which need to travel.
+  if (c.security && typeof c.security === "object") {
+    c.security = { encryptKeys: false, salt: null, iv: null, encryptedBlob: null };
+  }
   return c;
 }
 

@@ -105,6 +105,13 @@ async function init() {
 
   currentSettings = sharedImportedSettings || await loadSettings();
 
+  // Encrypted API key vault — if enabled, decrypt-once-per-session.
+  // Session cache prevents re-prompting on every new tab; the cache is
+  // wiped on browser restart so a fresh launch always demands the
+  // passphrase. Decrypted values live in `currentSettings` IN MEMORY
+  // ONLY; they're never written back to chrome.storage.local.
+  await unlockVaultIfNeeded();
+
   // Firefox container mapping — detect active container, apply workspace
   await applyContainerWorkspace();
 
@@ -146,6 +153,41 @@ async function init() {
     applyCustomCSS(currentSettings.customCSS);
     mountAll();
   });
+}
+
+/** If the user has the encrypted API key vault enabled, fetch the
+ *  session-cached decrypted values OR prompt for the passphrase, then
+ *  inject the decrypted keys into `currentSettings.crypto.apiKey` /
+ *  `.photo.nasaKey` IN MEMORY ONLY. The on-disk values stay
+ *  encrypted. Failure (wrong passphrase, no SubtleCrypto, user
+ *  canceled) leaves the keys empty — widgets that need them will
+ *  show their existing empty-state copy. */
+async function unlockVaultIfNeeded() {
+  const sec = currentSettings.security;
+  if (!sec?.encryptKeys || !sec.encryptedBlob) return;
+
+  const { decryptKeys, applyDecryptedToSettings, readCached, cacheDecrypted } =
+    await import("./utils/api-key-vault.js");
+
+  // Fast path: session cache from a previous tab in the same browser session.
+  const cached = await readCached();
+  if (cached) {
+    applyDecryptedToSettings(currentSettings, cached);
+    return;
+  }
+
+  // Slow path: prompt the user for the passphrase. Native `prompt()`
+  // is sufficient here — full modal would interfere with init paint
+  // ordering and the operation only happens once per browser session.
+  const pp = window.prompt("Vantage vault — enter your passphrase to decrypt API keys (cancel to skip):");
+  if (!pp) return; // user canceled — keep keys empty for this session
+  try {
+    const decrypted = await decryptKeys(pp, sec);
+    applyDecryptedToSettings(currentSettings, decrypted);
+    await cacheDecrypted(decrypted);
+  } catch (err) {
+    toast(err?.message || "Vault unlock failed.", "error", 6000);
+  }
 }
 
 async function applyContainerWorkspace() {
