@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gupdate xmlns="http://www.google.com/update2/response" protocol="2.0">
   <app appid="hkfepknnglonkidihcoicdfkjkjfnejn">
-    <updatecheck codebase="https://github.com/SysAdminDoc/Vantage/releases/download/v0.10.0/Vantage-v0.10.0.crx" version="0.10.0" hash_sha256="a9ef7ec5b36c268025b738bcd6ec9802c5b789f3428402806ba992235219ca3a"/>
+    <updatecheck codebase="https://github.com/SysAdminDoc/Vantage/releases/download/v0.11.0/Vantage-v0.11.0.crx" version="0.11.0" hash_sha256="935ffcadeb038316add8d8c408a806e06c71264a82e431ac2534b1123b83cef6"/>
   </app>
 </gupdate>
