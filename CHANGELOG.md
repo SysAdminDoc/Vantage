@@ -2,6 +2,19 @@
 
 All notable changes to Vantage are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+- **CoinGecko demo API key** — Crypto widget now sends `x-cg-demo-api-key` when a key is provided in Settings → Crypto. CoinGecko's public demo tier rate-limits keyless requests so aggressively that the panel was effectively broken; the widget now routes 401 / 429 responses to a dedicated prompt with the sign-up link instead of a generic error.
+- **Weather chip enrichment** — Open-Meteo's `current=` query now also fetches `apparent_temperature`, `precipitation_probability`, `dew_point_2m`, `relative_humidity_2m`, and `visibility`. The chip surfaces a "feels N°" pill when |apparent − actual| ≥ 3°, a "💧 N%" pill when precipitation probability ≥ 30%, and rolls dew + humidity + visibility into the hover title (visibility is converted between km / mi based on the user's chosen temperature units).
+- **`<meta name="theme-color">` tracking the active background** — browser tab strip, address bar, and Android status bar now match the rendered sky color. Animated backgrounds dispatch `vantage:bg-color` on every paint with the closest-to-viewer sky color; static kinds (solid / gradient / image-url / upload / bing) populate from settings; disabled / fallback paths read `--base` so the chrome stays in-palette across Mocha / Macchiato / Frappé / Latte. The system-theme watcher re-runs the meta update on OS dark / light flips.
+- **`prefers-contrast: more` CSS pass** — when the OS reports a high-contrast preference (macOS Increase Contrast, iOS Increase Contrast, GNOME high-contrast, Windows Settings → Accessibility → Contrast outside of forced-colors), Vantage promotes hairline borders to the default token, doubles row dividers from 1 to 2 px, lifts placeholders + hint text from `--overlay0` to `--subtext1`, and bumps focus-visible outlines from 2 / 2 px to 3 / 3 px. Ghost-button hovers also adopt `--border-default` so the hover hit-area stays legible against busy backgrounds. Additive only — defaults are not weakened. Pairs with the existing `forced-colors: active` block (which still wins on Windows HCM).
+- **Custom greeting per time slot** — Settings → Greeting → Time-slot overrides now lets users replace the built-in "Good morning / afternoon / evening / night" strings with their own copy per time window. The literal `[name]` token expands to the display name inline; if the token is absent but a name is set, the historic `, <em>name</em>` suffix is preserved so existing setups don't change behavior.
+- **Engine-aware search placeholder** — the hero search input's placeholder now reflects the active engine ("Search Google", "Search Brave", "Search Kagi", etc.). Custom engines surface the host (e.g. "Search example.com") so mistyped customUrl values are obvious. Re-derives without remounting the input on engine change so focus + caret position stay intact; aria-label keeps the generic "Search query" so screen readers don't get verbose announcements.
+
+### Changed
+- **Settings export / share strips secrets** — JSON export and share-link paths now scrub `crypto.apiKey` and `photo.nasaKey` before serialization. The crypto-section copy promised the key never leaves the browser except to CoinGecko; without this scrub a key would land in any JSON file the user emails to themselves or any link they paste in chat. Toast / hint copy state secrets are stripped so destination devices know to re-enter them.
+
 ## v0.9.0 — 2026-05-01
 
 ### Added
