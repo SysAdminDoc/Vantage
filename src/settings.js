@@ -99,6 +99,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildTodoSection(settings, onChange));
   body.appendChild(buildNotesSection(settings, onChange));
   body.appendChild(buildBookmarksSection(settings, onChange));
+  body.appendChild(buildStarredSection(settings, onChange));
   body.appendChild(buildWorldClockSection(settings, onChange));
   body.appendChild(buildCryptoSection(settings, onChange));
   body.appendChild(buildGithubSection(settings, onChange));
@@ -2703,6 +2704,55 @@ function buildBookmarksSection(settings, onChange) {
     }
   });
   g.appendChild(row("Max items", "Maximum number of bookmarks to display.", maxIn));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Starred items ----------------------------------------------------- */
+
+function buildStarredSection(settings, onChange) {
+  const cfg = settings.starred || {};
+  const sec = section("Starred items", "star");
+  const g   = group();
+  g.appendChild(row(
+    "Show Starred panel",
+    "Star a feed headline (★ icon on hover) to pin it here. All data stays in your browser.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show starred panel",
+      onChange: (v) => { settings.starred = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+  const maxIn = el("input", {
+    type: "number", min: "10", max: "500",
+    value: String(cfg.maxItems ?? 100), class: "text-input number-input",
+    "aria-label": "Max starred items",
+    onChange: (e) => {
+      const v = parseInt(e.target.value, 10);
+      if (!isNaN(v) && v >= 10 && v <= 500) {
+        settings.starred = { ...cfg, maxItems: v };
+        onChange(settings);
+      }
+    }
+  });
+  g.appendChild(row("Max items", "Hard cap; oldest entries drop off when exceeded (10–500).", maxIn));
+
+  const count = (cfg.items || []).length;
+  g.appendChild(row(
+    "Stored",
+    `${count} item${count === 1 ? "" : "s"} starred.`,
+    el("button", {
+      type: "button", class: "button button--ghost",
+      disabled: count === 0,
+      onClick: () => {
+        if (!cfg.items?.length) return;
+        const removed = cfg.items.slice();
+        settings.starred = { ...cfg, items: [] };
+        onChange(settings);
+        toastUndo(`Cleared ${removed.length} starred item${removed.length === 1 ? "" : "s"}.`, () => {
+          settings.starred = { ...cfg, items: removed };
+          onChange(settings);
+        });
+      }
+    }, [iconNode("trash", { size: 14 }), " Clear all"])
+  ));
   sec.appendChild(g);
   return sec;
 }

@@ -4218,10 +4218,29 @@ a {
   opacity: 0.5;
   cursor: not-allowed;
 }
-/* Make room for the action button on the right edge so long titles
-   don't underrun the icon. */
+/* Star toggle — same shape as save, with a different "active" tint.
+   When both star + save buttons are present (RSS / News rows), the
+   star sits to the left of the save button. In the Starred panel
+   (only the unstar button) it claims the rightmost slot. */
+.feed-item__action--star.feed-item__action--starred {
+  color: var(--yellow, var(--peach));
+  border-color: color-mix(in srgb, var(--yellow, var(--peach)) 50%, var(--border-default));
+  opacity: 1;
+}
+.feed-item__action--star.feed-item__action--starred svg {
+  fill: currentColor;
+}
+.feed-item:has(.feed-item__action--save) .feed-item__action--star {
+  right: calc(var(--s-2) + 36px);
+}
+
+/* Make room for action buttons on the right edge so long titles
+   don't underrun the icons. Two-button rows need 32px more reserved. */
 .feed-item:has(.feed-item__action) > a {
   padding-right: calc(var(--s-2) + 32px);
+}
+.feed-item:has(.feed-item__action--save):has(.feed-item__action--star) > a {
+  padding-right: calc(var(--s-2) + 68px);
 }
 
 .feed-item a:hover .feed-item__title {
