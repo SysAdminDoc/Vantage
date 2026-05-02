@@ -7548,6 +7548,105 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   color: var(--overlay2);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   RTL (Right-to-Left) Support — v1.0.0 foundation
+   Arabic, Hebrew, Persian, Urdu
+   ═══════════════════════════════════════════════════════════ */
+
+html[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Critical UI surfaces: replace physical with logical properties */
+
+html[dir="rtl"] .settings-panel__body {
+  padding-right: var(--s-5);
+  padding-left: var(--s-5);
+}
+
+html[dir="rtl"] .utility-bar {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .airquality-mount {
+  margin-left: var(--s-2);
+  margin-right: 0;
+}
+
+html[dir="rtl"] .toast-host {
+  left: var(--s-4);
+  right: auto;
+}
+
+html[dir="rtl"] .skip-to-main:focus-visible {
+  left: auto;
+  right: var(--s-4);
+}
+
+html[dir="rtl"] .quicklink {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .icon-button {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .settings-search-wrap {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+html[dir="rtl"] .accent-swatch {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .compose__row {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .item-list__row {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .item-list__row-content {
+  text-align: right;
+}
+
+html[dir="rtl"] .onboard-optional {
+  margin-left: auto;
+}
+
+html[dir="rtl"] .note-actions {
+  justify-content: flex-start;
+}
+
+html[dir="rtl"] .countdown-item {
+  border-left: none;
+  border-right: 3px solid transparent;
+}
+
+html[dir="rtl"] .countdown-item--blue   { border-right-color: var(--blue);   }
+html[dir="rtl"] .countdown-item--green  { border-right-color: var(--green);  }
+html[dir="rtl"] .countdown-item--yellow { border-right-color: var(--yellow); }
+html[dir="rtl"] .countdown-item--red    { border-right-color: var(--red);    }
+html[dir="rtl"] .countdown-item--mauve  { border-right-color: var(--mauve);  }
+html[dir="rtl"] .countdown-item--peach  { border-right-color: var(--peach);  }
+
+html[dir="rtl"] .countdown-item .icon-button--tiny {
+  left: var(--s-2);
+  right: auto;
+}
+
+html[dir="rtl"] .crypto-price,
+html[dir="rtl"] .crypto-change {
+  text-align: left;
+}
+
+html[dir="rtl"] .workflow-pill {
+  flex-direction: row-reverse;
+}
+
 .visual-state-badge strong {
   color: var(--text);
   font-weight: 650;
