@@ -27,6 +27,7 @@ export async function renderFeedList(mount, options) {
     onDragHandleAttach,   // (handleEl) => void; lets caller wire panel-level drag
     onToggleStar,         // (item) => Promise<boolean> | boolean — returns new starred state
     starredSet,           // Set<canonicalUrl> — pre-computed by caller for O(1) lookup
+    onItemsLoaded,        // (mergedItems) => void — called after dedupe + sort, before render
     emptyHint = "Add a feed in settings to get started.",
     initiator
   } = options;
@@ -127,6 +128,13 @@ export async function renderFeedList(mount, options) {
     const bt = b.published?.getTime() ?? 0;
     return bt - at;
   });
+
+  // Hook for keyword alerts / future side-effects on the merged item set.
+  // Errors here must not break rendering, so swallow them after logging.
+  if (onItemsLoaded) {
+    try { onItemsLoaded(merged); }
+    catch (err) { console.warn("[feed-list] onItemsLoaded threw:", err); }
+  }
 
   clear(listHost);
 

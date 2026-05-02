@@ -3,6 +3,7 @@
 import { renderFeedList } from "./feed-list.js";
 import { saveSettings, pushRead } from "../storage.js";
 import { toggleStar, canonicalize as canonicalizeStarred } from "../utils/starred-feed.js";
+import { findAlertMatches, fireAlerts, markNotified } from "../utils/feed-alerts.js";
 
 export function renderRss(mount, settings, { onAttachDragHandle } = {}) {
   if (!settings.rss.enabled) {
@@ -34,6 +35,15 @@ export function renderRss(mount, settings, { onAttachDragHandle } = {}) {
       const nowStarred = toggleStar(settings, { ...item, url: item.link });
       await saveSettings(settings);
       return nowStarred;
+    },
+    onItemsLoaded: async (items) => {
+      const matches = findAlertMatches(items, settings.feedAlerts);
+      if (!matches.length) return;
+      const fired = fireAlerts(matches);
+      if (fired.length) {
+        markNotified(settings.feedAlerts, fired);
+        await saveSettings(settings);
+      }
     },
     onDragHandleAttach: onAttachDragHandle
   });

@@ -91,6 +91,15 @@ const DEFAULTS = {
   feedFilters: {
     rules: []                // [{ id, pattern, field:"title"|"url", action:"mute"|"highlight", color:null }]
   },
+  feedAlerts: {
+    // Web Notifications when a feed item title contains a user-supplied
+    // keyword. Strict opt-in (default off + permission prompt). Only
+    // notifies once per URL via the notifiedUrls LRU.
+    enabled: false,
+    keywords: [],            // string[] — case-insensitive substring matches by default
+    caseSensitive: false,
+    notifiedUrls: []         // LRU of already-notified item URLs (cap 500)
+  },
   airquality: {
     enabled: false
   },
