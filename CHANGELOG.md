@@ -4,6 +4,8 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 
 ## Unreleased
 
+## v0.10.0 — 2026-05-02
+
 ### Added
 - **CoinGecko demo API key** — Crypto widget now sends `x-cg-demo-api-key` when a key is provided in Settings → Crypto. CoinGecko's public demo tier rate-limits keyless requests so aggressively that the panel was effectively broken; the widget now routes 401 / 429 responses to a dedicated prompt with the sign-up link instead of a generic error. Empty CoinGecko responses (delisted IDs, typos) render an actionable empty-state instead of the misleading "Updated …" footer over an empty table.
 - **Weather chip enrichment** — Open-Meteo's `current=` query now also fetches `apparent_temperature`, `precipitation_probability`, `dew_point_2m`, `relative_humidity_2m`, and `visibility`. The chip surfaces a "feels N°" pill when |apparent − actual| ≥ 3°, a "💧 N%" pill when precipitation probability ≥ 30%, and rolls dew + humidity + visibility into the hover title (visibility is converted between km / mi based on the user's chosen temperature units).
