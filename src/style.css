@@ -370,6 +370,14 @@
     outline-width: 3px;
     outline-offset: 3px;
   }
+
+  /* Ghost buttons normally hover to a transparent border; under
+     high-contrast we promote it to --border-default so the hovered
+     hit-area is still legible against image/animated backgrounds. */
+  .button--ghost:hover,
+  .icon-button--ghost:hover {
+    border-color: var(--border-default);
+  }
 }
 
 /* ============================================================
