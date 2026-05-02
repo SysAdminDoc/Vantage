@@ -4,6 +4,7 @@
  * Usage:
  *   const msg = i18n('appName')  // Returns localized string
  *   const msg = i18n('noItems', ['bookmarks'])  // With placeholders
+ *   setupRTL()  // Initialize RTL support on page load
  */
 
 export function i18n(messageKey, substitutions = null) {
@@ -27,4 +28,20 @@ export function getLanguage() {
 export function isRTL() {
   const lang = getLanguage();
   return ['ar', 'he', 'fa', 'ur'].includes(lang);
+}
+
+/**
+ * Apply RTL layout when active language is right-to-left.
+ * Call this on page load (in main.js init).
+ */
+export function setupRTL() {
+  const htmlEl = document.documentElement;
+  
+  if (isRTL()) {
+    htmlEl.setAttribute('dir', 'rtl');
+    htmlEl.setAttribute('lang', getLanguage());
+  } else {
+    htmlEl.setAttribute('dir', 'ltr');
+    htmlEl.setAttribute('lang', 'en');
+  }
 }

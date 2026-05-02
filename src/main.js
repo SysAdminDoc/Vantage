@@ -2,6 +2,7 @@
 
 import { loadSettings, saveSettings, onSettingsChanged, hasStoredSettings } from "./storage.js";
 import { iconNode } from "./icons.js";
+import { setupRTL } from "./utils/i18n.js";
 import { renderSearch }     from "./widgets/search.js";
 import { renderGreeting }   from "./widgets/clock.js";
 import { renderWeather }    from "./widgets/weather.js";
@@ -68,6 +69,9 @@ async function init() {
   // Wire global error listeners FIRST so any failure in init() itself
   // gets logged for the Copy-debug-log button to surface.
   attachErrorListeners();
+  
+  // Setup RTL support if browser language is right-to-left (v1.0.0)
+  setupRTL();
 
   // Handle shared-config URL fragment (#import=<base64-json>) — gated
   // through the partial-import dialog so users see what would change
