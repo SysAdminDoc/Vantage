@@ -1277,6 +1277,11 @@ function buildFeedArchiveSection(settings, onChange) {
         ]));
       }
       resultsHost.appendChild(list);
+      // Custom Highlights API — paint match ranges via CSS::highlight
+      // without wrapping <mark> elements (no DOM mutation, no
+      // repaint cost on long lists). Chrome 105+, Safari 17.2+,
+      // Firefox 140+. Falls through silently otherwise.
+      paintSearchHighlights(list, searchInput.value.trim());
     } catch (err) {
       if (token !== lastQueryToken) return;
       clear(resultsHost);
@@ -1355,6 +1360,46 @@ function buildFeedPreWarmSection(settings, onChange) {
 
   sec.appendChild(g);
   return sec;
+}
+
+/** Paint substring matches in the archive search results via the
+ *  Custom Highlights API (CSS Highlight + CSS.highlights registry).
+ *  Falls through silently when the API is unavailable (older Chrome,
+ *  Firefox < 140) — the rendered text stays unchanged. The companion
+ *  `::highlight(vantage-search)` rule in style.css gives the matches
+ *  their accent-tinted background. */
+function paintSearchHighlights(rootEl, needle) {
+  const HIGHLIGHT_KEY = "vantage-search";
+  // Always clear the previous highlight so stale ranges don't paint
+  // through the next render.
+  if (typeof CSS !== "undefined" && CSS.highlights) {
+    CSS.highlights.delete(HIGHLIGHT_KEY);
+  }
+  if (!needle || typeof Highlight === "undefined" || !CSS?.highlights) return;
+  const lower = needle.toLowerCase();
+  const ranges = [];
+  const titleNodes = rootEl.querySelectorAll(".feed-archive-row__title");
+  for (const titleEl of titleNodes) {
+    const textNode = titleEl.firstChild;
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) continue;
+    const text = textNode.textContent.toLowerCase();
+    let pos = 0;
+    while (true) {
+      const idx = text.indexOf(lower, pos);
+      if (idx < 0) break;
+      try {
+        const range = new Range();
+        range.setStart(textNode, idx);
+        range.setEnd(textNode, idx + lower.length);
+        ranges.push(range);
+      } catch { /* malformed range — skip */ }
+      pos = idx + lower.length;
+    }
+  }
+  if (ranges.length) {
+    try { CSS.highlights.set(HIGHLIGHT_KEY, new Highlight(...ranges)); }
+    catch { /* unsupported overload — fall through */ }
+  }
 }
 
 /* ---- Workspaces -------------------------------------------------------- */
