@@ -46,7 +46,10 @@ export async function readErrorLog() {
 
 /** Format the buffer as a single text blob ready for clipboard paste
  *  into a GitHub issue. Adds a header with browser + extension version
- *  so we don't need users to gather it separately. */
+ *  so we don't need users to gather it separately. The whole entries
+ *  body is wrapped in a Markdown ```log``` fence so attacker-controlled
+ *  error text can't render as links / mentions / formatting when
+ *  pasted into GitHub / Slack / Discord / any markdown surface. */
 export async function formatErrorLog() {
   const entries = await readErrorLog();
   const chromeApi = globalThis.chrome;
@@ -54,19 +57,27 @@ export async function formatErrorLog() {
   const ua = navigator.userAgent || "unknown";
   const lines = [
     `# Vantage debug log`,
-    `version: ${manifest.version || "?"}`,
-    `userAgent: ${ua}`,
-    `entries: ${entries.length}`,
-    `generated: ${new Date().toISOString()}`,
-    ``
+    `- version: ${manifest.version || "?"}`,
+    `- userAgent: ${ua}`,
+    `- entries: ${entries.length}`,
+    `- generated: ${new Date().toISOString()}`,
+    ``,
+    "```log"
   ];
   for (const e of entries) {
-    lines.push(`[${e.ts}] ${e.source ? `(${e.source}) ` : ""}${e.message}`);
-    if (e.url) lines.push(`  at ${e.url}`);
-    if (e.stack) lines.push(`  ${e.stack.split("\n").slice(0, 5).join("\n  ")}`);
+    // Strip control chars so escape sequences don't survive into
+    // terminals or note-taking tools that render them.
+    const clean = (s) => String(s || "").replace(/[\u0000-\u001F\u007F]+/g, " ");
+    lines.push(`[${clean(e.ts)}] ${e.source ? `(${clean(e.source)}) ` : ""}${clean(e.message)}`);
+    if (e.url) lines.push(`  at ${clean(e.url)}`);
+    if (e.stack) lines.push(`  ${clean(e.stack).split("\n").slice(0, 5).join("\n  ")}`);
     lines.push("");
   }
-  return lines.join("\n");
+  // Defense in depth: if any entry happened to contain a literal
+  // ``` we'd close the fence early and the rest would render. Replace
+  // with a homoglyph so the fence stays intact.
+  const body = lines.slice(6).join("\n").replace(/```/g, "ʼʼʼ");
+  return [...lines.slice(0, 6), body, "```"].join("\n");
 }
 
 /** Wipe the buffer. */
