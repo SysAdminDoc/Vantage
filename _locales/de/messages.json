@@ -1,0 +1,179 @@
+{
+  "appName": {
+    "message": "Vantage"
+  },
+  "appDesc": {
+    "message": "Neue Registerkarte — Zusammenstellbare, leistungsstarke NTP mit Wetter, Feeds, Lesezeichen, Kryptowährungen und mehr."
+  },
+  "customizeWidgets": {
+    "message": "Widgets anpassen"
+  },
+  "openSettings": {
+    "message": "Einstellungen öffnen"
+  },
+  "searchPlaceholder": {
+    "message": "Im Web suchen..."
+  },
+  "searchWeb": {
+    "message": "Im Web suchen"
+  },
+  "skipToMain": {
+    "message": "Zum Hauptinhalt springen"
+  },
+  "quickLinks": {
+    "message": "Schnelllinks"
+  },
+  "addLink": {
+    "message": "Link hinzufügen"
+  },
+  "topSites": {
+    "message": "Top-Seiten"
+  },
+  "weather": {
+    "message": "Wetter"
+  },
+  "quote": {
+    "message": "Zitat"
+  },
+  "news": {
+    "message": "Nachrichten"
+  },
+  "feeds": {
+    "message": "Feeds"
+  },
+  "bookmarks": {
+    "message": "Lesezeichen"
+  },
+  "calendar": {
+    "message": "Kalender"
+  },
+  "todo": {
+    "message": "Aufgaben"
+  },
+  "notes": {
+    "message": "Notizen"
+  },
+  "clock": {
+    "message": "Uhr"
+  },
+  "pomodoro": {
+    "message": "Pomodoro"
+  },
+  "crypto": {
+    "message": "Krypto"
+  },
+  "settings": {
+    "message": "Einstellungen"
+  },
+  "appearanceTab": {
+    "message": "Darstellung"
+  },
+  "contentTab": {
+    "message": "Inhalt"
+  },
+  "dataTab": {
+    "message": "Daten"
+  },
+  "darkMode": {
+    "message": "Dunkler Modus"
+  },
+  "lightMode": {
+    "message": "Heller Modus"
+  },
+  "accentColor": {
+    "message": "Akzentfarbe"
+  },
+  "theme": {
+    "message": "Thema"
+  },
+  "background": {
+    "message": "Hintergrund"
+  },
+  "close": {
+    "message": "Schließen"
+  },
+  "save": {
+    "message": "Speichern"
+  },
+  "cancel": {
+    "message": "Abbrechen"
+  },
+  "delete": {
+    "message": "Löschen"
+  },
+  "edit": {
+    "message": "Bearbeiten"
+  },
+  "add": {
+    "message": "Hinzufügen"
+  },
+  "export": {
+    "message": "Exportieren"
+  },
+  "import": {
+    "message": "Importieren"
+  },
+  "confirmDelete": {
+    "message": "Bist du sicher?"
+  },
+  "noResults": {
+    "message": "Keine Ergebnisse"
+  },
+  "loading": {
+    "message": "Wird geladen..."
+  },
+  "error": {
+    "message": "Ein Fehler ist aufgetreten"
+  },
+  "success": {
+    "message": "Erfolg"
+  },
+  "copied": {
+    "message": "Kopiert"
+  },
+  "language": {
+    "message": "Sprache"
+  },
+  "english": {
+    "message": "Englisch"
+  },
+  "spanish": {
+    "message": "Spanisch"
+  },
+  "german": {
+    "message": "Deutsch"
+  },
+  "french": {
+    "message": "Französisch"
+  },
+  "japanese": {
+    "message": "Japanisch"
+  },
+  "help": {
+    "message": "Hilfe"
+  },
+  "about": {
+    "message": "Über"
+  },
+  "readMore": {
+    "message": "Mehr erfahren"
+  },
+  "viewAll": {
+    "message": "Alles ansehen"
+  },
+  "url": {
+    "message": "URL"
+  },
+  "title": {
+    "message": "Titel"
+  },
+  "description": {
+    "message": "Beschreibung"
+  },
+  "label": {
+    "message": "Etikett"
+  },
+  "name": {
+    "message": "Name"
+  }
+}
