@@ -1,7 +1,8 @@
-// Vantage — Browser Bookmarks panel widget.
+// Vantage → v1.0.0 — Browser Bookmarks panel widget + favicon caching.
 
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
+import { getFaviconUrl } from "../utils/favicon-cache.js";
 
 export function renderBookmarks(mount, settings, { onAttachDragHandle } = {}) {
   clear(mount);
@@ -43,17 +44,29 @@ export function renderBookmarks(mount, settings, { onAttachDragHandle } = {}) {
     }
     const grid = el("div", { class: "bookmarks-grid" });
     for (const bm of flat) {
-      const favicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(bm.url)}&sz=32`;
       const item = el("a", {
         href: bm.url,
         class: "bookmark-item",
         title: bm.title || bm.url,
         "aria-label": bm.title || bm.url
       }, [
-        el("img", { src: favicon, class: "bookmark-favicon", width: "16", height: "16", "aria-hidden": "true",
+        el("img", { src: "", class: "bookmark-favicon", width: "16", height: "16", "aria-hidden": "true",
           onError: (e) => { e.target.style.display = "none"; } }),
         el("span", { class: "bookmark-title" }, [bm.title || "Untitled"])
       ]);
+      
+      // Populate favicon asynchronously using cache
+      const imgEl = item.querySelector("img");
+      getFaviconUrl(bm.url).then(dataUrl => {
+        if (dataUrl) {
+          imgEl.src = dataUrl;
+        } else {
+          imgEl.style.display = "none";
+        }
+      }).catch(() => {
+        imgEl.style.display = "none";
+      });
+      
       grid.appendChild(item);
     }
     body.appendChild(grid);
