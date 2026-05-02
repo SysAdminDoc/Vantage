@@ -635,18 +635,19 @@ a {
   position: absolute;
   inset: auto;
   margin: 0;
-  padding: var(--s-2) var(--s-3);
+  padding: var(--s-3) var(--s-3);
   background: var(--surface0);
   border: 1px solid var(--border-default);
   border-radius: var(--r-md);
   color: var(--text);
-  font-size: var(--text-sm);
-  line-height: 1.4;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 1.5;
   white-space: nowrap;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   z-index: 1000;
   pointer-events: none;
-  max-width: 300px;
+  max-width: 320px;
   word-wrap: break-word;
   white-space: normal;
 }
@@ -4211,10 +4212,10 @@ a {
 .weather-forecast {
   display: grid;
   gap: var(--s-3);
-  padding: var(--s-3) var(--s-4);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-lg);
+  padding: var(--s-4) 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   margin-top: var(--s-3);
 }
 
@@ -4223,44 +4224,50 @@ a {
   grid-template-columns: 60px 80px 1fr 2fr;
   gap: var(--s-3);
   align-items: center;
-  padding: var(--s-2) var(--s-3);
+  padding: var(--s-3) var(--s-4);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
-  background: var(--surface0);
-  transition: background var(--t-fast);
+  border-radius: var(--r-3);
+  background: var(--bg-elevated);
+  transition: all var(--t-fast);
+  box-shadow: var(--shadow-sm);
 }
 
 .weather-forecast__day:hover {
-  background: var(--surface1);
+  background: color-mix(in srgb, var(--surface1) 70%, transparent);
+  border-color: var(--border-default);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .weather-forecast__date {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   text-align: center;
 }
 
 .weather-forecast__day-name {
-  font-weight: 600;
+  font-weight: 700;
   font-size: var(--text-base);
   color: var(--text);
+  letter-spacing: -0.2px;
 }
 
 .weather-forecast__date-label {
   font-size: var(--text-xs);
   color: var(--subtext1);
+  font-weight: 500;
 }
 
 .weather-forecast__condition {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .weather-forecast__icon {
-  font-size: 24px;
+  font-size: 28px;
   line-height: 1;
 }
 
@@ -4268,34 +4275,37 @@ a {
   font-size: var(--text-xs);
   color: var(--subtext0);
   text-align: center;
-  max-width: 60px;
+  max-width: 70px;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 500;
 }
 
 .weather-forecast__temps {
   display: flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 6px;
   justify-content: center;
 }
 
 .weather-forecast__high {
-  font-weight: 600;
+  font-weight: 700;
   font-size: var(--text-base);
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
 
 .weather-forecast__low {
-  color: var(--subtext1);
+  color: var(--subtext0);
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
+  font-weight: 500;
 }
 
 .weather-forecast__separator {
-  color: var(--subtext2);
+  color: var(--surface1);
   font-size: var(--text-sm);
+  font-weight: 300;
 }
 
 .weather-forecast__details {
@@ -4309,11 +4319,12 @@ a {
 .weather-forecast__detail-item {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px 6px;
-  background: color-mix(in srgb, var(--surface1) 50%, transparent);
-  border-radius: var(--r-sm);
+  gap: 4px;
+  padding: 3px 8px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-radius: var(--r-pill);
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .weather-forecast--skeleton {
@@ -4790,34 +4801,53 @@ a {
    centered and clearly secondary. */
 .panel-empty {
   margin: 0;
-  padding: var(--s-5) var(--s-3);
+  padding: var(--s-5) var(--s-4);
   text-align: center;
   font-size: var(--text-sm);
   color: var(--subtext0);
-  line-height: 1.5;
+  line-height: 1.6;
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--s-2);
+  font-weight: 500;
+}
+
+.panel-empty p {
+  margin: 0;
 }
 
 /* Panel error state — same layout as panel-empty but signals failure
    with a tinted accent so users know it's not just "nothing here". */
 .panel-error {
   margin: 0;
-  padding: var(--s-4) var(--s-3);
+  padding: var(--s-5) var(--s-4);
   text-align: center;
   font-size: var(--text-sm);
   color: var(--red);
-  line-height: 1.5;
-  background: color-mix(in srgb, var(--red) 8%, transparent);
+  line-height: 1.6;
+  background: color-mix(in srgb, var(--red) 10%, transparent);
   border-radius: var(--r-2);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  font-weight: 500;
+  border: 1px dashed color-mix(in srgb, var(--red) 25%, transparent);
+}
+
+.panel-error p {
+  margin: 0;
 }
 
 /* Refresh spinner state on icon button */
 
 .icon-button[data-loading="true"] svg {
-  animation: spin 0.9s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -4846,18 +4876,18 @@ a {
 .context-menu {
   position: fixed;
   z-index: 130;
-  min-width: 220px;
-  max-width: 320px;
+  min-width: 240px;
+  max-width: 340px;
   /* Cap height to viewport so a tall menu on a short tab gets a scroll
      instead of clipping items off-screen. The auto-position flip
      above already handles wide menus. */
   max-height: calc(100vh - 16px);
   overflow-y: auto;
-  padding: var(--s-1);
+  padding: var(--s-2);
   background: var(--bg-canvas);
   border: 1px solid var(--border-default);
-  border-radius: var(--r-2);
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--r-3);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   outline: none;
@@ -4869,32 +4899,34 @@ a {
   gap: var(--s-2);
   padding: var(--s-2) var(--s-3);
   background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--r-1);
+  border: none;
+  border-radius: var(--r-2);
   color: var(--text);
   font-size: var(--text-sm);
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: background var(--t-fast), color var(--t-fast);
+  transition: all var(--t-micro);
 }
 .context-menu__item:hover:not(:disabled),
 .context-menu__item:focus-visible:not(:disabled) {
-  background: var(--bg-button-hover);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-button-hover));
   color: var(--accent);
   outline: none;
 }
 .context-menu__item--disabled,
 .context-menu__item:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
 .context-menu__icon {
   display: inline-flex;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
   color: var(--subtext1);
+  font-size: 16px;
 }
 .context-menu__item:hover .context-menu__icon,
 .context-menu__item:focus-visible .context-menu__icon {
