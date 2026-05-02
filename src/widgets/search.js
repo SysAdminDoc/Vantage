@@ -5,6 +5,24 @@ import { el, clear } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
 import { SEARCH_ENGINES, buildSearchUrl } from "../search-engines.js";
 
+/** Build the placeholder string for the search input from the active engine.
+ *  Custom engines surface the host so users can verify which destination
+ *  their typed query will hit (e.g. "Search example.com"). */
+function placeholderFor(engineKey, customUrl) {
+  if (engineKey === "custom") {
+    try {
+      if (customUrl && customUrl.includes("%s")) {
+        const host = new URL(customUrl).hostname.replace(/^www\./, "");
+        if (host) return `Search ${host}`;
+      }
+    } catch { /* malformed customUrl — fall through */ }
+    return "Search the web";
+  }
+  const engine = SEARCH_ENGINES[engineKey];
+  if (!engine) return "Search the web";
+  return `Search ${engine.name}`;
+}
+
 export function renderSearch(mount, settings, onChange) {
   clear(mount);
 
@@ -12,7 +30,7 @@ export function renderSearch(mount, settings, onChange) {
     class: "search-input",
     type: "search",
     name: "q",
-    placeholder: "Search the web",
+    placeholder: placeholderFor(settings.search.engine, settings.search.customUrl),
     "aria-label": "Search query",
     autocomplete: "off",
     autocapitalize: "none",
@@ -30,7 +48,11 @@ export function renderSearch(mount, settings, onChange) {
   input.addEventListener("focus", () => { kbd.style.visibility = "hidden"; });
   input.addEventListener("blur",  () => { if (!input.value) kbd.style.visibility = ""; });
 
-  const enginePicker = buildEnginePicker(settings, onChange, () => input.focus());
+  const enginePicker = buildEnginePicker(settings, onChange, () => input.focus(), () => {
+    // Re-derive placeholder when the engine changes — keeps the input in sync
+    // without a full re-mount.
+    input.placeholder = placeholderFor(settings.search.engine, settings.search.customUrl);
+  });
 
   const form = el("form", {
     class: "search-form",
@@ -55,7 +77,7 @@ export function renderSearch(mount, settings, onChange) {
   });
 }
 
-function buildEnginePicker(settings, onChange, refocusInput) {
+function buildEnginePicker(settings, onChange, refocusInput, onEngineChange) {
   const picker = el("div", { class: "engine-picker" });
 
   const trigger = el("button", {
@@ -129,6 +151,7 @@ function buildEnginePicker(settings, onChange, refocusInput) {
       child.setAttribute("aria-selected", String(child.dataset.engine === key));
     }
     closePopover();
+    onEngineChange?.(key);
     refocusInput?.();
   };
 
