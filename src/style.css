@@ -622,6 +622,54 @@ a {
 }
 
 /* ============================================================
+   Popover hints (native Popover API, Interop 2026)
+   ============================================================ */
+
+/* The popover="hint" attribute provides non-dismissible tooltips
+   that close only on focus/hover leave. This is progressively
+   enhanced with native browser support (Chrome 126+, Firefox 152+,
+   Safari 27+ at Interop 2026). Fallback to title="" attribute
+   is handled in JS for older browsers. */
+
+[popover="hint"] {
+  position: absolute;
+  inset: auto;
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface0);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+  pointer-events: none;
+  max-width: 300px;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.popover-hint {
+  position: absolute;
+  inset: auto;
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface0);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+  pointer-events: none;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+/* ============================================================
    Animated weather + time-of-day background
    ============================================================ */
 
