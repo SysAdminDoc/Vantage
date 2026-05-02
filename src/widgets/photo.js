@@ -64,10 +64,45 @@ async function loadNasa(body, apiKey) {
     const data = await resp.json();
     body.innerHTML = "";
     if (data.media_type !== "image") {
-      body.appendChild(el("p", { class: "panel-empty" }, [
-        "Today\u2019s APOD is a video. ",
-        el("a", { href: data.url, target: "_blank", rel: "noopener noreferrer" }, ["Watch it here"])
-      ]));
+      // APOD video days happen ~1× / month. Render the official
+      // thumbnail (when NASA includes one) with a play badge so the
+      // panel still feels visual instead of an empty hint with a bare
+      // text link. Falls back gracefully if `thumbnail_url` is absent.
+      const wrap = el("a", {
+        href: data.url || "https://apod.nasa.gov/apod/",
+        target: "_blank",
+        rel: "noopener noreferrer",
+        class: "photo-video-fallback",
+        "aria-label": `Watch ${data.title || "today's APOD video"}`
+      });
+      if (data.thumbnail_url) {
+        const thumb = el("img", {
+          src: data.thumbnail_url,
+          class: "photo-img",
+          alt: data.title || "NASA APOD video thumbnail",
+          loading: "lazy"
+        });
+        thumb.addEventListener("load", () => { thumb.dataset.loaded = "true"; });
+        wrap.appendChild(thumb);
+        const overlay = el("span", { class: "photo-video-fallback__overlay", "aria-hidden": "true" }, [
+          iconNode("play", { size: 28 })
+        ]);
+        wrap.appendChild(overlay);
+      } else {
+        wrap.appendChild(el("span", { class: "photo-video-fallback__icon", "aria-hidden": "true" }, [
+          iconNode("play", { size: 28 })
+        ]));
+        wrap.appendChild(el("span", { class: "photo-video-fallback__label" }, [
+          "Today\u2019s APOD is a video — open in a new tab"
+        ]));
+      }
+      const credit = el("div", { class: "photo-credit" }, [
+        el("strong", {}, [data.title || "Astronomy Picture of the Day"]),
+        " — NASA APOD video",
+        data.copyright ? ` © ${data.copyright.trim()}` : ""
+      ]);
+      body.appendChild(wrap);
+      body.appendChild(credit);
       return;
     }
     const img = el("img", {
