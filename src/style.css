@@ -3537,6 +3537,63 @@ a {
   padding: 6px 6px 6px var(--s-2);
   box-shadow: var(--shadow-md);
   transition: border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
+  position: relative;
+}
+
+/* Quick-pick popover for one-shot per-query engine switching. Anchored
+   beneath the search form; pick fires the search to the chosen engine
+   without changing the saved default. */
+.quickpick {
+  position: absolute;
+  top: calc(100% + var(--s-2));
+  left: 0;
+  right: 0;
+  z-index: 60;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-3);
+  box-shadow: var(--shadow-lg);
+  padding: var(--s-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.quickpick__title {
+  font-size: var(--text-sm);
+  color: var(--subtext0);
+  padding: 0 var(--s-1);
+}
+.quickpick__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--s-1);
+}
+.quickpick__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-2);
+  color: var(--text);
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.quickpick__item:hover,
+.quickpick__item:focus-visible {
+  background: var(--bg-button-hover);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border-default));
+  color: var(--accent);
+  outline: none;
+}
+.quickpick__hint {
+  font-size: var(--text-xs);
+  color: var(--subtext0);
+  padding: 0 var(--s-1);
+  text-align: right;
 }
 
 .search-form:focus-within {
