@@ -3,6 +3,123 @@
    Catppuccin Mocha (default), Macchiato, Frappe + Latte
    ============================================================ */
 
+/* CSS Media Features Level 5: :dark, :light, :no-preference
+   Fallback color system when system preference is available but
+   JS hasn't yet applied data-theme. Chrome 148+, Firefox 151+,
+   Safari 27+ (Interop 2026). These apply ONLY if data-theme is
+   not set, so the JS-driven system takes precedence. */
+@supports selector(:dark) {
+  :dark {
+    /* Default to Mocha (dark) when system prefers dark and JS hasn't run */
+    --base: #1e1e2e;
+    --mantle: #181825;
+    --crust: #11111b;
+    --surface0: #313244;
+    --surface1: #45475a;
+    --surface2: #585b70;
+    --overlay0: #6c7086;
+    --overlay1: #7f849c;
+    --overlay2: #9399b2;
+    --text: #cdd6f4;
+    --subtext1: #bac2de;
+    --subtext0: #a6adc8;
+    --rosewater: #f5e0dc;
+    --flamingo: #f2cdcd;
+    --pink: #f5c2e7;
+    --mauve: #cba6f7;
+    --red: #f38ba8;
+    --maroon: #eba0ac;
+    --peach: #fab387;
+    --yellow: #f9e2af;
+    --green: #a6e3a1;
+    --teal: #94e2d5;
+    --sky: #89dceb;
+    --sapphire: #74c7ec;
+    --blue: #89b4fa;
+    --lavender: #b4befe;
+    --bg-canvas: var(--base);
+    --bg-elevated: color-mix(in srgb, var(--mantle) 90%, transparent);
+    --bg-overlay: color-mix(in srgb, var(--surface0) 70%, transparent);
+    --bg-input: color-mix(in srgb, var(--crust) 70%, transparent);
+    --bg-input-hover: color-mix(in srgb, var(--crust) 90%, transparent);
+    --bg-button: color-mix(in srgb, var(--surface0) 70%, transparent);
+    --bg-button-hover: color-mix(in srgb, var(--surface1) 80%, transparent);
+    --bg-readability-overlay:
+      radial-gradient(900px 520px at 50% 28%, rgba(0, 0, 0, 0.05), transparent 62%),
+      linear-gradient(180deg, rgba(8, 9, 18, 0.18), rgba(8, 9, 18, 0.08) 45%, rgba(8, 9, 18, 0.26));
+    --hero-text-shadow: 0 2px 18px rgba(0, 0, 0, 0.42);
+    --border-subtle: color-mix(in srgb, var(--surface0) 60%, transparent);
+    --border-default: color-mix(in srgb, var(--surface1) 65%, transparent);
+    --border-strong: var(--surface2);
+    --border-focus: var(--accent);
+    --accent: var(--mauve);
+    --accent-secondary: var(--blue);
+    --accent-strong: color-mix(in srgb, var(--mauve) 92%, white);
+    --accent-fg: var(--crust);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.30);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.40);
+    --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.50);
+    --ring: 0 0 0 2px var(--bg-canvas), 0 0 0 4px var(--accent);
+  }
+}
+
+@supports selector(:light) {
+  :light {
+    /* Default to Latte (light) when system prefers light and JS hasn't run */
+    --base: #eff1f5;
+    --mantle: #e6e9ef;
+    --crust: #dce0e8;
+    --surface0: #ccd0da;
+    --surface1: #bcc0cc;
+    --surface2: #acb0be;
+    --overlay0: #9ca0b0;
+    --overlay1: #8b8fa3;
+    --overlay2: #7c8096;
+    --text: #4c4f69;
+    --subtext1: #5c5f77;
+    --subtext0: #6c6f85;
+    --rosewater: #dc8a78;
+    --flamingo: #dd7986;
+    --pink: #ea76cb;
+    --mauve: #8839ef;
+    --red: #d20f39;
+    --maroon: #e64553;
+    --peach: #fe640b;
+    --yellow: #df8e1d;
+    --green: #40a02b;
+    --teal: #179299;
+    --sky: #04a5e5;
+    --sapphire: #209fb5;
+    --blue: #1e66f5;
+    --lavender: #7287fd;
+    --bg-canvas: var(--base);
+    --bg-elevated: color-mix(in srgb, var(--mantle) 90%, transparent);
+    --bg-overlay: color-mix(in srgb, var(--surface0) 70%, transparent);
+    --bg-input: color-mix(in srgb, var(--crust) 70%, transparent);
+    --bg-input-hover: color-mix(in srgb, var(--crust) 90%, transparent);
+    --bg-button: color-mix(in srgb, var(--surface0) 70%, transparent);
+    --bg-button-hover: color-mix(in srgb, var(--surface1) 80%, transparent);
+    --bg-readability-overlay:
+      radial-gradient(900px 520px at 50% 28%, rgba(255, 255, 255, 0.05), transparent 62%),
+      linear-gradient(180deg, rgba(240, 240, 245, 0.18), rgba(240, 240, 245, 0.08) 45%, rgba(240, 240, 245, 0.26));
+    --hero-text-shadow: 0 2px 18px rgba(255, 255, 255, 0.32);
+    --border-subtle: color-mix(in srgb, var(--surface0) 60%, transparent);
+    --border-default: color-mix(in srgb, var(--surface1) 65%, transparent);
+    --border-strong: var(--surface2);
+    --border-focus: var(--accent);
+    --accent: var(--mauve);
+    --accent-secondary: var(--blue);
+    --accent-strong: color-mix(in srgb, var(--mauve) 86%, black);
+    --accent-fg: var(--base);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.12);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.20);
+    --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.28);
+    --ring: 0 0 0 2px var(--bg-canvas), 0 0 0 4px var(--accent);
+  }
+}
+
 :root,
 [data-theme="mocha"] {
   /* Catppuccin Mocha */
