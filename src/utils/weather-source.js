@@ -161,6 +161,50 @@ export function detectLocation() {
   });
 }
 
+/**
+ * Fetch the 5-day extended daily forecast from Open-Meteo.
+ * Returns min/max temperatures, UV index, precipitation, wind, sunrise/sunset,
+ * precipitation probability, and weather code for each day.
+ *
+ * @param {{latitude: number, longitude: number}} location
+ * @param {"fahrenheit"|"celsius"} units
+ * @returns {Promise<{daily: object, timezone: string}>}
+ */
+export async function getDailyForecast(location, units = "fahrenheit") {
+  const tempUnit = units === "celsius" ? "celsius" : "fahrenheit";
+  // The extended daily forecast caches independently from current conditions
+  // because users might toggle "show 5-day" without refetching current.
+  const key = `daily-${location.latitude},${location.longitude},${units}`;
+  const now = Date.now();
+
+  const hit = cache.get(key);
+  if (hit && (now - hit.ts) < TTL_MS) return hit.data;
+  if (inflight.has(key)) return inflight.get(key);
+
+  const url =
+    `https://api.open-meteo.com/v1/forecast` +
+    `?latitude=${location.latitude}&longitude=${location.longitude}` +
+    `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,uv_index_max,sunrise,sunset,wind_speed_10m_max` +
+    `&forecast_days=5` +
+    `&temperature_unit=${tempUnit}` +
+    `&timezone=auto`;
+
+  const fetchPromise = (async () => {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    cache.set(key, { ts: Date.now(), data });
+    inflight.delete(key);
+    return data;
+  })().catch((err) => {
+    inflight.delete(key);
+    throw err;
+  });
+
+  inflight.set(key, fetchPromise);
+  return fetchPromise;
+}
+
 /** City-name → lat/lon via Open-Meteo geocoding. */
 export async function geocodeCity(query) {
   const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
