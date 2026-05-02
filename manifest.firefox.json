@@ -37,6 +37,9 @@
     "contextualIdentities",
     "tabs"
   ],
+  "optional_permissions": [
+    "history"
+  ],
   "host_permissions": [
     "https://api.open-meteo.com/*",
     "https://geocoding-api.open-meteo.com/*",

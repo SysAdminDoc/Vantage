@@ -31,6 +31,9 @@
     "readingList",
     "sidePanel"
   ],
+  "optional_permissions": [
+    "history"
+  ],
   "side_panel": {
     "default_path": "sidepanel.html"
   },
