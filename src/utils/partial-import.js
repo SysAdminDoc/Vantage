@@ -22,6 +22,103 @@
 
 import { el, clear } from "./dom.js";
 
+// Detect and summarize nightTab backup format.
+// nightTab stores settings under root.nightTab.data (v7.x structure).
+// This detection runs before the section-checklist restore dialog to surface
+// migration mapping to users (nightTab is abandoned since Oct 2021, 2,032★).
+function detectNightTabBackup(imported) {
+  if (!imported || typeof imported !== "object") return null;
+  
+  // nightTab v7.x structure: root.nightTab.data contains the actual settings
+  const nightTabData = imported.nightTab?.data;
+  if (!nightTabData || typeof nightTabData !== "object") return null;
+  
+  // Looks like nightTab! Extract mappings.
+  const mapping = {
+    greeting: nightTabData.name || "(no name set)",
+    theme: nightTabData.theme === "dark" ? "Mocha" : nightTabData.theme === "light" ? "Latte" : "Custom",
+    links: Array.isArray(nightTabData.links) ? nightTabData.links.length : 0,
+    feeds: Array.isArray(nightTabData.feeds) ? nightTabData.feeds.length : 0
+  };
+  
+  return mapping;
+}
+
+// Show nightTab migration summary panel before the standard import dialog.
+// Returns the original imported object so the caller can proceed with the normal flow.
+function showNightTabMigrationSummary(mapping) {
+  return new Promise((resolve) => {
+    const dialog = el("div", { class: "import-dialog", role: "dialog", "aria-modal": "true", "aria-labelledby": "nighttab-title" });
+    const backdrop = el("div", { class: "import-dialog__backdrop" });
+    
+    const close = (result) => {
+      document.removeEventListener("keydown", onEscape);
+      backdrop.remove();
+      dialog.remove();
+      resolve(result);
+    };
+    const onEscape = (e) => { if (e.key === "Escape") close(false); };
+    document.addEventListener("keydown", onEscape);
+    backdrop.addEventListener("click", () => close(false));
+    
+    const header = el("header", { class: "import-dialog__header" }, [
+      el("h2", { id: "nighttab-title" }, ["nightTab detected!"]),
+      el("p", {}, ["Your backup looks like nightTab v7. Here's what will be imported:"])
+    ]);
+    
+    const list = el("div", { class: "import-dialog__sections" }, [
+      el("div", { class: "import-dialog__section", style: "cursor: default; border: 1px solid var(--border-subtle); background: color-mix(in srgb, var(--surface0) 20%, transparent);" }, [
+        el("div", { class: "import-dialog__section-text" }, [
+          el("span", { class: "import-dialog__section-title" }, ["Display name"]),
+          el("span", { class: "import-dialog__section-hint" }, [mapping.greeting])
+        ])
+      ]),
+      el("div", { class: "import-dialog__section", style: "cursor: default; border: 1px solid var(--border-subtle); background: color-mix(in srgb, var(--surface0) 20%, transparent);" }, [
+        el("div", { class: "import-dialog__section-text" }, [
+          el("span", { class: "import-dialog__section-title" }, ["Theme"]),
+          el("span", { class: "import-dialog__section-hint" }, [mapping.theme])
+        ])
+      ]),
+      el("div", { class: "import-dialog__section", style: "cursor: default; border: 1px solid var(--border-subtle); background: color-mix(in srgb, var(--surface0) 20%, transparent);" }, [
+        el("div", { class: "import-dialog__section-text" }, [
+          el("span", { class: "import-dialog__section-title" }, ["Quick links"]),
+          el("span", { class: "import-dialog__section-hint" }, [`${mapping.links} links ready to migrate`])
+        ])
+      ]),
+      el("div", { class: "import-dialog__section", style: "cursor: default; border: 1px solid var(--border-subtle); background: color-mix(in srgb, var(--surface0) 20%, transparent);" }, [
+        el("div", { class: "import-dialog__section-text" }, [
+          el("span", { class: "import-dialog__section-title" }, ["Feeds"]),
+          el("span", { class: "import-dialog__section-hint" }, [`${mapping.feeds} feed(s) found`])
+        ])
+      ])
+    ]);
+    
+    const actions = el("footer", { class: "import-dialog__actions" }, [
+      el("span", { class: "import-dialog__spacer" }),
+      el("button", {
+        type: "button",
+        class: "button button--ghost",
+        onClick: () => close(false)
+      }, ["Cancel"]),
+      el("button", {
+        type: "button",
+        class: "button button--primary",
+        onClick: () => close(true)
+      }, ["Continue →"])
+    ]);
+    
+    dialog.appendChild(header);
+    dialog.appendChild(list);
+    dialog.appendChild(actions);
+    document.body.appendChild(backdrop);
+    document.body.appendChild(dialog);
+    
+    requestAnimationFrame(() => {
+      actions.querySelector(".button--primary").focus();
+    });
+  });
+}
+
 // Top-level setting keys → human-friendly section. Keys are grouped so
 // related state moves as a unit (you don't typically want "import
 // quicklinks but not their groups", for example).
@@ -96,7 +193,16 @@ const ALL_KEYS = new Set(SECTIONS.flatMap(s => s.keys));
  * @returns {Promise<object|null>}
  */
 export function showPartialImportDialog(current, imported, source) {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
+    // Check for nightTab backup and show migration summary if detected.
+    const nightTabMapping = detectNightTabBackup(imported);
+    if (nightTabMapping) {
+      const shouldContinue = await showNightTabMigrationSummary(nightTabMapping);
+      if (!shouldContinue) {
+        resolve(null);
+        return;
+      }
+    }
     // Detect which sections have anything DIFFERENT in imported. Sections
     // that are byte-identical to current are pre-unchecked because there's
     // nothing to restore there. Secret-only diffs (apiKey/nasaKey blanked
