@@ -4055,6 +4055,59 @@ a {
   flex-shrink: 0;
 }
 
+/* Tab Groups (v1.2.0): Pinned Tab Groups render as folder-like buttons with
+   color indicators. The color is determined by chrome.tabGroups.color. */
+.quicklink--tab-group {
+  position: relative;
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--accent) 8%, var(--bg-elevated)) 0%,
+    var(--bg-elevated) 100%);
+}
+
+.quicklink--tab-group::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: var(--r-pill) var(--r-pill) 0 0;
+  background: var(--accent);
+  opacity: 0.6;
+  transition: opacity var(--t-fast);
+}
+
+.quicklink--tab-group:hover::before {
+  opacity: 1;
+}
+
+/* Tab Group color indicators: each chrome.tabGroups.color maps to a hue */
+.tab-group-color--red,
+.tab-group-color--grey { --tg-color: #F28482; }
+.tab-group-color--yellow { --tg-color: #F9A825; }
+.tab-group-color--green { --tg-color: #7EC850; }
+.tab-group-color--blue { --tg-color: #33B1FF; }
+.tab-group-color--purple { --tg-color: #A371F7; }
+.tab-group-color--cyan { --tg-color: #37C8AB; }
+.tab-group-color--orange { --tg-color: #FF9800; }
+.tab-group-color--pink { --tg-color: #F472B6; }
+
+.quicklink--tab-group::before {
+  background: var(--tg-color, var(--accent));
+}
+
+.quicklink__tab-group-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: color-mix(in srgb, var(--tg-color, var(--accent)) 12%, transparent);
+  border-radius: var(--r-1);
+  color: var(--tg-color, var(--accent));
+  flex-shrink: 0;
+}
+
 /* Icon roundness variants: controlled via [data-icon-radius] */
 [data-icon-radius="square"] .quicklink__favicon {
   border-radius: 0;
@@ -5549,6 +5602,25 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 
 .compose__row .text-input {
   flex: 1;
+}
+
+/* Tab Groups section (v1.2.0): Pin Tab Groups from chrome.tabGroups API */
+
+.tab-groups-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4) 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.tab-groups-section .section-title {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--subtext1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Location chip in weather settings */
