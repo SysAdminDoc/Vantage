@@ -1,0 +1,179 @@
+{
+  "appName": {
+    "message": "Vantage"
+  },
+  "appDesc": {
+    "message": "新しいタブページ — 天気、フィード、ブックマーク、暗号通貨などを備えた構成可能でハイパフォーマンスのNTP。"
+  },
+  "customizeWidgets": {
+    "message": "ウィジェットをカスタマイズ"
+  },
+  "openSettings": {
+    "message": "設定を開く"
+  },
+  "searchPlaceholder": {
+    "message": "ウェブを検索..."
+  },
+  "searchWeb": {
+    "message": "ウェブを検索"
+  },
+  "skipToMain": {
+    "message": "メインコンテンツにスキップ"
+  },
+  "quickLinks": {
+    "message": "クイックリンク"
+  },
+  "addLink": {
+    "message": "リンクを追加"
+  },
+  "topSites": {
+    "message": "トップサイト"
+  },
+  "weather": {
+    "message": "天気"
+  },
+  "quote": {
+    "message": "引用"
+  },
+  "news": {
+    "message": "ニュース"
+  },
+  "feeds": {
+    "message": "フィード"
+  },
+  "bookmarks": {
+    "message": "ブックマーク"
+  },
+  "calendar": {
+    "message": "カレンダー"
+  },
+  "todo": {
+    "message": "やることリスト"
+  },
+  "notes": {
+    "message": "メモ"
+  },
+  "clock": {
+    "message": "時計"
+  },
+  "pomodoro": {
+    "message": "ポモドーロ"
+  },
+  "crypto": {
+    "message": "暗号"
+  },
+  "settings": {
+    "message": "設定"
+  },
+  "appearanceTab": {
+    "message": "外観"
+  },
+  "contentTab": {
+    "message": "コンテンツ"
+  },
+  "dataTab": {
+    "message": "データ"
+  },
+  "darkMode": {
+    "message": "ダークモード"
+  },
+  "lightMode": {
+    "message": "ライトモード"
+  },
+  "accentColor": {
+    "message": "アクセント色"
+  },
+  "theme": {
+    "message": "テーマ"
+  },
+  "background": {
+    "message": "背景"
+  },
+  "close": {
+    "message": "閉じる"
+  },
+  "save": {
+    "message": "保存"
+  },
+  "cancel": {
+    "message": "キャンセル"
+  },
+  "delete": {
+    "message": "削除"
+  },
+  "edit": {
+    "message": "編集"
+  },
+  "add": {
+    "message": "追加"
+  },
+  "export": {
+    "message": "エクスポート"
+  },
+  "import": {
+    "message": "インポート"
+  },
+  "confirmDelete": {
+    "message": "本当ですか？"
+  },
+  "noResults": {
+    "message": "結果なし"
+  },
+  "loading": {
+    "message": "読み込み中..."
+  },
+  "error": {
+    "message": "エラーが発生しました"
+  },
+  "success": {
+    "message": "成功"
+  },
+  "copied": {
+    "message": "コピーしました"
+  },
+  "language": {
+    "message": "言語"
+  },
+  "english": {
+    "message": "英語"
+  },
+  "spanish": {
+    "message": "スペイン語"
+  },
+  "german": {
+    "message": "ドイツ語"
+  },
+  "french": {
+    "message": "フランス語"
+  },
+  "japanese": {
+    "message": "日本語"
+  },
+  "help": {
+    "message": "ヘルプ"
+  },
+  "about": {
+    "message": "について"
+  },
+  "readMore": {
+    "message": "詳しく読む"
+  },
+  "viewAll": {
+    "message": "すべて表示"
+  },
+  "url": {
+    "message": "URL"
+  },
+  "title": {
+    "message": "タイトル"
+  },
+  "description": {
+    "message": "説明"
+  },
+  "label": {
+    "message": "ラベル"
+  },
+  "name": {
+    "message": "名前"
+  }
+}
