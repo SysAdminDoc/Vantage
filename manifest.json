@@ -28,8 +28,12 @@
     "alarms",
     "bookmarks",
     "topSites",
-    "readingList"
+    "readingList",
+    "sidePanel"
   ],
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
   "host_permissions": [
     "https://api.open-meteo.com/*",
     "https://geocoding-api.open-meteo.com/*",
