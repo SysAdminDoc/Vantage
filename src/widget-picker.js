@@ -38,6 +38,7 @@ const WIDGET_GROUPS = [
       { key: "windy",      path: "windy.enabled",       icon: "wind",           label: "Windy Radar" },
       { key: "background", path: "background.enabled",  icon: "image",          label: "Animated Background" },
       { key: "marine",     path: "marine.enabled",       icon: "wind",           label: "Marine Weather" },
+      { key: "flood",      path: "flood.enabled",        icon: "layers",         label: "River Flood Risk" },
     ]
   },
   {

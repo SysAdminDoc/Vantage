@@ -33,7 +33,12 @@ const DEFAULTS = {
     // and surface them in the hover title. Useful for gardeners,
     // cyclists, and allergy sufferers; off by default to keep the
     // baseline title readable.
-    showAgricultural: false
+    showAgricultural: false,
+    // Open-Meteo Ensemble API — fetches the 51-member ICON-EU ensemble
+    // and surfaces a "forecast confidence" chip computed from the
+    // current-hour spread (max - min). Off by default; adds one
+    // extra outbound call per location every 30 min.
+    showEnsembleConfidence: false
   },
   clock: {
     enabled: true,
@@ -122,6 +127,14 @@ const DEFAULTS = {
     // Wave height/direction/period, sea surface temperature, ocean
     // current vector, sea level. Pill in the utility bar; absent for
     // inland locations (the API returns nulls and the widget hides).
+    enabled: false
+  },
+  flood: {
+    // Open-Meteo Flood API — GloFAS v4 river discharge + flood
+    // probability for the user's nearest river. Off by default;
+    // useful for flood-prone watersheds (riverside, near a known
+    // gauge). Auto-hides when the API returns nulls (e.g. on a
+    // location not near a major river).
     enabled: false
   },
   windy: {

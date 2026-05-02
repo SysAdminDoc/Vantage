@@ -42,6 +42,8 @@
     "https://geocoding-api.open-meteo.com/*",
     "https://air-quality-api.open-meteo.com/*",
     "https://marine-api.open-meteo.com/*",
+    "https://flood-api.open-meteo.com/*",
+    "https://ensemble-api.open-meteo.com/*",
     "https://api.allorigins.win/*",
     "https://corsproxy.io/*",
     "https://www.bing.com/*",
