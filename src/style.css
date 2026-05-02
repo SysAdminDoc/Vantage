@@ -8214,3 +8214,69 @@ html[dir="rtl"] .workflow-pill {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Font picker dialog (Local Font Access, v1.1.0)
+   Reuses .import-dialog shell + adds a scroll-list with each
+   row rendered in its own font-family for live preview.
+   ═══════════════════════════════════════════════════════════ */
+
+.font-picker-dialog .font-picker-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 0 var(--s-3) var(--s-3);
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface1) transparent;
+}
+
+.font-picker-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--s-2) var(--s-3);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-1);
+  color: var(--text);
+  font-size: var(--text-base);
+  cursor: pointer;
+}
+.font-picker-row:hover,
+.font-picker-row:focus-visible {
+  background: var(--bg-button-hover);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border-default));
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Feed item entrance stagger (sibling-index, v1.1.0)
+   Chrome 138+ ships sibling-index() / sibling-count() as stable.
+   Wrapped in @supports so older browsers and Firefox/Safari (where
+   support hadn't landed at v1.1.0 release time) cleanly fall
+   through — they just see the items appear instantly, same as
+   today's behavior.
+   ═══════════════════════════════════════════════════════════ */
+
+@supports (animation-delay: calc(0.05s * sibling-index())) {
+  @keyframes vantage-feed-item-fadein {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .feed-list .feed-item {
+    animation: vantage-feed-item-fadein 240ms var(--ease-out) backwards;
+    animation-delay: calc(0.04s * sibling-index());
+  }
+
+  /* Cap the perceived stagger at 12 items so a 50-item feed doesn't
+     have the bottom rows take 2 s+ to fade in. */
+  .feed-list .feed-item:nth-child(n + 13) {
+    animation-delay: calc(0.04s * 12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-list .feed-item {
+    animation: none !important;
+  }
+}

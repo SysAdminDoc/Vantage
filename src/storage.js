@@ -18,7 +18,16 @@ const DEFAULTS = {
   appearance: {
     // "auto" | "coastal" | "urban" | "forest" | "lake" | "mountain"
     // | "desert" | "polar" | "tropical" | "meadow" | "default"
-    locality: "auto"
+    locality: "auto",
+    // Local Font Access overrides — empty string falls back to the
+    // built-in --font-sans / --font-display CSS custom properties.
+    // Only used when the user explicitly picks a font via Settings →
+    // Appearance → Typography (which gates on the local-fonts
+    // permission and is Chrome/Edge-only).
+    font: {
+      body: "",      // overrides --font-sans
+      display: ""    // overrides --font-display
+    }
   },
   search: {
     engine: "google",
@@ -38,7 +47,10 @@ const DEFAULTS = {
     // and surfaces a "forecast confidence" chip computed from the
     // current-hour spread (max - min). Off by default; adds one
     // extra outbound call per location every 30 min.
-    showEnsembleConfidence: false
+    showEnsembleConfidence: false,
+    // Show both °C and °F simultaneously in the chip headline. Off by
+    // default — useful for travelers and people working across regions.
+    dualUnits: false
   },
   clock: {
     enabled: true,
@@ -75,7 +87,12 @@ const DEFAULTS = {
     ],
     groups: [],              // [{ id, name, items: [{ title, url }] }]
     itemsPerRow: "auto",     // "auto" | 3 | 4 | 5 | 6 | 8 | 10
-    iconRadius: "rounded"    // "square" | "rounded" | "circle"
+    iconRadius: "rounded",   // "square" | "rounded" | "circle"
+    // Speculation Rules API hover-prefetch (Chrome 109+ / Edge 109+).
+    // Firefox silently ignores the <script type="speculationrules">
+    // tag — safe progressive enhancement. Off by default since
+    // prefetching uses background bandwidth on every hover.
+    speculate: false
   },
   topsites: {
     enabled: false,
