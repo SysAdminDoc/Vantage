@@ -244,15 +244,49 @@ export async function renderFeedList(mount, options) {
   observer.observe(mount, { childList: true });
 }
 
+// Pre-compiled RegExp cache keyed by pattern source. Avoids re-compiling
+// the same pattern on every item across every render — typical render
+// is ~30 items × N rules; with the cache it becomes N compiles.
+const RULE_RE_CACHE = new Map();
+function compileRule(pattern) {
+  if (!pattern) return null;
+  const cached = RULE_RE_CACHE.get(pattern);
+  if (cached !== undefined) return cached; // cached null = known-bad
+  // Reject obviously catastrophic patterns BEFORE handing them to the
+  // engine. Q1 audit follow-up: feed-filter rules are user-supplied
+  // regexes that run on every render; an imported settings file with a
+  // pathological pattern could lock the UI thread (ReDoS).
+  //
+  // Heuristics: cap pattern length, reject deeply-nested unbounded
+  // quantifiers, reject backreferences. Real user filters are simple
+  // — these limits are conservative and let a bad regex fail closed
+  // rather than block the renderer.
+  if (pattern.length > 256)                        { RULE_RE_CACHE.set(pattern, null); return null; }
+  if (/(\(.*?\)){4,}/.test(pattern))                { RULE_RE_CACHE.set(pattern, null); return null; }
+  if (/(\([^)]*[*+]\)){2,}/.test(pattern))          { RULE_RE_CACHE.set(pattern, null); return null; }
+  if (/(\\\d|\(\?[Pi]?<[^>]+>)/.test(pattern))      { RULE_RE_CACHE.set(pattern, null); return null; }
+  let re;
+  try { re = new RegExp(pattern, "i"); }
+  catch { RULE_RE_CACHE.set(pattern, null); return null; }
+  RULE_RE_CACHE.set(pattern, re);
+  return re;
+}
+
+// Apply a compiled regex to a string with a hard wall-clock budget.
+// JS regex execution can't be preempted; the best we can do is bound
+// the haystack length so a polynomial-time pattern can't run for >>ms
+// on a 4-KB title or absurdly long URL.
+const HAYSTACK_MAX = 1024;
+
 function matchRule(item, rules) {
   if (!rules?.length) return null;
   for (const rule of rules) {
     if (!rule.pattern) continue;
-    try {
-      const re = new RegExp(rule.pattern, "i");
-      const haystack = rule.field === "url" ? (item.link || "") : (item.title || "");
-      if (re.test(haystack)) return rule;
-    } catch { /* invalid regex — skip */ }
+    const re = compileRule(rule.pattern);
+    if (!re) continue;
+    let haystack = rule.field === "url" ? (item.link || "") : (item.title || "");
+    if (haystack.length > HAYSTACK_MAX) haystack = haystack.slice(0, HAYSTACK_MAX);
+    if (re.test(haystack)) return rule;
   }
   return null;
 }
