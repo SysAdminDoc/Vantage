@@ -67,9 +67,28 @@ export function renderSearch(mount, settings, onChange) {
       e.preventDefault();
       const q = input.value.trim();
       if (!q) return;
+      // Shift-modifier on Enter or click submits this query through a
+      // one-shot picker — pick a different engine for THIS query
+      // without changing the saved default. ROADMAP completes the
+      // 'per-query engine switching' item that was partial-shipped
+      // in v0.10 (placeholder half).
+      if (e.submitter?.dataset?.altSubmit === "true" || (e instanceof SubmitEvent && (e.shiftKey || (window._lastEnterShift)))) {
+        openQuickPick(form, q, settings);
+        return;
+      }
       window.location.href = buildSearchUrl(settings.search.engine, q, settings.search.customUrl);
     }
   }, [enginePicker, input, kbd, submit]);
+
+  // Track Shift state on Enter — submitter doesn't carry shiftKey on
+  // form submit events in some browsers, so we sniff the keydown.
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") window._lastEnterShift = e.shiftKey;
+  });
+  // Shift-clicking the submit button also triggers the alt path.
+  submit.addEventListener("click", (e) => {
+    submit.dataset.altSubmit = e.shiftKey ? "true" : "false";
+  });
 
   mount.appendChild(form);
 
@@ -80,6 +99,77 @@ export function renderSearch(mount, settings, onChange) {
     const pickerOpen = document.getElementById("widget-picker")?.hidden === false;
     const canAutofocus = document.activeElement === document.body && !settingsOpen && !pickerOpen;
     if (canAutofocus) input.focus();
+  });
+}
+
+// Quick-pick popover: pick a one-shot engine for the current query
+// without changing the saved default. Anchored under the search form.
+// Closes on Esc, outside click, or after pick.
+function openQuickPick(form, query, settings) {
+  // Tear down any open instance.
+  document.querySelector(".quickpick")?.remove();
+
+  const popover = el("div", {
+    class: "quickpick",
+    role: "dialog",
+    "aria-label": "Search this query with"
+  });
+
+  popover.appendChild(el("div", { class: "quickpick__title" }, [`Search "${query}" with…`]));
+
+  const list = el("div", { class: "quickpick__list", role: "listbox" });
+  const items = [];
+  const allKeys = Object.keys(SEARCH_ENGINES);
+  for (const key of allKeys) {
+    if (key === settings.search.engine) continue;
+    if (key === "custom" && (!settings.search.customUrl || !settings.search.customUrl.includes("%s"))) continue;
+    const eng = SEARCH_ENGINES[key];
+    const label = key === "custom"
+      ? `Custom (${(() => { try { return new URL(settings.search.customUrl).hostname.replace(/^www\./, ""); } catch { return "url"; } })()})`
+      : eng.name;
+    const btn = el("button", {
+      type: "button",
+      class: "quickpick__item",
+      role: "option",
+      "data-engine": key,
+      tabindex: "-1",
+      onClick: () => {
+        const url = buildSearchUrl(key, query, settings.search.customUrl);
+        close();
+        window.location.href = url;
+      }
+    }, [
+      el("span", { class: "engine-avatar", "aria-hidden": "true" }, [(label[0] || "?").toUpperCase()]),
+      el("span", {}, [label])
+    ]);
+    items.push(btn);
+    list.appendChild(btn);
+  }
+  popover.appendChild(list);
+  popover.appendChild(el("div", { class: "quickpick__hint" }, ["Esc to cancel · default engine unchanged"]));
+
+  form.appendChild(popover);
+
+  function close() {
+    document.removeEventListener("keydown", onKey);
+    document.removeEventListener("pointerdown", onOutside, true);
+    popover.remove();
+  }
+  function onKey(e) {
+    const i = items.indexOf(document.activeElement);
+    if (e.key === "Escape") { e.preventDefault(); close(); form.querySelector(".search-input")?.focus(); return; }
+    if (e.key === "ArrowDown") { e.preventDefault(); items[(i + 1 + items.length) % items.length]?.focus(); return; }
+    if (e.key === "ArrowUp") { e.preventDefault(); items[(i - 1 + items.length) % items.length]?.focus(); return; }
+    if (e.key === "Home") { e.preventDefault(); items[0]?.focus(); return; }
+    if (e.key === "End") { e.preventDefault(); items[items.length - 1]?.focus(); return; }
+  }
+  function onOutside(e) {
+    if (!popover.contains(e.target)) close();
+  }
+  requestAnimationFrame(() => {
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onOutside, true);
+    items[0]?.focus({ preventScroll: true });
   });
 }
 
