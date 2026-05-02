@@ -4,6 +4,21 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 
 ## Unreleased
 
+## v1.0.0 — 2026-05-02
+
+### Added
+- **WCAG 2.2 AA accessibility audit** — Full automated (axe-core v4.11.4) and manual (NVDA / VoiceOver / Narrator) accessibility pass. All widgets (v0.1.0 through v0.13.0) in scope, including dashboard hero, all 22 widgets, settings panel, dialogs, and feed reading interfaces. Conformance report in `docs/accessibility-report.md`. Ready for CWS, AMO, Edge, and Opera store listings.
+- **Internationalization (i18n) scaffolding** — `_locales/en/messages.json` with 115 core English strings. Bootstrap translations in Spanish (es), German (de), French (fr), and Japanese (ja) at ~70% coverage. i18n infrastructure ready for v1.0.1 Phase 2 widget-by-widget conversion and Phase 3 community translation pipeline. Chrome's `__MSG_*__` syntax + `chrome.i18n.getMessage()` throughout. No external translation service dependency.
+- **Right-to-Left (RTL) support foundation** — Arabic, Hebrew, Persian, and Urdu language detection via `chrome.i18n.getUILanguage()`. Critical UI surfaces (settings panel, sticky header, toast notifications, skip link, quick-link countdowns, crypto widget) converted to logical CSS properties with `html[dir="rtl"]` selector rules. Full decorative-background logical-property conversion deferred to v1.1.0. All target browsers (Chrome 115+, Firefox 109+, Safari 15.1+, Edge 115+) ship logical properties.
+- **Locked widget API v1.0** — postMessage protocol frozen with semver guarantees. Specification in `docs/widget-api.md` covers manifest schema (id, name, version, author, src, sizes, permissions), message types (vantage:init, vantage:ready, vantage:theme-change, vantage:resize, vantage:error, vantage:log), iframe sandbox security model (allow-scripts + allow-same-origin + allow-popups), lifecycle, testing guide, and backward-compatibility semantics. Unblocks third-party iframe widget support in v1.1.0.
+- **Store listing infrastructure** — Complete privacy-practices document (`docs/privacy-practices-cws.md`) with permission justifications, data use certification, and remote-code declarations. Localized store descriptions (`docs/store-listing-content.md`) in English, Spanish, German, French, and Japanese with short and detailed variants per store. Formal privacy policy (`PRIVACY.md`) documenting all 12 external integrations (Open-Meteo, RSS feeds, Bing Daily, NASA APOD, Unsplash, CoinGecko, GitHub, Windy, RainViewer, favicons service, CORS proxy, Chrome Reading List). Step-by-step submission guide (`docs/store-submission-guide.md`) for Chrome Web Store, Firefox Add-ons, Microsoft Edge, and Opera stores. Ready for manual upload.
+- **`contrast-color()` for dynamic text contrast** — CSS `contrast-color(white, black from var(--accent))` on accent buttons, weather chips, and branded surfaces automatically selects WCAG AA-passing white or black text. `@supports` progressive enhancement means Chrome 147+, Firefox 146+, Safari 26+, and Edge 147+ get full support; older browsers fall back to static `--crust` color. Meets Interop 2026 cross-browser target.
+- **Settings scroll-padding-top fix (WCAG 2.4.11)** — `scroll-padding-top: 70px` on `.settings-panel__body` prevents the sticky header from obscuring focused form inputs when tabbing into scrolled-past sections. Closes WCAG 2.2 SC 2.4.11 Focus Not Obscured (AA) violation.
+- **nightTab migration onboarding** — `detectNightTabBackup()` + `showNightTabMigrationSummary()` in settings-import flow detect nightTab v7.x JSON format (root key `nightTab.data`) and show a migration summary (greeting, theme, links count, feeds count) before the standard section-checklist dialog. nightTab is abandoned since Oct 2021 and has 2,032★ on GitHub — this unblocks its largest user migration cohort.
+
+### Changed
+- **Bump to v1.0.0** — All critical distribution infrastructure complete. Extension is store-ready for CWS, AMO, Edge, and Opera. Next phase targets v1.1.0 architecture features (Gist sync, side-panel reader, local video backgrounds) after store approvals land. Manual screenshots + store submissions next.
+
 ## v0.13.0 — 2026-05-02
 
 ### Added
