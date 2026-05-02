@@ -3733,6 +3733,27 @@ a {
   width: min(720px, 100%);
 }
 
+/* Items-per-row override — switches to grid so the user gets exactly
+   N pills per row regardless of pill width. minmax(0, …) lets long
+   titles wrap inside the cell instead of pushing the whole row wider. */
+.quicklinks[data-cols] {
+  display: grid;
+  width: min(960px, 100%);
+  justify-content: center;
+}
+.quicklinks[data-cols="3"]  { grid-template-columns: repeat(3,  minmax(0, max-content)); }
+.quicklinks[data-cols="4"]  { grid-template-columns: repeat(4,  minmax(0, max-content)); }
+.quicklinks[data-cols="5"]  { grid-template-columns: repeat(5,  minmax(0, max-content)); }
+.quicklinks[data-cols="6"]  { grid-template-columns: repeat(6,  minmax(0, max-content)); }
+.quicklinks[data-cols="8"]  { grid-template-columns: repeat(8,  minmax(0, max-content)); }
+.quicklinks[data-cols="10"] { grid-template-columns: repeat(10, minmax(0, max-content)); }
+.quicklinks[data-cols] .quicklink {
+  /* Force a uniform width per cell so the row reads as a grid, not as
+     pills of unequal width. */
+  width: 100%;
+  justify-content: flex-start;
+}
+
 .quicklink {
   display: inline-flex;
   align-items: center;
