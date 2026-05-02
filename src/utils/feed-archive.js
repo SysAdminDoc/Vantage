@@ -90,17 +90,66 @@ export async function archiveItems(items) {
 
 /** Substring (case-insensitive) search across title + sourceTitle.
  *  Returns up to `limit` items, sorted newest-first by `archivedAt`.
- *  An empty query returns the most-recent `limit` items. */
+ *  An empty query returns the most-recent `limit` items.
+ *
+ *  Fast path: when `IDBIndex.prototype.getAllRecords` is available
+ *  (Chrome 141+ / Firefox pending — Interop 2026), we fetch a single
+ *  batch sorted descending and filter in memory. The cursor loop
+ *  remains the fallback for browsers that haven't shipped the API. */
 export async function searchArchive(query, { limit = 100 } = {}) {
   const db = await openDB();
   const tx = db.transaction(STORE, "readonly");
   const store = tx.objectStore(STORE);
   const idx = store.index("archivedAt");
-
   const needle = (query || "").toLowerCase().trim();
+
+  // Fast path — getAllRecords (Chrome 141+) returns key + value
+  // tuples in one round-trip, eliminating the per-item event-loop
+  // turnaround the cursor loop pays. For a 10k archive on a search
+  // miss the cursor walks all 10k entries; getAllRecords pulls them
+  // in one go and we filter in-memory.
+  if (typeof idx.getAllRecords === "function") {
+    return new Promise((resolve, reject) => {
+      // direction:'prev' = newest-first by archivedAt.
+      // Open question: not all engines accept the options bag yet —
+      // try / catch falls back to the cursor path if the call throws.
+      let req;
+      try {
+        req = idx.getAllRecords({
+          direction: "prev",
+          // Pull a generous overshoot when filtering so we can still
+          // hit `limit` matches after the substring filter trims.
+          count: needle ? 5000 : limit
+        });
+      } catch (err) {
+        // API present but signature mismatch — fall through.
+        return cursorPath(idx, needle, limit).then(resolve, reject);
+      }
+      req.onsuccess = () => {
+        const records = req.result || [];
+        const out = [];
+        for (const r of records) {
+          const v = r.value || r; // some engines return raw values
+          if (!needle) {
+            out.push(v);
+          } else {
+            const hay = `${v.title} ${v.sourceTitle}`.toLowerCase();
+            if (hay.includes(needle)) out.push(v);
+          }
+          if (out.length >= limit) break;
+        }
+        resolve(out);
+      };
+      req.onerror = () => cursorPath(idx, needle, limit).then(resolve, reject);
+    });
+  }
+
+  return cursorPath(idx, needle, limit);
+}
+
+function cursorPath(idx, needle, limit) {
   const out = [];
   return new Promise((resolve, reject) => {
-    // openCursor with prev direction = newest first.
     const req = idx.openCursor(null, "prev");
     req.onsuccess = (e) => {
       const cur = e.target.result;
