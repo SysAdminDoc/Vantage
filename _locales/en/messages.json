@@ -1,0 +1,300 @@
+{
+  "appName": {
+    "message": "Vantage",
+    "description": "The name of the application"
+  },
+  "appDesc": {
+    "message": "Next Tab Page — Composable, high-performance NTP with weather, feeds, bookmarks, crypto, and more.",
+    "description": "Extension description (for store listing)"
+  },
+  "customizeWidgets": {
+    "message": "Customize widgets",
+    "description": "Tooltip for widget picker button"
+  },
+  "openSettings": {
+    "message": "Open settings",
+    "description": "Tooltip for settings button"
+  },
+  "searchPlaceholder": {
+    "message": "Search the web...",
+    "description": "Placeholder text in search input"
+  },
+  "searchWeb": {
+    "message": "Search the web",
+    "description": "ARIA label for search section"
+  },
+  "skipToMain": {
+    "message": "Skip to main content",
+    "description": "Skip navigation link"
+  },
+  "quickLinks": {
+    "message": "Quick links",
+    "description": "Section title for quick links"
+  },
+  "addLink": {
+    "message": "Add link",
+    "description": "Button label to add a quick link"
+  },
+  "removeLink": {
+    "message": "Remove $ITEM$",
+    "description": "ARIA label for remove link button",
+    "placeholders": {
+      "item": {
+        "content": "$1",
+        "example": "GitHub"
+      }
+    }
+  },
+  "topSites": {
+    "message": "Top sites",
+    "description": "Section title for browser top sites"
+  },
+  "weather": {
+    "message": "Weather",
+    "description": "Widget title"
+  },
+  "quote": {
+    "message": "Quote",
+    "description": "Widget title"
+  },
+  "news": {
+    "message": "News",
+    "description": "Widget title"
+  },
+  "feeds": {
+    "message": "Feeds",
+    "description": "Widget title for RSS/News feed"
+  },
+  "bookmarks": {
+    "message": "Bookmarks",
+    "description": "Widget title"
+  },
+  "calendar": {
+    "message": "Calendar",
+    "description": "Widget title"
+  },
+  "todo": {
+    "message": "To-Do",
+    "description": "Widget title"
+  },
+  "notes": {
+    "message": "Notes",
+    "description": "Widget title"
+  },
+  "clock": {
+    "message": "Clock",
+    "description": "Widget title"
+  },
+  "pomodoro": {
+    "message": "Pomodoro",
+    "description": "Widget title"
+  },
+  "crypto": {
+    "message": "Crypto",
+    "description": "Widget title"
+  },
+  "settings": {
+    "message": "Settings",
+    "description": "Settings panel title"
+  },
+  "appearanceTab": {
+    "message": "Appearance",
+    "description": "Settings tab label"
+  },
+  "contentTab": {
+    "message": "Content",
+    "description": "Settings tab label"
+  },
+  "dataTab": {
+    "message": "Data",
+    "description": "Settings tab label"
+  },
+  "darkMode": {
+    "message": "Dark mode",
+    "description": "Setting label"
+  },
+  "lightMode": {
+    "message": "Light mode",
+    "description": "Setting label"
+  },
+  "accentColor": {
+    "message": "Accent color",
+    "description": "Setting label"
+  },
+  "theme": {
+    "message": "Theme",
+    "description": "Setting label"
+  },
+  "background": {
+    "message": "Background",
+    "description": "Setting label"
+  },
+  "enabledLabel": {
+    "message": "Enabled",
+    "description": "Generic enabled/disabled toggle label"
+  },
+  "disabled": {
+    "message": "Disabled",
+    "description": "Generic disabled status label"
+  },
+  "close": {
+    "message": "Close",
+    "description": "Close button label"
+  },
+  "save": {
+    "message": "Save",
+    "description": "Save button label"
+  },
+  "cancel": {
+    "message": "Cancel",
+    "description": "Cancel button label"
+  },
+  "delete": {
+    "message": "Delete",
+    "description": "Delete button label"
+  },
+  "edit": {
+    "message": "Edit",
+    "description": "Edit button label"
+  },
+  "add": {
+    "message": "Add",
+    "description": "Add button label"
+  },
+  "export": {
+    "message": "Export",
+    "description": "Export button label"
+  },
+  "import": {
+    "message": "Import",
+    "description": "Import button label"
+  },
+  "confirmDelete": {
+    "message": "Are you sure?",
+    "description": "Confirmation prompt before destructive action"
+  },
+  "noResults": {
+    "message": "No results",
+    "description": "Empty state message"
+  },
+  "loading": {
+    "message": "Loading...",
+    "description": "Loading indicator text"
+  },
+  "error": {
+    "message": "An error occurred",
+    "description": "Generic error message"
+  },
+  "success": {
+    "message": "Success",
+    "description": "Generic success message"
+  },
+  "copied": {
+    "message": "Copied",
+    "description": "Feedback after copying to clipboard"
+  },
+  "language": {
+    "message": "Language",
+    "description": "Settings label for language selection"
+  },
+  "english": {
+    "message": "English",
+    "description": "Language name"
+  },
+  "spanish": {
+    "message": "Spanish",
+    "description": "Language name"
+  },
+  "german": {
+    "message": "German",
+    "description": "Language name"
+  },
+  "french": {
+    "message": "French",
+    "description": "Language name"
+  },
+  "japanese": {
+    "message": "Japanese",
+    "description": "Language name"
+  },
+  "help": {
+    "message": "Help",
+    "description": "Help button label"
+  },
+  "about": {
+    "message": "About",
+    "description": "About button label"
+  },
+  "version": {
+    "message": "Version $VERSION$",
+    "description": "Version display",
+    "placeholders": {
+      "version": {
+        "content": "$1",
+        "example": "1.0.0"
+      }
+    }
+  },
+  "readMore": {
+    "message": "Read more",
+    "description": "Link to read full content"
+  },
+  "viewAll": {
+    "message": "View all",
+    "description": "Link to view all items"
+  },
+  "noItems": {
+    "message": "No $ITEM$ yet",
+    "description": "Empty state for a list",
+    "placeholders": {
+      "item": {
+        "content": "$1",
+        "example": "bookmarks"
+      }
+    }
+  },
+  "startTime": {
+    "message": "Start time",
+    "description": "Label for start time input"
+  },
+  "endTime": {
+    "message": "End time",
+    "description": "Label for end time input"
+  },
+  "date": {
+    "message": "Date",
+    "description": "Label for date input"
+  },
+  "time": {
+    "message": "Time",
+    "description": "Label for time input"
+  },
+  "url": {
+    "message": "URL",
+    "description": "Label for URL input"
+  },
+  "title": {
+    "message": "Title",
+    "description": "Label for title input"
+  },
+  "description": {
+    "message": "Description",
+    "description": "Label for description input"
+  },
+  "label": {
+    "message": "Label",
+    "description": "Label for label input"
+  },
+  "name": {
+    "message": "Name",
+    "description": "Label for name input"
+  },
+  "comment": {
+    "message": "Comment",
+    "description": "Label for comment input"
+  },
+  "rating": {
+    "message": "Rating",
+    "description": "Label for rating"
+  }
+}
