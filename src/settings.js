@@ -806,23 +806,57 @@ function buildBackground(settings, onChange) {
     }
 
     if (kind === "video-upload") {
+      // OPFS upgrade: when navigator.storage.getDirectory is
+      // available (Chrome 102+, Firefox 111+, Safari 15.2+), the
+      // video lives in the Origin Private File System keyed by
+      // 'background-video' and `settings.background.videoData` is
+      // set to the marker `opfs:background-video`. This raises the
+      // effective cap to 50 MB and keeps chrome.storage.local
+      // payload tiny. Older browsers fall back to the original
+      // 8 MB base64 data-URL path.
       const fileIn = el("input", {
         type: "file", accept: "video/webm,video/mp4",
         style: { display: "none" },
-        onChange: (e) => {
+        onChange: async (e) => {
           const file = e.target.files[0];
           if (!file) return;
-          if (file.size > 8 * 1024 * 1024) {
-            toast("Video must be under 8 MB.", "error");
+          const { isOpfsAvailable, putBlob, opfsMarker, removeBlob } = await import("./utils/opfs.js");
+          const useOpfs = isOpfsAvailable();
+          const cap = useOpfs ? 50 * 1024 * 1024 : 8 * 1024 * 1024;
+          if (file.size > cap) {
+            toast(`Video must be under ${useOpfs ? "50" : "8"} MB.`, "error");
             return;
           }
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            settings.background.videoData = ev.target.result;
-            onChange(settings);
-            toast("Video set. Loops automatically. Pauses when tab is hidden.", "success");
-          };
-          reader.readAsDataURL(file);
+          try {
+            if (useOpfs) {
+              await putBlob("background-video", file);
+              settings.background.videoData = opfsMarker("background-video");
+              onChange(settings);
+              toast(`Video stored in OPFS (${(file.size / 1024 / 1024).toFixed(1)} MB). Loops automatically.`, "success");
+            } else {
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                settings.background.videoData = ev.target.result;
+                onChange(settings);
+                toast("Video set (legacy storage). Loops automatically. Pauses when tab is hidden.", "success");
+              };
+              reader.readAsDataURL(file);
+            }
+          } catch (err) {
+            // OPFS write failed — fall back to data URL within the
+            // 8 MB cap, otherwise surface the failure.
+            if (file.size <= 8 * 1024 * 1024) {
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                settings.background.videoData = ev.target.result;
+                onChange(settings);
+                toast("OPFS unavailable; stored as base64 instead.", "warning");
+              };
+              reader.readAsDataURL(file);
+            } else {
+              toast(`OPFS write failed (${err?.message?.toLowerCase() || "unknown error"}). File too large for fallback storage.`, "error");
+            }
+          }
         }
       });
       const uploadBtn = el("button", {
@@ -830,11 +864,22 @@ function buildBackground(settings, onChange) {
         onClick: () => fileIn.click()
       }, [iconNode("upload", { size: 14 }), " Choose video"]);
       kindHost.appendChild(fileIn);
-      kindHost.appendChild(row("Upload video", "WebM or MP4 (max 8 MB). Stored locally. Loops automatically and pauses when tab is hidden.", uploadBtn));
+      const hint = navigator.storage?.getDirectory
+        ? "WebM or MP4 (max 50 MB via OPFS). Loops automatically and pauses when tab is hidden."
+        : "WebM or MP4 (max 8 MB; OPFS unavailable in this browser). Loops and pauses on hidden.";
+      kindHost.appendChild(row("Upload video", hint, uploadBtn));
       if (settings.background.videoData) {
         const clearBtn = el("button", {
           type: "button", class: "button button--ghost",
-          onClick: () => { settings.background.videoData = null; onChange(settings); renderKindRows(); }
+          onClick: async () => {
+            const { isOpfsMarker, removeBlob, opfsKeyFromMarker } = await import("./utils/opfs.js");
+            if (isOpfsMarker(settings.background.videoData)) {
+              try { await removeBlob(opfsKeyFromMarker(settings.background.videoData)); } catch {}
+            }
+            settings.background.videoData = null;
+            onChange(settings);
+            renderKindRows();
+          }
         }, [iconNode("trash", { size: 14 }), " Clear video"]);
         kindHost.appendChild(row("", null, clearBtn));
       }

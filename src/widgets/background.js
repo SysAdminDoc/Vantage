@@ -940,6 +940,25 @@ export async function renderBackground(mount, settings, saveSettings) {
       applyFallbackBackground(mount, "missing");
       return () => {};
     }
+    // OPFS marker — materialize the on-disk Blob into an object URL.
+    // Falls through to applyFallbackBackground if OPFS read fails
+    // (e.g. user cleared OPFS via DevTools, browser quota wipe).
+    if (src.startsWith("opfs:")) {
+      let blobUrl = null;
+      (async () => {
+        try {
+          const { getBlobUrl, opfsKeyFromMarker } = await import("../utils/opfs.js");
+          blobUrl = await getBlobUrl(opfsKeyFromMarker(src));
+          applyVideoBackground(mount, blobUrl, bg);
+        } catch (err) {
+          console.warn("[background] OPFS video read failed:", err.message);
+          applyFallbackBackground(mount, "missing");
+        }
+      })();
+      return () => {
+        if (blobUrl) URL.revokeObjectURL(blobUrl);
+      };
+    }
     applyVideoBackground(mount, src, bg);
     return () => {};
   }
