@@ -7912,3 +7912,92 @@ html[dir="rtl"] .workflow-pill {
     }
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Notes — focus / teleprompter mode (v1.1.0)
+   Full-viewport overlay with large centered type, optional
+   auto-scroll. Esc / click-outside / close-button all dismiss.
+   ═══════════════════════════════════════════════════════════ */
+
+.notes-focus {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: var(--s-3);
+  padding: var(--s-6) clamp(var(--s-6), 8vw, 12rem) var(--s-8);
+  background: color-mix(in srgb, var(--bg-canvas) 92%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.notes-focus__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-pill);
+  align-self: end;
+  justify-self: end;
+}
+
+.notes-focus__bar-label {
+  font-size: var(--text-sm);
+  color: var(--subtext1);
+}
+
+.notes-focus__speed {
+  width: 160px;
+}
+
+.notes-focus__title {
+  width: 100%;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 600;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  color: var(--text);
+  padding: var(--s-2) 0;
+  outline: none;
+}
+
+.notes-focus__title:focus-visible {
+  border-bottom-color: var(--accent);
+}
+
+.notes-focus__body {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  outline: none;
+  resize: none;
+  color: var(--text);
+  font-size: clamp(1.125rem, 1.6vw, 1.5rem);
+  line-height: 1.6;
+  font-family: inherit;
+  padding: var(--s-3) 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface1) transparent;
+}
+
+.notes-focus__body:focus-visible {
+  caret-color: var(--accent);
+}
+
+/* Color tint per note color — subtle accent at the top edge so the
+   user knows which note they're focused on. */
+.notes-focus--blue   { border-top: 4px solid var(--blue, var(--accent)); }
+.notes-focus--green  { border-top: 4px solid var(--green, var(--accent)); }
+.notes-focus--yellow { border-top: 4px solid var(--yellow, var(--accent)); }
+.notes-focus--red    { border-top: 4px solid var(--red, var(--accent)); }
+.notes-focus--mauve  { border-top: 4px solid var(--mauve, var(--accent)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .notes-focus__speed { display: none; }
+  .notes-focus__bar-label { display: none; }
+}
