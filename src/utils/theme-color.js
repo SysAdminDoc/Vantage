@@ -29,13 +29,6 @@ export function setThemeColor(color) {
   ensureMeta().setAttribute("content", color);
 }
 
-/** Reset to the document's surface base. Use when bg is disabled. */
-export function clearThemeColor() {
-  lastColor = null;
-  const meta = document.getElementById(META_ID);
-  if (meta) meta.remove();
-}
-
 /**
  * Derive a theme color directly from the user's background settings for the
  * non-animated kinds. Animated kinds live in widgets/background.js and emit
