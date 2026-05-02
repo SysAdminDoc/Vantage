@@ -1,0 +1,14 @@
+{
+  "name": "vantage",
+  "version": "1.0.0",
+  "description": "Next Tab Page — A composable, high-performance NTP extension with live weather, RSS feeds, bookmarks, crypto prices, and more.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "audit": "node scripts/accessibility-audit.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/puppeteer": "^4.11.4",
+    "puppeteer": "^23.0.0"
+  }
+}
