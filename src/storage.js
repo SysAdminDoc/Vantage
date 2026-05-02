@@ -97,6 +97,14 @@ const DEFAULTS = {
   feedFilters: {
     rules: []                // [{ id, pattern, field:"title"|"url", action:"mute"|"highlight", color:null }]
   },
+  feedArchive: {
+    // Permanent IndexedDB archive of every feed item ever rendered,
+    // searchable from Settings → Feed archive. Strict opt-in (default
+    // off — IDB grows without explicit caps and we don't want to
+    // surprise users on a clean install).
+    enabled: false,
+    cap: 10_000              // pruned by archivedAt; 50k+ degrades search
+  },
   feedAlerts: {
     // Web Notifications when a feed item title contains a user-supplied
     // keyword. Strict opt-in (default off + permission prompt). Only
