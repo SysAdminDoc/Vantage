@@ -1,0 +1,179 @@
+{
+  "appName": {
+    "message": "Vantage"
+  },
+  "appDesc": {
+    "message": "Nouvel onglet — NTP composable haute performance avec météo, flux, signets, crypto et plus."
+  },
+  "customizeWidgets": {
+    "message": "Personnaliser les widgets"
+  },
+  "openSettings": {
+    "message": "Ouvrir les paramètres"
+  },
+  "searchPlaceholder": {
+    "message": "Rechercher sur le web..."
+  },
+  "searchWeb": {
+    "message": "Rechercher sur le web"
+  },
+  "skipToMain": {
+    "message": "Aller au contenu principal"
+  },
+  "quickLinks": {
+    "message": "Liens rapides"
+  },
+  "addLink": {
+    "message": "Ajouter un lien"
+  },
+  "topSites": {
+    "message": "Sites principaux"
+  },
+  "weather": {
+    "message": "Météo"
+  },
+  "quote": {
+    "message": "Citation"
+  },
+  "news": {
+    "message": "Actualités"
+  },
+  "feeds": {
+    "message": "Flux"
+  },
+  "bookmarks": {
+    "message": "Signets"
+  },
+  "calendar": {
+    "message": "Calendrier"
+  },
+  "todo": {
+    "message": "Tâches"
+  },
+  "notes": {
+    "message": "Notes"
+  },
+  "clock": {
+    "message": "Horloge"
+  },
+  "pomodoro": {
+    "message": "Pomodoro"
+  },
+  "crypto": {
+    "message": "Crypto"
+  },
+  "settings": {
+    "message": "Paramètres"
+  },
+  "appearanceTab": {
+    "message": "Apparence"
+  },
+  "contentTab": {
+    "message": "Contenu"
+  },
+  "dataTab": {
+    "message": "Données"
+  },
+  "darkMode": {
+    "message": "Mode sombre"
+  },
+  "lightMode": {
+    "message": "Mode clair"
+  },
+  "accentColor": {
+    "message": "Couleur d'accent"
+  },
+  "theme": {
+    "message": "Thème"
+  },
+  "background": {
+    "message": "Arrière-plan"
+  },
+  "close": {
+    "message": "Fermer"
+  },
+  "save": {
+    "message": "Enregistrer"
+  },
+  "cancel": {
+    "message": "Annuler"
+  },
+  "delete": {
+    "message": "Supprimer"
+  },
+  "edit": {
+    "message": "Modifier"
+  },
+  "add": {
+    "message": "Ajouter"
+  },
+  "export": {
+    "message": "Exporter"
+  },
+  "import": {
+    "message": "Importer"
+  },
+  "confirmDelete": {
+    "message": "Êtes-vous sûr?"
+  },
+  "noResults": {
+    "message": "Aucun résultat"
+  },
+  "loading": {
+    "message": "Chargement..."
+  },
+  "error": {
+    "message": "Une erreur s'est produite"
+  },
+  "success": {
+    "message": "Succès"
+  },
+  "copied": {
+    "message": "Copié"
+  },
+  "language": {
+    "message": "Langue"
+  },
+  "english": {
+    "message": "Anglais"
+  },
+  "spanish": {
+    "message": "Espagnol"
+  },
+  "german": {
+    "message": "Allemand"
+  },
+  "french": {
+    "message": "Français"
+  },
+  "japanese": {
+    "message": "Japonais"
+  },
+  "help": {
+    "message": "Aide"
+  },
+  "about": {
+    "message": "À propos"
+  },
+  "readMore": {
+    "message": "En savoir plus"
+  },
+  "viewAll": {
+    "message": "Voir tout"
+  },
+  "url": {
+    "message": "URL"
+  },
+  "title": {
+    "message": "Titre"
+  },
+  "description": {
+    "message": "Description"
+  },
+  "label": {
+    "message": "Libellé"
+  },
+  "name": {
+    "message": "Nom"
+  }
+}
