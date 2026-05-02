@@ -1,4 +1,4 @@
-// Vantage v0.8.0 — settings panel built with primitives (toggle, segmented, icon-button).
+// Vantage v1.1.0 — settings panel built with primitives (toggle, segmented, icon-button).
 // Sections render as grouped rows with hints and icons. Sticky header with close button.
 
 import { el, clear, toggle, segmented, toast, hostnameLabel } from "./utils/dom.js";
@@ -3312,6 +3312,26 @@ This will add all your YouTube channels as RSS feeds (when available).`;
         }
       }, [iconNode("download", { size: 14 }), " Import from Gist"])
     ])
+  ));
+
+  // Dashboard screenshot export — community-friendly sharing (r/startpages, etc)
+  g.appendChild(row(
+    "Export dashboard screenshot",
+    "Save a PNG screenshot of your current dashboard for sharing on Reddit's r/startpages or other communities.",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: async () => {
+        try {
+          toast("Capturing screenshot…", "info");
+          const { success, filename } = await captureScreenshot();
+          if (success) {
+            toast(`Screenshot saved: ${filename}`, "success");
+          }
+        } catch (err) {
+          toast(err.message || "Failed to capture screenshot.", "error");
+        }
+      }
+    }, [iconNode("image", { size: 14 }), " Take screenshot"])
   ));
 
   // Per-widget config clipboard export — extends the partial-import
