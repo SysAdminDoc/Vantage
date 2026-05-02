@@ -217,6 +217,15 @@ const DEFAULTS = {
     list: []                 // [{ id, name, snapshot: { theme, accent, appearance, background, layout, quicklinks, enabled:{} } }]
   },
   containerMap: {},          // Firefox-only: { cookieStoreId: workspaceId }
+  security: {
+    // Opt-in passphrase encryption for stored API keys (CoinGecko,
+    // NASA APOD). When enabled, plaintext crypto.apiKey + photo.nasaKey
+    // are zeroed and the ciphertext lives here. PBKDF2-derived AES-GCM-256.
+    encryptKeys: false,
+    salt: null,        // base64 PBKDF2 salt
+    iv: null,          // base64 AES-GCM IV
+    encryptedBlob: null  // base64 ciphertext of {crypto: "...", nasa: "..."}
+  },
   onboardingComplete: false,
   // Right-click context menu on the dashboard surface. When disabled
   // the browser's native menu always wins, even on the background.
