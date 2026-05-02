@@ -109,6 +109,13 @@ const DEFAULTS = {
   airquality: {
     enabled: false
   },
+  marine: {
+    // Open-Meteo Marine API (free, no key) — coastal data only.
+    // Wave height/direction/period, sea surface temperature, ocean
+    // current vector, sea level. Pill in the utility bar; absent for
+    // inland locations (the API returns nulls and the widget hides).
+    enabled: false
+  },
   windy: {
     enabled: false,
     overlay: "wind",
