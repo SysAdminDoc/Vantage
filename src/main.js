@@ -6,6 +6,7 @@ import { setupRTL } from "./utils/i18n.js";
 import { renderSearch }     from "./widgets/search.js";
 import { renderGreeting }   from "./widgets/clock.js";
 import { renderWeather }    from "./widgets/weather.js";
+import { renderWeatherForecast } from "./widgets/weather-forecast.js";
 import { renderQuickLinks } from "./widgets/quicklinks.js";
 import { renderRss }        from "./widgets/rss.js";
 import { renderNews }       from "./widgets/news.js";
@@ -259,6 +260,7 @@ function mountAll() {
   renderAirQuality(document.getElementById("airquality-mount"), effectiveSettings);
   renderMarine(document.getElementById("marine-mount"), effectiveSettings);
   renderFlood(document.getElementById("flood-mount"), effectiveSettings);
+  renderWeatherForecast(document.getElementById("weather-forecast-mount"), effectiveSettings);
   renderTopsites(document.getElementById("topsites-mount"), effectiveSettings);
   renderQuickLinks(
     document.getElementById("quicklinks-mount"),
