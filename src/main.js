@@ -36,6 +36,8 @@ import { applyWorkspace, getActiveWorkspace, captureSnapshot, resolveWorkspaceSe
 import { BACKGROUND_PREVIEW_EVENT } from "./utils/background-preview.js";
 import { applyVisualQaOverrides } from "./utils/visual-qa.js";
 import { attachThemeColorListener, applyThemeColorFromSettings } from "./utils/theme-color.js";
+import { attachContextMenu } from "./utils/context-menu.js";
+import { THEME_OPTIONS } from "./utils/theme.js";
 window._vantageWorkspaceHelpers = { captureSnapshot: () => captureSnapshot(currentSettings) };
 
 let currentSettings;
@@ -48,6 +50,7 @@ let panelDragCleanup   = null;
 let systemThemeCleanup   = null;
 let reducedMotionCleanup = null;
 let settingsPanelOnChange = null;
+let contextMenuCleanup   = null;
 
 // Fixed panel kinds (static mounts in newtab.html)
 const FIXED_PANEL_KINDS = [
@@ -119,6 +122,7 @@ async function init() {
   wireSettings();
   wireWidgetPicker();
   wireKeyboard();
+  wireContextMenu();
   if (sharedImportNotice) {
     requestAnimationFrame(() => toast(sharedImportNotice.message, sharedImportNotice.kind));
   }
@@ -450,6 +454,77 @@ function wireSettings() {
       const popoverOpen = panel.querySelector(".engine-picker__popover:not([hidden])");
       if (!popoverOpen) close();
     }
+  });
+}
+
+function wireContextMenu() {
+  // Wire once. The actions list is regenerated on every right-click
+  // so it always reflects current settings (theme, accent, background
+  // kind) without needing to re-attach the listener.
+  if (contextMenuCleanup) { contextMenuCleanup(); contextMenuCleanup = null; }
+  contextMenuCleanup = attachContextMenu(() => {
+    if (currentSettings.contextMenu?.enabled === false) return [];
+
+    const themeIdx = THEME_OPTIONS.findIndex(t => t.value === currentSettings.theme);
+    const nextTheme = THEME_OPTIONS[(themeIdx + 1) % THEME_OPTIONS.length];
+
+    const ACCENTS = ["mauve","blue","green","peach","teal","lavender","red","flamingo","sky"];
+    const accentIdx = ACCENTS.indexOf(currentSettings.accent);
+    const nextAccent = ACCENTS[(accentIdx + 1) % ACCENTS.length];
+
+    const BG_KINDS = ["animated","solid","gradient","image-url","image-upload","bing-daily"];
+    const bgKind = currentSettings.background?.kind || "animated";
+    const bgIdx = BG_KINDS.indexOf(bgKind);
+    const nextBg = BG_KINDS[(bgIdx + 1) % BG_KINDS.length];
+
+    return [
+      {
+        label: "Cycle theme",
+        hint: `→ ${nextTheme.label}`,
+        icon: "palette",
+        onSelect: async () => {
+          currentSettings = { ...currentSettings, theme: nextTheme.value };
+          applyTheme(currentSettings);
+          applyThemeColorFromSettings(currentSettings);
+          await saveSettings(currentSettings);
+        }
+      },
+      {
+        label: "Cycle accent",
+        hint: `→ ${nextAccent[0].toUpperCase() + nextAccent.slice(1)}`,
+        icon: "circle-check",
+        onSelect: async () => {
+          currentSettings = { ...currentSettings, accent: nextAccent };
+          applyAccent(currentSettings, true);
+          await saveSettings(currentSettings);
+        }
+      },
+      {
+        label: "Cycle background",
+        hint: `→ ${nextBg}`,
+        icon: "image",
+        onSelect: async () => {
+          currentSettings.background = { ...currentSettings.background, kind: nextBg };
+          await saveSettings(currentSettings);
+          mountAll();
+        }
+      },
+      "divider",
+      {
+        label: "Customize widgets",
+        icon: "layout-grid",
+        onSelect: () => {
+          document.getElementById("widget-picker-toggle")?.click();
+        }
+      },
+      {
+        label: "Open settings",
+        icon: "settings",
+        onSelect: () => {
+          document.getElementById("settings-toggle")?.click();
+        }
+      }
+    ];
   });
 }
 
