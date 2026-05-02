@@ -95,6 +95,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildFeedArchiveSection(settings, onChange));
   body.appendChild(buildAirQualitySection(settings, onChange));
   body.appendChild(buildMarineSection(settings, onChange));
+  body.appendChild(buildFloodSection(settings, onChange));
   body.appendChild(buildWindySection(settings, onChange));
   body.appendChild(buildEmbedsSection(settings, onChange));
   body.appendChild(buildCalendarSection(settings, onChange));
@@ -1386,7 +1387,71 @@ function buildWorkspacesSection(settings, onChange) {
       }
     }
   }, [iconNode("upload", { size: 14 }), " Import workspace"]);
-  sec.appendChild(el("div", { class: "compose__row" }, [addBtn, importBtn]));
+
+  // Tab snapshot — capture the user's currently-open tabs as a fresh
+  // workspace pre-populated with quick-links from each tab. Useful
+  // for "save my current research session as a re-openable thing".
+  // Uses chrome.tabs.query; URL + title visibility comes from the
+  // existing `*://*/*` host_permissions, so no extra permission ask.
+  const tabSnapshotBtn = el("button", {
+    type: "button", class: "button button--ghost",
+    onClick: async () => {
+      const ext = globalThis.chrome || globalThis.browser;
+      if (!ext?.tabs?.query) {
+        toast("Tab access is unavailable in this browser.", "error");
+        return;
+      }
+      try {
+        const tabs = await ext.tabs.query({ currentWindow: true });
+        const items = [];
+        const seen = new Set();
+        for (const t of tabs) {
+          if (!t.url) continue;
+          // Skip our own newtab override + browser-internal URLs +
+          // duplicates of the same URL across pinned/duplicated tabs.
+          if (/^(chrome|edge|brave|vivaldi|opera|moz-extension|chrome-extension|about|file|view-source):/i.test(t.url)) continue;
+          if (seen.has(t.url)) continue;
+          seen.add(t.url);
+          const title = (t.title || new URL(t.url).hostname).slice(0, 80);
+          items.push({ title, url: t.url });
+        }
+        if (!items.length) {
+          toast("No saveable tabs in the current window.", "warning");
+          return;
+        }
+        if (!settings.workspaces) settings.workspaces = { active: null, list: [] };
+        const baseSnapshot = (window._vantageWorkspaceHelpers?.captureSnapshot?.() || {});
+        const fresh = {
+          id: String(Date.now()),
+          name: `Tabs ${new Date().toLocaleDateString()}`,
+          snapshot: {
+            ...baseSnapshot,
+            quicklinks: {
+              ...(baseSnapshot.quicklinks || {}),
+              items,
+              groups: []
+            }
+          }
+        };
+        settings.workspaces.list.push(fresh);
+        onChange(settings);
+        refreshWorkspaceList();
+        toast(`Saved ${items.length} tab${items.length === 1 ? "" : "s"} as "${fresh.name}".`, "success", 6500, {
+          label: "Undo",
+          onClick: () => {
+            const idx = settings.workspaces.list.findIndex(w => w.id === fresh.id);
+            if (idx >= 0) settings.workspaces.list.splice(idx, 1);
+            onChange(settings);
+            refreshWorkspaceList();
+          }
+        });
+      } catch (err) {
+        toast(`Couldn't read tabs — ${err?.message?.toLowerCase() || "unknown error"}.`, "error");
+      }
+    }
+  }, [iconNode("layout-grid", { size: 14 }), " Save tabs as workspace"]);
+
+  sec.appendChild(el("div", { class: "compose__row" }, [addBtn, importBtn, tabSnapshotBtn]));
   return sec;
 }
 
@@ -1864,6 +1929,19 @@ function buildWeatherSection(settings, onChange) {
     })
   ));
 
+  // Ensemble forecast confidence — narrow spread = high confidence.
+  // Adds one outbound call to ensemble-api.open-meteo.com per
+  // location every 30 min (cached on top).
+  g.appendChild(row(
+    "Forecast confidence",
+    "Adds an Open-Meteo Ensemble (50-member ICON-EU) confidence chip to the weather hover. Narrow temperature spread = high confidence; wide spread = uncertain. Adds one extra outbound call per 30-min cache cycle.",
+    toggle({
+      checked: settings.weather.showEnsembleConfidence || false,
+      ariaLabel: "Show forecast confidence",
+      onChange: (v) => { settings.weather.showEnsembleConfidence = v; onChange(settings); }
+    })
+  ));
+
   // Current location chip
   const chipHost = el("div", { class: "settings-row__control", style: { flexWrap: "wrap" } });
   const refreshChip = () => {
@@ -2309,6 +2387,28 @@ function buildMarineSection(settings, onChange) {
       onChange: (v) => {
         if (!settings.marine) settings.marine = {};
         settings.marine.enabled = v;
+        onChange(settings);
+      }
+    })
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Flood risk ------------------------------------------------------- */
+
+function buildFloodSection(settings, onChange) {
+  const sec = section("River flood risk", "layers");
+  const g = group();
+  g.appendChild(row(
+    "Show flood-risk pill",
+    "GloFAS v4 river discharge for the nearest river via Open-Meteo Flood API. Auto-hides when the API returns nulls (no major river near your location).",
+    toggle({
+      checked: settings.flood?.enabled || false,
+      ariaLabel: "Show flood-risk pill",
+      onChange: (v) => {
+        if (!settings.flood) settings.flood = {};
+        settings.flood.enabled = v;
         onChange(settings);
       }
     })
