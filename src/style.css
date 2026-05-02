@@ -4076,17 +4076,64 @@ a {
 .feed-item {
   border-radius: var(--r-2);
   transition: background var(--t-micro);
+  position: relative;
 }
 
 .feed-item:hover {
   background: var(--bg-button);
 }
 
+.feed-item a.feed-item__link,
 .feed-item a {
   display: block;
   padding: var(--s-2) var(--s-3);
   color: var(--text);
   text-decoration: none;
+}
+
+/* Save-to-Reading-List action button. Hidden until row hover/focus to
+   keep the scanning view quiet; revealed when the row is interactive
+   so the user can grab it without having to right-click → bookmark. */
+.feed-item__action {
+  position: absolute;
+  top: 50%;
+  right: var(--s-2);
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  background: var(--bg-elevated);
+  color: var(--subtext1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-2);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--t-fast), background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+}
+.feed-item:hover .feed-item__action,
+.feed-item:focus-within .feed-item__action,
+.feed-item__action:focus-visible {
+  opacity: 1;
+}
+.feed-item__action:hover {
+  background: var(--bg-button-hover);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border-default));
+}
+.feed-item__action--saved {
+  color: var(--green);
+  border-color: color-mix(in srgb, var(--green) 50%, var(--border-default));
+  opacity: 1;
+}
+.feed-item__action[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* Make room for the action button on the right edge so long titles
+   don't underrun the icon. */
+.feed-item:has(.feed-item__action) > a {
+  padding-right: calc(var(--s-2) + 32px);
 }
 
 .feed-item a:hover .feed-item__title {

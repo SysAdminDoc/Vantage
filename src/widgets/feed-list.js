@@ -3,9 +3,14 @@
 // unread count badge, "mark all read" button, skeleton loading, last-updated stamp,
 // URL-based deduplication, mute/highlight feed filter rules.
 
-import { el, clear, relativeTime, hostnameLabel } from "../utils/dom.js";
+import { el, clear, relativeTime, hostnameLabel, toast } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
 import { fetchFeed } from "../utils/rss-parser.js";
+
+// chrome.readingList requires Chrome 120+ and the "readingList" manifest
+// permission. Firefox has no equivalent yet — the addEntry button stays
+// hidden when the API is missing, no UX wart, no error toast.
+const READING_LIST_AVAILABLE = !!globalThis.chrome?.readingList?.addEntry;
 
 export async function renderFeedList(mount, options) {
   const {
@@ -165,7 +170,8 @@ export async function renderFeedList(mount, options) {
     const link = el("a", {
       href: item.link,
       target: "_blank",
-      rel: "noopener noreferrer"
+      rel: "noopener noreferrer",
+      class: "feed-item__link"
     }, [
       titleEl,
       el("div", { class: "feed-item__meta" }, [
@@ -175,11 +181,32 @@ export async function renderFeedList(mount, options) {
         item.published ? el("span", {}, [relativeTime(item.published)]) : null
       ])
     ]);
+
+    const liChildren = [link];
+
+    // Save-to-Reading-List button (Chrome 120+ only). Tucked into a
+    // hover-revealed action group so the row stays visually quiet
+    // when the user is just scanning.
+    if (READING_LIST_AVAILABLE) {
+      const saveBtn = el("button", {
+        type: "button",
+        class: "feed-item__action feed-item__action--save",
+        "aria-label": `Save \"${item.title}\" to Reading list`,
+        title: "Save to Reading list",
+        onClick: (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          saveToReadingList(item, saveBtn);
+        }
+      }, [iconNode("bookmark", { size: 14 })]);
+      liChildren.push(saveBtn);
+    }
+
     const li = el("li", {
       class: `feed-item${isRead ? " feed-item--read" : ""}${isHighlight ? " feed-item--highlight" : ""}`,
       "data-url": item.link,
       ...(hlStyle ? { style: hlStyle } : {})
-    }, [link]);
+    }, liChildren);
 
     link.addEventListener("click", () => {
       if (li.classList.contains("feed-item--read")) return;
@@ -242,6 +269,34 @@ export async function renderFeedList(mount, options) {
     }
   });
   observer.observe(mount, { childList: true });
+}
+
+// Save a feed item to chrome.readingList. addEntry() rejects when the
+// URL is already saved — we treat that as a success ("already saved")
+// because that's the user-meaningful outcome.
+async function saveToReadingList(item, btn) {
+  const api = globalThis.chrome?.readingList;
+  if (!api?.addEntry) return;
+  if (btn) btn.disabled = true;
+  try {
+    await api.addEntry({
+      title: item.title || item.link,
+      url: item.link,
+      hasBeenRead: false
+    });
+    if (btn) btn.classList.add("feed-item__action--saved");
+    toast("Saved to Reading list.", "success");
+  } catch (err) {
+    const msg = String(err?.message || err || "");
+    if (/duplicate|already|exists/i.test(msg)) {
+      if (btn) btn.classList.add("feed-item__action--saved");
+      toast("Already in Reading list.", "info");
+    } else {
+      toast(`Couldn't save — ${msg.toLowerCase() || "unknown error"}.`, "error");
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 // Pre-compiled RegExp cache keyed by pattern source. Avoids re-compiling
