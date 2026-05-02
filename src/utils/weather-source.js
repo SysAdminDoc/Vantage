@@ -41,7 +41,7 @@ export async function getWeatherData(location, units = "fahrenheit", { force = f
   const url =
     `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${location.latitude}&longitude=${location.longitude}` +
-    `&current=temperature_2m,apparent_temperature,weather_code,is_day,cloud_cover,wind_speed_10m,precipitation_probability,dew_point_2m,visibility,relative_humidity_2m` +
+    `&current=temperature_2m,apparent_temperature,weather_code,is_day,cloud_cover,wind_speed_10m,precipitation_probability,dew_point_2m,visibility,relative_humidity_2m,uv_index,pressure_msl` +
     `&daily=sunrise,sunset` +
     `&temperature_unit=${tempUnit}` +
     `&timezone=auto`;
