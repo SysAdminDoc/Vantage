@@ -3904,48 +3904,50 @@ a {
 
 .engine-picker__popover {
   position: absolute;
-  top: calc(100% + var(--s-2));
+  top: calc(100% + var(--s-3));
   left: 0;
-  min-width: 220px;
-  max-height: 320px;
+  min-width: 240px;
+  max-height: 360px;
   overflow-y: auto;
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: var(--r-3);
-  padding: var(--s-1);
+  padding: var(--s-2);
   z-index: 50;
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   animation: pop-in var(--t-fast);
   scrollbar-width: thin;
   scrollbar-color: var(--surface1) transparent;
 }
 
 .engine-picker__popover::-webkit-scrollbar { width: 8px; }
-.engine-picker__popover::-webkit-scrollbar-thumb { background: var(--surface1); border-radius: var(--r-pill); }
+.engine-picker__popover::-webkit-scrollbar-thumb { background: var(--surface1); border-radius: var(--r-pill); transition: background var(--t-fast); }
+.engine-picker__popover::-webkit-scrollbar-thumb:hover { background: var(--surface2); }
 
 .engine-option {
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  padding: var(--s-2) var(--s-3);
+  padding: var(--s-3) var(--s-3);
   background: transparent;
   border: none;
   color: var(--text);
   border-radius: var(--r-2);
   font-size: var(--text-base);
+  font-weight: 500;
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: background var(--t-micro);
+  transition: all var(--t-micro);
 }
 
 .engine-option:hover,
 .engine-option:focus,
 .engine-option:focus-visible {
-  background: var(--bg-button-hover);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   outline: none;
 }
 
@@ -3954,14 +3956,17 @@ a {
 }
 
 .engine-option[aria-selected="true"] {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
   color: var(--text);
+  font-weight: 600;
 }
 
 .engine-option__check {
   margin-left: auto;
   color: var(--accent);
   opacity: 0;
+  transition: opacity var(--t-micro);
+  font-weight: 700;
 }
 
 .engine-option[aria-selected="true"] .engine-option__check {
