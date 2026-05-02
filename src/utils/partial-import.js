@@ -48,18 +48,28 @@ function detectNightTabBackup(imported) {
 // Returns the original imported object so the caller can proceed with the normal flow.
 function showNightTabMigrationSummary(mapping) {
   return new Promise((resolve) => {
-    const dialog = el("div", { class: "import-dialog", role: "dialog", "aria-modal": "true", "aria-labelledby": "nighttab-title" });
-    const backdrop = el("div", { class: "import-dialog__backdrop" });
-    
+    const dialog = el("dialog", {
+      class: "import-dialog",
+      "aria-labelledby": "nighttab-title",
+      closedby: "any"
+    });
+
+    let resolved = false;
     const close = (result) => {
+      if (resolved) return;
+      resolved = true;
       document.removeEventListener("keydown", onEscape);
-      backdrop.remove();
+      try { dialog.close(); } catch {}
       dialog.remove();
       resolve(result);
     };
     const onEscape = (e) => { if (e.key === "Escape") close(false); };
+    dialog.addEventListener("cancel", (e) => { e.preventDefault(); close(false); });
+    dialog.addEventListener("close", () => close(false));
     document.addEventListener("keydown", onEscape);
-    backdrop.addEventListener("click", () => close(false));
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) close(false);
+    });
     
     const header = el("header", { class: "import-dialog__header" }, [
       el("h2", { id: "nighttab-title" }, ["nightTab detected!"]),
@@ -110,9 +120,9 @@ function showNightTabMigrationSummary(mapping) {
     dialog.appendChild(header);
     dialog.appendChild(list);
     dialog.appendChild(actions);
-    document.body.appendChild(backdrop);
     document.body.appendChild(dialog);
-    
+    try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
+
     requestAnimationFrame(() => {
       actions.querySelector(".button--primary").focus();
     });
@@ -224,18 +234,39 @@ export function showPartialImportDialog(current, imported, source) {
     }
 
     const checkboxes = new Map();
-    const dialog = el("div", { class: "import-dialog", role: "dialog", "aria-modal": "true", "aria-labelledby": "import-dialog-title" });
-    const backdrop = el("div", { class: "import-dialog__backdrop" });
+    // Native <dialog> element with closedby="any" (Chrome 126+ / Firefox
+    // 149+ / Safari 26+). Browsers that ignore the attribute fall back
+    // to our manual Esc handler + an outside-click handler attached
+    // below. ::backdrop replaces the previous .import-dialog__backdrop
+    // div so we no longer mount and tear down a separate node.
+    const dialog = el("dialog", {
+      class: "import-dialog",
+      "aria-labelledby": "import-dialog-title",
+      closedby: "any"
+    });
 
+    let resolved = false;
     const close = (result) => {
+      if (resolved) return;
+      resolved = true;
       document.removeEventListener("keydown", onEscape);
-      backdrop.remove();
+      try { dialog.close(); } catch {}
       dialog.remove();
       resolve(result);
     };
     const onEscape = (e) => { if (e.key === "Escape") close(null); };
+    // Native <dialog> dispatches `cancel` on Esc and `close` on
+    // closedby outside-click. Both should resolve(null) so the
+    // import flow doesn't hang waiting for a result.
+    dialog.addEventListener("cancel", (e) => { e.preventDefault(); close(null); });
+    dialog.addEventListener("close", () => close(null));
+    // Fallback Esc + outside-click for browsers without closedby:
     document.addEventListener("keydown", onEscape);
-    backdrop.addEventListener("click", () => close(null));
+    dialog.addEventListener("click", (e) => {
+      // Click on the dialog element itself (not its children) means
+      // the user clicked the backdrop area — close.
+      if (e.target === dialog) close(null);
+    });
 
     const header = el("header", { class: "import-dialog__header" }, [
       el("h2", { id: "import-dialog-title" }, ["Choose what to import"]),
@@ -348,8 +379,17 @@ export function showPartialImportDialog(current, imported, source) {
     if (extraNote) dialog.appendChild(extraNote);
     dialog.appendChild(actions);
 
-    document.body.appendChild(backdrop);
     document.body.appendChild(dialog);
+    // showModal() activates the native modal layer + ::backdrop and
+    // gives us the browser's built-in focus trap (the previous
+    // implementation didn't have one — this is a small a11y win).
+    try { dialog.showModal(); } catch {
+      // Older browsers without HTMLDialogElement support — fall back
+      // to a styled-but-non-modal panel. Visually identical thanks
+      // to the existing position: fixed CSS; just no built-in focus
+      // trap. Keep the dialog visible so the import still works.
+      dialog.setAttribute("open", "");
+    }
 
     // Focus the first checkbox so keyboard users land in the live region.
     requestAnimationFrame(() => {
