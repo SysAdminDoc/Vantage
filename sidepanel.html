@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vantage feeds</title>
+  <link rel="stylesheet" href="src/style.css" />
+  <style>
+    /* Side-panel-only overrides: the panel's available width is much
+       narrower than the new-tab page, so we collapse to a single
+       column and tighten paddings. */
+    body { background: var(--bg-canvas); margin: 0; }
+    .sidepanel-shell {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-3);
+      padding: var(--s-3);
+      min-height: 100vh;
+    }
+    .sidepanel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: var(--s-2);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .sidepanel-header h1 {
+      margin: 0;
+      font-size: var(--text-base);
+      color: var(--text);
+    }
+    #sidepanel-feed-mount {
+      flex: 1;
+      min-height: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidepanel-shell">
+    <header class="sidepanel-header">
+      <h1>Vantage — Feeds</h1>
+      <button id="sidepanel-refresh" type="button"
+              class="icon-button icon-button--ghost icon-button--small"
+              aria-label="Refresh feeds" title="Refresh"></button>
+    </header>
+    <div id="sidepanel-feed-mount" class="panel" data-widget="sidepanel"></div>
+    <div id="toast-host" class="toast-host" aria-live="polite" aria-atomic="false"></div>
+  </div>
+  <script src="src/utils/browser-shim.js"></script>
+  <script type="module" src="src/sidepanel.js"></script>
+</body>
+</html>
