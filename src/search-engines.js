@@ -45,8 +45,13 @@ export function validateCustomSearchUrl(raw) {
   if (scheme !== "https:" && scheme !== "http:") {
     return { ok: false, reason: `Scheme ${scheme} is not allowed (only http or https).` };
   }
-  const host = parsed.hostname.toLowerCase();
-  if (scheme === "http:" && host !== "localhost" && host !== "127.0.0.1" && host !== "::1") {
+  // WHATWG URL serializes IPv6 literals with brackets ('[::1]'), so the
+  // bare-form '::1' comparison would always miss. Strip brackets before
+  // comparing so http://[::1]/... is accepted as the documented loopback.
+  let host = parsed.hostname.toLowerCase();
+  if (host.startsWith("[") && host.endsWith("]")) host = host.slice(1, -1);
+  const isLoopback = host === "localhost" || host === "127.0.0.1" || host === "::1";
+  if (scheme === "http:" && !isLoopback) {
     return { ok: false, reason: "Use https:// (or http://localhost for self-hosted)." };
   }
   if (!host) {
