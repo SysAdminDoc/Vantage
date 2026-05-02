@@ -2961,6 +2961,80 @@ This will add all your YouTube channels as RSS feeds (when available).`;
     ])
   ));
 
+  // Per-widget config clipboard export — extends the partial-import
+  // section-checklist down to widget granularity. Pick the widget(s)
+  // you want to share, copy as JSON, paste on another device through
+  // the existing import flow.
+  const WIDGET_EXPORTS = [
+    { id: "rss",         label: "Reading list (RSS)" },
+    { id: "news",        label: "News feeds" },
+    { id: "calendar",    label: "Calendar feeds" },
+    { id: "feedFilters", label: "Feed filter rules" },
+    { id: "feedAlerts",  label: "Feed keyword alerts" },
+    { id: "quicklinks",  label: "Quick links" },
+    { id: "todo",        label: "To-do" },
+    { id: "notes",       label: "Notes" },
+    { id: "countdown",   label: "Countdown events" },
+    { id: "worldclock",  label: "World clocks" },
+    { id: "crypto",      label: "Crypto watchlist" },
+    { id: "github",      label: "GitHub" },
+    { id: "pomodoro",    label: "Pomodoro" },
+    { id: "windy",       label: "Windy radar" },
+    { id: "embeds",      label: "Embeds" },
+    { id: "starred",     label: "Starred items" },
+    { id: "ambient",     label: "Ambient sounds" }
+  ];
+  const widgetCheckHost = el("div", { class: "widget-export-grid" });
+  for (const w of WIDGET_EXPORTS) {
+    const cb = el("input", { type: "checkbox", id: `wexp-${w.id}` });
+    cb.dataset.key = w.id;
+    widgetCheckHost.appendChild(el("label", { class: "widget-export-row", htmlFor: `wexp-${w.id}` }, [
+      cb,
+      el("span", {}, [w.label])
+    ]));
+  }
+  g.appendChild(row(
+    "Per-widget clipboard export",
+    "Pick widgets, copy a partial JSON to the clipboard, then paste it through the existing JSON import on another device. API keys are scrubbed.",
+    el("div", { class: "compose__column" }, [
+      widgetCheckHost,
+      el("div", { class: "compose__row" }, [
+        el("button", {
+          type: "button", class: "button button--ghost button--small",
+          onClick: () => {
+            const all = widgetCheckHost.querySelectorAll('input[type="checkbox"]');
+            const allChecked = [...all].every(c => c.checked);
+            for (const c of all) c.checked = !allChecked;
+          }
+        }, ["Toggle all"]),
+        el("button", {
+          type: "button", class: "button button--primary",
+          onClick: async () => {
+            const checked = [...widgetCheckHost.querySelectorAll('input[type="checkbox"]:checked')];
+            if (!checked.length) {
+              toast("Pick at least one widget to export.", "warning");
+              return;
+            }
+            const safe = stripSecrets(settings);
+            const partial = {};
+            for (const c of checked) {
+              const k = c.dataset.key;
+              if (safe[k] !== undefined) partial[k] = safe[k];
+            }
+            const payload = { vantageSettings: 1, exportedAt: new Date().toISOString(), partial };
+            const json = JSON.stringify(payload, null, 2);
+            try {
+              await navigator.clipboard.writeText(json);
+              toast(`Copied ${checked.length} widget config${checked.length === 1 ? "" : "s"} (${(json.length / 1024).toFixed(1)} KB).`, "success");
+            } catch (err) {
+              toast(`Couldn't copy — ${err?.message?.toLowerCase() || "clipboard denied"}.`, "error");
+            }
+          }
+        }, [iconNode("share", { size: 14 }), " Copy selected"])
+      ])
+    ])
+  ));
+
   // Dashboard screenshot — share-friendly PNG of the live dashboard.
   // Uses SVG foreignObject rasterization (no extra permissions). Cross-
   // origin background images and iframe widgets are stripped by the
@@ -3089,7 +3163,14 @@ export function normalizeImportedSettings(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("Import file must contain a Vantage settings object.");
   }
-  const merged = mergeSettings(getDefaults(), value);
+  // Per-widget clipboard exports use a `{vantageSettings: 1, partial: {...}}`
+  // envelope; unwrap it before the merge so the section-checklist
+  // partial-import dialog can compute diffs against it normally.
+  let raw = value;
+  if (raw.vantageSettings === 1 && raw.partial && typeof raw.partial === "object") {
+    raw = raw.partial;
+  }
+  const merged = mergeSettings(getDefaults(), raw);
   if (Array.isArray(merged.quicklinks)) {
     merged.quicklinks = { enabled: true, items: merged.quicklinks, groups: [] };
   }
