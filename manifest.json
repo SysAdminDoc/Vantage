@@ -27,7 +27,8 @@
     "storage",
     "alarms",
     "bookmarks",
-    "topSites"
+    "topSites",
+    "readingList"
   ],
   "host_permissions": [
     "https://api.open-meteo.com/*",
