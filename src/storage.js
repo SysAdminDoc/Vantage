@@ -168,6 +168,14 @@ const DEFAULTS = {
     enabled: false,
     events: []
   },
+  starred: {
+    // "Starred items" panel — collects feed-list rows the user pinned
+    // via the per-row star button (v1.1.0). All data lives in
+    // chrome.storage.local; nothing leaves the browser.
+    enabled: false,
+    maxItems: 100,           // hard cap; oldest dropped on overflow
+    items: []                // [{ url, title, sourceTitle, sourceHost, published, savedAt }]
+  },
   converter: {
     enabled: false,
     defaultCategory: "length"

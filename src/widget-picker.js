@@ -45,6 +45,7 @@ const WIDGET_GROUPS = [
       { key: "todo",       path: "todo.enabled",        icon: "check-square",   label: "To-Do List" },
       { key: "notes",      path: "notes.enabled",       icon: "note",           label: "Notes" },
       { key: "bookmarks",  path: "bookmarks.enabled",   icon: "bookmark",       label: "Bookmarks" },
+      { key: "starred",    path: "starred.enabled",     icon: "star",           label: "Starred Items" },
       { key: "crypto",     path: "crypto.enabled",      icon: "trending-up",    label: "Crypto Prices" },
       { key: "github",     path: "github.enabled",      icon: "github",         label: "GitHub" },
       { key: "photo",      path: "photo.enabled",       icon: "image",          label: "Photo of the Day" },

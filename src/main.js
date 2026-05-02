@@ -18,6 +18,7 @@ import { renderPomodoro }   from "./widgets/pomodoro.js";
 import { renderTodo }       from "./widgets/todo.js";
 import { renderNotes }      from "./widgets/notes.js";
 import { renderBookmarks }  from "./widgets/bookmarks.js";
+import { renderStarred }    from "./widgets/starred.js";
 import { renderWorldClock } from "./widgets/worldclock.js";
 import { renderCrypto }     from "./widgets/crypto.js";
 import { renderGithub }     from "./widgets/github.js";
@@ -57,7 +58,7 @@ let contextMenuCleanup   = null;
 // Fixed panel kinds (static mounts in newtab.html)
 const FIXED_PANEL_KINDS = [
   "news", "rss", "calendar", "windy",
-  "todo", "notes", "bookmarks", "crypto", "github", "photo", "countdown", "converter"
+  "todo", "notes", "bookmarks", "starred", "crypto", "github", "photo", "countdown", "converter"
 ];
 
 function getPanelKinds() {
@@ -252,6 +253,15 @@ function mountAll() {
   renderTodo(document.getElementById("todo-mount"), effectiveSettings, { onChange: persist, onAttachDragHandle: onAttach("todo") });
   renderNotes(document.getElementById("notes-mount"), effectiveSettings, { onChange: persist, onAttachDragHandle: onAttach("notes") });
   renderBookmarks(document.getElementById("bookmarks-mount"), effectiveSettings, { onAttachDragHandle: onAttach("bookmarks") });
+  renderStarred(document.getElementById("starred-mount"), effectiveSettings, {
+    onAttachDragHandle: onAttach("starred"),
+    onChange: (next) => {
+      currentSettings.starred = next.starred;
+      // Re-render the feed panels so their star icons reflect the change.
+      renderRss(document.getElementById("rss-mount"),   effectiveSettings, { onAttachDragHandle: onAttach("rss")  });
+      renderNews(document.getElementById("news-mount"), effectiveSettings, { onAttachDragHandle: onAttach("news") });
+    }
+  });
   renderCrypto(document.getElementById("crypto-mount"), effectiveSettings, { onAttachDragHandle: onAttach("crypto") });
   renderGithub(document.getElementById("github-mount"), effectiveSettings, { onAttachDragHandle: onAttach("github") });
   renderPhoto(document.getElementById("photo-mount"), effectiveSettings, { onAttachDragHandle: onAttach("photo") });
