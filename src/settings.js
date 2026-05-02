@@ -93,6 +93,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildFeedFiltersSection(settings, onChange));
   body.appendChild(buildFeedAlertsSection(settings, onChange));
   body.appendChild(buildAirQualitySection(settings, onChange));
+  body.appendChild(buildMarineSection(settings, onChange));
   body.appendChild(buildWindySection(settings, onChange));
   body.appendChild(buildEmbedsSection(settings, onChange));
   body.appendChild(buildCalendarSection(settings, onChange));
@@ -1999,6 +2000,28 @@ function buildAirQualitySection(settings, onChange) {
       onChange: (v) => {
         if (!settings.airquality) settings.airquality = {};
         settings.airquality.enabled = v;
+        onChange(settings);
+      }
+    })
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Marine weather --------------------------------------------------- */
+
+function buildMarineSection(settings, onChange) {
+  const sec = section("Marine weather", "wind");
+  const g = group();
+  g.appendChild(row(
+    "Show marine pill",
+    "Wave height + direction + period, sea surface temperature, ocean current vector via Open-Meteo Marine API. Coastal locations only — the pill hides automatically when the API returns nulls (inland).",
+    toggle({
+      checked: settings.marine?.enabled || false,
+      ariaLabel: "Show marine pill",
+      onChange: (v) => {
+        if (!settings.marine) settings.marine = {};
+        settings.marine.enabled = v;
         onChange(settings);
       }
     })
