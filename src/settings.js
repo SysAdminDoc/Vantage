@@ -92,6 +92,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
     "Curated headlines and news sources."));
   body.appendChild(buildFeedFiltersSection(settings, onChange));
   body.appendChild(buildFeedAlertsSection(settings, onChange));
+  body.appendChild(buildFeedArchiveSection(settings, onChange));
   body.appendChild(buildAirQualitySection(settings, onChange));
   body.appendChild(buildMarineSection(settings, onChange));
   body.appendChild(buildWindySection(settings, onChange));
@@ -1102,6 +1103,148 @@ function buildFeedAlertsSection(settings, onChange) {
         }
       }, [iconNode("trash", { size: 14 }), " Reset history"])
     ])
+  ));
+
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Feed archive (IndexedDB) ----------------------------------------- */
+
+function buildFeedArchiveSection(settings, onChange) {
+  const cfg = settings.feedArchive || { enabled: false, cap: 10_000 };
+  const sec = section("Feed archive", "hard-drive");
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    "Permanent IndexedDB-backed archive of every feed item your dashboard renders. Searchable below. Strict opt-in: storage grows over time and is bounded only by the cap. Stays in your browser — never uploaded."
+  ]));
+
+  const g = group();
+
+  g.appendChild(row(
+    "Enable archive",
+    "When on, every News + Reading list item is persisted to IndexedDB on render. Disabling stops new writes but keeps the existing data — clear below if you want to wipe.",
+    toggle({
+      checked: cfg.enabled || false,
+      ariaLabel: "Enable feed archive",
+      onChange: (v) => {
+        settings.feedArchive = { ...cfg, enabled: v };
+        onChange(settings);
+      }
+    })
+  ));
+
+  const capInput = el("input", {
+    type: "number", min: "100", max: "100000", step: "100",
+    value: String(cfg.cap ?? 10_000),
+    class: "text-input number-input",
+    "aria-label": "Maximum archived items",
+    onChange: (e) => {
+      const v = parseInt(e.target.value, 10);
+      if (!isNaN(v) && v >= 100 && v <= 100_000) {
+        settings.feedArchive = { ...cfg, cap: v };
+        onChange(settings);
+      }
+    }
+  });
+  g.appendChild(row(
+    "Cap",
+    "Oldest items are pruned when the archive exceeds this many entries. 100–100,000.",
+    capInput
+  ));
+
+  // Live archive size readout + clear-all
+  const sizeChip = el("span", { class: "chip" }, ["—"]);
+  const refreshSize = async () => {
+    try {
+      const { archiveSize } = await import("./utils/feed-archive.js");
+      const n = await archiveSize();
+      sizeChip.replaceChildren(`${n.toLocaleString()} item${n === 1 ? "" : "s"}`);
+    } catch {
+      sizeChip.replaceChildren("Unavailable");
+    }
+  };
+  refreshSize();
+
+  g.appendChild(row(
+    "Stored",
+    "Live count from IndexedDB.",
+    el("div", { class: "compose__row" }, [
+      sizeChip,
+      el("button", {
+        type: "button", class: "button button--ghost",
+        onClick: async () => {
+          if (!confirm("Wipe the entire feed archive? This cannot be undone.")) return;
+          try {
+            const { clearArchive } = await import("./utils/feed-archive.js");
+            const n = await clearArchive();
+            await refreshSize();
+            toast(`Cleared ${n.toLocaleString()} archived item${n === 1 ? "" : "s"}.`, "success");
+          } catch (err) {
+            toast(err.message || "Couldn't clear archive.", "error");
+          }
+        }
+      }, [iconNode("trash", { size: 14 }), " Clear archive"])
+    ])
+  ));
+
+  // Search box + results
+  const searchInput = el("input", {
+    type: "search", class: "text-input",
+    placeholder: "Search title or source…",
+    "aria-label": "Search archived feed items"
+  });
+  const resultsHost = el("div", { class: "feed-archive-results" });
+  let lastQueryToken = 0;
+  const runSearch = async () => {
+    const token = ++lastQueryToken;
+    clear(resultsHost);
+    resultsHost.appendChild(el("p", { class: "settings-section__hint" }, ["Searching…"]));
+    try {
+      const { searchArchive } = await import("./utils/feed-archive.js");
+      const out = await searchArchive(searchInput.value, { limit: 50 });
+      if (token !== lastQueryToken) return; // stale response
+      clear(resultsHost);
+      if (!out.length) {
+        resultsHost.appendChild(el("p", { class: "settings-section__hint" }, [
+          searchInput.value.trim() ? "No matches." : "Archive is empty — enable above and load some feeds."
+        ]));
+        return;
+      }
+      const list = el("ul", { class: "feed-archive-list" });
+      for (const it of out) {
+        list.appendChild(el("li", { class: "feed-archive-row" }, [
+          el("a", {
+            href: it.origUrl || `https://${it.url}`,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            class: "feed-archive-row__title"
+          }, [it.title || it.url]),
+          el("span", { class: "feed-archive-row__meta" }, [
+            it.sourceTitle || it.sourceHost || hostnameLabel(it.url),
+            " · ",
+            new Date(it.archivedAt || Date.now()).toLocaleDateString()
+          ])
+        ]));
+      }
+      resultsHost.appendChild(list);
+    } catch (err) {
+      if (token !== lastQueryToken) return;
+      clear(resultsHost);
+      resultsHost.appendChild(el("p", { class: "panel-error" }, [
+        `Couldn't search archive — ${err?.message?.toLowerCase() || "unknown error"}.`
+      ]));
+    }
+  };
+  let searchDebounce = null;
+  searchInput.addEventListener("input", () => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(runSearch, 200);
+  });
+
+  g.appendChild(row(
+    "Search archive",
+    "Substring match on title + source. Newest first; up to 50 results.",
+    el("div", { class: "compose__column" }, [searchInput, resultsHost])
   ));
 
   sec.appendChild(g);
