@@ -4,6 +4,7 @@
 import { el, clear, toggle, segmented, toast, hostnameLabel } from "./utils/dom.js";
 import { playAlarm as playAlarmTone } from "./utils/alarm-audio.js";
 import { showPartialImportDialog } from "./utils/partial-import.js";
+import { captureScreenshot } from "./utils/screenshot.js";
 import { iconNode } from "./icons.js";
 import { SEARCH_ENGINES, validateCustomSearchUrl } from "./search-engines.js";
 import { geocodeCity } from "./widgets/weather.js";
@@ -2428,6 +2429,33 @@ This will add all your YouTube channels as RSS feeds (when available).`;
         }
       }, [iconNode("download", { size: 14 }), " Import from Gist"])
     ])
+  ));
+
+  // Dashboard screenshot — share-friendly PNG of the live dashboard.
+  // Uses SVG foreignObject rasterization (no extra permissions). Cross-
+  // origin background images and iframe widgets are stripped by the
+  // browser's tainted-canvas rules — documented in the toast.
+  g.appendChild(row(
+    "Capture dashboard screenshot",
+    "Save a PNG of the current dashboard for sharing on r/startpages, your README, etc. Cross-origin backgrounds (Bing/NASA APOD, favicons) and iframe widgets won't appear — bundled themes capture cleanly.",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: async (ev) => {
+        const btn = ev.currentTarget;
+        const wasDisabled = btn.disabled;
+        btn.disabled = true;
+        toast("Capturing dashboard…", "info");
+        try {
+          const { filename, bytes } = await captureScreenshot();
+          const kb = (bytes / 1024).toFixed(1);
+          toast(`Saved ${filename} (${kb} KB).`, "success");
+        } catch (err) {
+          toast(err.message || "Couldn't capture screenshot.", "error");
+        } finally {
+          btn.disabled = wasDisabled;
+        }
+      }
+    }, [iconNode("image", { size: 14 }), " Capture screenshot"])
   ));
 
   // Debug log — local-only ring buffer of unhandled errors for issue
