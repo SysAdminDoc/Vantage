@@ -231,6 +231,15 @@ const DEFAULTS = {
     enabled: false,
     events: []
   },
+  historySearch: {
+    // Inline browser-history search panel. Strict opt-in: enabling
+    // triggers chrome.permissions.request({permissions: ["history"]})
+    // so users see the browser's native permission grant dialog.
+    // Disabling revokes the permission. Default off; never installed
+    // by default so the install-prompt scope stays small.
+    enabled: false,
+    maxResults: 20           // chrome.history.search cap
+  },
   starred: {
     // "Starred items" panel — collects feed-list rows the user pinned
     // via the per-row star button (v1.1.0). All data lives in
