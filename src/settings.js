@@ -2318,6 +2318,12 @@ function isoDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// Hard cap on imported pomodoro custom-audio size. Mirrors the 200 KB
+// upload cap in the settings UI but enforced on EVERY import path so a
+// malicious or merely oversized JSON / share-link can't blow up storage.
+// 200 KB binary → ~280 KB as a data: URI in base64.
+const MAX_CUSTOM_AUDIO_DATA_URI_LEN = 290 * 1024;
+
 export function normalizeImportedSettings(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("Import file must contain a Vantage settings object.");
@@ -2336,6 +2342,34 @@ export function normalizeImportedSettings(value) {
       }];
     }
     delete merged.embed;
+  }
+  // Strip oversized or suspiciously-shaped custom Pomodoro audio. The
+  // settings-page uploader caps at 200 KB; imports must obey the same
+  // bound. Failed validation falls back to the bell preset rather than
+  // failing the whole import.
+  const audio = merged.pomodoro?.alarm?.customAudio;
+  if (typeof audio === "string" && audio.length > 0) {
+    const tooLong = audio.length > MAX_CUSTOM_AUDIO_DATA_URI_LEN;
+    const notDataUri = !audio.startsWith("data:");
+    if (tooLong || notDataUri) {
+      merged.pomodoro.alarm = {
+        ...merged.pomodoro.alarm,
+        tone: merged.pomodoro.alarm.tone === "custom" ? "bell" : merged.pomodoro.alarm.tone,
+        customAudio: ""
+      };
+    }
+  }
+  // Re-run the search customUrl validator on imports — stored values
+  // from older exports (or third-party-edited JSON) might fail the
+  // post-Iter2 scheme check. Fall through to the default sentinel so
+  // the user notices in Settings rather than silently re-saving a
+  // dangerous URL.
+  const cu = merged.search?.customUrl;
+  if (typeof cu === "string" && cu.length > 0) {
+    const v = validateCustomSearchUrl(cu);
+    if (!v.ok) {
+      merged.search.customUrl = getDefaults().search.customUrl;
+    }
   }
   return merged;
 }
