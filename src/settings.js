@@ -2,6 +2,7 @@
 // Sections render as grouped rows with hints and icons. Sticky header with close button.
 
 import { el, clear, toggle, segmented, toast, hostnameLabel } from "./utils/dom.js";
+import { playAlarm as playAlarmTone } from "./utils/alarm-audio.js";
 import { iconNode } from "./icons.js";
 import { SEARCH_ENGINES, validateCustomSearchUrl } from "./search-engines.js";
 import { geocodeCity } from "./widgets/weather.js";
@@ -1996,6 +1997,123 @@ function buildPomodoroSection(settings, onChange) {
   g.appendChild(numRow("Long break (minutes)", "longBreakMinutes", 5, 120));
   g.appendChild(numRow("Sessions before long break", "sessionsBeforeLongBreak", 1, 10));
   sec.appendChild(g);
+
+  // Alarm tone — synthesized via Web Audio (see utils/alarm-audio.js).
+  if (!cfg.alarm) {
+    settings.pomodoro.alarm = { tone: "bell", volume: 60, customAudio: "" };
+  }
+  const alarmGroup = group();
+  alarmGroup.appendChild(row(
+    "Alarm tone",
+    "Plays once when a work or break period ends. Synthesized in-browser; no audio assets shipped with the extension.",
+    segmented({
+      ariaLabel: "Alarm tone",
+      value: settings.pomodoro.alarm.tone,
+      options: [
+        { value: "none",    label: "Off"     },
+        { value: "bell",    label: "Bell"    },
+        { value: "chime",   label: "Chime"   },
+        { value: "digital", label: "Digital" },
+        { value: "custom",  label: "Custom"  }
+      ],
+      onChange: (v) => {
+        settings.pomodoro.alarm = { ...settings.pomodoro.alarm, tone: v };
+        onChange(settings);
+      }
+    })
+  ));
+
+  // Volume slider
+  const volInput = el("input", {
+    type: "range",
+    min: "0", max: "100", step: "5",
+    value: String(settings.pomodoro.alarm.volume ?? 60),
+    "aria-label": "Alarm volume",
+    onInput: (e) => {
+      settings.pomodoro.alarm = { ...settings.pomodoro.alarm, volume: parseInt(e.target.value, 10) };
+      onChange(settings);
+    }
+  });
+  alarmGroup.appendChild(row("Volume", null, volInput));
+
+  // Test button — fires the configured tone once. Live demo is more
+  // reliable than text descriptions for choosing a tone.
+  alarmGroup.appendChild(row(
+    "Test alarm",
+    "Plays the selected tone once at the configured volume.",
+    el("button", {
+      type: "button",
+      class: "button button--ghost",
+      onClick: () => {
+        playAlarmTone(settings.pomodoro.alarm).catch(() => {});
+      }
+    }, [iconNode("play", { size: 14 }), " Test"])
+  ));
+
+  // Custom audio uploader — only meaningful when tone === "custom"
+  const fileInput = el("input", {
+    type: "file",
+    accept: "audio/*",
+    style: { display: "none" },
+    onChange: async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      // 200 KB cap — keeps chrome.storage usage bounded; longer alarms
+      // are excessive for "session-end ding" purposes anyway.
+      if (file.size > 200 * 1024) {
+        toast("Custom alarm must be 200 KB or smaller.", "error");
+        e.target.value = "";
+        return;
+      }
+      try {
+        const dataUri = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = () => reject(r.error);
+          r.readAsDataURL(file);
+        });
+        settings.pomodoro.alarm = {
+          ...settings.pomodoro.alarm,
+          tone: "custom",
+          customAudio: dataUri
+        };
+        onChange(settings);
+        toast(`Custom alarm set (${(file.size / 1024).toFixed(1)} KB).`, "success");
+      } catch (err) {
+        toast("Couldn't read that audio file.", "error");
+      }
+      e.target.value = "";
+    }
+  });
+  alarmGroup.appendChild(fileInput);
+  alarmGroup.appendChild(rowColumn(
+    "Custom audio",
+    el("div", { class: "compose__row" }, [
+      el("button", {
+        type: "button",
+        class: "button button--ghost",
+        onClick: () => fileInput.click()
+      }, [iconNode("upload", { size: 14 }), " Upload audio"]),
+      settings.pomodoro.alarm.customAudio
+        ? el("button", {
+            type: "button",
+            class: "button button--ghost",
+            onClick: () => {
+              settings.pomodoro.alarm = {
+                ...settings.pomodoro.alarm,
+                tone: settings.pomodoro.alarm.tone === "custom" ? "bell" : settings.pomodoro.alarm.tone,
+                customAudio: ""
+              };
+              onChange(settings);
+              toast("Custom alarm cleared.", "success");
+            }
+          }, [iconNode("trash", { size: 14 }), " Clear"])
+        : null
+    ]),
+    "MP3 / OGG / WAV / M4A, max 200 KB. Switches the tone to 'Custom' on upload."
+  ));
+
+  sec.appendChild(alarmGroup);
   return sec;
 }
 

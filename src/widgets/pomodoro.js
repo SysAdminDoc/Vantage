@@ -11,6 +11,7 @@
 
 import { el, clear, toast } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
+import { playAlarm } from "../utils/alarm-audio.js";
 
 const STORAGE_KEY = "vantagePomodoro";
 
@@ -183,6 +184,9 @@ export function renderPomodoro(mount, settings) {
           pausedRemainingMs: duration
         };
         await writeState(newState);
+        // Alarm tone fires before notification — keeps the order of
+        // attention-grabbing signals consistent (bell → toast → OS notif).
+        playAlarm(cfg.alarm).catch(() => {});
         notify(
           next === "work" ? "Time to focus!" : "Break time!",
           next === "work"

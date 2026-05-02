@@ -109,7 +109,12 @@ const DEFAULTS = {
     workMinutes: 25,
     breakMinutes: 5,
     longBreakMinutes: 15,
-    sessionsBeforeLongBreak: 4
+    sessionsBeforeLongBreak: 4,
+    alarm: {
+      tone: "bell",          // "none" | "bell" | "chime" | "digital" | "custom"
+      volume: 60,            // 0-100
+      customAudio: ""        // base64 data-uri (only when tone === "custom")
+    }
   },
   todo: {
     enabled: false,
