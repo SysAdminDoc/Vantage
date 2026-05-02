@@ -848,6 +848,11 @@ const BACKGROUND_DATA_KEYS = [
 ];
 
 function resetBackgroundMount(mount) {
+  // Revoke any prior OffscreenCanvas-generated Blob URL — switching
+  // background kinds (e.g. user toggles from image-upload to
+  // animated) should release the cached blurred bitmap so we don't
+  // leak Object URLs.
+  if (typeof revokeLastPreblur === "function") revokeLastPreblur();
   mount.innerHTML = "";
   mount.style.cssText = "";
   mount.classList.remove("bg--no-transition");
@@ -1586,18 +1591,79 @@ export async function renderBackground(mount, settings, saveSettings) {
   };
 }
 
+// Track the last OffscreenCanvas-generated blob URL so we can revoke it
+// when the background swaps. Without this we'd leak Object URLs every
+// time the user adjusts the blur slider or the Bing-daily image
+// changes for the next day.
+let _lastPreblurUrl = null;
+
+function revokeLastPreblur() {
+  if (_lastPreblurUrl) {
+    try { URL.revokeObjectURL(_lastPreblurUrl); } catch {}
+    _lastPreblurUrl = null;
+  }
+}
+
 function applyImageBackground(mount, src, bg) {
   resetBackgroundMount(mount);
   mount.dataset.backgroundState = "image";
   const blur = Math.min(20, Math.max(0, bg.blur ?? 0));
   const brightness = Math.min(150, Math.max(50, bg.brightness ?? 100));
-  mount.style.backgroundImage    = `url(${JSON.stringify(src)})`;
-  mount.style.backgroundSize     = "cover";
-  mount.style.backgroundPosition = "center";
-  mount.style.backgroundRepeat   = "no-repeat";
-  mount.style.filter = (blur > 0 || brightness !== 100)
-    ? `blur(${blur}px) brightness(${brightness / 100})`
-    : "";
+
+  // Apply the source image immediately so the user sees something
+  // while the OffscreenCanvas pre-blur runs in the background.
+  const setBackgroundUrl = (url, useFilter) => {
+    mount.style.backgroundImage    = `url(${JSON.stringify(url)})`;
+    mount.style.backgroundSize     = "cover";
+    mount.style.backgroundPosition = "center";
+    mount.style.backgroundRepeat   = "no-repeat";
+    mount.style.filter = useFilter
+      ? `blur(${blur}px) brightness(${brightness / 100})`
+      : (brightness !== 100 ? `brightness(${brightness / 100})` : "");
+    // Encourage the browser to lift the background onto its own GPU
+    // layer when a filter is in play — measurably reduces stutter
+    // when widgets paint over the top.
+    if (useFilter || blur > 0) {
+      mount.style.willChange = "filter, transform";
+      mount.style.transform = "translateZ(0)";
+    } else {
+      mount.style.willChange = "";
+      mount.style.transform  = "";
+    }
+  };
+
+  setBackgroundUrl(src, blur > 0 || brightness !== 100);
+
+  // OffscreenCanvas pre-blur: render the blur ONCE in a Canvas2D
+  // surface and apply the result as a flat bitmap, eliminating the
+  // per-paint blur cost. Falls through silently on any failure
+  // (Safari < 16.4, cross-origin tainted images, etc.) — the CSS
+  // filter applied above stays as the fallback.
+  revokeLastPreblur();
+  if (blur > 0) {
+    (async () => {
+      try {
+        const { preblurImage, isOffscreenBlurAvailable } = await import("../utils/offscreen-blur.js");
+        if (!isOffscreenBlurAvailable()) return;
+        const blurred = await preblurImage(src, { blur, brightness });
+        if (blurred === src) return; // pre-blur declined (would be a no-op)
+        // Only swap if the user is still on the same kind / src — they
+        // may have changed the background in the meantime.
+        if (mount.dataset.backgroundState === "image") {
+          _lastPreblurUrl = blurred;
+          // The pre-blurred bitmap already includes the brightness +
+          // blur filter, so clear CSS filter to avoid double-blur.
+          mount.style.backgroundImage = `url(${JSON.stringify(blurred)})`;
+          mount.style.filter = "";
+          mount.style.willChange = "";
+          mount.style.transform  = "";
+        } else {
+          // Background changed mid-flight — revoke the unused URL.
+          try { URL.revokeObjectURL(blurred); } catch {}
+        }
+      } catch { /* keep the CSS-filter fallback that's already on screen */ }
+    })();
+  }
 }
 
 function applyVideoBackground(mount, src, bg) {
