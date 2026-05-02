@@ -3890,6 +3890,15 @@ a {
   flex-shrink: 0;
 }
 
+/* Icon roundness variants: controlled via [data-icon-radius] */
+[data-icon-radius="square"] .quicklink__favicon {
+  border-radius: 0;
+}
+
+[data-icon-radius="circle"] .quicklink__favicon {
+  border-radius: 50%;
+}
+
 /* ============================================================
    Utility bar — weather chip + settings button
    ============================================================ */
