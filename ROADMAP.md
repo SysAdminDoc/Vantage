@@ -1,6 +1,6 @@
 # Vantage Roadmap
 
-_Living document. Last revised 2026-05-01 against v0.9.0._
+_Living document. Last revised 2026-05-01 (round 2) against v0.9.0._
 
 This roadmap is sourced — every Now / Next / Later item points to evidence in the Appendix. Versions are aspirational targets, not commitments. The aim is dense, skimmable, specific: an item without a sentence on **why now**, an effort sketch, and a citation gets cut.
 
@@ -135,6 +135,7 @@ If a feature would force breaking any of these, it's flagged "**⚠ contradicts 
 - [x] Workspace visual profiles (per-workspace theme + scene override)
 - [x] Scene preview controls (QA gallery; all weather + time-of-day combinations)
 - [x] Keyboard shortcut configuration (`/` search, `Esc` close, all actions user-remappable)
+- [x] Automated release workflow (`.github/workflows/release.yml`) — `workflow_dispatch`-triggered; Python-built Chrome ZIP + CRX3 (self-signed via `EXTENSION_PEM` secret) + Firefox XPI; SHA256SUMS.txt; auto-tag + GitHub Release; Omaha CRX update feed (`updates.xml`) + AMO update manifest (`firefox-updates.json`) generated and committed back to main on each release.
 
 ---
 
@@ -151,6 +152,8 @@ These items unblock CWS/AMO listing and polish the product for a wider audience.
 - [ ] **Weather widget enrichment** — add feels-like temperature (`apparent_temperature`), precipitation probability (`precipitation_probability`), dew point (`dew_point_2m`), and visibility (`visibility`) to the weather widget. All four variables are already in Open-Meteo's current endpoint response; UI-only change. ~0.5d. — _[Sources 56, 57] (Open-Meteo docs; confirmed available in current response)._
 - [ ] **Quote widget author details** — clicking the quote expands an author info card (birth/death, short bio, link to Wikipedia). Mue v7.6.0 pattern. ~0.5d. — _[Source 101] (Mue v7.6.0 QuoteInfoModal feature)._
 - [ ] **`theme-color` meta tag tracking current background** — update `<meta name="theme-color">` whenever the background color changes; browser tab chrome reflects the current sky color in supporting browsers. Trivial polish, ~0.1d. — _[Source 98] (Bonjourr v22.0.0 CHANGELOG)._
+- [ ] **`prefers-contrast: more` / `forced-colors` CSS pass** — single media-query sweep to thicken dashed borders, lift low-opacity placeholder text, and solidify subtle dividers when the OS reports a high-contrast preference; `forced-colors: active` (Windows High Contrast Mode) also handled. ~0.25d; no new dependencies. — _[Source 118] (MDN prefers-contrast, updated Apr 2026); pairs with the WCAG 2.2 AA audit._
+- [ ] **Custom greeting text per time slot** — let users override the hardcoded "Good morning / afternoon / evening" strings with their own copy per time window; optional `[name]` token still expands. Low-effort personalisation. ~0.5d. — _[Source 98] (Bonjourr v22.0.0 CHANGELOG — "Custom greetings" feature)._
 
 ### Distribution readiness
 - [ ] **WCAG 2.2 AA full audit** — automated (axe-core) + manual screen-reader pass (NVDA + VoiceOver). All widget surfaces in scope; produce `docs/accessibility-report.md`. Required before CWS listing. ~3d. — _[Sources 70, 71]._
@@ -185,6 +188,8 @@ These require v1.0 to be listed; some require new browser API surface or are arc
 - [ ] **Periodic Background Sync for feed pre-warming** — register a `periodicSync` task so the RSS cache is warm before the user's first new tab of the day. **⚠ Heavy permission surface; strict opt-in; document the Notifications-API-style permission prompt.** ~1d. — _Web platform reference (MDN: Background Sync API)._
 - [ ] **In-extension error logging with share-to-clipboard** — catch and log unhandled widget errors to a circular buffer in `chrome.storage.local`; expose a "Copy debug log" button in settings. Helps diagnose user-reported issues without telemetry. ~0.5d. — _[Source 105] (TablissNG v1.6.5 error-logging system)._
 - [ ] **Ambient sound widget** — looping ambient audio (rain, forest, café) via `<audio>` element; locally bundled short loops (≤200 KB each) or user-uploaded file. Pause-on-tab-blur. Complements Pomodoro focus sessions. ~1.5d. — _[Source 106] (mutabu extension, Mar 2026)._
+- [ ] **JSON Feed v1.1 support in rss-parser** — detect `application/feed+json` `Content-Type` (or `{"version":"https://jsonfeed.org/..."}` probe) before the XML DOMParser path; map `items[].title`, `content_html`/`content_text`, `url`, `date_published` → existing item shape; zero new runtime deps (~0.5d in `src/rss-parser.js`). Most modern Micro.blog, Ghost, and Kagi-published feeds ship JSON Feed alongside RSS; currently silently fails on those. — _[Source 116] (JSON Feed v1.1 spec)._
+- [ ] **`chrome.readingList` save integration** — "Save to Reading List" icon on each headline row; calls `chrome.readingList.addEntry({title, url, hasBeenRead: false})`; requires adding `"readingList"` to manifest permissions; graceful-no-op on Firefox (API absent). Chrome 120+ only. ~0.5d; no competitor NTP currently uses this. — _[Source 117] (chrome.readingList API docs, Chrome 120+ MV3)._
 
 ---
 
@@ -200,6 +205,7 @@ Major efforts or waiting on ecosystem maturity. Ordering is not commitment.
 - [ ] **Drag-resize widget layout editor** — iOS-style: press-and-hold to enter edit mode, drag to reorder, pinch/drag corners to resize, snap to grid. Replaces the current button-based panel order. ~5d; significant design work. — _[Source 108] (Bonjourr issue #804, Apr 2026 — users explicitly requesting this)._
 - [ ] **Online documentation site** — GitHub Pages or Cloudflare Pages site (`docs.vantage.dashboard`) with per-widget docs, screenshots, FAQ, and the widget API spec. Currently only README. ~1d setup + ongoing. — _[Source 109] (TablissNG docs site, v1.6.4)._
 - [ ] **History search inline** — `chrome.history.search` behind a settings opt-in; opt-in default off; respects browser history-clearing. ~1d. — _[Source 39]; kept deferred._
+- [ ] **CSS `sibling-index()` staggered feed entrance animations** — replace the JS `animationDelay` loop on feed item render with `animation-delay: calc(0.05s * sibling-index())` in CSS; eliminates the stagger-on-repaint JS path entirely. Chrome 138 shipped `sibling-index()` / `sibling-count()` as stable (May 2025 → stable ~Dec 2025). Interop 2026 candidate for Firefox / Safari. ~0.25d when cross-browser; track and land once Firefox ships. — _[Source 120] (Chrome 138 beta, May 2025 — `sibling-index()` example in CSS section)._
 
 ## Always-on
 
@@ -210,6 +216,8 @@ Maintained continuously, not version-gated.
 - **Re-capture README screenshots** whenever the UI shifts. DPI-aware capture required (system is 125%).
 - **Privacy Table audit** in README each release — every new outbound endpoint or permission gets a row before shipping. — _Constraint #1._
 - **Verify clean-profile install** before every release — extract ZIP into a fresh user-data-dir, smoke-test all widgets across Chrome + Edge + Brave + Vivaldi + Firefox.
+- **Track Chrome 138+ CSS functions** — `sibling-index()` / `sibling-count()` (stagger animations), `progress()` (range-aware interpolation), `stretch` sizing keyword, `env(--font-scale)` OS font scale variable. Chrome 138 stable ~Dec 2025; watch Firefox and Safari parity for Interop 2026 target features before landing. — _[Source 120]._
+- **Track `chrome.readingList` availability** — currently Chrome 120+ only; re-check Firefox MV3 support each quarter; remove the graceful-no-op guard once cross-browser. — _[Source 117]._
 - **Track Open-Meteo changelog** — new variables (cloud cover altitude bands, new AQI metrics, additional pollen species) and new API domains. — _[Sources 56, 57, 58, 59]._
 - **Track Chrome Built-in AI origin trial status** — Prompt API, Summarizer API, Translator API (all gated behind Chrome 138+ / hardware check today); monitor for GA. — _[Source 110]._
 - **Track Chrome `chrome.*` API changes** — Reading List API, Side Panel updates, future `chrome.ai` namespace. — _[Sources 62, 65]._
@@ -241,6 +249,8 @@ Items with real merit but unresolved trade-offs. Decided per release cycle, not 
 - **Email inbox preview (Gmail / IMAP)** — heavy OAuth surface; Google OAuth review for Gmail scopes is months long. Users who want this have Gmail open anyway. — _[Source 41]._
 - **Apple/Google Calendar OAuth** — same OAuth tax as Gmail; the `.ics` URL widget covers 90% of demand without accounts. Revisit only if users need event creation. — _[Sources 15, 16, 41, 47]._
 - **WebAuthn / passkey lock for settings** — bio-lock so a shared device can't reset config. Real demand but the new-tab page is a weak auth boundary (incognito tab bypasses it). Reconsider after workspaces establish a per-profile identity model. — _Web platform reference (MDN: Web Authentication API)._
+- **Web Share API for dashboard snapshot** — `navigator.share({title, text, files: [pngBlob]})` on a "Share" button; would allow sending a dashboard screenshot to the OS share sheet. Needs empirical verification that `navigator.share()` works from the `chrome-extension://newtab` origin (some APIs are restricted there). Under consideration pending validation. — _[Source 119] (MDN Web Share API)._
+- **Tab Groups display panel** — `chrome.tabGroups` (Chrome 89+, `shared` attribute Chrome 137+): visual card list of current browser tab groups; click to activate group; requires `"tabGroups"` manifest permission. Novel NTP feature; no competitor uses it; useful for power users managing 40+ tabs. Needs UX scoping (read-only view vs. editable). — _[Source 121] (chrome.tabGroups API docs)._
 
 ---
 
@@ -266,6 +276,7 @@ Each line: feature — citation — one-sentence rejection reason.
 - **Custom sync server or peer-to-peer sync** — _[Source 89]._ No server; Gist/URL sync (Next) is the correct privacy-preserving shape.
 - **Crash log as a hosted service / remote telemetry** — _Gap._ Local crash log + "copy debug log" button (Next) is sufficient; hosted service contradicts constraint #1.
 - **Brave-style sponsored background revenue share** — _[Source 40]._ Contradicts constraint #1 unless run as a separate fork; noting for completeness.
+- **Google Fonts cloud font picker** — Bonjourr v22.0 ships a Google Fonts selector in the UI. Every font swap sends a request to `fonts.googleapis.com` on new-tab open; contradicts constraint #1 (undisclosed third-party call on every tab). Local-font-upload is the acceptable future path.
 - **Haptic / vibration feedback** — Web platform reference. New-tab page has no touch surface in typical use; inapplicable.
 - **Hexagon / non-rectangular tile layouts** — _[Source 50]._ Breaks accessibility and drag-reorder; low demand.
 
@@ -275,7 +286,7 @@ Each line: feature — citation — one-sentence rejection reason.
 
 Numbering matches citations inline. URLs verified at research time (2026-05-01).
 
-**New sources added in this revision: #97–#115.**
+**Sources #97–#115 added in round 1; #116–#121 added in round 2 (2026-05-01).**
 
 ### Direct OSS competitors
 1. https://github.com/joelshepherd/tabliss — Tabliss; original; mostly dormant since 2022.
@@ -411,7 +422,7 @@ Numbering matches citations inline. URLs verified at research time (2026-05-01).
 ### Reader extension reference
 96. https://www.ghacks.net/2020/03/10/smart-rss-reader-is-a-feed-reader-extension-for-firefox-and-chrome/ — Smart RSS Reader (OPML import preserves folders).
 
-### Sources added 2026-05-01 (revision against v0.9.0)
+### Sources added 2026-05-01 (round 1 revision)
 
 97. https://github.com/zombieFox/nightTab/releases/tag/v7.3.0 — nightTab v7.3.0 release notes: partial backup restore, clipboard import/export, modular theming rewrite, group collapse.
 98. https://github.com/victrme/Bonjourr/blob/master/CHANGELOG.md — Bonjourr v22.0.0 (context menu, Pixabay video backgrounds, alarm tones, theme-color meta tag); v21.0.0 (Gist/URL settings sync).
@@ -433,9 +444,18 @@ Numbering matches citations inline. URLs verified at research time (2026-05-01).
 114. https://github.com/ENCRE0520/EclipseTab — EclipseTab v1.3: "Zen Shelf" (free-position text + image sticky notes), "Focus Spaces" (per-context workspace switching); listed on CWS + AMO + Edge Add-ons.
 115. https://developer.chrome.com/docs/extensions/develop/concepts/storage-and-cookies — Chrome extension storage: `chrome.storage.local` is NOT cleared by "Clear browsing data"; `unlimitedStorage` permission removes 5 MB soft quota entirely.
 
+### Sources added 2026-05-01 (round 2 revision)
+
+116. https://jsonfeed.org/version/1.1 — JSON Feed v1.1 spec: JSON-native syndication format; `items[].content_html` / `content_text`, `date_published` (RFC 3339), `authors[]`, `language`, `next_url` pagination; `Content-Type: application/feed+json`.
+117. https://developer.chrome.com/docs/extensions/reference/api/readingList — chrome.readingList API (Chrome 120+ MV3): `addEntry()`, `query()`, `updateEntry()`, `removeEntry()`; requires `"readingList"` permission; unavailable in Firefox.
+118. https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-contrast — MDN: `prefers-contrast` media feature (`no-preference`, `more`, `less`, `custom`); full cross-browser support; `custom` matches `forced-colors: active` palette; last updated Apr 2026.
+119. https://developer.mozilla.org/en-US/docs/Web/API/Web_Share_API — MDN: Web Share API (`navigator.share()` / `navigator.canShare()`); requires transient user activation; availability in `chrome-extension://newtab` origin unverified.
+120. https://developer.chrome.com/blog/chrome-138-beta — Chrome 138 beta (published May 28, 2025): CSS `sibling-index()` / `sibling-count()` for position-based `calc()` in animations; `progress()` interpolation function; `stretch` sizing keyword; OS-level font scale `env()` CSS variable; Viewport Segments API for foldable devices.
+121. https://developer.chrome.com/docs/extensions/reference/api/tabGroups — chrome.tabGroups API (Chrome 89+): read/modify tab groups; `shared` attribute added Chrome 137+; requires `"tabGroups"` permission.
+
 ---
 
-## Notes on this revision (2026-05-01)
+## Notes on this revision (2026-05-01, round 1)
 
 - **Prior roadmap (2026-04-29, v0.5.0) was fully superseded.** All Now / Next / Later items from that revision shipped in v0.6.0–v0.9.0 and are moved to the Shipped section above with their actual ship dates.
 - **v1.0.0** is now the first open milestone. It is scoped tightly: the critical CoinGecko API key fix, a cluster of low-effort UX wins, and the distribution work (WCAG, i18n, store listings) needed to reach a wider audience.
@@ -444,3 +464,15 @@ Numbering matches citations inline. URLs verified at research time (2026-05-01).
 - **Fourteen new sources (#97–#115)** added from the 2026-05-01 research pass. The appendix now totals 115 numbered citations.
 - **CoinGecko API break** is the highest-urgency item: the free endpoint now requires `x-cg-demo-api-key` and the current widget is broken for users who haven't already set a key. This is a Now item, not a polish item.
 - **Chrome Built-in AI** (Sources 110) is tracked in Under Consideration rather than the roadmap tiers — the hardware gating (`Chrome 138+ + 8 GB RAM + compatible NPU`) makes market share too low for a committed item today, but it is the privacy-safe path for feed summarization and will be re-evaluated each release cycle.
+
+## Notes on this revision (2026-05-01, round 2)
+
+- **CI/CD release workflow discovered as already shipped** — `.github/workflows/release.yml` is a complete automated pipeline (ZIP + CRX3 + XPI + SHA256 + Omaha feed + AMO manifest + GitHub Release). Added to Shipped (v0.9.0). No CI/CD items remain open.
+- **Six new sources (#116–#121)** added: JSON Feed v1.1 spec, chrome.readingList API, MDN prefers-contrast, MDN Web Share API, Chrome 138 beta, chrome.tabGroups API.
+- **New Now items (2):** `prefers-contrast: more` / `forced-colors` CSS pass; custom greeting text per time slot.
+- **New Next items (2):** JSON Feed v1.1 support in `rss-parser.js`; `chrome.readingList` save integration.
+- **New Later item (1):** CSS `sibling-index()` staggered feed entrance animations (Chrome 138 stable, awaiting Firefox/Safari parity via Interop 2026).
+- **New Under Consideration items (2):** Web Share API dashboard snapshot; Tab Groups display panel (`chrome.tabGroups`).
+- **New Rejected item (1):** Google Fonts cloud picker (third-party call on every new tab; contradicts constraint #1).
+- **Always-on updated:** Chrome 138+ CSS function tracking; `chrome.readingList` cross-browser availability tracking.
+
