@@ -1,6 +1,6 @@
 # Vantage Roadmap
 
-_Living document. Last revised 2026-05-02 (round 3) against v0.13.0._
+_Living document. Last revised 2026-05-02 (round 4) against v0.13.0._
 
 This roadmap is sourced — every Now / Next / Later item points to evidence in the Appendix. Versions are aspirational targets, not commitments. The aim is dense, skimmable, specific: an item without a sentence on **why now**, an effort sketch, and a citation gets cut.
 
@@ -154,6 +154,7 @@ These items unblock CWS/AMO listing and polish the product for a wider audience.
 - [x] **`theme-color` meta tag tracking current background** — update `<meta name="theme-color">` whenever the background color changes; browser tab chrome reflects the current sky color in supporting browsers. Trivial polish, ~0.1d. — _[Source 98] (Bonjourr v22.0.0 CHANGELOG)._ ✅ shipped (Unreleased) — animated backgrounds emit `vantage:bg-color`; static kinds + system-theme flips kept in sync.
 - [x] **`prefers-contrast: more` / `forced-colors` CSS pass** — single media-query sweep to thicken dashed borders, lift low-opacity placeholder text, and solidify subtle dividers when the OS reports a high-contrast preference; `forced-colors: active` (Windows High Contrast Mode) also handled. ~0.25d; no new dependencies. — _[Source 118] (MDN prefers-contrast, updated Apr 2026); pairs with the WCAG 2.2 AA audit._ ✅ shipped (Unreleased) — additive media block; ghost-button hovers also tightened.
 - [x] **Custom greeting text per time slot** — let users override the hardcoded "Good morning / afternoon / evening" strings with their own copy per time window; optional `[name]` token still expands. Low-effort personalisation. ~0.5d. — _[Source 98] (Bonjourr v22.0.0 CHANGELOG — "Custom greetings" feature)._ ✅ shipped (Unreleased) — 4 slot inputs; safe `[name]` expansion via element creation.
+- [ ] **`contrast-color()` for dynamic text contrast** — `contrast-color(var(--accent))` auto-selects the WCAG-passing white or black text over any accent chip, weather-sky gradient, or background image; replaces manual `--text-on-surface` light/dark token switching. Progressive enhancement: color-token fallback for Firefox 109–145 (silent, no visual regression). ~0.5d; purely additive CSS. Chrome 147+, Firefox 146+, Safari 26+, Edge 147+ — all Interop 2026 cross-browser targets met. — _[Sources 72, 124] (Interop 2026 target; caniuse browser support confirmed)._
 
 ### Distribution readiness
 - [ ] **WCAG 2.2 AA full audit** — automated (axe-core) + manual screen-reader pass (NVDA + VoiceOver). All widget surfaces in scope; produce `docs/accessibility-report.md`. Required before CWS listing. ~3d. — _[Sources 70, 71]._
@@ -174,7 +175,7 @@ These items unblock CWS/AMO listing and polish the product for a wider audience.
 These require v1.0 to be listed; some require new browser API surface or are architectural.
 
 - [ ] **Gist/URL settings sync** — export full settings as a JSON Gist (via GitHub's anonymous Gist API — no auth for public gists) and re-import by URL. Users paste the Gist URL into settings on a second device. Privacy-preserving: no accounts, no server, data is in the user's own GitHub storage. ~2d. — _[Source 98] (Bonjourr v21.0.0 sync feature); eliminates the biggest pain point for multi-device users without violating constraint #1._
-- [ ] **Side Panel feed reader** — surface the RSS/News feed in Chrome's `chrome.sidePanel` (Chrome 114+) so users can read headlines without replacing the current page. The NTP stays as-is; sidePanel is additive. Gated behind a settings toggle. ~2d. — _[Source 103] (chrome.sidePanel API docs, Chrome 114+ MV3); differentiator — no NTP competitor currently uses this._
+- [ ] **Side Panel feed reader** — surface the RSS/News feed in Chrome's `chrome.sidePanel` (Chrome 114+, MV3) and Firefox's `browser.sidebarAction` (Firefox 109+) so users can read headlines without replacing the current page. The NTP stays as-is; each browser's sidebar API is additive. Gated behind a settings toggle; Chrome and Firefox each get the appropriate API call path. ~2.5d (+0.5d for Firefox path vs. Chrome-only estimate). — _[Sources 103, 123] (chrome.sidePanel API docs; MDN Firefox sidebarAction); differentiator — no NTP competitor currently uses this._
 - [ ] **Local video backgrounds** — File API + base64 (WebM, capped at 8 MB; encourage short loops). Pause-on-tab-blur, pause-on-battery (`navigator.getBattery`). ~1d. — _[Sources 12, 52, 98] (Bonjourr docs video section; nightTab v6.1.1 bookmark background video)._
 - [ ] **Dashboard screenshot generator** — single button; uses `html2canvas` (vendored, ~30 KB) to export a styled PNG of the active dashboard for README screenshots, r/startpages sharing, etc. ~1d. — _Gap; community-growth tool. `chrome.tabs.captureVisibleTab` is overkill for this use-case._
 - [ ] **Multi-source aggregated dev feed** — preset bundle: HN frontpage + GitHub Trending (per-language, anonymous endpoint) + Lobsters. Single panel, date-sorted, deduped. ~1d. — _[Sources 32, 33]._
@@ -182,12 +183,15 @@ These require v1.0 to be listed; some require new browser API surface or are arc
 - [ ] **Keyword monitoring across all feeds** — user-defined alert words; Web Notifications when a keyword appears in any new feed item. opt-in only. ~1d. — _[Sources 55, 83]._
 - [ ] **Permanent feed archive with IndexedDB** — every item ever seen stored in IndexedDB, searchable. Cap at 10k items default (user-tunable). **⚠ Storage grows unbounded without the cap; document clearly.** ~2d. — _[Sources 55, 84]._
 - [ ] **YouTube subscriptions OPML recipe** — "Import YouTube subscriptions" button that walks users through Google Takeout OPML export and drops feeds into the RSS panel. ~0.25d. — _[Source 90]._
-- [ ] **Anchor Positioning for widget drop-zone tooltips** — `anchor-name` / `position-anchor` / `@position-try` fallback for contextual tooltips over the drag canvas; eliminates JS positioning math. ~0.5d. — _[Sources 72, 104] (CSS Anchor Positioning API, Chrome 125+; Interop 2026 priority)._
-- [ ] **`contrast-color()` CSS function for text over dynamic backgrounds** — automatic WCAG-passing text contrast over any accent color or background image; replaces manual light/dark token switching. ~0.5d when broadly supported (Interop 2026 target). — _[Source 72] (css-tricks Interop 2026)._
+- [ ] **Anchor Positioning for widget drop-zone tooltips** — `anchor-name` / `position-anchor` / `@position-try` fallback for contextual tooltips over the drag canvas; eliminates JS positioning math. Chrome 125+, Firefox 147+, Edge 125+ — cross-browser support confirmed; Interop 2026 target met. ~0.5d. — _[Sources 72, 104, 125] (CSS Anchor Positioning API; Chrome 125+; caniuse — Firefox 147+ confirmed)._
 - [ ] **Container style queries for widget theming** — `@container style(--vantage-theme: mocha)` to let widgets self-style per active theme without re-reading JS state. ~0.5d when cross-browser. — _[Source 72] (Interop 2026: container style queries)._
 - [ ] **Periodic Background Sync for feed pre-warming** — register a `periodicSync` task so the RSS cache is warm before the user's first new tab of the day. **⚠ Heavy permission surface; strict opt-in; document the Notifications-API-style permission prompt.** ~1d. — _Web platform reference (MDN: Background Sync API)._
 - [x] **In-extension error logging with share-to-clipboard** — catch and log unhandled widget errors to a circular buffer in `chrome.storage.local`; expose a "Copy debug log" button in settings. Helps diagnose user-reported issues without telemetry. ~0.5d. — _[Source 105] (TablissNG v1.6.5 error-logging system)._ ✅ shipped (v0.13.0) — 50-entry ring buffer; window.onerror + onunhandledrejection wired; Settings → Data exposes Copy + Clear buttons; output is markdown-fenced + control-char-stripped so pasting into a GitHub issue is safe.
 - [ ] **Ambient sound widget** — looping ambient audio (rain, forest, café) via `<audio>` element; locally bundled short loops (≤200 KB each) or user-uploaded file. Pause-on-tab-blur. Complements Pomodoro focus sessions. ~1.5d. — _[Source 106] (mutabu extension, Mar 2026)._
+- [ ] **`@starting-style` for panel and popover entry animations** — use the CSS `@starting-style` at-rule to drive settings-panel open, widget-picker pop-in, and context-menu fade-in without the current `setTimeout(0)` + `classList.add('visible')` boot sequence; also handles `display: none → block` opacity transitions on widget cards. Baseline 2024; Chrome 117+, Firefox 129+, Safari 17.5+ — all target browsers covered. ~0.5d. — _[Source 122] (MDN @starting-style; Baseline 2024)._
+- [ ] **Weather widget: UV index + atmospheric pressure** — request `uv_index` and `pressure_msl` from the existing Open-Meteo hourly endpoint; display as additional info-row chips alongside the existing feels-like / precip / dew / visibility set. UV index is table-stakes in every weather app (CARROT, Apple Weather, iOS Weather); atmospheric pressure matters for headache/migraine sensitivity users. ~0.75d. — _[Sources 56, 57, 87, 88] (Open-Meteo forecast docs; Apple Weather widget guide)._
+- [ ] **Quick link icon roundness control** — expose icon `border-radius` as a user-settable CSS variable (`--ql-icon-radius`) with a segmented control (Square / Rounded / Circle); persisted per-workspace. Complements the existing icon-type options (auto / URL / upload). ~0.25d. — _[Source 12] (Bonjourr CHANGELOG v22.1.0 — icon style options)._
+- [ ] **Structured Clone opt-in for cross-context messaging (Chrome 148+)** — set the structured-clone serialization format for `chrome.runtime.sendMessage` to pass `Map`, `Set`, and `ArrayBuffer` between background/NTP/popup contexts without manual JSON serialization. Dev-experience only; users see no change; graceful no-op on Firefox and Chrome < 148. ~0.1d. — _[Source 126] (Chrome 148 — Structured Clone for extension messaging)._
 - [x] **JSON Feed v1.1 support in rss-parser** — detect `application/feed+json` `Content-Type` (or `{"version":"https://jsonfeed.org/..."}` probe) before the XML DOMParser path; map `items[].title`, `content_html`/`content_text`, `url`, `date_published` → existing item shape; zero new runtime deps (~0.5d in `src/rss-parser.js`). Most modern Micro.blog, Ghost, and Kagi-published feeds ship JSON Feed alongside RSS; currently silently fails on those. — _[Source 116] (JSON Feed v1.1 spec)._ ✅ shipped (v0.11.0) — content-type sniff + body sniff for proxies; v1.0 + v1.1 author shapes both supported; missing titles fall back to content snippet.
 - [x] **`chrome.readingList` save integration** — "Save to Reading List" icon on each headline row; calls `chrome.readingList.addEntry({title, url, hasBeenRead: false})`; requires adding `"readingList"` to manifest permissions; graceful-no-op on Firefox (API absent). Chrome 120+ only. ~0.5d; no competitor NTP currently uses this. — _[Source 117] (chrome.readingList API docs, Chrome 120+ MV3)._ ✅ shipped (v0.11.0) — hover-revealed bookmark icon per feed item; duplicate-URL handled as success.
 
@@ -198,13 +202,14 @@ These require v1.0 to be listed; some require new browser API surface or are arc
 Major efforts or waiting on ecosystem maturity. Ordering is not commitment.
 
 - [ ] **Iframe-sandboxed widget API** — Renewed Tab's model: third-party widgets in `<iframe sandbox>` with `src` declared in user config; postMessage pub/sub protocol for data + events; no remote code. **⚠ Constraint #4: official core widgets stay in-tree; iframe widgets are user-pasted only; no remote marketplace fetch.** ~5–8d to design + spec + document. — _[Sources 20, 21, 64]._
-- [ ] **Theme bundle marketplace (PR-reviewed monorepo)** — `vantage-themes` repo accepts PRs of `theme.json` (color tokens + accent + background URL + greeting copy + font choice); extension fetches `manifest.json` from `raw.githubusercontent.com` on user demand. ~3d for monorepo + tooling, ongoing for PR review. — _[Sources 17, 18, 19, 101] (Mue marketplace + suggested-packs pattern)._
+- [ ] **Theme bundle marketplace (PR-reviewed monorepo)** — `vantage-themes` repo accepts PRs of `theme.json` (color tokens + accent + background URL + greeting copy + font choice); extension fetches `manifest.json` from `raw.githubusercontent.com` on user demand. Bundle backgrounds and solid colors into each theme as nightTab v7.3.0 does — a theme should set the full visual mood, not just color tokens. ~3d for monorepo + tooling, ongoing for PR review. — _[Sources 17, 18, 19, 97, 101] (Mue marketplace + suggested-packs pattern; nightTab v7.3.0 bundled themes)._
 - [ ] **Whole-config URL share link** — base64-encoded settings JSON in a fragment URL (`#cfg=…`); one-click apply on another machine. 1d. — _[Sources 50, 51]._
 - [ ] **OPFS (Origin Private File System) for large media** — migrate base64-in-`chrome.storage` for backgrounds + audio to OPFS; eliminates the 5 MB quota pressure and enables larger local videos. ~1.5d. — _[Source 107] (MDN: Origin Private File System)._
 - [ ] **OffscreenCanvas blur for backgrounds** — move CSS `filter: blur()` to OffscreenCanvas in a service worker for stable 60fps at 4K with heavy widget redraws. ~1.5d. — _[Sources 52, 62]._
 - [ ] **Drag-resize widget layout editor** — iOS-style: press-and-hold to enter edit mode, drag to reorder, pinch/drag corners to resize, snap to grid. Replaces the current button-based panel order. ~5d; significant design work. — _[Source 108] (Bonjourr issue #804, Apr 2026 — users explicitly requesting this)._
 - [ ] **Online documentation site** — GitHub Pages or Cloudflare Pages site (`docs.vantage.dashboard`) with per-widget docs, screenshots, FAQ, and the widget API spec. Currently only README. ~1d setup + ongoing. — _[Source 109] (TablissNG docs site, v1.6.4)._
 - [ ] **History search inline** — `chrome.history.search` behind a settings opt-in; opt-in default off; respects browser history-clearing. ~1d. — _[Source 39]; kept deferred._
+- [ ] **Per-widget settings clipboard export** — export the configuration object for a single widget instance (e.g., the RSS feed URL list, the crypto watch list, the countdown pack) to clipboard as a compact JSON; import into another workspace or another Vantage install via the Restore dialog's section-checklist. nightTab v7.3.0 ships clipboard import/export at the data-section level; this extends it to widget-granularity. ~1d. — _[Source 97] (nightTab v7.3.0 — "Import and Export data to the clipboard")._
 - [ ] **CSS `sibling-index()` staggered feed entrance animations** — replace the JS `animationDelay` loop on feed item render with `animation-delay: calc(0.05s * sibling-index())` in CSS; eliminates the stagger-on-repaint JS path entirely. Chrome 138 shipped `sibling-index()` / `sibling-count()` as stable (May 2025 → stable ~Dec 2025). Interop 2026 candidate for Firefox / Safari. ~0.25d when cross-browser; track and land once Firefox ships. — _[Source 120] (Chrome 138 beta, May 2025 — `sibling-index()` example in CSS section)._
 
 ## Always-on
@@ -221,8 +226,10 @@ Maintained continuously, not version-gated.
 - **Track Open-Meteo changelog** — new variables (cloud cover altitude bands, new AQI metrics, additional pollen species) and new API domains. — _[Sources 56, 57, 58, 59]._
 - **Track Chrome Built-in AI origin trial status** — Prompt API, Summarizer API, Translator API (all gated behind Chrome 138+ / hardware check today); monitor for GA. — _[Source 110]._
 - **Track Chrome `chrome.*` API changes** — Reading List API, Side Panel updates, future `chrome.ai` namespace. — _[Sources 62, 65]._
-- **Track Interop 2026 shipping** — Anchor Positioning (Chrome 125+ now), `contrast-color()`, container style queries, Popover API interest invokers (`interestfor`). — _[Sources 72, 111, 112]._
+- **Track Interop 2026 shipping** — Anchor Positioning (✅ cross-browser: Chrome 125+, Firefox 147+), `contrast-color()` (✅ cross-browser: Chrome 147+, Firefox 146+, Safari 26+), container style queries (Chrome 111+ partial, Firefox pending), Popover API interest invokers (`interestfor`), CSS `@starting-style` (✅ Baseline 2024 all browsers). — _[Sources 72, 111, 112, 124, 125]._
 - **CORS proxy health check** — quarterly verify `allorigins.win` + alternates are operational; note last-checked date in CLAUDE.md. — _[Sources 80, 81]._
+- **Track Chrome bookmark API changes** — Google announced bookmarks sync changes (June 2026) that may affect extensions using `chrome.bookmarks.*`; audit the Bookmarks widget and Quick Links favicon logic against the updated behavior before each release until the change is stable. — _[Source 127] (Chrome extensions blog — "Update your extensions ahead of upcoming bookmark changes", June 2026)._
+- **CWS Team Roles setup** — after the CWS listing ships (v1.0.0), invite contributing collaborators via the CWS Developer Dashboard's team roles feature (publisher / developer / reviewer / analyst). Operational only; no code changes required. — _[Source 62] (Chrome extensions whats-new — CWS team roles, April 2026)._
 - **Storage migration guard** — any field rename or structural change ships with a `migrate(prev)` step in `loadSettings()` keyed off `schemaVersion`; forward-additive changes are handled by existing deep-merge. — _Gap; required on any workspace schema change._
 - **CoinGecko API key monitoring** — CoinGecko has already changed free-tier authentication once (keyless → `x-cg-demo-api-key`); re-audit before each crypto-widget release. — _[Source 102]._
 - **Quotable API endpoint monitoring** — `/quotes/random` is current; `/random` is deprecated and may be removed. — _[Source 113]._
@@ -251,6 +258,7 @@ Items with real merit but unresolved trade-offs. Decided per release cycle, not 
 - **WebAuthn / passkey lock for settings** — bio-lock so a shared device can't reset config. Real demand but the new-tab page is a weak auth boundary (incognito tab bypasses it). Reconsider after workspaces establish a per-profile identity model. — _Web platform reference (MDN: Web Authentication API)._
 - **Web Share API for dashboard snapshot** — `navigator.share({title, text, files: [pngBlob]})` on a "Share" button; would allow sending a dashboard screenshot to the OS share sheet. Needs empirical verification that `navigator.share()` works from the `chrome-extension://newtab` origin (some APIs are restricted there). Under consideration pending validation. — _[Source 119] (MDN Web Share API)._
 - **Tab Groups display panel** — `chrome.tabGroups` (Chrome 89+, `shared` attribute Chrome 137+): visual card list of current browser tab groups; click to activate group; requires `"tabGroups"` manifest permission. Novel NTP feature; no competitor uses it; useful for power users managing 40+ tabs. Needs UX scoping (read-only view vs. editable). — _[Source 121] (chrome.tabGroups API docs)._
+- **Expanded clock widget settings** — analog clock face option, seconds display, AM/PM indicator position control (before / after the time string), configurable timezone for the primary clock as distinct from World Clocks. nightTab has detailed analog clock controls; Bonjourr v22.1.0 adds AM/PM position toggle. Medium design work, low engineering effort. Deferred until the clock widget warrants a dedicated settings panel. — _[Sources 12, 30] (Bonjourr v22.1.0; nightTab v7.3.0)._
 
 ---
 
@@ -279,6 +287,8 @@ Each line: feature — citation — one-sentence rejection reason.
 - **Google Fonts cloud font picker** — Bonjourr v22.0 ships a Google Fonts selector in the UI. Every font swap sends a request to `fonts.googleapis.com` on new-tab open; contradicts constraint #1 (undisclosed third-party call on every tab). Local-font-upload is the acceptable future path.
 - **Haptic / vibration feedback** — Web platform reference. New-tab page has no touch surface in typical use; inapplicable.
 - **Hexagon / non-rectangular tile layouts** — _[Source 50]._ Breaks accessibility and drag-reorder; low demand.
+- **Mouse wheel to cycle quick link groups** — _[Source 12] (Bonjourr v22.1.0)._ Mouse-only interaction without a keyboard equivalent fails WCAG 2.1.1 (Keyboard); the existing group navigation works via click; a keyboard-accessible cycle button (prev/next arrow) is the correct shape if this pattern is ever revisited.
+- **Any-corner toolbar position picker** — _[Source 97] (nightTab v7.3.0)._ Vantage uses a vertical-panel layout, not a browser-chrome-style toolbar; mapping nightTab's corner-repositionable header controls to Vantage's architecture would require a full layout-model redesign. Deferred indefinitely; revisit only as part of the v1.2+ drag-resize layout editor.
 
 ---
 
@@ -286,7 +296,7 @@ Each line: feature — citation — one-sentence rejection reason.
 
 Numbering matches citations inline. URLs verified at research time (2026-05-01).
 
-**Sources #97–#115 added in round 1; #116–#121 added in round 2 (2026-05-01).**
+**Sources #97–#115 added in round 1; #116–#121 added in round 2 (2026-05-01); #122–#127 added in round 4 (2026-05-02).**
 
 ### Direct OSS competitors
 1. https://github.com/joelshepherd/tabliss — Tabliss; original; mostly dormant since 2022.
@@ -300,7 +310,7 @@ Numbering matches citations inline. URLs verified at research time (2026-05-01).
 9. https://github.com/joelshepherd/tabliss/issues/653 — Time-based background changes.
 10. https://github.com/joelshepherd/tabliss/issues/704 — `moz-extension://` link support.
 11. https://github.com/victrme/Bonjourr — Bonjourr; iOS-inspired; videos as backgrounds, Pomodoro, Notes, context menu, Gist sync.
-12. https://github.com/victrme/Bonjourr/blob/master/CHANGELOG.md — Bonjourr CHANGELOG v22.0.0 (context menu, video backgrounds, alarm tone customization, theme-color meta tag) and v21.0.0 (Gist/URL settings sync).
+12. https://github.com/victrme/Bonjourr/blob/master/CHANGELOG.md — Bonjourr CHANGELOG: v22.1.0 (icon roundness/type controls, AM/PM position toggle for 12h clock, mouse wheel link-group navigation); v22.0.0 (context menu, video backgrounds, alarm tone customization, theme-color meta tag); v21.0.0 (Gist/URL settings sync).
 13. https://bonjourr.fr/docs/overview/ — Bonjourr docs v22: link groups, world clocks, custom icon modes, right-click context menu actions, Google Fonts integration, Pixabay video backgrounds.
 14. https://github.com/victrme/Bonjourr/issues/130 — Folders for quick links.
 15. https://github.com/victrme/Bonjourr/issues/416 — Calendar/reminders integration.
@@ -453,6 +463,15 @@ Numbering matches citations inline. URLs verified at research time (2026-05-01).
 120. https://developer.chrome.com/blog/chrome-138-beta — Chrome 138 beta (published May 28, 2025): CSS `sibling-index()` / `sibling-count()` for position-based `calc()` in animations; `progress()` interpolation function; `stretch` sizing keyword; OS-level font scale `env()` CSS variable; Viewport Segments API for foldable devices.
 121. https://developer.chrome.com/docs/extensions/reference/api/tabGroups — chrome.tabGroups API (Chrome 89+): read/modify tab groups; `shared` attribute added Chrome 137+; requires `"tabGroups"` permission.
 
+### Sources added 2026-05-02 (round 4 revision)
+
+122. https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style — MDN: `@starting-style` at-rule; Baseline 2024, all major browsers (Chrome 117+, Firefox 129+, Safari 17.5+, Edge 117+); enables entry/exit transitions from `display: none` and for top-layer elements (popover, dialog) without JS `classList` + `setTimeout(0)` scaffolding.
+123. https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/sidebarAction — MDN: Firefox `browser.sidebarAction` API (Firefox 109+); `open()`, `close()`, `toggle()`, `setPanel()`, `isOpen()`; the Firefox-side peer to Chrome's `chrome.sidePanel`; both APIs required for cross-browser Side Panel implementation.
+124. https://caniuse.com/mdn-css_types_color_contrast-color — caniuse: `contrast-color()` browser support — Chrome 147+, Firefox 146+, Safari 26+, Edge 147+; all Interop 2026 cross-browser targets met as of May 2026.
+125. https://caniuse.com/css-anchor-positioning — caniuse: CSS Anchor Positioning — Chrome 125+, Firefox 147+, Safari 26+, Edge 125+; cross-browser support confirmed; Interop 2026 target met.
+126. https://developer.chrome.com/blog/structured-clone-messaging — Chrome 148: opt-in Structured Clone serialization for extension messaging; set `chrome.runtime.MessagingConfig.serializationFormat = 'structured-clone'`; enables `Map`, `Set`, `ArrayBuffer`, and `RegExp` across extension contexts without manual JSON round-trips.
+127. https://developer.chrome.com/docs/extensions/whats-new — Chrome Extensions What's New blog (June 2026 entry): "Update your extensions ahead of upcoming bookmark changes"; bookmarks sync changes may impact extensions using `chrome.bookmarks.*`; developers advised to audit bookmark-dependent code before mid-2026.
+
 ---
 
 ## Notes on this revision (2026-05-01, round 1)
@@ -475,4 +494,20 @@ Numbering matches citations inline. URLs verified at research time (2026-05-01).
 - **New Under Consideration items (2):** Web Share API dashboard snapshot; Tab Groups display panel (`chrome.tabGroups`).
 - **New Rejected item (1):** Google Fonts cloud picker (third-party call on every new tab; contradicts constraint #1).
 - **Always-on updated:** Chrome 138+ CSS function tracking; `chrome.readingList` cross-browser availability tracking.
+
+## Notes on this revision (2026-05-02, round 4)
+
+- **`contrast-color()` promoted from Next → Now** — caniuse confirms Chrome 147+, Firefox 146+, Safari 26+, Edge 147+; all Interop 2026 cross-browser targets met. Ship date is no longer speculative. Progressive-enhancement fallback documented in-line.
+- **CSS Anchor Positioning confirmed cross-browser** — Firefox 147+ ships full anchor positioning; caniuse updated. Roadmap item updated to note cross-browser condition met.
+- **`@starting-style` added to Next** — Baseline 2024 (Chrome 117+, Firefox 129+, Safari 17.5+); eliminates JS `setTimeout(0)` + `classList.add('visible')` animation scaffolding on settings panel, widget picker, and context menu.
+- **Firefox Side Panel path documented** — `browser.sidebarAction` (Firefox 109+) confirmed as the cross-browser pair to `chrome.sidePanel`; Side Panel roadmap item updated to note both API paths and revised effort to ~2.5d.
+- **Weather UV index + pressure added to Next** — `uv_index` and `pressure_msl` are available on the existing Open-Meteo hourly endpoint; no extra API call; table-stakes features in all major weather apps.
+- **Quick link icon roundness control added to Next** — Bonjourr v22.1.0 ships this; trivial effort (~0.25d); pure CSS variable change.
+- **Structured Clone messaging added to Next** — Chrome 148 opt-in dev-experience improvement; graceful no-op on Firefox and older Chrome.
+- **Per-widget clipboard export added to Later** — nightTab v7.3.0 pattern (clipboard import/export by data section); Vantage extension: widget-granularity export via Restore dialog.
+- **Expanded clock settings added to Under Consideration** — analog face, seconds, AM/PM position, main-clock timezone override; deferred until clock widget warrants a dedicated panel.
+- **Two new Rejected items:** mouse wheel group cycling (WCAG 2.1.1 keyboard failure); any-corner toolbar position (architectural mismatch with Vantage's panel model).
+- **Two new Always-on items:** Chrome bookmark API audit (June 2026 sync changes); CWS team roles setup post-listing.
+- **Six new sources (#122–#127):** MDN `@starting-style`, MDN Firefox `sidebarAction`, caniuse `contrast-color()`, caniuse Anchor Positioning, Chrome 148 Structured Clone, Chrome Extensions What's New bookmark change notice.
+- **Total appendix sources: 127.**
 
