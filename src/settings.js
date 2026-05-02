@@ -2373,12 +2373,24 @@ function buildLinksSection(settings, onChange) {
       list.appendChild(el("li", { class: "item-list__empty" }, ["No links yet."]));
       return;
     }
-    settings.quicklinks.items.forEach((item, idx) => {
+     settings.quicklinks.items.forEach((item, idx) => {
       list.appendChild(el("li", { class: "item-list__row" }, [
         el("div", { class: "item-list__row-content" }, [
           el("span", { class: "item-list__title" }, [item.title]),
           el("span", { class: "item-list__hint" }, [hostnameLabel(item.url)])
         ]),
+        // Manual cell placement button (v1.1.0): show grid icon if itemsPerRow is a number
+        ...(typeof settings.quicklinks.itemsPerRow === "number" ? [
+          el("button", {
+            type: "button",
+            class: "icon-button icon-button--ghost icon-button--small",
+            "aria-label": `Set grid position for ${item.title}`,
+            title: "Set grid position",
+            onClick: () => {
+              openCellPlacementDialog(item, idx, settings, onChange, refreshList);
+            }
+          }, [iconNode("grid", { size: 14 })])
+        ] : []),
         el("button", {
           type: "button",
           class: "icon-button icon-button--ghost icon-button--small",
@@ -4279,4 +4291,97 @@ function buildResetSection(onChange) {
   }, [iconNode("trash", { size: 14 }), " Reset everything"]);
   sec.appendChild(btn);
   return sec;
+}
+
+// Manual cell placement dialog (v1.1.0+): allows users to set explicit
+// grid row/col for a quicklink when itemsPerRow is a number (not "auto").
+function openCellPlacementDialog(item, idx, settings, onChange, refreshList) {
+  return new Promise((resolve) => {
+    const cols = settings.quicklinks.itemsPerRow;
+    const maxCols = typeof cols === "number" ? cols : 6;
+    const dialog = el("dialog", {
+      class: "import-dialog cell-placement-dialog",
+      "aria-labelledby": "cell-placement-title",
+      closedby: "any"
+    });
+    
+    let resolved = false;
+    const close = () => {
+      if (resolved) return;
+      resolved = true;
+      try { dialog.close(); } catch {}
+      dialog.remove();
+      resolve();
+    };
+    
+    dialog.addEventListener("cancel", (e) => { e.preventDefault(); close(); });
+    dialog.addEventListener("close", close);
+    dialog.addEventListener("click", (e) => { if (e.target === dialog) close(); });
+
+    const header = el("header", { class: "import-dialog__header" }, [
+      el("h2", { id: "cell-placement-title" }, [`Set grid position for "${item.title}"`])
+    ]);
+
+    const currentOverride = item.cellOverride || { row: 0, col: 0 };
+    const rowInput = el("input", {
+      type: "number",
+      min: "0",
+      step: "1",
+      class: "text-input",
+      value: String(currentOverride.row || 0),
+      "aria-label": "Row (0-indexed)"
+    });
+    const colInput = el("input", {
+      type: "number",
+      min: "0",
+      max: String(maxCols - 1),
+      step: "1",
+      class: "text-input",
+      value: String(currentOverride.col || 0),
+      "aria-label": "Column (0-indexed)"
+    });
+
+    const form = el("div", { class: "compose", style: { padding: "var(--s-4)" } }, [
+      el("label", {}, [
+        el("span", { style: { display: "block", marginBottom: "0.5rem" } }, ["Row (0-indexed)"]),
+        rowInput
+      ]),
+      el("label", {}, [
+        el("span", { style: { display: "block", marginBottom: "0.5rem" } }, [`Column (0-indexed, max ${maxCols - 1})`]),
+        colInput
+      ]),
+      el("div", { class: "compose__row", style: { gap: "0.5rem", marginTop: "var(--s-3)" } }, [
+        el("button", {
+          type: "button",
+          class: "button button--primary",
+          onClick: () => {
+            const row = Math.max(0, parseInt(rowInput.value, 10) || 0);
+            const col = Math.max(0, Math.min(maxCols - 1, parseInt(colInput.value, 10) || 0));
+            item.cellOverride = { row, col };
+            onChange(settings);
+            refreshList();
+            toast(`Position set to row ${row}, col ${col}.`, "success");
+            close();
+          }
+        }, ["Set position"]),
+        el("button", {
+          type: "button",
+          class: "button button--ghost",
+          onClick: () => {
+            delete item.cellOverride;
+            onChange(settings);
+            refreshList();
+            toast("Position cleared; link will flow normally.", "success");
+            close();
+          }
+        }, ["Clear override"])
+      ])
+    ]);
+
+    dialog.appendChild(header);
+    dialog.appendChild(form);
+    document.body.appendChild(dialog);
+    try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
+    requestAnimationFrame(() => rowInput.focus());
+  });
 }
