@@ -60,19 +60,24 @@ export function renderSearch(mount, settings, onChange) {
     input.placeholder = placeholderFor(settings.search.engine, settings.search.customUrl);
   });
 
+  // Per-query engine switch: Shift-modifier on Enter or submit-click
+  // routes through a one-shot picker without changing the saved
+  // default. SubmitEvent doesn't expose shiftKey at the spec level, so
+  // we capture the modifier on the originating keydown / click and
+  // stash it on a closure-local flag, ALWAYS cleared after submit so a
+  // stale shift can't leak into a later plain Enter.
+  let pendingAltSubmit = false;
+
   const form = el("form", {
     class: "search-form",
     role: "search",
     onSubmit: (e) => {
       e.preventDefault();
       const q = input.value.trim();
+      const useAlt = pendingAltSubmit;
+      pendingAltSubmit = false; // ALWAYS clear, even on early-return paths
       if (!q) return;
-      // Shift-modifier on Enter or click submits this query through a
-      // one-shot picker — pick a different engine for THIS query
-      // without changing the saved default. ROADMAP completes the
-      // 'per-query engine switching' item that was partial-shipped
-      // in v0.10 (placeholder half).
-      if (e.submitter?.dataset?.altSubmit === "true" || (e instanceof SubmitEvent && (e.shiftKey || (window._lastEnterShift)))) {
+      if (useAlt) {
         openQuickPick(form, q, settings);
         return;
       }
@@ -80,14 +85,11 @@ export function renderSearch(mount, settings, onChange) {
     }
   }, [enginePicker, input, kbd, submit]);
 
-  // Track Shift state on Enter — submitter doesn't carry shiftKey on
-  // form submit events in some browsers, so we sniff the keydown.
   input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") window._lastEnterShift = e.shiftKey;
+    if (e.key === "Enter") pendingAltSubmit = e.shiftKey;
   });
-  // Shift-clicking the submit button also triggers the alt path.
   submit.addEventListener("click", (e) => {
-    submit.dataset.altSubmit = e.shiftKey ? "true" : "false";
+    pendingAltSubmit = e.shiftKey;
   });
 
   mount.appendChild(form);
@@ -120,9 +122,16 @@ function openQuickPick(form, query, settings) {
   const list = el("div", { class: "quickpick__list", role: "listbox" });
   const items = [];
   const allKeys = Object.keys(SEARCH_ENGINES);
+  // Default sentinel is the placeholder shipped in storage.js DEFAULTS;
+  // a fresh / unconfigured Vantage install would otherwise list
+  // 'Custom (example.com)' as a real one-shot destination.
+  const SENTINEL_CUSTOM = "https://example.com/search?q=%s";
   for (const key of allKeys) {
     if (key === settings.search.engine) continue;
-    if (key === "custom" && (!settings.search.customUrl || !settings.search.customUrl.includes("%s"))) continue;
+    if (key === "custom") {
+      const cu = settings.search.customUrl;
+      if (!cu || cu === SENTINEL_CUSTOM || !cu.includes("%s")) continue;
+    }
     const eng = SEARCH_ENGINES[key];
     const label = key === "custom"
       ? `Custom (${(() => { try { return new URL(settings.search.customUrl).hostname.replace(/^www\./, ""); } catch { return "url"; } })()})`
