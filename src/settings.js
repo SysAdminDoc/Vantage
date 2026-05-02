@@ -3,6 +3,7 @@
 
 import { el, clear, toggle, segmented, toast, hostnameLabel } from "./utils/dom.js";
 import { playAlarm as playAlarmTone } from "./utils/alarm-audio.js";
+import { showPartialImportDialog } from "./utils/partial-import.js";
 import { iconNode } from "./icons.js";
 import { SEARCH_ENGINES, validateCustomSearchUrl } from "./search-engines.js";
 import { geocodeCity } from "./widgets/weather.js";
@@ -2150,7 +2151,10 @@ function buildDataSection(settings, onChange, showWizard) {
     }, [iconNode("download", { size: 14 }), " Export JSON"])
   ));
 
-  // JSON import
+  // JSON import — surfaces the partial-restore dialog so users opt-in
+  // to which sections overwrite their current settings (data-safety win
+  // requested by ROADMAP, also closes the Q1 audit follow-up about the
+  // import path being a UI-control / network-beacon primitive).
   const jsonImportInput = el("input", {
     type: "file", accept: ".json,application/json",
     style: { display: "none" },
@@ -2161,8 +2165,14 @@ function buildDataSection(settings, onChange, showWizard) {
         const text = await file.text();
         const previous = cloneValue(settings);
         const imported = normalizeImportedSettings(JSON.parse(text));
-        await saveSettings(imported);
-        onChange(imported);
+        const merged = await showPartialImportDialog(settings, imported, file.name);
+        if (!merged) {
+          toast("Import canceled.", "info");
+          jsonImportInput.value = "";
+          return;
+        }
+        await saveSettings(merged);
+        onChange(merged);
         toast(`Settings imported from ${file.name}.`, "success", 8000, {
           label: "Undo",
           onClick: async () => {
