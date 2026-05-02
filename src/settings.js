@@ -117,6 +117,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   const containerSec = buildContainerMapSection(settings, onChange);
   if (containerSec) body.appendChild(containerSec);
   body.appendChild(buildCustomCSSSection(settings, onChange));
+  body.appendChild(buildTypographySection(settings, onChange));
   body.appendChild(buildStorageQuotaSection(settings));
   body.appendChild(buildSecuritySection(settings, onChange));
   body.appendChild(buildSidePanelSection(settings, onChange));
@@ -2104,6 +2105,19 @@ function buildWeatherSection(settings, onChange) {
     })
   ));
 
+  // Dual temperature units — shows °C and °F side-by-side in the
+  // headline. Conversion is client-side from the unit Open-Meteo
+  // already returned, so no extra fetch.
+  g.appendChild(row(
+    "Show both °C and °F",
+    "Render the other unit alongside the headline temperature (e.g. \"72°F · 22°C\"). Useful for travelers and cross-region work.",
+    toggle({
+      checked: settings.weather.dualUnits || false,
+      ariaLabel: "Show both temperature units",
+      onChange: (v) => { settings.weather.dualUnits = v; onChange(settings); }
+    })
+  ));
+
   // Ensemble forecast confidence — narrow spread = high confidence.
   // Adds one outbound call to ensemble-api.open-meteo.com per
   // location every 30 min (cached on top).
@@ -2283,6 +2297,25 @@ function buildLinksSection(settings, onChange) {
       onChange: (v) => {
         settings.quicklinks.iconRadius = v;
         onChange(settings);
+      }
+    })
+  ));
+
+  // Speculation Rules hover-prefetch (Chrome 109+ / Edge 109+;
+  // Firefox + Safari silently ignore the script tag).
+  g.appendChild(row(
+    "Hover prefetch",
+    "Inject a <script type=\"speculationrules\"> block so Chromium browsers prefetch quick-link destinations on hover (~200 ms). Uses background bandwidth; off by default.",
+    toggle({
+      checked: settings.quicklinks.speculate || false,
+      ariaLabel: "Hover-prefetch quick links",
+      onChange: async (v) => {
+        settings.quicklinks.speculate = v;
+        onChange(settings);
+        try {
+          const { applySpeculationRules } = await import("./utils/speculation-rules.js");
+          applySpeculationRules(v);
+        } catch { /* ignore */ }
       }
     })
   ));
@@ -3945,6 +3978,206 @@ function buildCustomCSSSection(settings, onChange) {
 }
 
 /* ---- Reset ------------------------------------------------------------- */
+
+/* ---- Typography (Local Font Access API) ------------------------------- */
+
+function buildTypographySection(settings, onChange) {
+  const sec = section("Typography", "code");
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    "Pick fonts installed on your machine for body and display text. Uses the Local Font Access API (Chrome 103+, Edge 103+); no Google Fonts request, no network call. The browser asks for permission the first time you open the picker. Default = Vantage's built-in system stack."
+  ]));
+
+  const cfg = settings.appearance?.font || { body: "", display: "" };
+  const g = group();
+
+  // Manual text inputs always work — local-font picker is a power-user
+  // upgrade on top.
+  const bodyInput = el("input", {
+    type: "text", class: "text-input",
+    value: cfg.body || "",
+    placeholder: "(default — system sans)",
+    "aria-label": "Body font family"
+  });
+  bodyInput.addEventListener("change", () => {
+    if (!settings.appearance) settings.appearance = {};
+    settings.appearance.font = { ...cfg, body: bodyInput.value.trim() };
+    applyFontPreference(settings.appearance.font);
+    onChange(settings);
+  });
+  g.appendChild(row("Body font", "Used for paragraph text, list items, and most UI surfaces.", bodyInput));
+
+  const displayInput = el("input", {
+    type: "text", class: "text-input",
+    value: cfg.display || "",
+    placeholder: "(default — same as body)",
+    "aria-label": "Display font family"
+  });
+  displayInput.addEventListener("change", () => {
+    if (!settings.appearance) settings.appearance = {};
+    settings.appearance.font = { ...cfg, display: displayInput.value.trim() };
+    applyFontPreference(settings.appearance.font);
+    onChange(settings);
+  });
+  g.appendChild(row("Display font", "Used for headings, the greeting hero, and large numerical displays.", displayInput));
+
+  // Local Font Access picker — only present when the API is available.
+  // Opens a dropdown listing all installed font families (deduped,
+  // sorted) for one-click pick.
+  if (typeof window?.queryLocalFonts === "function") {
+    const pickBody = el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: async () => {
+        try {
+          const { listFontFamilies } = await import("./utils/local-fonts.js");
+          const fonts = await listFontFamilies();
+          await pickFontDialog(fonts, "Pick body font", (chosen) => {
+            bodyInput.value = chosen;
+            bodyInput.dispatchEvent(new Event("change"));
+          });
+        } catch (err) {
+          toast(`Couldn't read local fonts — ${err?.message?.toLowerCase() || "permission denied"}.`, "error");
+        }
+      }
+    }, [iconNode("layout-grid", { size: 14 }), " Pick body font…"]);
+
+    const pickDisplay = el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: async () => {
+        try {
+          const { listFontFamilies } = await import("./utils/local-fonts.js");
+          const fonts = await listFontFamilies();
+          await pickFontDialog(fonts, "Pick display font", (chosen) => {
+            displayInput.value = chosen;
+            displayInput.dispatchEvent(new Event("change"));
+          });
+        } catch (err) {
+          toast(`Couldn't read local fonts — ${err?.message?.toLowerCase() || "permission denied"}.`, "error");
+        }
+      }
+    }, [iconNode("layout-grid", { size: 14 }), " Pick display font…"]);
+
+    g.appendChild(row(
+      "Local font picker",
+      "Browse installed fonts. The browser will ask for permission the first time you click.",
+      el("div", { class: "compose__row" }, [pickBody, pickDisplay])
+    ));
+  } else {
+    g.appendChild(row(
+      "Local font picker",
+      "Local Font Access API isn't available in this browser. Type a family name above to override the default stack.",
+      el("span", { class: "chip" }, ["Unavailable"])
+    ));
+  }
+
+  // Reset button — clears both fields.
+  g.appendChild(row(
+    "Reset to default",
+    "Clears both font selections; the built-in system stack reapplies.",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: () => {
+        if (!settings.appearance) settings.appearance = {};
+        settings.appearance.font = { body: "", display: "" };
+        bodyInput.value = "";
+        displayInput.value = "";
+        applyFontPreference(settings.appearance.font);
+        onChange(settings);
+        toast("Fonts reset to default.", "success");
+      }
+    }, [iconNode("trash", { size: 14 }), " Reset"])
+  ));
+
+  sec.appendChild(g);
+  return sec;
+}
+
+// Helper: lazy-import applyFontPreference and call it. Wrapped so the
+// settings-section builder doesn't pay the import cost per render.
+async function applyFontPreference(fontPref) {
+  try {
+    const { applyFontPreference: apply } = await import("./utils/local-fonts.js");
+    apply(fontPref);
+  } catch { /* ignore */ }
+}
+
+// Modal-ish font picker. Uses a native <dialog> with a search filter
+// so users can find a font in 1500+ entries quickly. Closes on
+// click-outside via closedby="any" + manual fallback.
+function pickFontDialog(fonts, title, onPick) {
+  return new Promise((resolve) => {
+    const dialog = el("dialog", {
+      class: "import-dialog font-picker-dialog",
+      "aria-labelledby": "font-picker-title",
+      closedby: "any"
+    });
+    let resolved = false;
+    const close = () => {
+      if (resolved) return;
+      resolved = true;
+      try { dialog.close(); } catch {}
+      dialog.remove();
+      resolve();
+    };
+    dialog.addEventListener("cancel", (e) => { e.preventDefault(); close(); });
+    dialog.addEventListener("close", close);
+    dialog.addEventListener("click", (e) => { if (e.target === dialog) close(); });
+
+    const header = el("header", { class: "import-dialog__header" }, [
+      el("h2", { id: "font-picker-title" }, [title])
+    ]);
+    const filter = el("input", {
+      type: "search", class: "text-input",
+      placeholder: `Filter ${fonts.length.toLocaleString()} fonts…`,
+      "aria-label": "Filter fonts",
+      style: { margin: "var(--s-3) var(--s-5)" }
+    });
+
+    const listHost = el("div", {
+      class: "font-picker-list",
+      role: "listbox",
+      tabindex: "-1"
+    });
+
+    const renderList = () => {
+      clear(listHost);
+      const needle = filter.value.trim().toLowerCase();
+      const matches = needle
+        ? fonts.filter(f => f.toLowerCase().includes(needle))
+        : fonts;
+      const cap = 200; // perf cap — typical 1500+ fonts × searchable list
+      for (const f of matches.slice(0, cap)) {
+        listHost.appendChild(el("button", {
+          type: "button",
+          class: "font-picker-row",
+          style: { fontFamily: `"${f.replace(/"/g, '\\"')}"` },
+          onClick: () => { onPick(f); close(); }
+        }, [f]));
+      }
+      if (matches.length > cap) {
+        listHost.appendChild(el("p", { class: "settings-section__hint", style: { padding: "var(--s-2) var(--s-3)" } }, [
+          `Showing first ${cap}; refine the filter to narrow results.`
+        ]));
+      }
+      if (!matches.length) {
+        listHost.appendChild(el("p", { class: "panel-empty" }, ["No matches."]));
+      }
+    };
+
+    let debounceTimer = null;
+    filter.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(renderList, 120);
+    });
+
+    dialog.appendChild(header);
+    dialog.appendChild(filter);
+    dialog.appendChild(listHost);
+    document.body.appendChild(dialog);
+    try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
+    renderList();
+    requestAnimationFrame(() => filter.focus());
+  });
+}
 
 function buildResetSection(onChange) {
   const sec = section("Reset", "alert");
