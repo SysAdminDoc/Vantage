@@ -1,6 +1,7 @@
-// Vantage v0.8.0 — Most-visited sites widget (chrome.topSites).
+// Vantage v0.8.0 → v1.0.0 — Most-visited sites widget (chrome.topSites) + favicon caching.
 
 import { el, clear } from "../utils/dom.js";
+import { getFaviconUrl } from "../utils/favicon-cache.js";
 
 export async function renderTopsites(mount, settings) {
   clear(mount);
@@ -35,7 +36,7 @@ export async function renderTopsites(mount, settings) {
     }, [
       el("img", {
         class: "topsite__favicon",
-        src: faviconFor(site.url),
+        src: "", // Will be populated async
         alt: "",
         loading: "lazy",
         referrerpolicy: "no-referrer",
@@ -49,19 +50,27 @@ export async function renderTopsites(mount, settings) {
       ]),
       el("span", { class: "topsite__label" }, [site.title || hostnameShort(site.url)])
     ]);
+    
+    // Populate favicon asynchronously using cache
+    const imgEl = link.querySelector("img");
+    getFaviconUrl(site.url).then(dataUrl => {
+      if (dataUrl) {
+        imgEl.src = dataUrl;
+      } else {
+        imgEl.style.display = "none";
+        imgEl.nextSibling.style.display = "flex";
+      }
+    }).catch(() => {
+      imgEl.style.display = "none";
+      imgEl.nextSibling.style.display = "flex";
+    });
+    
     row.appendChild(link);
   }
   mount.appendChild(row);
 }
 
-function faviconFor(url) {
-  try {
-    const u = new URL(url);
-    return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=64`;
-  } catch { return ""; }
-}
-
-function hostnameShort(url) {
+// Favicon loading moved to favicon-cache.js for shared use and caching (v1.0.0+)
   try { return new URL(url).hostname.replace(/^www\./, ""); }
   catch { return url; }
 }

@@ -10,6 +10,7 @@ import { geocodeCity } from "./widgets/weather.js";
 import { saveSettings, getDefaults } from "./storage.js";
 import { exportOPML, importOPML } from "./utils/opml.js";
 import { THEME_OPTIONS, applyThemePreference } from "./utils/theme.js";
+import { clearFaviconCache, getFaviconCacheStats } from "./utils/favicon-cache.js";
 import {
   clearBackgroundPreview,
   getBackgroundPreview,
@@ -2328,6 +2329,30 @@ function buildDataSection(settings, onChange, showWizard) {
           toast("Debug log cleared.", "success");
         }
       }, [iconNode("trash", { size: 14 }), " Clear log"])
+    ])
+  ));
+  
+  // Favicon cache — displays cache stats and clear button (v1.0.0+)
+  g.appendChild(row(
+    "Favicon cache",
+    "Vantage caches icon images locally for faster loading and reliability. Cache TTL: 30 days.",
+    el("div", { class: "compose__row" }, [
+      el("span", {
+        class: "icon-button icon-button--ghost icon-button--small",
+        style: { pointerEvents: "none", padding: "0.5rem 0.75rem", fontSize: "0.875rem", opacity: "0.7" }
+      }, [
+        (() => {
+          const stats = getFaviconCacheStats();
+          return `${stats.count} icons, ${(stats.size / 1024).toFixed(1)} KB`;
+        })()
+      ]),
+      el("button", {
+        type: "button", class: "button button--ghost",
+        onClick: () => {
+          clearFaviconCache();
+          toast("Favicon cache cleared.", "success");
+        }
+      }, [iconNode("trash", { size: 14 }), " Clear cache"])
     ])
   ));
 
