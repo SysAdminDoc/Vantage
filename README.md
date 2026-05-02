@@ -287,6 +287,17 @@ Vantage/
 
 Nothing else. No analytics, no error reporting, no auto-update server.
 
+## Documentation
+
+Full docs site: **<https://sysadmindoc.github.io/Vantage/>** (sourced from
+the [`docs/`](docs/) folder via GitHub Pages).
+
+- [Getting started](docs/getting-started.md) — install, first run, enterprise auto-install, where data lives.
+- [Widgets reference](docs/widgets.md) — every widget with its costs (network / storage / permissions).
+- [FAQ](docs/faq.md) — privacy, permissions, data export, theming, contributing.
+- [Privacy practices](docs/privacy-practices-cws.md) — full Privacy Table + permission justifications.
+- [Widget API spec](docs/widget-api.md) — frozen postMessage protocol for third-party iframe widgets.
+
 ## Roadmap
 
 See [ROADMAP.md](ROADMAP.md). Short version: AMO unlisted Firefox signing, Chrome Web Store listing, more meteor-shower-style "celebrate this date" calendar events, and continued biome / locality refinement.
