@@ -4275,6 +4275,116 @@ a {
   pointer-events: none;
 }
 
+/* Partial-import dialog. Sits above the settings panel (z=100) so it
+   gates both the file-picker import flow and the URL-hash share flow.
+   No animation on the dialog itself — opens fast since it's a hard
+   stop in the user's import workflow. */
+.import-dialog__backdrop {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--crust) 70%, transparent);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 110;
+}
+
+.import-dialog {
+  position: fixed;
+  z-index: 111;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, calc(100vw - var(--s-6)));
+  max-height: calc(100vh - var(--s-6));
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-3);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.import-dialog__header {
+  padding: var(--s-4) var(--s-5) var(--s-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.import-dialog__header h2 {
+  margin: 0 0 var(--s-1);
+  font-size: var(--text-lg);
+  color: var(--text);
+}
+.import-dialog__header p {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--subtext0);
+}
+
+.import-dialog__sections {
+  padding: var(--s-3) var(--s-5);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  flex: 1;
+}
+
+.import-dialog__section {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-2);
+  cursor: pointer;
+  transition: border-color var(--t-fast), background var(--t-fast);
+}
+.import-dialog__section:hover {
+  border-color: var(--border-default);
+  background: color-mix(in srgb, var(--surface1) 30%, transparent);
+}
+.import-dialog__section:has(input:disabled) {
+  opacity: 0.5;
+  cursor: default;
+}
+.import-dialog__section:has(input:disabled):hover {
+  border-color: var(--border-subtle);
+  background: transparent;
+}
+.import-dialog__section input[type="checkbox"] {
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+.import-dialog__section-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.import-dialog__section-title {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text);
+}
+.import-dialog__section-hint {
+  font-size: var(--text-xs);
+  color: var(--subtext0);
+  line-height: 1.5;
+}
+
+.import-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-5) var(--s-4);
+  border-top: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface0) 40%, var(--bg-canvas));
+}
+.import-dialog__spacer {
+  flex: 1;
+}
+
+
 .settings-backdrop[data-open="true"] {
   opacity: 1;
   pointer-events: auto;
