@@ -75,7 +75,7 @@ const DEFAULTS = {
     blur: 0,                 // 0–20 px  (image/bing/upload/video only)
     brightness: 100          // 50–150 % (image/bing/upload/video only)
   },
-  quicklinks: {
+   quicklinks: {
     enabled: true,
     items: [
       { title: "GitHub", url: "https://github.com" },
@@ -85,6 +85,10 @@ const DEFAULTS = {
       { title: "Gmail", url: "https://mail.google.com" },
       { title: "Calendar", url: "https://calendar.google.com" }
     ],
+    // itemsPerRow must be a number (not "auto") for cellOverride to work.
+    // Each item can have optional { cellOverride: { row: 0, col: 1 } } to
+    // place it in a specific grid cell (0-indexed). Items without
+    // cellOverride flow normally in document order.
     groups: [],              // [{ id, name, items: [{ title, url }] }]
     itemsPerRow: "auto",     // "auto" | 3 | 4 | 5 | 6 | 8 | 10
     iconRadius: "rounded",   // "square" | "rounded" | "circle"

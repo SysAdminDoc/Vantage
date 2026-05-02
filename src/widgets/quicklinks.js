@@ -51,6 +51,18 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
       el("span", {}, [item.title])
     ]);
     
+    // Manual cell placement override (v1.1.0+): if cellOverride is set,
+    // use explicit grid positioning (row/col) instead of flex-wrap.
+    // Requires itemsPerRow to be a number (not "auto").
+    if (item.cellOverride && typeof cols === "number") {
+      const { row, col } = item.cellOverride;
+      if (typeof row === "number" && typeof col === "number") {
+        // grid-row and grid-column are 1-indexed in CSS.
+        link.style.gridRow = String(row + 1);
+        link.style.gridColumn = String(col + 1);
+      }
+    }
+    
     // Populate favicon asynchronously (cache hit = instant, miss = fallback)
     const imgEl = link.querySelector("img");
     getFaviconUrl(item.url).then(dataUrl => {
