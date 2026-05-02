@@ -50,7 +50,10 @@ const DEFAULTS = {
     showEnsembleConfidence: false,
     // Show both °C and °F simultaneously in the chip headline. Off by
     // default — useful for travelers and people working across regions.
-    dualUnits: false
+    dualUnits: false,
+    // Show 5-day extended forecast (min/max temps, precipitation, UV, wind).
+    // Off by default; adds one extra outbound call per location every 10 min.
+    forecastEnabled: false
   },
   clock: {
     enabled: true,

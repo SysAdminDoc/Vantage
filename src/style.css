@@ -3988,6 +3988,138 @@ a {
   cursor: help;
 }
 
+/* 5-day weather forecast panel (v1.2.0+) */
+
+.weather-forecast {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  margin-top: var(--s-3);
+}
+
+.weather-forecast__day {
+  display: grid;
+  grid-template-columns: 60px 80px 1fr 2fr;
+  gap: var(--s-3);
+  align-items: center;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  background: var(--surface0);
+  transition: background var(--t-fast);
+}
+
+.weather-forecast__day:hover {
+  background: var(--surface1);
+}
+
+.weather-forecast__date {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+
+.weather-forecast__day-name {
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--text);
+}
+
+.weather-forecast__date-label {
+  font-size: var(--text-xs);
+  color: var(--subtext1);
+}
+
+.weather-forecast__condition {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.weather-forecast__icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.weather-forecast__description {
+  font-size: var(--text-xs);
+  color: var(--subtext0);
+  text-align: center;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weather-forecast__temps {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  justify-content: center;
+}
+
+.weather-forecast__high {
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.weather-forecast__low {
+  color: var(--subtext1);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.weather-forecast__separator {
+  color: var(--subtext2);
+  font-size: var(--text-sm);
+}
+
+.weather-forecast__details {
+  display: flex;
+  gap: var(--s-2);
+  font-size: var(--text-xs);
+  color: var(--subtext1);
+  flex-wrap: wrap;
+}
+
+.weather-forecast__detail-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--surface1) 50%, transparent);
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+}
+
+.weather-forecast--skeleton {
+  min-height: 200px;
+}
+
+.weather-forecast--skeleton::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--surface1) 60%, transparent), transparent);
+  background-size: 200% 100%;
+  border-radius: var(--r-lg);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.weather-forecast--error {
+  color: var(--peach);
+  font-size: var(--text-sm);
+  text-align: center;
+  padding: var(--s-4);
+}
+
 /* Icon button (used for settings, refresh, close) */
 
 .icon-button {
@@ -6351,6 +6483,13 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
 /* ═══════════════════════════════════════════════════════════
    World Clock Strip
    ═══════════════════════════════════════════════════════════ */
+
+.weather-forecast-mount {
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--s-4);
+  max-width: 100%;
+}
 
 .worldclock-mount {
   display: flex;
