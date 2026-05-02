@@ -1989,13 +1989,14 @@ function buildDataSection(settings, onChange, showWizard) {
   // JSON export
   g.appendChild(row(
     "Export settings",
-    "Download all settings as a JSON file.",
+    "Download all settings as a JSON file. Secrets (CoinGecko API key, NASA key) are stripped from the export.",
     el("button", {
       type: "button", class: "button button--primary",
       onClick: () => {
-        const json = JSON.stringify(settings, null, 2);
+        const safe = stripSecrets(settings);
+        const json = JSON.stringify(safe, null, 2);
         triggerDownload(json, `vantage-settings-${isoDate()}.json`, "application/json");
-        toast("Settings exported.", "success");
+        toast("Settings exported (secrets stripped).", "success");
       }
     }, [iconNode("download", { size: 14 }), " Export JSON"])
   ));
@@ -2110,16 +2111,17 @@ function buildDataSection(settings, onChange, showWizard) {
   // Share config URL
   g.appendChild(row(
     "Share config",
-    "Copy a link that loads your settings into Vantage on any device where the extension is installed.",
+    "Copy a link that loads your settings into Vantage on any device where the extension is installed. Secrets (API keys) are stripped — destination devices need to re-enter them.",
     el("button", {
       type: "button", class: "button button--ghost",
       onClick: () => {
         try {
-          const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(settings))));
+          const safe = stripSecrets(settings);
+          const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(safe))));
           const url = new URL(location.href);
           url.hash = `import=${encoded}`;
           navigator.clipboard.writeText(url.href).then(() => {
-            toast("Share link copied to clipboard.", "success");
+            toast("Share link copied (secrets stripped).", "success");
           }).catch(() => { toast("Clipboard access denied.", "error"); });
         } catch { toast("Couldn't generate share link.", "error"); }
       }
@@ -2136,6 +2138,21 @@ function triggerDownload(content, filename, mimeType) {
   const a    = Object.assign(document.createElement("a"), { href: url, download: filename });
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/** Return a deep clone of settings with secret fields cleared.
+ *
+ *  The export and share-link paths both serialize the full settings object;
+ *  without this scrub a CoinGecko demo key (or NASA APOD key) would land in
+ *  any file the user emails to themselves or any link they paste in chat.
+ *  We zero the field rather than delete it so the destination knows the
+ *  field exists — they just need to fill it in again.
+ */
+function stripSecrets(s) {
+  const c = cloneValue(s);
+  if (c.crypto && typeof c.crypto === "object") c.crypto.apiKey = "";
+  if (c.photo  && typeof c.photo  === "object") c.photo.nasaKey = "";
+  return c;
 }
 
 function isoDate() {
