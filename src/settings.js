@@ -1503,6 +1503,24 @@ function buildLinksSection(settings, onChange) {
       }
     })
   ));
+  if (settings.quicklinks.iconRadius == null) settings.quicklinks.iconRadius = "rounded";
+  g.appendChild(row(
+    "Icon roundness",
+    "Shape of the quick link icon corners.",
+    segmented({
+      ariaLabel: "Quick link icon roundness",
+      value: String(settings.quicklinks.iconRadius),
+      options: [
+        { value: "square", label: "Square" },
+        { value: "rounded", label: "Rounded" },
+        { value: "circle", label: "Circle" }
+      ],
+      onChange: (v) => {
+        settings.quicklinks.iconRadius = v;
+        onChange(settings);
+      }
+    })
+  ));
   sec.appendChild(g);
 
   const list = el("ul", { class: "item-list" });

@@ -62,7 +62,8 @@ const DEFAULTS = {
       { title: "Calendar", url: "https://calendar.google.com" }
     ],
     groups: [],              // [{ id, name, items: [{ title, url }] }]
-    itemsPerRow: "auto"      // "auto" | 3 | 4 | 5 | 6 | 8 | 10
+    itemsPerRow: "auto",     // "auto" | 3 | 4 | 5 | 6 | 8 | 10
+    iconRadius: "rounded"    // "square" | "rounded" | "circle"
   },
   topsites: {
     enabled: false,

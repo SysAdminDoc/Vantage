@@ -11,6 +11,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
   if (!cfg?.enabled || (!cfg.items?.length && !cfg.groups?.length)) {
     mount.style.display = "none";
     mount.removeAttribute("data-cols");
+    mount.removeAttribute("data-icon-radius");
     return;
   }
   mount.style.display = "";
@@ -22,6 +23,13 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
     mount.removeAttribute("data-cols");
   } else {
     mount.setAttribute("data-cols", String(cols));
+  }
+
+  // Icon roundness: applies via [data-icon-radius] CSS variable
+  if (cfg.iconRadius && cfg.iconRadius !== "rounded") {
+    mount.setAttribute("data-icon-radius", cfg.iconRadius);
+  } else {
+    mount.removeAttribute("data-icon-radius");
   }
 
   // Flat pills — favicons loaded via caching system (v1.0.0+)
