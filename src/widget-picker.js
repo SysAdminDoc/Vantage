@@ -49,6 +49,7 @@ const WIDGET_GROUPS = [
       { key: "bookmarks",  path: "bookmarks.enabled",   icon: "bookmark",       label: "Bookmarks" },
       { key: "starred",    path: "starred.enabled",     icon: "star",           label: "Starred Items" },
       { key: "ambient",    path: "ambient.enabled",     icon: "play",           label: "Ambient Sounds" },
+      { key: "history",    path: "historySearch.enabled", icon: "clock",         label: "History Search" },
       { key: "crypto",     path: "crypto.enabled",      icon: "trending-up",    label: "Crypto Prices" },
       { key: "github",     path: "github.enabled",      icon: "github",         label: "GitHub" },
       { key: "photo",      path: "photo.enabled",       icon: "image",          label: "Photo of the Day" },

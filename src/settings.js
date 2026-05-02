@@ -120,6 +120,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildStorageQuotaSection(settings));
   body.appendChild(buildSecuritySection(settings, onChange));
   body.appendChild(buildSidePanelSection(settings, onChange));
+  body.appendChild(buildHistorySearchSection(settings, onChange));
   body.appendChild(buildDataSection(settings, onChange, showWizard));
   body.appendChild(buildResetSection(onChange));
 }
@@ -1730,6 +1731,78 @@ function buildSidePanelSection(settings, onChange) {
       }
     })
   ));
+
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- History search --------------------------------------------------- */
+
+function buildHistorySearchSection(settings, onChange) {
+  const sec = section("History search", "clock");
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    "Inline search of your browser history. Strict opt-in — enabling requests the `history` permission via `chrome.permissions.request()` so the browser shows its native grant dialog. Disabling revokes the permission. Vantage never sees your history unless you grant access here."
+  ]));
+
+  const cfg = settings.historySearch || {};
+  const g = group();
+
+  const ext = globalThis.chrome || globalThis.browser;
+  const supportsOptional = !!ext?.permissions?.request;
+  if (!supportsOptional) {
+    g.appendChild(el("p", { class: "settings-section__hint" }, [
+      "Optional permissions API not available — history search can't be enabled in this browser."
+    ]));
+    sec.appendChild(g);
+    return sec;
+  }
+
+  g.appendChild(row(
+    "Enable history panel",
+    "When on, the History panel shows a search box backed by `chrome.history.search`. Disable any time to revoke.",
+    toggle({
+      checked: cfg.enabled || false,
+      ariaLabel: "Enable history search",
+      onChange: async (v) => {
+        if (v) {
+          let granted = false;
+          try {
+            granted = await ext.permissions.request({ permissions: ["history"] });
+          } catch (err) {
+            toast(`Permission request failed — ${err?.message?.toLowerCase() || "unknown error"}.`, "error");
+            return;
+          }
+          if (!granted) {
+            toast("History permission denied. The panel stays disabled.", "warning");
+            return;
+          }
+          settings.historySearch = { ...cfg, enabled: true };
+          onChange(settings);
+        } else {
+          settings.historySearch = { ...cfg, enabled: false };
+          onChange(settings);
+          // Best-effort revoke; not fatal if the user already revoked
+          // via the browser's own UI.
+          try { await ext.permissions.remove({ permissions: ["history"] }); } catch {}
+        }
+      }
+    })
+  ));
+
+  const maxIn = el("input", {
+    type: "number", min: "5", max: "100", step: "5",
+    value: String(cfg.maxResults ?? 20),
+    class: "text-input number-input",
+    "aria-label": "Maximum history results",
+    onChange: (e) => {
+      const v = parseInt(e.target.value, 10);
+      if (!isNaN(v) && v >= 5 && v <= 100) {
+        settings.historySearch = { ...cfg, maxResults: v };
+        onChange(settings);
+      }
+    }
+  });
+  g.appendChild(row("Max results", "Cap on items returned per search (5–100). chrome.history.search defaults to 100.", maxIn));
 
   sec.appendChild(g);
   return sec;
