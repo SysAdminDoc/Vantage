@@ -291,6 +291,87 @@
   }
 }
 
+/* prefers-contrast: more — users have explicitly asked the OS for
+   stronger contrast (macOS Increase Contrast, GNOME high-contrast theme,
+   iOS Increase Contrast, Windows Settings → Accessibility → Contrast
+   themes when not in forced-colors). We thicken hairline borders, lift
+   subtext opacity, replace dashed/subtle dividers with solid lines, and
+   pull placeholder text up from --overlay0 to --subtext1 so it's
+   readable against busy animated backgrounds. The whole pass is
+   additive — no defaults are weakened. */
+@media (prefers-contrast: more) {
+  /* Borders that ride at --border-subtle become --border-default (and
+     anything dashed becomes solid). */
+  .panel,
+  .settings-section__group,
+  .settings-row,
+  .toast,
+  .widget-picker,
+  .engine-picker__popover,
+  .onboard-card,
+  .quicklink,
+  .topsite,
+  .topsite__favicon,
+  .chip,
+  .text-input,
+  .button,
+  .button--ghost,
+  .icon-button,
+  .segmented,
+  .toggle__track,
+  .modal,
+  .settings-panel,
+  .feed-item,
+  .crypto-row,
+  .weather,
+  .pomodoro,
+  .calendar-event {
+    border-color: var(--border-default);
+    border-style: solid;
+  }
+
+  /* Hairline 1px dividers between rows become 2px so they survive
+     against image and animated backgrounds. */
+  .feed-item + .feed-item,
+  .quicklinks > * + *,
+  .topsites__list > * + *,
+  .crypto-row + .crypto-row,
+  .pom-history__row + .pom-history__row,
+  .settings-row + .settings-row {
+    border-top-width: 2px;
+  }
+
+  /* Placeholder text and disabled chrome must stay legible. */
+  ::placeholder {
+    color: var(--subtext1);
+    opacity: 1;
+  }
+  .settings-row__hint,
+  .crypto-empty__hint,
+  .panel-empty,
+  .feed-meta,
+  .topsite__label,
+  .quicklink__hint {
+    color: var(--subtext1);
+  }
+
+  /* The accent foreground gets nudged toward the higher-contrast token
+     so links + active pills stay AA against backgrounds users may have
+     boosted. */
+  .crypto-empty__link,
+  .panel-tab[aria-selected="true"],
+  .workspace-pill--active {
+    text-decoration-thickness: 2px;
+  }
+
+  /* Focus rings double in width — a 2px ring is the WCAG 2.4.11 (Focus
+     Not Obscured) baseline, but high-contrast users want more. */
+  :focus-visible {
+    outline-width: 3px;
+    outline-offset: 3px;
+  }
+}
+
 /* ============================================================
    Base
    ============================================================ */
