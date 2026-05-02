@@ -27,7 +27,13 @@ const DEFAULTS = {
   weather: {
     enabled: true,
     location: null,
-    units: "fahrenheit"
+    units: "fahrenheit",
+    // Append agricultural / atmospheric variables (CAPE, VPD, soil
+    // moisture / temperature) to the existing Open-Meteo current= query
+    // and surface them in the hover title. Useful for gardeners,
+    // cyclists, and allergy sufferers; off by default to keep the
+    // baseline title readable.
+    showAgricultural: false
   },
   clock: {
     enabled: true,

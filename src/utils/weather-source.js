@@ -7,8 +7,8 @@ const TTL_MS = 10 * 60 * 1000;
 const cache = new Map(); // key -> { ts, data }
 const inflight = new Map(); // key -> Promise
 
-function keyFor(location, units) {
-  return `${location.latitude},${location.longitude},${units}`;
+function keyFor(location, units, agri) {
+  return `${location.latitude},${location.longitude},${units},${agri ? "agri" : "base"}`;
 }
 
 /**
@@ -19,8 +19,8 @@ function keyFor(location, units) {
  * @param {{force?: boolean}} [opts]
  * @returns {Promise<object>} the parsed Open-Meteo response
  */
-export async function getWeatherData(location, units = "fahrenheit", { force = false } = {}) {
-  const key = keyFor(location, units);
+export async function getWeatherData(location, units = "fahrenheit", { force = false, agricultural = false } = {}) {
+  const key = keyFor(location, units, agricultural);
   const now = Date.now();
 
   if (!force) {
@@ -30,6 +30,15 @@ export async function getWeatherData(location, units = "fahrenheit", { force = f
   }
 
   const tempUnit = units === "celsius" ? "celsius" : "fahrenheit";
+
+  // Optional agricultural / atmospheric variable set — same `current=`
+  // endpoint, just additional names. Open-Meteo supports all of these
+  // in the current snapshot. Off by default; enabled in Settings →
+  // Weather → "Agricultural / atmospheric variables".
+  const baseCurrent = "temperature_2m,apparent_temperature,weather_code,is_day,cloud_cover,wind_speed_10m,precipitation_probability,dew_point_2m,visibility,relative_humidity_2m,uv_index,pressure_msl";
+  const agriCurrent = agricultural
+    ? ",cape,vapour_pressure_deficit,soil_moisture_0_to_1cm,soil_moisture_3_to_9cm,soil_moisture_27_to_81cm,soil_temperature_0cm,soil_temperature_18cm,soil_temperature_54cm"
+    : "";
   // `timezone=auto` is the right mode here: Open-Meteo returns the daily
   // sunrise/sunset for the LOCATION's local day, which is what we want
   // (e.g. at 19:20 CDT = 00:20 UTC next day, we want today's events,
@@ -41,7 +50,7 @@ export async function getWeatherData(location, units = "fahrenheit", { force = f
   const url =
     `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${location.latitude}&longitude=${location.longitude}` +
-    `&current=temperature_2m,apparent_temperature,weather_code,is_day,cloud_cover,wind_speed_10m,precipitation_probability,dew_point_2m,visibility,relative_humidity_2m,uv_index,pressure_msl` +
+    `&current=${baseCurrent}${agriCurrent}` +
     `&daily=sunrise,sunset` +
     `&temperature_unit=${tempUnit}` +
     `&timezone=auto`;
