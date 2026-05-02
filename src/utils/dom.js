@@ -129,6 +129,16 @@ export function timeOfDayGreeting(hour = new Date().getHours()) {
   return "Good night";
 }
 
+/** Slot key matching `settings.greeting.custom.<slot>` overrides.
+ *  Hours are kept in lockstep with timeOfDayGreeting() above. */
+export function timeSlot(hour = new Date().getHours()) {
+  if (hour < 5) return "night";
+  if (hour < 12) return "morning";
+  if (hour < 17) return "afternoon";
+  if (hour < 22) return "evening";
+  return "night";
+}
+
 /** Try to derive a clean URL display label from a URL. */
 export function hostnameLabel(url) {
   try {
