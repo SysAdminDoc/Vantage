@@ -1,9 +1,11 @@
 // Vantage v0.8.0 → v1.0.0 — quick-link pills + folder groups with drag-to-reorder + favicon caching.
+// Vantage v1.2.0 — Tab Groups quick-link support (Chrome 88+)
 
 import { el, clear, hostnameLabel } from "../utils/dom.js";
 import { makeReorderable, arrayMove } from "../utils/drag.js";
 import { iconNode } from "../icons.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
+import { SUPPORTS_TAB_GROUPS, activateTabGroup, getColorClass } from "../utils/tab-groups.js";
 
 export function renderQuickLinks(mount, settings, { onChange } = {}) {
   clear(mount);
@@ -33,7 +35,40 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
   }
 
   // Flat pills — favicons loaded via caching system (v1.0.0+)
+  // Tab Groups (v1.2.0+) are rendered as folder-like buttons with color indicators
   const pills = (cfg.items || []).map((item) => {
+    // Tab Group item (v1.2.0): pinned Tab Group from chrome.tabGroups
+    if (item.groupId && SUPPORTS_TAB_GROUPS) {
+      const btn = el("button", {
+        type: "button",
+        class: `quicklink quicklink--tab-group ${getColorClass(item.groupColor)}`,
+        title: `Activate: ${item.title}\nDrag to reorder`,
+        "aria-label": `Tab Group: ${item.title}`,
+        onClick: (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          activateTabGroup(item.groupId);
+        }
+      }, [
+        el("span", { class: "quicklink__tab-group-icon", "aria-hidden": "true" }, [
+          iconNode("folder", { size: 14 })
+        ]),
+        el("span", {}, [item.title])
+      ]);
+      
+      if (item.cellOverride && typeof cols === "number") {
+        const { row, col } = item.cellOverride;
+        if (typeof row === "number" && typeof col === "number") {
+          btn.style.gridRow = String(row + 1);
+          btn.style.gridColumn = String(col + 1);
+        }
+      }
+      
+      btn.addEventListener("dragstart", () => btn.classList.add("quicklink--dragging-self"));
+      return btn;
+    }
+    
+    // Regular URL item
     const link = el("a", {
       class: "quicklink",
       href: item.url,

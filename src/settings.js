@@ -2456,6 +2456,77 @@ function buildLinksSection(settings, onChange) {
     el("div", { class: "compose__row" }, [urlInput, addBtn])
   ]));
 
+  // Tab Groups section (v1.2.0+): Pin Tab Groups as quick-links
+  if (chrome?.tabGroups) {
+    const tabGroupsDiv = el("div", { class: "tab-groups-section" });
+    
+    const tabGroupsList = el("ul", { class: "item-list" });
+    const refreshTabGroupsList = async () => {
+      clear(tabGroupsList);
+      try {
+        const { getTabGroups } = await import("./utils/tab-groups.js");
+        const groups = await getTabGroups();
+        
+        if (!groups.length) {
+          tabGroupsList.appendChild(el("li", { class: "item-list__empty" }, ["No Tab Groups found. Create one in Chrome/Edge to pin it here."]));
+          return;
+        }
+        
+        groups.forEach((group) => {
+          const isPinned = settings.quicklinks.items.some(item => item.groupId === group.id);
+          tabGroupsList.appendChild(el("li", { class: "item-list__row" }, [
+            el("div", { class: "item-list__row-content" }, [
+              el("span", { class: "item-list__title" }, [group.title]),
+              el("span", { class: "item-list__hint" }, [`${group.title.length} tabs`])
+            ]),
+            el("button", {
+              type: "button",
+              class: "icon-button icon-button--ghost icon-button--small",
+              "aria-label": isPinned ? `Unpin ${group.title}` : `Pin ${group.title}`,
+              title: isPinned ? "Pinned" : "Pin to quick-links",
+              onClick: () => {
+                if (isPinned) {
+                  const idx = settings.quicklinks.items.findIndex(i => i.groupId === group.id);
+                  if (idx >= 0) {
+                    const removed = cloneValue(settings.quicklinks.items[idx]);
+                    settings.quicklinks.items.splice(idx, 1);
+                    onChange(settings);
+                    refreshTabGroupsList();
+                    toastUndo(`Unpinned "${removed.title}".`, () => {
+                      insertAt(settings.quicklinks.items, idx, removed);
+                      onChange(settings);
+                      refreshTabGroupsList();
+                    });
+                  }
+                } else {
+                  settings.quicklinks.items.push({
+                    title: group.title,
+                    groupId: group.id,
+                    groupColor: group.color
+                  });
+                  onChange(settings);
+                  refreshTabGroupsList();
+                  toast(`Pinned "${group.title}".`, "success");
+                }
+              }
+            }, [iconNode(isPinned ? "star-fill" : "star", { size: 14 })])
+          ]));
+        });
+      } catch (e) {
+        console.warn("Failed to load Tab Groups:", e);
+        tabGroupsList.appendChild(el("li", { class: "item-list__empty" }, ["Error loading Tab Groups"]));
+      }
+    };
+    
+    tabGroupsDiv.appendChild(el("h3", { class: "section-title" }, ["Pin Tab Groups (Chrome/Edge)"]));
+    tabGroupsDiv.appendChild(tabGroupsList);
+    
+    sec.appendChild(tabGroupsDiv);
+    
+    // Load Tab Groups on next tick so the section is visible
+    setTimeout(() => refreshTabGroupsList(), 0);
+  }
+
   return sec;
 }
 
