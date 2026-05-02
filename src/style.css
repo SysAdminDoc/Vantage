@@ -4615,6 +4615,16 @@ a {
   color: var(--subtext0);
   line-height: 1.5;
 }
+.import-dialog__extra-note {
+  margin: 0 var(--s-5) var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  font-size: var(--text-xs);
+  color: var(--subtext1);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: var(--r-1);
+  line-height: 1.5;
+}
 
 .import-dialog__actions {
   display: flex;

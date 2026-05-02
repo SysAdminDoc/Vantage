@@ -87,7 +87,9 @@ export async function renderWeather(mount, settings, saveSettings) {
   }
 
   try {
-    const data = await getWeatherData(location, settings.weather.units);
+    const data = await getWeatherData(location, settings.weather.units, {
+      agricultural: !!settings.weather.showAgricultural
+    });
     clear(mount);
     const cur = data.current || {};
     const code = cur.weather_code;
@@ -118,6 +120,35 @@ export async function renderWeather(mount, settings, saveSettings) {
     if (visibility) titleParts.push(`visibility ${visibility}`);
     if (uvIndex != null) titleParts.push(`UV index ${Math.round(uvIndex * 10) / 10}`);
     if (pressure) titleParts.push(`pressure ${pressure}`);
+
+    // Agricultural / atmospheric variable set (gated on settings).
+    // Cap-style "0 J/kg" CAPE values are the most common output for
+    // stable air masses; the unit is preserved so users who care
+    // about thunderstorm potential can read the headline number
+    // without launching a separate app.
+    if (settings.weather.showAgricultural) {
+      if (cur.cape != null) titleParts.push(`CAPE ${Math.round(cur.cape)} J/kg`);
+      if (cur.vapour_pressure_deficit != null) titleParts.push(`VPD ${cur.vapour_pressure_deficit.toFixed(2)} kPa`);
+      // Soil moisture is m³/m³ (volumetric water content); show as %.
+      if (cur.soil_moisture_0_to_1cm != null) {
+        titleParts.push(`soil 0-1cm ${Math.round(cur.soil_moisture_0_to_1cm * 100)}%`);
+      }
+      if (cur.soil_moisture_3_to_9cm != null) {
+        titleParts.push(`soil 3-9cm ${Math.round(cur.soil_moisture_3_to_9cm * 100)}%`);
+      }
+      if (cur.soil_moisture_27_to_81cm != null) {
+        titleParts.push(`soil 27-81cm ${Math.round(cur.soil_moisture_27_to_81cm * 100)}%`);
+      }
+      if (cur.soil_temperature_0cm != null) {
+        titleParts.push(`soil-T 0cm ${Math.round(cur.soil_temperature_0cm)}${unit}`);
+      }
+      if (cur.soil_temperature_18cm != null) {
+        titleParts.push(`soil-T 18cm ${Math.round(cur.soil_temperature_18cm)}${unit}`);
+      }
+      if (cur.soil_temperature_54cm != null) {
+        titleParts.push(`soil-T 54cm ${Math.round(cur.soil_temperature_54cm)}${unit}`);
+      }
+    }
     const title = titleParts.join(" · ");
 
     const ariaParts = [`${temp} degrees ${unitLabel}`, meta.label, locName];
