@@ -2300,6 +2300,28 @@ function buildDataSection(settings, onChange, showWizard) {
     }, [iconNode("upload", { size: 14 }), " Import OPML"])
   ));
 
+  // YouTube OPML recipe
+  g.appendChild(row(
+    "Import YouTube subscriptions",
+    "Export your YouTube subscriptions as OPML via Google Takeout, then import them as RSS feeds.",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: () => {
+        const takeoutUrl = "https://takeout.google.com/settings/takeout";
+        const recipeText = `1. Go to Google Takeout (link will open in a new tab)
+2. Deselect all, then scroll down and select only "YouTube and YouTube Music"
+3. Click "Next step" and "Create export"
+4. Wait for the export to complete, then download the ZIP
+5. Extract the ZIP → YouTube → subscriptions.xml
+6. Come back here and click "Import OPML" to import subscriptions.xml
+
+This will add all your YouTube channels as RSS feeds (when available).`;
+        window.open(takeoutUrl, "takeout");
+        toast(recipeText, "info", 12000);
+      }
+    }, [iconNode("external", { size: 14 }), " Import YouTube"])
+  ));
+
   // Share config URL
   g.appendChild(row(
     "Share config",
