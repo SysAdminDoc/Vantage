@@ -7,6 +7,7 @@ import { el, clear, relativeTime, hostnameLabel, toast } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
 import { fetchFeed } from "../utils/rss-parser.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
+import { canonicalize as canonicalizeStarred } from "../utils/starred-feed.js";
 
 // chrome.readingList requires Chrome 120+ and the "readingList" manifest
 // permission. Firefox has no equivalent yet — the addEntry button stays
@@ -24,6 +25,8 @@ export async function renderFeedList(mount, options) {
     onRefresh,
     onMarkRead,           // (urls: string[]) => Promise<void>
     onDragHandleAttach,   // (handleEl) => void; lets caller wire panel-level drag
+    onToggleStar,         // (item) => Promise<boolean> | boolean — returns new starred state
+    starredSet,           // Set<canonicalUrl> — pre-computed by caller for O(1) lookup
     emptyHint = "Add a feed in settings to get started.",
     initiator
   } = options;
@@ -196,6 +199,39 @@ export async function renderFeedList(mount, options) {
     ]);
 
     const liChildren = [link];
+
+    // Star toggle — saves to settings.starred.items (local-only, no
+    // permission). The star icon is filled when the item is already
+    // starred. Caller passes a precomputed Set for O(1) lookup so we
+    // don't walk settings.starred.items per row.
+    if (onToggleStar) {
+      const startsStarred = starredSet?.has(canonicalizeStarred(item.link)) ?? false;
+      const starBtn = el("button", {
+        type: "button",
+        class: `feed-item__action feed-item__action--star${startsStarred ? " feed-item__action--starred" : ""}`,
+        "aria-label": startsStarred ? "Unstar this item" : "Star this item",
+        "aria-pressed": String(startsStarred),
+        title: startsStarred ? "Starred — click to remove" : "Star this item",
+        onClick: async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          starBtn.disabled = true;
+          try {
+            const nowStarred = await onToggleStar(item);
+            starBtn.classList.toggle("feed-item__action--starred", nowStarred);
+            starBtn.setAttribute("aria-pressed", String(nowStarred));
+            starBtn.setAttribute("aria-label", nowStarred ? "Unstar this item" : "Star this item");
+            starBtn.title = nowStarred ? "Starred — click to remove" : "Star this item";
+            toast(nowStarred ? "Starred." : "Unstarred.", "success", 2000);
+          } catch (err) {
+            toast(err?.message || "Couldn't star item.", "error");
+          } finally {
+            starBtn.disabled = false;
+          }
+        }
+      }, [iconNode("star", { size: 14 })]);
+      liChildren.push(starBtn);
+    }
 
     // Save-to-Reading-List button (Chrome 120+ only). Tucked into a
     // hover-revealed action group so the row stays visually quiet
