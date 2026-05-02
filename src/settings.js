@@ -1142,6 +1142,29 @@ function buildWorkspacesSection(settings, onChange) {
           }
         }
       }, [iconNode("download", { size: 12 }), " Capture"]);
+      // Per-workspace JSON export — copies a single workspace + its
+      // snapshot to the clipboard. EclipseTab v1.3 ships this as a
+      // right-click action; we surface it as a button per row since
+      // workspace tabs don't have a dedicated context menu.
+      const exportBtn = el("button", {
+        type: "button", class: "icon-button icon-button--ghost icon-button--small",
+        "aria-label": `Export workspace "${ws.name}" as JSON`,
+        title: "Export workspace as JSON",
+        onClick: async () => {
+          try {
+            const payload = {
+              vantageWorkspace: 1,
+              exportedAt: new Date().toISOString(),
+              workspace: cloneValue(ws)
+            };
+            const json = JSON.stringify(payload, null, 2);
+            await navigator.clipboard.writeText(json);
+            toast(`Workspace "${ws.name}" copied to clipboard (${(json.length / 1024).toFixed(1)} KB).`, "success");
+          } catch (err) {
+            toast(`Couldn't copy — ${err?.message?.toLowerCase() || "clipboard denied"}.`, "error");
+          }
+        }
+      }, [iconNode("share", { size: 14 })]);
       const del = el("button", {
         type: "button", class: "icon-button icon-button--ghost icon-button--small",
         "aria-label": "Remove workspace", title: "Remove",
@@ -1160,7 +1183,7 @@ function buildWorkspacesSection(settings, onChange) {
           });
         }
       }, [iconNode("trash", { size: 14 })]);
-      listEl.appendChild(el("div", { class: "workspace-item" }, [nameIn, captureBtn, del]));
+      listEl.appendChild(el("div", { class: "workspace-item" }, [nameIn, captureBtn, exportBtn, del]));
     });
   }
   refreshWorkspaceList();
@@ -1175,7 +1198,48 @@ function buildWorkspacesSection(settings, onChange) {
       refreshWorkspaceList();
     }
   }, [iconNode("plus", { size: 14 }), " Add workspace"]);
-  sec.appendChild(addBtn);
+
+  // Per-workspace JSON import — prompts for a paste, validates the
+  // shape from `vantageWorkspace: 1`, then appends as a new workspace
+  // with a fresh id (so importing your own export onto the same
+  // device doesn't collide with the existing copy).
+  const importBtn = el("button", {
+    type: "button", class: "button button--ghost",
+    onClick: async () => {
+      let raw = "";
+      try { raw = await navigator.clipboard.readText(); } catch {}
+      const pasted = prompt("Paste a workspace JSON (from another device or backup):", raw && raw.trim().startsWith("{") ? raw : "");
+      if (!pasted?.trim()) return;
+      try {
+        const parsed = JSON.parse(pasted);
+        const ws = parsed?.workspace ?? parsed; // accept the bare workspace shape too
+        if (!ws || typeof ws !== "object" || !ws.snapshot) {
+          throw new Error("doesn't look like a Vantage workspace export");
+        }
+        const fresh = {
+          id: String(Date.now()),
+          name: ws.name ? `${ws.name} (imported)` : "Imported workspace",
+          snapshot: cloneValue(ws.snapshot)
+        };
+        if (!settings.workspaces) settings.workspaces = { active: null, list: [] };
+        settings.workspaces.list.push(fresh);
+        onChange(settings);
+        refreshWorkspaceList();
+        toast(`Imported "${fresh.name}".`, "success", 6500, {
+          label: "Undo",
+          onClick: () => {
+            const idx = settings.workspaces.list.findIndex(w => w.id === fresh.id);
+            if (idx >= 0) settings.workspaces.list.splice(idx, 1);
+            onChange(settings);
+            refreshWorkspaceList();
+          }
+        });
+      } catch (err) {
+        toast(`Couldn't import workspace — ${err?.message?.toLowerCase() || "invalid JSON"}.`, "error");
+      }
+    }
+  }, [iconNode("upload", { size: 14 }), " Import workspace"]);
+  sec.appendChild(el("div", { class: "compose__row" }, [addBtn, importBtn]));
   return sec;
 }
 
