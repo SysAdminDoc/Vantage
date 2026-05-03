@@ -166,6 +166,8 @@ $f="$env:TEMP\vantage-install.ps1"; iwr https://raw.githubusercontent.com/SysAdm
 
 When the browser asks for location permission (for weather), allow it — or skip and set a city manually in settings. To update: download the new ZIP, extract over the same folder, hit the refresh icon on the extension card.
 
+**Local source testing:** from this repo, run `.\scripts\build-unpacked.ps1`, then load `dist\unpacked-chromium` with the same **Load unpacked** button. The generated folder contains only runtime files, so browser testing is not affected by old release archives, QA browser profiles, signing keys, or repo-only docs.
+
 ### Option C — Firefox (109+)
 
 Download **`Vantage-vX.Y.Z-firefox.xpi`** from [Releases](https://github.com/SysAdminDoc/Vantage/releases).
@@ -174,6 +176,8 @@ Download **`Vantage-vX.Y.Z-firefox.xpi`** from [Releases](https://github.com/Sys
 1. Open `about:debugging` → **This Firefox**.
 2. Click **Load Temporary Add-on…** → pick the `.xpi` file.
 3. Open a new tab. Welcome to Vantage.
+
+For local source testing, run `.\scripts\build-unpacked.ps1 -Target firefox`, then choose `dist\unpacked-firefox\manifest.json` from **Load Temporary Add-on…**.
 
 **Permanent install (survives restarts):** Firefox requires extensions to be signed by Mozilla for permanent installation on Release and Beta channels. Options:
 - **Firefox Developer Edition / Nightly**: go to `about:config`, set `xpinstall.signatures.required` to `false`, then drag-drop the XPI onto `about:addons` or use **Install Add-on From File**.

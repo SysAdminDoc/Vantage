@@ -5,7 +5,9 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "audit": "node scripts/accessibility-audit.mjs"
+    "audit": "node scripts/accessibility-audit.mjs",
+    "build:unpacked": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-unpacked.ps1",
+    "build:unpacked:firefox": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-unpacked.ps1 -Target firefox"
   },
   "devDependencies": {
     "@axe-core/puppeteer": "^4.11.4",

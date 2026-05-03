@@ -71,6 +71,7 @@ export async function renderTopsites(mount, settings) {
 }
 
 // Favicon loading moved to favicon-cache.js for shared use and caching (v1.0.0+)
+function hostnameShort(url) {
   try { return new URL(url).hostname.replace(/^www\./, ""); }
   catch { return url; }
 }
