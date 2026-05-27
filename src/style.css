@@ -370,7 +370,15 @@
   --r-3: 12px;
   --r-4: 16px;
   --r-5: 20px;
-  --r-pill: 999px;
+  /* `--r-pill` is the "rounded backdrop" token used by text-bearing
+   * chips, badges, weather cards, panel pills, etc. Set to 10 px — NOT
+   * a stadium — to satisfy the project no-pill-backdrop rule. True
+   * circles (avatars, status dots ≤14 px, icon-only buttons, toggle
+   * thumbs) explicitly set `border-radius: 50%` themselves so they
+   * keep their shape even though the token resolves to 10 px.
+   * Allowed backdrop radii: 0, 4, 6, 8, 10, 12.
+   */
+  --r-pill: 10px;
 
   /* Motion */
   --t-micro: 120ms cubic-bezier(0.2, 0, 0.2, 1);
@@ -3879,7 +3887,7 @@ a {
 .engine-avatar {
   width: 22px;
   height: 22px;
-  border-radius: var(--r-pill);
+  border-radius: 50%;
   display: grid;
   place-items: center;
   font-size: var(--text-xs);
@@ -4501,7 +4509,7 @@ a {
 .panel__title-dot {
   width: 8px;
   height: 8px;
-  border-radius: var(--r-pill);
+  border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
@@ -5408,7 +5416,7 @@ a {
   width: calc(var(--h) - 6px);
   height: calc(var(--h) - 6px);
   background: var(--text);
-  border-radius: var(--r-pill);
+  border-radius: 50%;
   transition: all var(--t-fast);
   box-shadow: var(--shadow-sm);
 }
@@ -5851,7 +5859,7 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   place-items: center;
   background: transparent;
   border: none;
-  border-radius: var(--r-pill);
+  border-radius: 50%;
   cursor: pointer;
   color: var(--subtext0);
   transition: background var(--t-micro), color var(--t-micro);
