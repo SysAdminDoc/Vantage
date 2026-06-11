@@ -23,17 +23,8 @@ jobs:
           python-version: "3.12"
 
       - name: Verify version in manifests matches input
-        run: |
-          MANIFEST_VER=$(python -c "import json; print(json.load(open('manifest.json'))['version'])")
-          if [ "$MANIFEST_VER" != "${{ inputs.version }}" ]; then
-            echo "manifest.json says $MANIFEST_VER but workflow input is ${{ inputs.version }}"
-            exit 1
-          fi
-          FF_VER=$(python -c "import json; print(json.load(open('manifest.firefox.json'))['version'])")
-          if [ "$FF_VER" != "${{ inputs.version }}" ]; then
-            echo "manifest.firefox.json says $FF_VER but workflow input is ${{ inputs.version }}"
-            exit 1
-          fi
+        shell: pwsh
+        run: ./scripts/validate-release-metadata.ps1 -Version "${{ inputs.version }}"
 
       - name: Decode signing key
         env:

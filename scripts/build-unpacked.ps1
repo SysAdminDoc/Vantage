@@ -16,6 +16,8 @@ $ErrorActionPreference = 'Stop'
 
 $RepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 
+& (Join-Path $PSScriptRoot 'validate-release-metadata.ps1')
+
 if (-not $OutputPath) {
     $OutputPath = Join-Path $RepoRoot "dist\unpacked-$Target"
 }
