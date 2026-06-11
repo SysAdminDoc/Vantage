@@ -3,25 +3,22 @@
 import { el, clear } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
 
-const FALLBACK_QUOTES = [
-  { content: "The best way to predict the future is to invent it.", author: "Alan Kay" },
-  { content: "Simplicity is the soul of efficiency.", author: "Austin Freeman" },
-  { content: "Make it work, make it right, make it fast.", author: "Kent Beck" },
-  { content: "Any fool can write code that a computer can understand. Good programmers write code that humans can understand.", author: "Martin Fowler" },
-  { content: "First, solve the problem. Then, write the code.", author: "John Johnson" },
-  { content: "The function of good software is to make the complex appear simple.", author: "Grady Booch" },
-  { content: "Code is like humor. When you have to explain it, it's bad.", author: "Cory House" },
-  { content: "Programs must be written for people to read, and only incidentally for machines to execute.", author: "Harold Abelson" },
-  { content: "The most dangerous phrase in the language is 'we've always done it this way.'", author: "Grace Hopper" },
-  { content: "Measuring programming progress by lines of code is like measuring aircraft building progress by weight.", author: "Bill Gates" },
+const QUOTES = [
+  { content: "The best way to predict the future is to invent it.", author: "Alan Kay", categories: ["technology", "inspirational"] },
+  { content: "Simplicity is the soul of efficiency.", author: "Austin Freeman", categories: ["technology"] },
+  { content: "Make it work, make it right, make it fast.", author: "Kent Beck", categories: ["technology"] },
+  { content: "First, solve the problem. Then, write the code.", author: "John Johnson", categories: ["technology"] },
+  { content: "The function of good software is to make the complex appear simple.", author: "Grady Booch", categories: ["technology"] },
+  { content: "Code is like humor. When you have to explain it, it's bad.", author: "Cory House", categories: ["technology"] },
+  { content: "Programs must be written for people to read, and only incidentally for machines to execute.", author: "Harold Abelson", categories: ["technology"] },
+  { content: "The most dangerous phrase in the language is 'we've always done it this way.'", author: "Grace Hopper", categories: ["technology", "life"] },
+  { content: "Act as if what you do makes a difference. It does.", author: "William James", categories: ["life", "inspirational"] },
+  { content: "Do what you can, with what you have, where you are.", author: "Theodore Roosevelt", categories: ["life", "inspirational"] },
+  { content: "Well done is better than well said.", author: "Benjamin Franklin", categories: ["life", "inspirational"] },
+  { content: "The secret of getting ahead is getting started.", author: "Mark Twain", categories: ["inspirational"] },
+  { content: "Energy and persistence conquer all things.", author: "Benjamin Franklin", categories: ["inspirational"] },
+  { content: "Lost time is never found again.", author: "Benjamin Franklin", categories: ["life"] },
 ];
-
-const TAG_MAP = {
-  random:        "",
-  inspirational: "inspirational",
-  technology:    "technology",
-  life:          "life",
-};
 
 export async function renderQuote(mount, settings, { onSave } = {}) {
   clear(mount);
@@ -39,13 +36,9 @@ export async function renderQuote(mount, settings, { onSave } = {}) {
   if (cfg.cached?.date === today && cfg.cached.content) {
     quote = cfg.cached;
   } else {
-    quote = await fetchQuote(cfg.category || "random");
-    if (quote) {
-      const next = { ...settings, quote: { ...cfg, cached: { ...quote, date: today } } };
-      onSave?.(next);
-    } else {
-      quote = FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
-    }
+    quote = pickQuote(cfg.category || "random");
+    const next = { ...settings, quote: { ...cfg, cached: { ...quote, date: today } } };
+    onSave?.(next);
   }
 
   const refreshBtn = el("button", {
@@ -54,7 +47,7 @@ export async function renderQuote(mount, settings, { onSave } = {}) {
     "aria-label": "New quote",
     title: "Refresh quote",
     onClick: async () => {
-      const fresh = await fetchQuote(cfg.category || "random") || FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
+      const fresh = pickQuote(cfg.category || "random");
       const next  = { ...settings, quote: { ...cfg, cached: { ...fresh, date: today } } };
       onSave?.(next);
       renderQuote(mount, next, { onSave });
@@ -100,17 +93,10 @@ function wikipediaLinkFor(author) {
   return `https://en.wikipedia.org/wiki/${slug}`;
 }
 
-async function fetchQuote(category) {
-  try {
-    const tag  = TAG_MAP[category] || "";
-    const url  = tag
-      ? `https://api.quotable.io/quotes/random?limit=1&tags=${tag}`
-      : `https://api.quotable.io/quotes/random?limit=1`;
-    const resp = await fetch(url, { signal: AbortSignal.timeout(4000) });
-    if (!resp.ok) return null;
-    const [q] = await resp.json();
-    return q ? { content: q.content, author: q.author } : null;
-  } catch {
-    return null;
-  }
+function pickQuote(category) {
+  const pool = category && category !== "random"
+    ? QUOTES.filter((q) => q.categories.includes(category))
+    : QUOTES;
+  const quote = (pool.length ? pool : QUOTES)[Math.floor(Math.random() * (pool.length || QUOTES.length))];
+  return { content: quote.content, author: quote.author };
 }
