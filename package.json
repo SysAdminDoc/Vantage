@@ -1,6 +1,6 @@
 {
   "name": "vantage",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Next Tab Page — A composable, high-performance NTP extension with live weather, RSS feeds, bookmarks, crypto prices, and more.",
   "type": "module",
   "license": "MIT",
