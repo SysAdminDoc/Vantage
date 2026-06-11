@@ -3441,22 +3441,46 @@ This will add all your YouTube channels as RSS feeds (when available).`;
   // Gist-based settings sync (v1.1.0+) — multi-device friendly
   g.appendChild(row(
     "Sync via GitHub Gist",
-    "Export settings to a public GitHub Gist (no account needed) or import from a Gist URL. Secrets are NOT included in the Gist — re-enter API keys on destination devices.",
+    "Import public Gists without a token. Creating a Gist requires a one-shot GitHub token with Gists: write; manual JSON and share-link copy stay token-free. Secrets are stripped.",
     el("div", { class: "compose__row" }, [
       el("button", {
         type: "button", class: "button button--ghost",
         onClick: async () => {
+          const safe = stripSecrets(settings);
+          const json = JSON.stringify(safe, null, 2);
           try {
-            toast("Creating Gist…", "info");
-            const safe = stripSecrets(settings);
-            const { gistUrl } = await createSettingsGist(safe);
-            navigator.clipboard.writeText(gistUrl).then(() => {
-              toast(`Gist created and URL copied. Share with: ${gistUrl}`, "success", 8000);
-            }).catch(() => {
-              toast(`Gist created:\n${gistUrl}`, "success", 8000);
-            });
+            const action = await showGistExportDialog(safe);
+            if (!action) return;
+            if (action.type === "json") {
+              await copyText(json);
+              toast(`Gist JSON copied (${(json.length / 1024).toFixed(1)} KB). Paste it into a new GitHub Gist.`, "success", 8000);
+              return;
+            }
+            if (action.type === "share") {
+              await copyText(generateShareUrl(safe));
+              toast("Share link copied (secrets stripped).", "success");
+              return;
+            }
+            toast("Creating Gist...", "info");
+            const { gistUrl } = await createSettingsGist(safe, action.token);
+            try {
+              await copyText(gistUrl);
+              toast(`Gist created and URL copied: ${gistUrl}`, "success", 8000);
+            } catch {
+              toast(`Gist created: ${gistUrl}`, "success", 8000);
+            }
           } catch (err) {
-            toast(err.message || "Failed to create Gist.", "error");
+            toast(err.message || "Failed to export Gist.", "error", 10000, {
+              label: "Copy JSON",
+              onClick: async () => {
+                try {
+                  await copyText(json);
+                  toast("Gist JSON copied.", "success");
+                } catch {
+                  toast("Clipboard access denied.", "error");
+                }
+              }
+            });
           }
         }
       }, [iconNode("upload", { size: 14 }), " Export to Gist"]),
@@ -3467,13 +3491,16 @@ This will add all your YouTube channels as RSS feeds (when available).`;
           if (!gistUrl?.trim()) return;
           try {
             toast("Loading Gist…", "info");
-            const loaded = await loadSettingsFromGist(gistUrl);
             const previous = cloneValue(settings);
-            // Merge loaded settings into current, but skip if loads have secrets
-            Object.assign(settings, loaded);
-            await saveSettings(settings);
-            onChange(settings);
-            toast(`Settings loaded from Gist. Secrets (API keys) must be re-entered.`, "success", 8000, {
+            const imported = normalizeImportedSettings(await loadSettingsFromGist(gistUrl));
+            const merged = await showPartialImportDialog(settings, imported, "GitHub Gist");
+            if (!merged) {
+              toast("Gist import canceled.", "info");
+              return;
+            }
+            await saveSettings(merged);
+            onChange(merged);
+            toast("Settings imported from Gist.", "success", 8000, {
               label: "Undo",
               onClick: async () => {
                 await saveSettings(previous);
@@ -3666,6 +3693,108 @@ This will add all your YouTube channels as RSS feeds (when available).`;
 
   sec.appendChild(g);
   return sec;
+}
+
+function showGistExportDialog(safeSettings) {
+  return new Promise((resolve) => {
+    const json = JSON.stringify(safeSettings, null, 2);
+    const dialog = el("dialog", {
+      class: "import-dialog",
+      "aria-labelledby": "gist-export-title",
+      closedby: "any"
+    });
+    const tokenInput = el("input", {
+      type: "password",
+      class: "text-input",
+      autocomplete: "off",
+      spellcheck: false,
+      placeholder: "github_pat_... or ghp_...",
+      "aria-label": "GitHub token with Gists write access"
+    });
+    const createButton = el("button", {
+      type: "button",
+      class: "button button--primary",
+      disabled: true
+    }, ["Create public Gist"]);
+
+    let resolved = false;
+    const close = (result) => {
+      if (resolved) return;
+      resolved = true;
+      tokenInput.value = "";
+      document.removeEventListener("keydown", onEscape);
+      try { dialog.close(); } catch {}
+      dialog.remove();
+      resolve(result);
+    };
+    const onEscape = (e) => { if (e.key === "Escape") close(null); };
+
+    tokenInput.addEventListener("input", () => {
+      createButton.disabled = !tokenInput.value.trim();
+    });
+    createButton.addEventListener("click", () => {
+      const token = tokenInput.value.trim();
+      if (!token) return;
+      close({ type: "create", token });
+    });
+    dialog.addEventListener("cancel", (e) => { e.preventDefault(); close(null); });
+    dialog.addEventListener("close", () => close(null));
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) close(null);
+    });
+    document.addEventListener("keydown", onEscape);
+
+    dialog.appendChild(el("header", { class: "import-dialog__header" }, [
+      el("h2", { id: "gist-export-title" }, ["Export settings"]),
+      el("p", {}, [
+        "GitHub requires a token with Gists: write to create a Gist. Vantage uses it once for this request and never stores it."
+      ])
+    ]));
+    dialog.appendChild(el("div", { class: "import-dialog__sections" }, [
+      el("label", { class: "import-dialog__section" }, [
+        el("div", { class: "import-dialog__section-text" }, [
+          el("span", { class: "import-dialog__section-title" }, ["GitHub token"]),
+          el("span", { class: "import-dialog__section-hint" }, [
+            "Leave blank and use Copy JSON or Copy share link for a token-free transfer."
+          ]),
+          tokenInput
+        ])
+      ])
+    ]));
+    dialog.appendChild(el("p", { class: "import-dialog__extra-note" }, [
+      `Secrets are stripped. Payload size: ${(json.length / 1024).toFixed(1)} KB. Public Gist imports do not need a token.`
+    ]));
+    dialog.appendChild(el("footer", { class: "import-dialog__actions" }, [
+      el("button", {
+        type: "button",
+        class: "button button--ghost",
+        onClick: () => close({ type: "json" })
+      }, ["Copy JSON"]),
+      el("button", {
+        type: "button",
+        class: "button button--ghost",
+        onClick: () => close({ type: "share" })
+      }, ["Copy share link"]),
+      el("span", { class: "import-dialog__spacer" }),
+      el("button", {
+        type: "button",
+        class: "button button--ghost",
+        onClick: () => close(null)
+      }, ["Cancel"]),
+      createButton
+    ]));
+
+    document.body.appendChild(dialog);
+    try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
+    requestAnimationFrame(() => tokenInput.focus());
+  });
+}
+
+async function copyText(text) {
+  if (!navigator.clipboard?.writeText) {
+    throw new Error("Clipboard access is unavailable.");
+  }
+  await navigator.clipboard.writeText(text);
 }
 
 function triggerDownload(content, filename, mimeType) {
