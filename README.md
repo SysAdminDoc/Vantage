@@ -117,6 +117,7 @@ For visual QA, open `qa-scenes.html` from the same local server as `newtab.html`
 - **OPML import + export** — one-click export of all RSS + News feeds; merge-import from any OPML file (Feedly, Inoreader, NetNewsWire compatible).
 - **Settings JSON export / import with partial restore** — download your config as JSON; on import, a section-checklist dialog lets you pick which parts to overwrite (theme, widgets, links, feeds, workspaces, etc.) so accidental imports never wipe your in-progress state. API keys (CoinGecko, NASA APOD) are stripped from exports and share links and re-applied automatically when you import your own backup on the same device.
 - **Config share link** — copy a URL that encodes your settings as a base64 fragment (secrets stripped) and open it on any device with Vantage installed; the same partial-restore dialog gates the apply.
+- **GitHub Gist transfer** — import public Gists without a token. Creating a public Gist uses an optional one-shot GitHub token with Gists write permission; Vantage never stores it and also offers token-free Copy JSON / Copy share link fallbacks.
 - **Pomodoro timer** — focus / break / long-break cycles with tab-blur auto-pause, cross-tab `navigator.locks` single-completion guarantee, Web Notifications on phase change, and live `<title>` countdown.
 - **Storage quota panel** — see how much of your `chrome.storage.local` quota you're using.
 
@@ -284,6 +285,7 @@ Vantage/
 | `www.google.com/s2/favicons` | Quick Links / Top Sites / Bookmarks / Feeds | 32-64px favicon images |
 | `api.coingecko.com` | Crypto widget | Current prices for selected coins |
 | `api.github.com` | GitHub widget | Public events / trending repos |
+| `api.github.com/gists` | Settings → Data → Gist transfer | Import public settings Gists; create a public Gist only when you provide a one-shot GitHub token |
 | `api.quotable.io` | Quote widget | Quote of the day |
 | `picsum.photos` | Photo widget (default) | Random daily photo |
 | `api.nasa.gov` | Photo widget (NASA APOD mode) | Astronomy picture of the day |
