@@ -4214,7 +4214,7 @@ function buildQuoteSection(settings, onChange) {
       onChange: (v) => { settings.quote = { ...cfg, enabled: v }; onChange(settings); } })
   ));
   g.appendChild(row("Category",
-    "Type of quotes to fetch from Quotable.",
+    "Theme used when choosing from the bundled offline quote pack.",
     segmented({
       ariaLabel: "Quote category",
       value: cfg.category || "random",

@@ -286,7 +286,6 @@ Vantage/
 | `api.coingecko.com` | Crypto widget | Current prices for selected coins |
 | `api.github.com` | GitHub widget | Public events / trending repos |
 | `api.github.com/gists` | Settings → Data → Gist transfer | Import public settings Gists; create a public Gist only when you provide a one-shot GitHub token |
-| `api.quotable.io` | Quote widget | Quote of the day |
 | `picsum.photos` | Photo widget (default) | Random daily photo |
 | `api.nasa.gov` | Photo widget (NASA APOD mode) | Astronomy picture of the day |
 | `www.bing.com` | Background → Bing daily | Daily wallpaper image |
@@ -319,5 +318,5 @@ MIT — see [LICENSE](LICENSE).
 - [allorigins](https://allorigins.win/) and [corsproxy.io](https://corsproxy.io/) — CORS proxy fallbacks.
 - [Lucide](https://lucide.dev/) — icon stroke style.
 - [SunCalc](https://github.com/mourner/suncalc) — astronomical algorithm reference.
-- [CoinGecko](https://www.coingecko.com/), [Quotable](https://github.com/lukePeavey/quotable), [Picsum](https://picsum.photos/), [NASA APOD](https://api.nasa.gov/) — free APIs.
+- [CoinGecko](https://www.coingecko.com/), [Picsum](https://picsum.photos/), [NASA APOD](https://api.nasa.gov/) — free APIs.
 - Inspired by Epiboard, Tabliss, Bonjourr, Mue, Renewed Tab, Horizon, and Fluent — each great in their own way; Vantage is just my flavor.
