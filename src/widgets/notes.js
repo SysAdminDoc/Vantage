@@ -2,6 +2,7 @@
 
 import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
+import { registerOverlay } from "../utils/overlay-stack.js";
 
 let _uid = Date.now();
 function uid() { return String(++_uid); }
@@ -181,6 +182,7 @@ function openFocusMode(note, onSave) {
 
   let scrollTimer = null;
   let scrollSpeed = 0;             // px / tick — 0 = paused
+  let unregisterOverlay = null;
 
   const titleEl = el("input", {
     type: "text",
@@ -214,14 +216,11 @@ function openFocusMode(note, onSave) {
   });
 
   const close = () => {
+    unregisterOverlay?.();
+    unregisterOverlay = null;
     onSave?.();
     if (scrollTimer) { clearInterval(scrollTimer); scrollTimer = null; }
     overlay.remove();
-    document.removeEventListener("keydown", onKey);
-  };
-
-  const onKey = (e) => {
-    if (e.key === "Escape") { e.preventDefault(); close(); }
   };
 
   const closeBtn = el("button", {
@@ -254,7 +253,11 @@ function openFocusMode(note, onSave) {
   });
 
   document.body.appendChild(overlay);
-  document.addEventListener("keydown", onKey);
+  unregisterOverlay = registerOverlay({
+    id: "notes-focus",
+    root: overlay,
+    close
+  });
 
   scrollTimer = setInterval(() => {
     if (scrollSpeed > 0 && bodyEl) {

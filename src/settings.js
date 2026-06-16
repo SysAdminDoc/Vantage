@@ -34,6 +34,7 @@ import {
   PREVIEW_WEATHER_OPTIONS,
   setBackgroundPreview
 } from "./utils/background-preview.js";
+import { registerOverlay } from "./utils/overlay-stack.js";
 
 export function renderSettingsPanel(panel, settings, onChange, { showWizard } = {}) {
   clear(panel);
@@ -139,6 +140,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
 let _panelTrapHandler = null;
 let _panelFocusTimer = null;
 let _backdropHideTimer = null;
+let _panelOverlayCleanup = null;
 
 export function openPanel(panel) {
   clearTimeout(_panelFocusTimer);
@@ -147,6 +149,15 @@ export function openPanel(panel) {
     document.removeEventListener("keydown", _panelTrapHandler);
     _panelTrapHandler = null;
   }
+  _panelOverlayCleanup?.();
+  _panelOverlayCleanup = registerOverlay({
+    id: "settings-panel",
+    root: panel,
+    trigger: () => document.getElementById("settings-toggle"),
+    close: () => closePanel(panel),
+    closeOnEscape: () => !document.querySelector("dialog[open]"),
+    closeOnOutside: true
+  });
   panel.dataset.open = "true";
   panel.setAttribute("aria-hidden", "false");
   document.getElementById("settings-toggle")?.setAttribute("aria-expanded", "true");
@@ -181,6 +192,8 @@ export function openPanel(panel) {
 
 export function closePanel(panel) {
   clearTimeout(_panelFocusTimer);
+  _panelOverlayCleanup?.();
+  _panelOverlayCleanup = null;
   panel.dataset.open = "false";
   panel.setAttribute("aria-hidden", "true");
   document.getElementById("settings-toggle")?.setAttribute("aria-expanded", "false");
@@ -3758,16 +3771,17 @@ function showGistExportDialog(safeSettings) {
     }, ["Create public Gist"]);
 
     let resolved = false;
+    let unregisterOverlay = null;
     const close = (result) => {
       if (resolved) return;
       resolved = true;
+      unregisterOverlay?.();
+      unregisterOverlay = null;
       tokenInput.value = "";
-      document.removeEventListener("keydown", onEscape);
       try { dialog.close(); } catch {}
       dialog.remove();
       resolve(result);
     };
-    const onEscape = (e) => { if (e.key === "Escape") close(null); };
 
     tokenInput.addEventListener("input", () => {
       createButton.disabled = !tokenInput.value.trim();
@@ -3782,7 +3796,6 @@ function showGistExportDialog(safeSettings) {
     dialog.addEventListener("click", (e) => {
       if (e.target === dialog) close(null);
     });
-    document.addEventListener("keydown", onEscape);
 
     dialog.appendChild(el("header", { class: "import-dialog__header" }, [
       el("h2", { id: "gist-export-title" }, ["Export settings"]),
@@ -3826,6 +3839,12 @@ function showGistExportDialog(safeSettings) {
 
     document.body.appendChild(dialog);
     try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
+    unregisterOverlay = registerOverlay({
+      id: "gist-export-dialog",
+      root: dialog,
+      close: () => close(null),
+      closeOnOutside: false
+    });
     requestAnimationFrame(() => tokenInput.focus());
   });
 }
@@ -3883,9 +3902,12 @@ export async function reviewHostPermissionsForSettings(settings, source = "impor
     });
 
     let resolved = false;
+    let unregisterOverlay = null;
     const close = (nextSettings) => {
       if (resolved) return;
       resolved = true;
+      unregisterOverlay?.();
+      unregisterOverlay = null;
       try { dialog.close(); } catch {}
       dialog.remove();
       resolve(nextSettings);
@@ -3949,6 +3971,15 @@ export async function reviewHostPermissionsForSettings(settings, source = "impor
 
     document.body.appendChild(dialog);
     try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
+    unregisterOverlay = registerOverlay({
+      id: "host-permission-dialog",
+      root: dialog,
+      close: () => {
+        markHostPermissionsDenied(settings, targets.map(t => t.origin));
+        close(settings);
+      },
+      closeOnOutside: false
+    });
   });
 }
 
@@ -4627,9 +4658,12 @@ function pickFontDialog(fonts, title, onPick) {
       closedby: "any"
     });
     let resolved = false;
+    let unregisterOverlay = null;
     const close = () => {
       if (resolved) return;
       resolved = true;
+      unregisterOverlay?.();
+      unregisterOverlay = null;
       try { dialog.close(); } catch {}
       dialog.remove();
       resolve();
@@ -4690,6 +4724,12 @@ function pickFontDialog(fonts, title, onPick) {
     dialog.appendChild(listHost);
     document.body.appendChild(dialog);
     try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
+    unregisterOverlay = registerOverlay({
+      id: "font-picker-dialog",
+      root: dialog,
+      close,
+      closeOnOutside: false
+    });
     renderList();
     requestAnimationFrame(() => filter.focus());
   });
@@ -4745,9 +4785,12 @@ function openCellPlacementDialog(item, idx, settings, onChange, refreshList) {
     });
     
     let resolved = false;
+    let unregisterOverlay = null;
     const close = () => {
       if (resolved) return;
       resolved = true;
+      unregisterOverlay?.();
+      unregisterOverlay = null;
       try { dialog.close(); } catch {}
       dialog.remove();
       resolve();
@@ -4821,6 +4864,12 @@ function openCellPlacementDialog(item, idx, settings, onChange, refreshList) {
     dialog.appendChild(form);
     document.body.appendChild(dialog);
     try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
+    unregisterOverlay = registerOverlay({
+      id: "cell-placement-dialog",
+      root: dialog,
+      close,
+      closeOnOutside: false
+    });
     requestAnimationFrame(() => rowInput.focus());
   });
 }

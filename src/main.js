@@ -47,6 +47,7 @@ import { attachContextMenu } from "./utils/context-menu.js";
 import { THEME_OPTIONS } from "./utils/theme.js";
 import { attachErrorListeners } from "./utils/error-log.js";
 import { markHostPermissionsDenied, onHostPermissionsRemoved } from "./utils/host-permissions.js";
+import { hasOpenOverlay } from "./utils/overlay-stack.js";
 window._vantageWorkspaceHelpers = { captureSnapshot: () => captureSnapshot(currentSettings) };
 
 let currentSettings;
@@ -566,12 +567,6 @@ function wireSettings() {
     rerenderSettingsPanelIfOpen();
   });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && panel.dataset.open === "true") {
-      const popoverOpen = panel.querySelector(".engine-picker__popover:not([hidden])");
-      if (!popoverOpen) close();
-    }
-  });
 }
 
 function wireContextMenu() {
@@ -651,7 +646,7 @@ function wireKeyboard() {
     const target = e.target;
     const tag    = target?.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) return;
-    if (document.getElementById("settings-panel")?.dataset.open === "true") return;
+    if (hasOpenOverlay()) return;
     e.preventDefault();
     document.querySelector(".search-input")?.focus();
   });
