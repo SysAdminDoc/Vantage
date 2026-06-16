@@ -25,6 +25,8 @@ const FAVICON_CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
 const FAVICON_FETCH_TIMEOUT = 3000; // 3s timeout per request
 const FAVICON_CACHE_MAX_AGE = 1000 * 60 * 60 * 24 * 30; // 30 days in ms
 
+import { hasHostPermission } from "./host-permissions.js";
+
 /**
  * Get favicon URL with caching and fallbacks
  * @param {string} pageUrl - Full page URL (e.g., 'https://example.com/page')
@@ -89,6 +91,7 @@ async function fetchFaviconWithFallback(hostname, pageUrl) {
   
   // Fallback: Try to extract from page's Open Graph or favicon.ico
   try {
+    if (!(await hasHostPermission(pageUrl))) return "";
     return await extractFaviconFromPage(pageUrl, hostname);
   } catch (e) {
     console.warn(`[Favicon] Page extraction failed for ${pageUrl}:`, e.message);

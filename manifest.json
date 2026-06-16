@@ -48,6 +48,15 @@
     "https://api.allorigins.win/*",
     "https://corsproxy.io/*",
     "https://www.bing.com/*",
-    "*://*/*"
+    "https://www.google.com/*",
+    "https://api.github.com/*",
+    "https://gist.githubusercontent.com/*",
+    "https://api.coingecko.com/*",
+    "https://api.nasa.gov/*",
+    "https://picsum.photos/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
   ]
 }

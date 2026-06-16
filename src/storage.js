@@ -265,6 +265,12 @@ const DEFAULTS = {
     enabled: false,
     maxResults: 20           // chrome.history.search cap
   },
+  hostPermissions: {
+    // Runtime grants for user-entered feed, calendar, image, and embed
+    // origins. Denials are kept so Settings can show an actionable
+    // "Grant access" control instead of letting widgets fail generically.
+    deniedOrigins: []
+  },
   starred: {
     // "Starred items" panel — collects feed-list rows the user pinned
     // via the per-row star button (v1.1.0). All data lives in

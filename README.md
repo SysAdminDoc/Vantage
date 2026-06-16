@@ -278,10 +278,10 @@ Vantage/
 | `marine-api.open-meteo.com` | Marine weather pill | Wave height / SST / ocean current (coastal locations) |
 | `flood-api.open-meteo.com` | River flood risk pill | GloFAS v4 river discharge (locations near a major river) |
 | `ensemble-api.open-meteo.com` | Weather forecast-confidence chip (opt-in) | 50-member ICON-EU ensemble for current-hour spread |
-| Each configured RSS / News feed URL | RSS / News widgets | Direct fetch first |
+| Each configured RSS / News feed URL | RSS / News widgets | Direct fetch when that origin is granted; CORS proxy fallback otherwise |
 | `mshibanami.github.io/GitHubTrendingRSS` | Dev feed preset add | Optional GitHub Trending RSS mirror when you add those presets |
-| Each feed-discovery URL | Settings ("Discover feeds") | Scan the site you enter for RSS / Atom / JSON Feed links |
-| Each configured iCal feed URL | Calendar widget | Direct fetch first |
+| Each feed-discovery URL | Settings ("Discover feeds") | Scan the site you enter for RSS / Atom / JSON Feed links after a scoped host grant |
+| Each configured iCal feed URL | Calendar widget | Direct fetch when that origin is granted; CORS proxy fallback otherwise |
 | `api.allorigins.win` | RSS / News / Calendar (fallback) | Used **only** when direct fetch is blocked by CORS |
 | `corsproxy.io` | RSS / News / Calendar (second fallback) | Tried after allorigins fails |
 | `www.google.com/s2/favicons` | Quick Links / Top Sites / Bookmarks / Feeds | 32-64px favicon images |
@@ -291,12 +291,14 @@ Vantage/
 | `picsum.photos` | Photo widget (default) | Random daily photo |
 | `api.nasa.gov` | Photo widget (NASA APOD mode) | Astronomy picture of the day |
 | `www.bing.com` | Background → Bing daily | Daily wallpaper image |
-| Each configured image URL | Background image URL | Load the direct wallpaper image URL you enter |
-| Each configured iframe URL | Embed widget | Render the iframe URL you add; blocked sites can be opened in a new tab |
+| Each configured image URL | Background image URL | Load the direct wallpaper image URL you enter; optional host grant enables direct fetch features such as pre-blur |
+| Each configured iframe URL | Embed widget | Render the iframe URL you add after a scoped host grant; blocked sites can be opened in a new tab |
 | `embed.windy.com` | Windy radar widget | Weather radar iframe centered on your configured weather location |
 | `en.wikipedia.org` | Quote author link | Opens only when you click the author link; no background fetch |
 
 Nothing else. No analytics, no error reporting, no auto-update server.
+
+Vantage does not request `*://*/*` at install. Fixed service hosts above are required in the manifest; user-entered `http`/`https` origins are listed as optional host permissions and requested only when you add, discover, or import URLs that need them. Denied origins stay local in `chrome.storage.local` so Settings can show a `Grant access` recovery button.
 
 ## Documentation
 
