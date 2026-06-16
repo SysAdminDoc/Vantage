@@ -4981,17 +4981,6 @@ a {
    Settings panel
    ============================================================ */
 
-.settings-backdrop {
-  position: fixed;
-  inset: 0;
-  background: color-mix(in srgb, var(--crust) 55%, transparent);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  z-index: 90;
-  opacity: 0;
-  transition: opacity var(--t-base);
-  pointer-events: none;
-}
 
 /* Right-click context menu. Same z-band as the import dialog so a
    stray right-click on top of it doesn't open a competing menu.
@@ -5214,29 +5203,35 @@ a {
 }
 
 
-.settings-backdrop[data-open="true"] {
-  opacity: 1;
-  pointer-events: auto;
-}
-
 .settings-panel {
   position: fixed;
   top: 0;
   right: 0;
   height: 100vh;
   width: min(440px, 100vw);
-  background: var(--bg-canvas);
+  max-height: 100vh;
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+  border: none;
   border-left: 1px solid var(--border-default);
+  background: var(--bg-canvas);
+  color: var(--text);
   box-shadow: -8px 0 24px rgba(0, 0, 0, 0.15);
   transform: translateX(100%);
   transition: transform var(--t-slow) var(--ease-out);
-  z-index: 100;
   display: flex;
   flex-direction: column;
 }
 
 .settings-panel[data-open="true"] {
   transform: translateX(0);
+}
+
+.settings-panel::backdrop {
+  background: color-mix(in srgb, var(--crust) 55%, transparent);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .settings-panel__header {

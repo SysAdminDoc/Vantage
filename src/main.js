@@ -572,7 +572,6 @@ function launchWizard() {
 function wireSettings() {
   const toggle   = document.getElementById("settings-toggle");
   const panel    = document.getElementById("settings-panel");
-  const backdrop = document.getElementById("settings-backdrop");
 
   const onChange = async (next) => {
     currentSettings = next;
@@ -595,10 +594,11 @@ function wireSettings() {
   };
 
   toggle.addEventListener("click", () => {
-    panel.dataset.open === "true" ? close() : open();
+    panel.open ? close() : open();
   });
 
-  backdrop.addEventListener("click", close);
+  panel.addEventListener("cancel", (e) => { e.preventDefault(); close(); });
+  panel.addEventListener("close", () => { if (panel.dataset.open === "true") close(); });
 
   globalThis.addEventListener(BACKGROUND_PREVIEW_EVENT, () => {
     mountAll();

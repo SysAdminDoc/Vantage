@@ -92,16 +92,12 @@
       aria-live="polite"
       aria-atomic="false"
     ></div>
-    <div id="settings-backdrop" class="settings-backdrop" hidden></div>
-    <aside
+    <dialog
       id="settings-panel"
       class="settings-panel"
-      role="dialog"
-      aria-modal="true"
+      closedby="any"
       aria-labelledby="settings-panel-title"
-      aria-hidden="true"
-      tabindex="-1"
-    ></aside>
+    ></dialog>
   </main>
 
   <script src="src/utils/browser-shim.js"></script>
