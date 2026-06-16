@@ -288,6 +288,7 @@ const DEFAULTS = {
     list: []                 // [{ id, name, snapshot: { theme, accent, appearance, background, layout, quicklinks, enabled:{} } }]
   },
   containerMap: {},          // Firefox-only: { cookieStoreId: workspaceId }
+  containerAutoMap: false,   // Firefox-only: auto-save workspace↔container on switch
   security: {
     // Opt-in passphrase encryption for stored API keys (CoinGecko,
     // NASA APOD). When enabled, plaintext crypto.apiKey + photo.nasaKey

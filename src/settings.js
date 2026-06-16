@@ -1904,6 +1904,21 @@ function buildContainerMapSection(settings, onChange) {
     return sec;
   }
 
+  const autoGroup = group();
+  autoGroup.appendChild(row(
+    "Auto-save container mapping",
+    "When you switch workspace in a container tab, automatically remember that mapping for next time.",
+    toggle({
+      checked: settings.containerAutoMap || false,
+      ariaLabel: "Auto-save container mapping",
+      onChange: (v) => {
+        settings.containerAutoMap = v;
+        onChange(settings);
+      }
+    })
+  ));
+  sec.appendChild(autoGroup);
+
   const mapHost = el("div", { class: "item-list" });
   const mapEl = settings.containerMap || {};
 
