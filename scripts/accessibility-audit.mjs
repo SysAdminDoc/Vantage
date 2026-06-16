@@ -25,8 +25,10 @@ const [{ default: puppeteer }, axeModule] = await Promise.all([
 ]);
 const AxePuppeteer = axeModule.AxePuppeteer || axeModule.default;
 
-const EXTENSION_PATH = new URL('.', import.meta.url).pathname.replace(/\/$/, '').replace(/scripts$/, '');
-const DOCS_DIR = join(EXTENSION_PATH, 'docs');
+const SCRIPT_DIR = new URL('.', import.meta.url).pathname.replace(/\/$/, '');
+const REPO_ROOT = join(SCRIPT_DIR, '..');
+const UNPACKED_DIR = join(REPO_ROOT, 'dist', 'unpacked-chromium');
+const DOCS_DIR = join(REPO_ROOT, 'docs');
 const REPORT_PATH = join(DOCS_DIR, 'accessibility-report.md');
 const RESULTS_PATH = join(DOCS_DIR, 'accessibility-results.json');
 
@@ -34,19 +36,22 @@ async function runAudit() {
   let browser;
   try {
     mkdirSync(DOCS_DIR, { recursive: true });
-    
+
+    const { existsSync } = await import('fs');
+    const extPath = existsSync(UNPACKED_DIR) ? UNPACKED_DIR : REPO_ROOT;
+
     browser = await puppeteer.launch({
-      headless: process.argv.includes('--headless'),
+      headless: process.argv.includes('--headless') ? 'new' : false,
       args: [
-        `--disable-extensions-except=${EXTENSION_PATH}`,
-        `--load-extension=${EXTENSION_PATH}`,
+        `--disable-extensions-except=${extPath}`,
+        `--load-extension=${extPath}`,
       ]
     });
 
+    const extId = await discoverExtensionId(browser);
     const page = await browser.newPage();
-    
-    // Navigate to the extension's NTP
-    const extensionUrl = `chrome-extension://${getExtensionId()}/newtab.html`;
+
+    const extensionUrl = `chrome-extension://${extId}/newtab.html`;
     await page.goto(extensionUrl, { waitUntil: 'networkidle2' });
     
     // Wait for main content to render
@@ -77,10 +82,24 @@ async function runAudit() {
   }
 }
 
-function getExtensionId() {
-  // This would need to be extracted from the extension package
-  // For now, return a placeholder; in real usage, puppeteer needs the ID
-  return 'extension-id-here';
+async function discoverExtensionId(browser) {
+  const targets = browser.targets();
+  const sw = targets.find(t =>
+    t.type() === 'service_worker' && t.url().startsWith('chrome-extension://')
+  );
+  if (sw) return new URL(sw.url()).hostname;
+  const page = await browser.newPage();
+  await page.goto('chrome://extensions', { waitUntil: 'domcontentloaded' });
+  await new Promise(r => setTimeout(r, 1000));
+  const id = await page.evaluate(() => {
+    const el = document.querySelector('extensions-manager');
+    const items = el?.shadowRoot?.querySelector('extensions-item-list');
+    const item = items?.shadowRoot?.querySelector('extensions-item');
+    return item?.id || null;
+  }).catch(() => null);
+  await page.close();
+  if (id) return id;
+  throw new Error('Could not discover extension ID. Build the unpacked extension first: scripts/build-unpacked.ps1');
 }
 
 function generateMarkdownReport(results) {
