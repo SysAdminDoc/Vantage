@@ -3050,12 +3050,28 @@ function buildEmbedsSection(settings, onChange) {
         }
       }, [iconNode("trash", { size: 14 })]);
 
+      const sandboxTog = toggle({
+        checked: embed.sandbox !== false,
+        ariaLabel: "Sandbox this embed",
+        onChange: (v) => { embed.sandbox = v; onChange(settings); }
+      });
+      const geoTog = toggle({
+        checked: embed.allowGeolocation || false,
+        ariaLabel: "Allow geolocation",
+        onChange: (v) => { embed.allowGeolocation = v; onChange(settings); }
+      });
+      const sandboxRow = el("div", { class: "embed-item__sandbox" }, [
+        el("label", { class: "embed-item__label" }, [sandboxTog, " Sandbox"]),
+        el("label", { class: "embed-item__label" }, [geoTog, " Geolocation"])
+      ]);
+
       listEl.appendChild(el("div", { class: "embed-item" }, [
         el("div", { class: "embed-item__row" }, [
           tog,
           el("div", { class: "embed-item__inputs" }, [titleIn, urlIn, grant].filter(Boolean)),
           del
-        ])
+        ]),
+        sandboxRow
       ]));
     });
   }
