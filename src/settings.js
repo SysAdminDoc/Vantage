@@ -3485,6 +3485,85 @@ This will add all your YouTube channels as RSS feeds (when available).`;
     }, [iconNode("external", { size: 14 }), " Import YouTube"])
   ));
 
+  // Pocket HTML import
+  const pocketInput = el("input", { type: "file", accept: ".html,.htm", hidden: true });
+  pocketInput.addEventListener("change", async () => {
+    const file = pocketInput.files?.[0];
+    if (!file) return;
+    try {
+      const html = await file.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const links = [...doc.querySelectorAll("a[href]")];
+      if (!links.length) { toast("No links found in file.", "error"); return; }
+      const items = links.map(a => ({
+        url: a.href,
+        title: a.textContent?.trim() || a.href
+      })).filter(it => it.url.startsWith("http"));
+      if (!settings.quicklinks) settings.quicklinks = { items: [] };
+      if (!settings.quicklinks.items) settings.quicklinks.items = [];
+      let added = 0;
+      const existing = new Set(settings.quicklinks.items.map(it => it.url));
+      for (const it of items) {
+        if (!existing.has(it.url)) {
+          settings.quicklinks.items.push({ url: it.url, label: it.title });
+          existing.add(it.url);
+          added++;
+        }
+      }
+      onChange(settings);
+      toast(`Imported ${added} link${added !== 1 ? "s" : ""} from Pocket (${items.length - added} duplicates skipped).`, "success");
+    } catch (err) {
+      toast(`Pocket import failed — ${err?.message || "invalid file"}.`, "error");
+    }
+    pocketInput.value = "";
+  });
+  g.appendChild(row(
+    "Import from Pocket",
+    "Import your Pocket export (HTML) as quick links. Export from getpocket.com/export first.",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: () => pocketInput.click()
+    }, [iconNode("upload", { size: 14 }), " Import Pocket HTML"])
+  ));
+
+  // Instapaper CSV import
+  const instaInput = el("input", { type: "file", accept: ".csv", hidden: true });
+  instaInput.addEventListener("change", async () => {
+    const file = instaInput.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const lines = text.split("\n").slice(1).filter(l => l.trim());
+      if (!lines.length) { toast("No entries found in CSV.", "error"); return; }
+      if (!settings.quicklinks) settings.quicklinks = { items: [] };
+      if (!settings.quicklinks.items) settings.quicklinks.items = [];
+      let added = 0;
+      const existing = new Set(settings.quicklinks.items.map(it => it.url));
+      for (const line of lines) {
+        const match = line.match(/^"?([^",]+)"?,\s*"?([^"]*)"?/);
+        if (!match) continue;
+        const [, url, title] = match;
+        if (!url.startsWith("http") || existing.has(url)) continue;
+        settings.quicklinks.items.push({ url, label: title?.trim() || url });
+        existing.add(url);
+        added++;
+      }
+      onChange(settings);
+      toast(`Imported ${added} link${added !== 1 ? "s" : ""} from Instapaper.`, "success");
+    } catch (err) {
+      toast(`Instapaper import failed — ${err?.message || "invalid file"}.`, "error");
+    }
+    instaInput.value = "";
+  });
+  g.appendChild(row(
+    "Import from Instapaper",
+    "Import your Instapaper export (CSV) as quick links. Export from instapaper.com/export first.",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: () => instaInput.click()
+    }, [iconNode("upload", { size: 14 }), " Import Instapaper CSV"])
+  ));
+
   // Share config URL
   g.appendChild(row(
     "Share config",
