@@ -1470,6 +1470,22 @@ function buildWorkspacesSection(settings, onChange) {
           }
         }
       }, [iconNode("download", { size: 12 }), " Capture"]);
+
+      const sceneTime = ws.snapshot?.background?.qaTime || "";
+      const sceneTimeIn = el("input", {
+        type: "time",
+        class: "text-input number-input",
+        value: sceneTime,
+        title: "Lock this workspace to a specific time of day for the animated background (leave blank for real time)",
+        "aria-label": "Scene time override",
+        onChange: (e) => {
+          if (!ws.snapshot) ws.snapshot = {};
+          if (!ws.snapshot.background) ws.snapshot.background = {};
+          ws.snapshot.background.qaTime = e.target.value || "";
+          onChange(settings);
+        }
+      });
+
       // Per-workspace JSON export — copies a single workspace + its
       // snapshot to the clipboard. EclipseTab v1.3 ships this as a
       // right-click action; we surface it as a button per row since
@@ -1511,7 +1527,7 @@ function buildWorkspacesSection(settings, onChange) {
           });
         }
       }, [iconNode("trash", { size: 14 })]);
-      listEl.appendChild(el("div", { class: "workspace-item" }, [nameIn, captureBtn, exportBtn, del]));
+      listEl.appendChild(el("div", { class: "workspace-item" }, [nameIn, captureBtn, sceneTimeIn, exportBtn, del]));
     });
   }
   refreshWorkspaceList();
