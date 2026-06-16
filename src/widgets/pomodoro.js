@@ -10,7 +10,7 @@
 // auto-resumes when it comes back (unless the user manually paused).
 
 import { el, clear, toast } from "../utils/dom.js";
-import { iconNode } from "../icons.js";
+import { iconNode, iconString } from "../icons.js";
 import { playAlarm } from "../utils/alarm-audio.js";
 
 const STORAGE_KEY = "vantagePomodoro";
@@ -100,10 +100,18 @@ export function renderPomodoro(mount, settings) {
   const skipBtn    = el("button", { type: "button", class: "pom-btn pom-btn--ghost",   "aria-label": "Skip"   }, [iconNode("skip-forward", { size: 16 })]);
   const resetBtn   = el("button", { type: "button", class: "pom-btn pom-btn--ghost",   "aria-label": "Reset"  }, [iconNode("refresh",      { size: 16 })]);
 
+  const hasPip = "documentPictureInPicture" in globalThis;
+  const pipBtn = hasPip
+    ? el("button", { type: "button", class: "pom-btn pom-btn--ghost", "aria-label": "Pop out timer", title: "Picture-in-Picture" }, [iconNode("picture-in-picture", { size: 16 })])
+    : null;
+
+  const controlBtns = [startBtn, pauseBtn, skipBtn, resetBtn];
+  if (pipBtn) controlBtns.push(pipBtn);
+
   const widget = el("div", { class: "pom-widget" }, [
     el("div", { class: "pom-display" }, [phaseEl, timerEl]),
     dotsEl,
-    el("div", { class: "pom-controls" }, [startBtn, pauseBtn, skipBtn, resetBtn])
+    el("div", { class: "pom-controls" }, controlBtns)
   ]);
   mount.appendChild(widget);
 
@@ -252,6 +260,129 @@ export function renderPomodoro(mount, settings) {
     document.title = "New Tab";
   });
 
+  // ---- Document Picture-in-Picture ----------------------------------------
+
+  let pipWindow = null;
+  let pipTickId = null;
+  let pipStorageUnlisten = null;
+
+  function closePip() {
+    if (pipTickId) { clearInterval(pipTickId); pipTickId = null; }
+    pipStorageUnlisten?.();
+    pipStorageUnlisten = null;
+    try { pipWindow?.close(); } catch {}
+    pipWindow = null;
+  }
+
+  async function openPip() {
+    if (pipWindow && !pipWindow.closed) { pipWindow.focus(); return; }
+
+    const win = await documentPictureInPicture.requestWindow({
+      width: 320, height: 200
+    });
+    pipWindow = win;
+
+    const doc = win.document;
+    doc.title = "Pomodoro";
+
+    const style = doc.createElement("style");
+    style.textContent = PIP_CSS;
+    doc.head.appendChild(style);
+
+    const pipPhase = doc.createElement("div");
+    pipPhase.className = "pip-phase";
+    const pipTime = doc.createElement("div");
+    pipTime.className = "pip-time";
+    const pipDots = doc.createElement("div");
+    pipDots.className = "pip-dots";
+
+    const mkBtn = (label, cls) => {
+      const b = doc.createElement("button");
+      b.className = `pip-btn ${cls}`;
+      b.setAttribute("aria-label", label);
+      b.innerHTML = iconString(label === "Start" ? "play" : label === "Pause" ? "pause" : label === "Skip" ? "skip-forward" : "refresh", 14);
+      return b;
+    };
+    const pStart = mkBtn("Start", "pip-btn--primary");
+    const pPause = mkBtn("Pause", "pip-btn--ghost");
+    const pSkip  = mkBtn("Skip", "pip-btn--ghost");
+    const pReset = mkBtn("Reset", "pip-btn--ghost");
+
+    const controls = doc.createElement("div");
+    controls.className = "pip-controls";
+    controls.append(pStart, pPause, pSkip, pReset);
+
+    const root = doc.createElement("div");
+    root.className = "pip-root";
+    root.append(pipPhase, pipTime, pipDots, controls);
+    doc.body.appendChild(root);
+
+    let pipState = null;
+
+    function renderPip(state) {
+      pipState = state;
+      if (!state || state.phase === "idle") {
+        pipPhase.textContent = "Ready";
+        pipTime.textContent = formatMs(phaseDuration("work", state?.settings || cfg) || (cfg.workMinutes * 60_000));
+        pStart.hidden = false; pPause.hidden = true;
+        renderPipDots(pipDots, doc, state?.sessionCount || 0, state?.settings?.sessionsBeforeLongBreak || cfg.sessionsBeforeLongBreak);
+        return;
+      }
+      pipPhase.textContent = phaseLabel(state.phase);
+      renderPipDots(pipDots, doc, state.sessionCount, state.settings.sessionsBeforeLongBreak);
+      if (state.paused || state.autopaused) {
+        pipTime.textContent = formatMs(state.pausedRemainingMs);
+        pStart.hidden = false; pPause.hidden = true;
+      } else {
+        pipTime.textContent = formatMs(state.endTimeMs - Date.now());
+        pStart.hidden = true; pPause.hidden = false;
+      }
+    }
+
+    function startPipTick() {
+      if (pipTickId) clearInterval(pipTickId);
+      pipTickId = setInterval(() => {
+        if (!pipState || pipState.phase === "idle" || pipState.paused || pipState.autopaused) return;
+        pipTime.textContent = formatMs(pipState.endTimeMs - Date.now());
+      }, 500);
+    }
+
+    pStart.addEventListener("click", () => startBtn.click());
+    pPause.addEventListener("click", () => pauseBtn.click());
+    pSkip.addEventListener("click", () => skipBtn.click());
+    pReset.addEventListener("click", () => resetBtn.click());
+
+    const chromeApi = globalThis.chrome;
+    if (chromeApi?.storage?.onChanged) {
+      const handler = (changes, area) => {
+        if (area !== "local" || !changes[STORAGE_KEY]) return;
+        const ns = changes[STORAGE_KEY].newValue;
+        renderPip(ns);
+        if (ns && !ns.paused && !ns.autopaused && ns.phase !== "idle") startPipTick();
+        else { if (pipTickId) { clearInterval(pipTickId); pipTickId = null; } }
+      };
+      chromeApi.storage.onChanged.addListener(handler);
+      pipStorageUnlisten = () => chromeApi.storage.onChanged.removeListener(handler);
+    }
+
+    win.addEventListener("pagehide", () => closePip());
+
+    const state = await readState() || freshState(cfg);
+    renderPip(state);
+    if (state.phase !== "idle" && !state.paused && !state.autopaused) startPipTick();
+  }
+
+  function renderPipDots(container, doc, count, total) {
+    container.innerHTML = "";
+    for (let i = 0; i < total; i++) {
+      const dot = doc.createElement("span");
+      dot.className = i < count % total ? "pip-dot pip-dot--filled" : "pip-dot";
+      container.appendChild(dot);
+    }
+  }
+
+  if (pipBtn) pipBtn.addEventListener("click", () => openPip().catch(() => {}));
+
   // ---- Tab visibility auto-pause ----------------------------------------
 
   const onVisibility = async () => {
@@ -324,8 +455,49 @@ export function renderPomodoro(mount, settings) {
   // Return teardown so main.js can clean up on settings change
   return () => {
     stopTick();
+    closePip();
     document.removeEventListener("visibilitychange", onVisibility);
     storageUnlisten?.();
     document.title = "New Tab";
   };
 }
+
+// Inline CSS for the Document PiP window (can't load extension stylesheets).
+const PIP_CSS = `
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #1e1e2e; color: #cdd6f4;
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; overflow: hidden; user-select: none;
+  }
+  .pip-root {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 16px;
+  }
+  .pip-phase {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.12em; color: #cba6f7;
+  }
+  .pip-time {
+    font-size: 42px; font-weight: 800; font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px; line-height: 1;
+  }
+  .pip-dots { display: flex; gap: 6px; }
+  .pip-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #45475a;
+  }
+  .pip-dot--filled { background: #cba6f7; }
+  .pip-controls { display: flex; gap: 6px; }
+  .pip-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border: 1px solid #45475a;
+    border-radius: 6px; background: transparent; color: #cdd6f4;
+    cursor: pointer; transition: background 0.15s, border-color 0.15s;
+  }
+  .pip-btn:hover { background: rgba(203,166,247,0.1); border-color: rgba(203,166,247,0.4); color: #cba6f7; }
+  .pip-btn--primary { background: #cba6f7; color: #1e1e2e; border-color: #cba6f7; }
+  .pip-btn--primary:hover { background: #b48def; border-color: #b48def; }
+  .pip-btn svg { width: 14px; height: 14px; }
+`;
