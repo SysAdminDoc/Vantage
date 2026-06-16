@@ -7,27 +7,27 @@ import { geocodeCity, detectLocation } from "./utils/weather-source.js";
 const PRESETS = [
   {
     id: "minimal",
-    label: "Minimal",
-    tagline: "Just the search bar. Distraction-free.",
-    features: ["Search"],
-    needsPersonalize: false,
+    label: "Focused",
+    tagline: "Search, quick links, and two panels.",
+    features: ["Private search", "Quick links", "Two reading panels"],
+    needsPersonalize: true,
     apply(s) {
-      s.greeting.enabled   = false;
-      s.clock.enabled      = false;
+      s.greeting.enabled   = true;
+      s.clock.enabled      = true;
       s.weather.enabled    = false;
       s.airquality.enabled = false;
-      s.quicklinks.enabled = false;
-      s.rss.enabled        = false;
-      s.news.enabled       = false;
+      s.quicklinks.enabled = true;
+      s.rss.enabled        = true;
+      s.news.enabled       = true;
       s.calendar.enabled   = false;
       s.pomodoro.enabled   = false;
     }
   },
   {
     id: "standard",
-    label: "Standard",
-    tagline: "Search, weather, and daily news.",
-    features: ["Search", "Clock & greeting", "Weather", "Quick links", "News"],
+    label: "Balanced",
+    tagline: "Three panels for more context.",
+    features: ["Private search", "Greeting", "Weather", "Quick links", "Three panels"],
     needsPersonalize: true,
     apply(s) {
       s.greeting.enabled   = true;
@@ -35,17 +35,17 @@ const PRESETS = [
       s.weather.enabled    = true;
       s.airquality.enabled = false;
       s.quicklinks.enabled = true;
-      s.rss.enabled        = false;
+      s.rss.enabled        = true;
       s.news.enabled       = true;
-      s.calendar.enabled   = false;
+      s.calendar.enabled   = true;
       s.pomodoro.enabled   = false;
     }
   },
   {
     id: "full",
-    label: "Full",
-    tagline: "Every widget: feeds, air quality, Pomodoro.",
-    features: ["Search", "Clock & greeting", "Weather", "Air quality", "Quick links", "RSS", "News", "Pomodoro"],
+    label: "Expanded",
+    tagline: "Four panels for power users.",
+    features: ["Private search", "Weather", "Air quality", "Feeds", "Pomodoro"],
     needsPersonalize: true,
     apply(s) {
       s.greeting.enabled   = true;
@@ -55,7 +55,7 @@ const PRESETS = [
       s.quicklinks.enabled = true;
       s.rss.enabled        = true;
       s.news.enabled       = true;
-      s.calendar.enabled   = false;
+      s.calendar.enabled   = true;
       s.pomodoro.enabled   = true;
     }
   }
@@ -117,11 +117,11 @@ export function showOnboarding(settings, onComplete) {
     const names = stepNames();
 
     card.appendChild(
-      el("div", { class: "onboard-dots" },
-        names.map((_, i) =>
-          el("span", { class: `onboard-dot${i === step ? " onboard-dot--active" : ""}` })
-        )
-      )
+      el("div", { class: "onboard-progress" }, [
+        el("span", { class: "onboard-progress__label" }, ["First-time setup"]),
+        el("span", { class: "onboard-progress__step" }, [`Step ${step + 1} of ${names.length}`]),
+        el("span", { class: "onboard-progress__rule", "aria-hidden": "true" })
+      ])
     );
 
     const content = el("div", { class: "onboard-content" });
@@ -136,9 +136,9 @@ export function showOnboarding(settings, onComplete) {
   /* ---------- Step: layout ---------- */
   function renderLayout(content) {
     content.appendChild(el("div", { class: "onboard-header" }, [
-      el("h2", { class: "onboard-title" }, ["Welcome to Vantage"]),
+      el("h2", { class: "onboard-title" }, ["Choose your layout"]),
       el("p",  { class: "onboard-subtitle" }, [
-        "Choose a starting layout for this browser. You can change every module later."
+        "Pick a starting point. You can change this anytime."
       ])
     ]));
 
@@ -168,19 +168,35 @@ export function showOnboarding(settings, onComplete) {
           });
         }
       }, [
+        renderPresetPreview(p.id),
         el("div", { class: "onboard-preset__label" }, [p.label]),
         el("div", { class: "onboard-preset__tagline" }, [p.tagline]),
-        el("ul", { class: "onboard-preset__features" },
-          p.features.map(f => el("li", { class: "onboard-preset__feature" }, [f]))
-        )
+        el("span", { class: "onboard-preset__radio", "aria-hidden": "true" })
       ]);
       grid.appendChild(presetCard);
     }
     content.appendChild(grid);
 
     content.appendChild(el("div", { class: "onboard-footer" }, [
-      el("button", { type: "button", class: "button button--primary", onClick: goNext }, ["Next"])
+      el("button", { type: "button", class: "button button--ghost", onClick: skipSetup }, ["Skip setup"]),
+      el("button", { type: "button", class: "button button--primary", onClick: goNext }, [
+        "Next",
+        iconNode("arrow-right", { size: 14 })
+      ])
     ]));
+  }
+
+  function renderPresetPreview(id) {
+    const count = id === "minimal" ? 2 : id === "standard" ? 3 : 4;
+    return el("div", {
+      class: `onboard-preset__preview onboard-preset__preview--${id}`,
+      "aria-hidden": "true"
+    }, [
+      el("span", { class: "onboard-preset__preview-search" }),
+      el("span", { class: "onboard-preset__preview-grid" },
+        Array.from({ length: count }, () => el("span", {}))
+      )
+    ]);
   }
 
   function selectPreset(p) {
@@ -302,28 +318,40 @@ export function showOnboarding(settings, onComplete) {
   function renderDone(content) {
     content.appendChild(el("div", { class: "onboard-done" }, [
       el("div", { class: "onboard-done__check" }, [iconNode("check", { size: 28 })]),
-      el("h2", { class: "onboard-title" }, ["You're all set!"]),
+      el("h2", { class: "onboard-title" }, ["All set. You're ready."]),
       el("p",  { class: "onboard-subtitle" }, [
-        `The "${preset.label}" layout is ready. Open settings anytime to add feeds, ` +
-        `change search, or enable more widgets.`
+        "Your preferences are saved locally on this device. Everything stays private."
       ])
     ]));
     content.appendChild(el("div", { class: "onboard-footer" }, [
-      el("button", { type: "button", class: "button button--ghost", onClick: goBack }, ["Back"]),
-      el("button", { type: "button", class: "button button--primary", onClick: finish }, ["Open Vantage"])
+      el("button", { type: "button", class: "button button--primary onboard-launch-btn", onClick: finish }, [
+        "Open Vantage",
+        iconNode("external", { size: 14 })
+      ])
     ]));
   }
 
   /* ---------- Finish ---------- */
+  function skipSetup() {
+    const s = structuredClone(settings);
+    s.onboardingComplete = true;
+    closeOverlay();
+    onComplete(s);
+  }
+
+  function closeOverlay() {
+    document.removeEventListener("keydown", onKeydown);
+    document.body.style.overflow = previousBodyOverflow;
+    overlay.remove();
+  }
+
   function finish() {
     const s = structuredClone(settings);
     preset.apply(s);
     if (pendingName)     s.greeting.name      = pendingName;
     if (pendingLocation) s.weather.location   = pendingLocation;
     s.onboardingComplete = true;
-    document.removeEventListener("keydown", onKeydown);
-    document.body.style.overflow = previousBodyOverflow;
-    overlay.remove();
+    closeOverlay();
     onComplete(s);
   }
 

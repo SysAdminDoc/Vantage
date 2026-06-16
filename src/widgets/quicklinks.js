@@ -11,7 +11,7 @@ import { registerOverlay } from "../utils/overlay-stack.js";
 export function renderQuickLinks(mount, settings, { onChange } = {}) {
   clear(mount);
   const cfg = settings.quicklinks;
-  if (!cfg?.enabled || (!cfg.items?.length && !cfg.groups?.length)) {
+  if (!cfg?.enabled) {
     mount.style.display = "none";
     mount.removeAttribute("data-cols");
     mount.removeAttribute("data-icon-radius");
@@ -37,6 +37,11 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
 
   // Flat pills — favicons loaded via caching system (v1.0.0+)
   // Tab Groups (v1.2.0+) are rendered as folder-like buttons with color indicators
+  if (!cfg.items?.length && !cfg.groups?.length) {
+    mount.appendChild(buildAddLinkButton({ empty: true }));
+    return;
+  }
+
   const pills = (cfg.items || []).map((item) => {
     // Tab Group item (v1.2.0): pinned Tab Group from chrome.tabGroups
     if (item.groupId && SUPPORTS_TAB_GROUPS) {
@@ -54,7 +59,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
         el("span", { class: "quicklink__tab-group-icon", "aria-hidden": "true" }, [
           iconNode("folder", { size: 14 })
         ]),
-        el("span", {}, [item.title])
+        el("span", { class: "quicklink__label" }, [item.title])
       ]);
       
       if (item.cellOverride && typeof cols === "number") {
@@ -70,6 +75,11 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
     }
     
     // Regular URL item
+    const fallbackGlyph = (item.title || hostnameLabel(item.url) || "?").trim().slice(0, 1).toUpperCase() || "?";
+    const fallbackIcon = el("span", {
+      class: "quicklink__fallback",
+      "aria-hidden": "true"
+    }, [fallbackGlyph]);
     const link = el("a", {
       class: "quicklink",
       href: item.url,
@@ -81,10 +91,15 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
         src: "", // Will be populated async
         alt: "",
         loading: "lazy",
+        hidden: true,
         referrerpolicy: "no-referrer",
-        onError: (e) => { e.target.style.visibility = "hidden"; }
+        onError: (e) => {
+          e.target.hidden = true;
+          fallbackIcon.hidden = false;
+        }
       }),
-      el("span", {}, [item.title])
+      fallbackIcon,
+      el("span", { class: "quicklink__label" }, [item.title])
     ]);
     
     // Manual cell placement override (v1.1.0+): if cellOverride is set,
@@ -104,12 +119,16 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
     getFaviconUrl(item.url).then(dataUrl => {
       if (dataUrl) {
         imgEl.src = dataUrl;
+        imgEl.hidden = false;
+        fallbackIcon.hidden = true;
       } else {
         // No favicon available; show text label letter icon
-        imgEl.style.display = "none";
+        imgEl.hidden = true;
+        fallbackIcon.hidden = false;
       }
     }).catch(() => {
-      imgEl.style.display = "none";
+      imgEl.hidden = true;
+      fallbackIcon.hidden = false;
     });
     
     link.addEventListener("dragstart", () => link.classList.add("quicklink--dragging-self"));
@@ -130,6 +149,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
   for (const group of (cfg.groups || [])) {
     mount.appendChild(buildGroupButton(group, mount));
   }
+  mount.appendChild(buildAddLinkButton());
 }
 
 function buildGroupButton(group, mount) {
@@ -144,7 +164,7 @@ function buildGroupButton(group, mount) {
     title: group.name
   }, [
     el("span", { class: "quicklink__folder-icon", "aria-hidden": "true" }, [iconNode("folder", { size: 14 })]),
-    el("span", {}, [group.name])
+    el("span", { class: "quicklink__label" }, [group.name])
   ]);
 
   let popover = null;
@@ -307,6 +327,19 @@ function buildGroupButton(group, mount) {
   }
 
   return wrap;
+}
+
+function buildAddLinkButton({ empty = false } = {}) {
+  return el("button", {
+    type: "button",
+    class: `quicklink-add${empty ? " quicklink-add--empty" : ""}`,
+    onClick: () => window.dispatchEvent(new CustomEvent("vantage:open-settings-filter", {
+      detail: { query: "Quick links" }
+    }))
+  }, [
+    iconNode("plus", { size: 14 }),
+    empty ? "Add your first link" : "Add link"
+  ]);
 }
 
 // Favicon loading moved to favicon-cache.js for shared use by all widgets

@@ -2406,7 +2406,7 @@ function buildLinksSection(settings, onChange) {
   if (settings.quicklinks.itemsPerRow == null) settings.quicklinks.itemsPerRow = "auto";
   g.appendChild(row(
     "Items per row",
-    "Auto fills the row based on pill width. A fixed count gives a tidy grid regardless of label length.",
+    "Auto fills the row based on launcher width. A fixed count gives a tidy grid regardless of label length.",
     segmented({
       ariaLabel: "Quick links per row",
       value: String(settings.quicklinks.itemsPerRow),

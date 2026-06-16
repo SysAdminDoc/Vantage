@@ -14,31 +14,47 @@
   <main id="vantage-root" class="vantage" role="main">
 
     <header class="utility-bar">
-      <div id="weather-mount" class="weather-mount" aria-live="polite"></div>
-      <div id="airquality-mount" class="airquality-mount" aria-live="polite"></div>
-      <div id="marine-mount" class="airquality-mount" aria-live="polite"></div>
-      <div id="flood-mount" class="airquality-mount" aria-live="polite"></div>
-      <div id="solar-radiation-mount" class="airquality-mount" aria-live="polite"></div>
-      <button
-        id="widget-picker-toggle"
-        class="icon-button"
-        type="button"
-        title="Customize widgets"
-        aria-label="Customize widgets"
-        aria-haspopup="dialog"
-        aria-controls="widget-picker"
-        aria-expanded="false"
-      ></button>
-      <button
-        id="settings-toggle"
-        class="icon-button"
-        type="button"
-        title="Open settings"
-        aria-label="Open settings"
-        aria-haspopup="dialog"
-        aria-expanded="false"
-        data-rotate="hover"
-      ></button>
+      <a class="brand-mark" href="#vantage-root" aria-label="Vantage home">
+        <span class="brand-mark__glyph" aria-hidden="true">V</span>
+        <span class="brand-mark__word">Vantage</span>
+      </a>
+      <div class="utility-bar__status" aria-label="Local status">
+        <div id="weather-mount" class="weather-mount" aria-live="polite"></div>
+        <div id="airquality-mount" class="airquality-mount" aria-live="polite"></div>
+        <div id="marine-mount" class="airquality-mount" aria-live="polite"></div>
+        <div id="flood-mount" class="airquality-mount" aria-live="polite"></div>
+        <div id="solar-radiation-mount" class="airquality-mount" aria-live="polite"></div>
+        <div id="local-status-mount" class="local-status-mount" aria-live="off"></div>
+      </div>
+      <div class="utility-bar__actions" aria-label="Page controls">
+        <button
+          id="widget-picker-toggle"
+          class="icon-button"
+          type="button"
+          title="Customize widgets"
+          aria-label="Customize widgets"
+          aria-haspopup="dialog"
+          aria-controls="widget-picker"
+          aria-expanded="false"
+        ></button>
+        <button
+          id="layout-edit-toggle"
+          class="icon-button"
+          type="button"
+          title="Edit layout"
+          aria-label="Edit layout"
+        ></button>
+        <button
+          id="settings-toggle"
+          class="icon-button"
+          type="button"
+          title="Open settings"
+          aria-label="Open settings"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+          data-rotate="hover"
+        ></button>
+      </div>
     </header>
 
     <div
@@ -88,6 +104,17 @@
     </section>
 
     <div id="zen-shelf-mount" class="zen-shelf-mount"></div>
+
+    <footer class="vantage-footer" aria-label="Privacy and sync status">
+      <span class="vantage-footer__trust">
+        <span id="trust-lock-icon" class="vantage-footer__icon" aria-hidden="true"></span>
+        <span>Local-first. Private by default.</span>
+      </span>
+      <span class="vantage-footer__sync">
+        <span>No sync. No tracking. No profile.</span>
+        <span id="trust-heart-icon" class="vantage-footer__icon vantage-footer__icon--heart" aria-hidden="true"></span>
+      </span>
+    </footer>
 
     <div
       id="toast-host"
