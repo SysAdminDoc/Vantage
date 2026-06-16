@@ -24,6 +24,7 @@ import { renderTodo }       from "./widgets/todo.js";
 import { renderNotes }      from "./widgets/notes.js";
 import { renderBookmarks }  from "./widgets/bookmarks.js";
 import { renderStarred }    from "./widgets/starred.js";
+import { renderInbox }      from "./widgets/inbox.js";
 import { renderAmbient }    from "./widgets/ambient.js";
 import { renderHistorySearch } from "./widgets/history-search.js";
 import { renderWorldClock } from "./widgets/worldclock.js";
@@ -70,7 +71,7 @@ let hostPermissionCleanup = null;
 // Fixed panel kinds (static mounts in newtab.html)
 const FIXED_PANEL_KINDS = [
   "news", "rss", "calendar", "windy",
-  "todo", "notes", "bookmarks", "starred", "ambient", "history", "crypto", "github", "photo", "countdown", "converter"
+  "todo", "notes", "bookmarks", "starred", "inbox", "ambient", "history", "crypto", "github", "photo", "countdown", "converter"
 ];
 
 function getPanelKinds() {
@@ -331,6 +332,7 @@ function mountAll() {
       renderNews(document.getElementById("news-mount"), effectiveSettings, { onAttachDragHandle: onAttach("news") });
     }
   });
+  renderInbox(document.getElementById("inbox-mount"), effectiveSettings, { onChange: persist, onAttachDragHandle: onAttach("inbox") });
   renderCrypto(document.getElementById("crypto-mount"), effectiveSettings, { onAttachDragHandle: onAttach("crypto") });
   renderGithub(document.getElementById("github-mount"), effectiveSettings, { onAttachDragHandle: onAttach("github") });
   renderPhoto(document.getElementById("photo-mount"), effectiveSettings, { onAttachDragHandle: onAttach("photo"), onSave: persist });

@@ -51,6 +51,7 @@ const WIDGET_GROUPS = [
       { key: "zenShelf",   path: "zenShelf.enabled",    icon: "note",           label: "Zen Shelf" },
       { key: "bookmarks",  path: "bookmarks.enabled",   icon: "bookmark",       label: "Bookmarks" },
       { key: "starred",    path: "starred.enabled",     icon: "star",           label: "Starred Items" },
+      { key: "inbox",      path: "inbox.enabled",       icon: "bookmark",       label: "Inbox" },
       { key: "ambient",    path: "ambient.enabled",     icon: "play",           label: "Ambient Sounds" },
       { key: "history",    path: "historySearch.enabled", icon: "clock",         label: "History Search" },
       { key: "crypto",     path: "crypto.enabled",      icon: "trending-up",    label: "Crypto Prices" },
