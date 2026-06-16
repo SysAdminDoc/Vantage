@@ -11,8 +11,9 @@
  *   node scripts/accessibility-audit.mjs [--headless]
  */
 
-import { writeFileSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log(`Usage: npm run audit -- [--headless]\n\nRuns the Vantage accessibility audit with Puppeteer and axe-core.`);
@@ -25,7 +26,7 @@ const [{ default: puppeteer }, axeModule] = await Promise.all([
 ]);
 const AxePuppeteer = axeModule.AxePuppeteer || axeModule.default;
 
-const SCRIPT_DIR = new URL('.', import.meta.url).pathname.replace(/\/$/, '');
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, '..');
 const UNPACKED_DIR = join(REPO_ROOT, 'dist', 'unpacked-chromium');
 const DOCS_DIR = join(REPO_ROOT, 'docs');
@@ -37,8 +38,10 @@ async function runAudit() {
   try {
     mkdirSync(DOCS_DIR, { recursive: true });
 
-    const { existsSync } = await import('fs');
-    const extPath = existsSync(UNPACKED_DIR) ? UNPACKED_DIR : REPO_ROOT;
+    const extPath =
+      existsSync(UNPACKED_DIR) && existsSync(join(UNPACKED_DIR, '.vantage-unpacked'))
+        ? UNPACKED_DIR
+        : REPO_ROOT;
 
     browser = await puppeteer.launch({
       headless: process.argv.includes('--headless') ? 'new' : false,
@@ -48,11 +51,19 @@ async function runAudit() {
       ]
     });
 
-    const extId = await discoverExtensionId(browser);
     const page = await browser.newPage();
+    let auditUrl;
+    try {
+      const extId = await discoverExtensionId(browser);
+      auditUrl = `chrome-extension://${extId}/newtab.html`;
+    } catch (err) {
+      console.warn(`Could not discover extension ID; auditing local newtab.html instead. ${err.message}`);
+      auditUrl = pathToFileURL(join(REPO_ROOT, 'newtab.html')).href;
+    }
 
-    const extensionUrl = `chrome-extension://${extId}/newtab.html`;
-    await page.goto(extensionUrl, { waitUntil: 'networkidle2' });
+    await page.goto(auditUrl, { waitUntil: 'networkidle2' });
+    await seedDashboardState(page);
+    await page.reload({ waitUntil: 'networkidle2' });
     
     // Wait for main content to render
     await page.waitForSelector('[data-widget]', { timeout: 5000 }).catch(() => {
@@ -100,6 +111,27 @@ async function discoverExtensionId(browser) {
   await page.close();
   if (id) return id;
   throw new Error('Could not discover extension ID. Build the unpacked extension first: scripts/build-unpacked.ps1');
+}
+
+async function seedDashboardState(page) {
+  await page.evaluate(async () => {
+    const nextSettings = { onboardingComplete: true };
+
+    if (globalThis.chrome?.storage?.local) {
+      const stored = await globalThis.chrome.storage.local.get("vantageSettings").catch(() => ({}));
+      await globalThis.chrome.storage.local.set({
+        vantageSettings: { ...(stored.vantageSettings || {}), ...nextSettings }
+      });
+      return;
+    }
+
+    const storageKey = "vantage:dev-chrome-storage";
+    const store = JSON.parse(globalThis.localStorage?.getItem(storageKey) || "{}");
+    globalThis.localStorage?.setItem(storageKey, JSON.stringify({
+      ...store,
+      vantageSettings: { ...(store.vantageSettings || {}), ...nextSettings }
+    }));
+  }).catch(() => {});
 }
 
 function generateMarkdownReport(results) {

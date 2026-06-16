@@ -35,3 +35,6 @@ node_modules/
 # Markdown files local-only (except README)
 *.md
 !README.md
+
+# Generated accessibility audit output
+docs/accessibility-results.json
