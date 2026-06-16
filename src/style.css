@@ -3701,6 +3701,12 @@ a {
   gap: var(--s-5);
 }
 
+@supports (column-rule: 1px solid red) {
+  .reading {
+    column-rule: 1px solid var(--border-subtle);
+  }
+}
+
 /* ============================================================
    Greeting / clock hero
    ============================================================ */
