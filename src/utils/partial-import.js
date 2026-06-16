@@ -136,8 +136,15 @@ const SECTIONS = [
   {
     id: "appearance",
     title: "Theme & appearance",
-    hint: "Theme, accent, custom CSS, scenery, background settings.",
-    keys: ["theme", "accent", "customCSS", "appearance", "background"]
+    hint: "Theme, accent, scenery, background settings.",
+    keys: ["theme", "accent", "appearance", "background"]
+  },
+  {
+    id: "customCSS",
+    title: "Custom CSS",
+    hint: "Advanced style overrides. Unchecked by default because CSS from a backup or shared link can change the interface.",
+    keys: ["customCSS"],
+    defaultChecked: false
   },
   {
     id: "greeting",
@@ -322,10 +329,11 @@ export function showPartialImportDialog(current, imported, source) {
     const list = el("div", { class: "import-dialog__sections" });
     for (const sec of SECTIONS) {
       const differs = sectionDiffers.get(sec.id);
+      const shouldCheck = differs && sec.defaultChecked !== false;
       const cb = el("input", {
         type: "checkbox",
         id: `import-${sec.id}`,
-        checked: differs,
+        checked: shouldCheck,
         disabled: !differs
       });
       checkboxes.set(sec.id, cb);
