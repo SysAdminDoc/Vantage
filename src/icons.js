@@ -63,6 +63,8 @@ const ICONS = {
   filter:           '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
   "picture-in-picture": '<rect width="11" height="7" x="11" y="13" rx="1"/><rect width="20" height="16" x="2" y="4" rx="2"/>',
   "hard-drive":     '<line x1="22" x2="2" y1="12" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  // v1.2.0 additions
+  sun:              '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
 };
 
 export function iconString(name, size = 18) {

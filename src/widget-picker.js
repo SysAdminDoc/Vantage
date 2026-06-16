@@ -40,6 +40,7 @@ const WIDGET_GROUPS = [
       { key: "background", path: "background.enabled",  icon: "image",          label: "Animated Background" },
       { key: "marine",     path: "marine.enabled",       icon: "wind",           label: "Marine Weather" },
       { key: "flood",      path: "flood.enabled",        icon: "layers",         label: "River Flood Risk" },
+      { key: "solarRadiation", path: "solarRadiation.enabled", icon: "sun",        label: "Solar Radiation" },
     ]
   },
   {
