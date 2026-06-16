@@ -825,6 +825,7 @@ function getSeason(date, hemisphere) {
 }
 
 const BING_ENDPOINT = "https://www.bing.com/HPImageArchive.aspx?format=js&n=1&mkt=en-US";
+const BING_ENDPOINT_V1 = "https://www.bing.com/hp/api/v1/imagegallery";
 
 const BACKGROUND_DATA_KEYS = [
   "phase",
@@ -985,14 +986,26 @@ export async function renderBackground(mount, settings, saveSettings) {
     } else {
       if (cached?.url) applyBing(cached.url);
       try {
-        const res  = await fetch(BING_ENDPOINT);
-        const data = await res.json();
-        const path = data?.images?.[0]?.url;
-        if (path) {
-          const url = `https://www.bing.com${path}`;
-          applyBing(url);
+        let imageUrl = null;
+        try {
+          const res = await fetch(BING_ENDPOINT);
+          const data = await res.json();
+          const path = data?.images?.[0]?.url;
+          if (path) imageUrl = `https://www.bing.com${path}`;
+        } catch {}
+        if (!imageUrl) {
+          try {
+            const res = await fetch(BING_ENDPOINT_V1);
+            const data = await res.json();
+            const img = data?.data?.images?.[0] || data?.images?.[0];
+            const path = img?.imageUrl || img?.url;
+            if (path) imageUrl = path.startsWith("http") ? path : `https://www.bing.com${path}`;
+          } catch {}
+        }
+        if (imageUrl) {
+          applyBing(imageUrl);
           if (typeof saveSettings === "function") {
-            settings.background.bingDailyCache = { url, date: today };
+            settings.background.bingDailyCache = { url: imageUrl, date: today };
             await saveSettings(settings);
           }
         }
