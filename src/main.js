@@ -400,6 +400,26 @@ function renderWorkspaceBar(settings) {
     }
 
     bar.appendChild(btn);
+
+    if (ws.id === activeId && ws.presets?.length) {
+      const presetBar = document.createElement("span");
+      presetBar.className = "workspace-presets";
+      ws.presets.forEach((preset, idx) => {
+        const pb = document.createElement("button");
+        pb.type = "button";
+        pb.className = `workspace-preset-pill${ws.activePreset === idx ? " workspace-preset-pill--active" : ""}`;
+        pb.textContent = preset.name || `Preset ${idx + 1}`;
+        pb.setAttribute("aria-pressed", String(ws.activePreset === idx));
+        pb.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          ws.activePreset = ws.activePreset === idx ? null : idx;
+          await saveSettings(currentSettings);
+          mountAll();
+        });
+        presetBar.appendChild(pb);
+      });
+      bar.appendChild(presetBar);
+    }
   }
 }
 

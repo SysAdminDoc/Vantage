@@ -1528,7 +1528,49 @@ function buildWorkspacesSection(settings, onChange) {
           });
         }
       }, [iconNode("trash", { size: 14 })]);
-      listEl.appendChild(el("div", { class: "workspace-item" }, [nameIn, captureBtn, sceneTimeIn, exportBtn, del]));
+      const presetList = el("div", { class: "workspace-presets-list" });
+      if (!ws.presets) ws.presets = [];
+      const renderPresets = () => {
+        clear(presetList);
+        ws.presets.forEach((preset, pi) => {
+          const pName = el("input", {
+            type: "text", class: "text-input text-input--sm",
+            value: preset.name || "", placeholder: "Preset name",
+            "aria-label": "Preset name",
+            onChange: (e) => { preset.name = e.target.value.trim() || `Preset ${pi + 1}`; onChange(settings); }
+          });
+          const pTime = el("input", {
+            type: "time", class: "text-input number-input",
+            value: preset.snapshot?.background?.qaTime || "",
+            title: "Scene time for this preset",
+            "aria-label": "Preset scene time",
+            onChange: (e) => {
+              if (!preset.snapshot) preset.snapshot = {};
+              if (!preset.snapshot.background) preset.snapshot.background = {};
+              preset.snapshot.background.qaTime = e.target.value || "";
+              onChange(settings);
+            }
+          });
+          const pDel = el("button", {
+            type: "button", class: "icon-button icon-button--ghost icon-button--small",
+            "aria-label": "Remove preset", title: "Remove",
+            onClick: () => { ws.presets.splice(pi, 1); if (ws.activePreset >= pi) ws.activePreset = null; onChange(settings); renderPresets(); }
+          }, [iconNode("trash", { size: 12 })]);
+          presetList.appendChild(el("div", { class: "workspace-preset-row" }, [pName, pTime, pDel]));
+        });
+        if (ws.presets.length < 5) {
+          presetList.appendChild(el("button", {
+            type: "button", class: "button button--ghost button--small",
+            onClick: () => { ws.presets.push({ name: `Preset ${ws.presets.length + 1}`, snapshot: {} }); onChange(settings); renderPresets(); }
+          }, [iconNode("plus", { size: 12 }), " Add preset"]));
+        }
+      };
+      renderPresets();
+
+      listEl.appendChild(el("div", { class: "workspace-item" }, [
+        el("div", { class: "workspace-item__header" }, [nameIn, captureBtn, sceneTimeIn, exportBtn, del]),
+        presetList
+      ]));
     });
   }
   refreshWorkspaceList();
