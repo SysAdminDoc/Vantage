@@ -12,13 +12,22 @@ const PROXIES = [
   (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
 ];
 
-async function fetchICal(url) {
+async function fetchICal(url, auth) {
+  const headers = {};
+  if (auth?.type === "bearer" && auth.token) {
+    headers["Authorization"] = `Bearer ${auth.token}`;
+  } else if (auth?.type === "basic" && auth.username) {
+    headers["Authorization"] = `Basic ${btoa(`${auth.username}:${auth.password || ""}`)}`;
+  }
+  const hasAuth = !!headers["Authorization"];
+
   try {
     if (!(await hasHostPermission(url))) throw new Error("Host access not granted");
-    const r = await fetch(url, { cache: "no-store" });
+    const r = await fetch(url, { cache: "no-store", headers });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return r.text();
-  } catch {
+  } catch (directErr) {
+    if (hasAuth) throw directErr;
     for (const proxy of PROXIES) {
       try {
         const r = await fetch(proxy(url), { cache: "no-store" });
@@ -97,7 +106,7 @@ export function renderCalendar(mount, settings, { onAttachDragHandle } = {}) {
 
   (async () => {
     try {
-      const results = await Promise.allSettled(cfg.feeds.map(f => fetchICal(f.url)));
+      const results = await Promise.allSettled(cfg.feeds.map(f => fetchICal(f.url, f.auth)));
       let events = [];
       results.forEach((r) => {
         if (r.status === "fulfilled") {

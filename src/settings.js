@@ -3299,6 +3299,21 @@ function buildCalendarSection(settings, onChange) {
 
   const titleInput = el("input", { type: "text", class: "text-input", placeholder: "Label, e.g. Work" });
   const urlInput   = el("input", { type: "text", class: "text-input", placeholder: "https://calendar.google.com/…/basic.ics" });
+  const authSelect = el("select", { class: "text-input", "aria-label": "Authentication type" }, [
+    el("option", { value: "" }, ["No auth"]),
+    el("option", { value: "bearer" }, ["Bearer token"]),
+    el("option", { value: "basic" }, ["Basic auth"])
+  ]);
+  const tokenInput = el("input", { type: "password", class: "text-input", placeholder: "Token or password", hidden: true });
+  const usernameInput = el("input", { type: "text", class: "text-input", placeholder: "Username", hidden: true });
+  authSelect.addEventListener("change", () => {
+    tokenInput.hidden = authSelect.value !== "bearer";
+    usernameInput.hidden = authSelect.value !== "basic";
+    if (authSelect.value === "basic") tokenInput.hidden = false;
+    if (authSelect.value === "basic") tokenInput.placeholder = "Password";
+    if (authSelect.value === "bearer") tokenInput.placeholder = "Bearer token";
+  });
+
   const addBtn = el("button", {
     type: "button", class: "button button--primary",
     onClick: async () => {
@@ -3307,9 +3322,16 @@ function buildCalendarSection(settings, onChange) {
       try { new URL(u); } catch { toast("That doesn't look like a valid URL.", "error"); return; }
       await requestAndRecordHostAccess(settings, u, "calendar loading");
       if (!settings.calendar) settings.calendar = { enabled: false, feeds: [], maxItems: 10, daysAhead: 7 };
-      settings.calendar.feeds.push({ title: t || hostnameLabel(u), url: u });
+      const feed = { title: t || hostnameLabel(u), url: u };
+      if (authSelect.value === "bearer" && tokenInput.value.trim()) {
+        feed.auth = { type: "bearer", token: tokenInput.value.trim() };
+      } else if (authSelect.value === "basic") {
+        feed.auth = { type: "basic", username: usernameInput.value.trim(), password: tokenInput.value.trim() };
+      }
+      settings.calendar.feeds.push(feed);
       onChange(settings);
-      titleInput.value = ""; urlInput.value = "";
+      titleInput.value = ""; urlInput.value = ""; tokenInput.value = ""; usernameInput.value = "";
+      authSelect.value = ""; tokenInput.hidden = true; usernameInput.hidden = true;
       refreshList();
       toast("Calendar added.", "success");
     }
@@ -3317,7 +3339,9 @@ function buildCalendarSection(settings, onChange) {
 
   sec.appendChild(el("div", { class: "compose" }, [
     titleInput,
-    el("div", { class: "compose__row" }, [urlInput, addBtn])
+    el("div", { class: "compose__row" }, [urlInput, authSelect]),
+    el("div", { class: "compose__row" }, [usernameInput, tokenInput]),
+    el("div", { class: "compose__row" }, [addBtn])
   ]));
   return sec;
 }
