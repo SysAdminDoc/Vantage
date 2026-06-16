@@ -35,8 +35,7 @@
     "alarms",
     "bookmarks",
     "topSites",
-    "contextualIdentities",
-    "tabs"
+    "contextualIdentities"
   ],
   "optional_permissions": [
     "history"

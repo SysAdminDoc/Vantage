@@ -30,8 +30,7 @@
     "bookmarks",
     "topSites",
     "readingList",
-    "sidePanel",
-    "tabs"
+    "sidePanel"
   ],
   "optional_permissions": [
     "history"
