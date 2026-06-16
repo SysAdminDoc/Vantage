@@ -416,17 +416,33 @@ function describeWorkspaceSnapshot(ws) {
 }
 
 async function switchWorkspace(id) {
-  if (typeof document.startViewTransition === "function") {
-    document.startViewTransition(async () => {
-      currentSettings.workspaces = { ...currentSettings.workspaces, active: id };
-      await saveSettings(currentSettings);
-      mountAll();
-    });
-  } else {
+  const doSwitch = async () => {
     currentSettings.workspaces = { ...currentSettings.workspaces, active: id };
+    await autoSaveContainerMapping(id);
     await saveSettings(currentSettings);
     mountAll();
+  };
+  if (typeof document.startViewTransition === "function") {
+    document.startViewTransition(doSwitch);
+  } else {
+    await doSwitch();
   }
+}
+
+async function autoSaveContainerMapping(workspaceId) {
+  try {
+    if (typeof browser === "undefined" || !browser.tabs?.getCurrent) return;
+    if (!currentSettings.containerAutoMap) return;
+    const tab = await browser.tabs.getCurrent();
+    const storeId = tab?.cookieStoreId;
+    if (!storeId || storeId === "firefox-default") return;
+    if (!currentSettings.containerMap) currentSettings.containerMap = {};
+    if (workspaceId) {
+      currentSettings.containerMap[storeId] = workspaceId;
+    } else {
+      delete currentSettings.containerMap[storeId];
+    }
+  } catch { /* not Firefox or no tab API */ }
 }
 
 /** Create or remove embed mount divs to match settings.embeds. */
