@@ -9499,3 +9499,24 @@ html[dir="rtl"] .workflow-pill {
   color: var(--accent-fg);
   transform: scale(1.1);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Inbox panel (local read-later queue)
+   ═══════════════════════════════════════════════════════════ */
+
+.inbox-search {
+  width: 100%;
+  margin-bottom: var(--s-2);
+}
+
+/* Two action buttons (archive + delete) side by side.
+   Position the archive button further left so they don't overlap. */
+.inbox-item .inbox-action--archive {
+  right: calc(var(--s-3) + 40px);
+}
+.inbox-item .inbox-action--delete {
+  right: var(--s-3);
+}
+.inbox-item > a {
+  padding-right: calc(var(--s-3) + 80px);
+}

@@ -191,6 +191,15 @@ const DEFAULTS = {
   },
   embeds: [],
   externalWidgets: [],       // [{ id, manifestUrl, manifest, enabled, data }]
+  inbox: {
+    // Local-first read-later queue. Save tabs for triage; archive or
+    // delete when done. All data in chrome.storage.local — nothing
+    // leaves the browser.
+    enabled: false,
+    items: [],               // [{ url, title, hostname, savedAt }]
+    archived: [],            // items moved here via archive action
+    maxItems: 200
+  },
   calendar: {
     enabled: false,
     feeds: [],
