@@ -540,6 +540,29 @@
   }
 }
 
+/* prefers-reduced-transparency — replace translucent + blurred
+   surfaces with fully opaque equivalents. Chrome/Edge 118+. */
+@media (prefers-reduced-transparency: reduce) {
+  .settings-panel,
+  .widget-picker,
+  .pom-widget,
+  .engine-picker__popover,
+  .toast,
+  .panel,
+  .import-dialog,
+  .notes-focus__overlay,
+  .context-menu,
+  .ql-group-popover {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--mantle) !important;
+  }
+  .bg-readability {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
 /* ============================================================
    Base
    ============================================================ */
