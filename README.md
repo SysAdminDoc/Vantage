@@ -279,16 +279,22 @@ Vantage/
 | `flood-api.open-meteo.com` | River flood risk pill | GloFAS v4 river discharge (locations near a major river) |
 | `ensemble-api.open-meteo.com` | Weather forecast-confidence chip (opt-in) | 50-member ICON-EU ensemble for current-hour spread |
 | Each configured RSS / News feed URL | RSS / News widgets | Direct fetch first |
+| `mshibanami.github.io/GitHubTrendingRSS` | Dev feed preset add | Optional GitHub Trending RSS mirror when you add those presets |
+| Each feed-discovery URL | Settings ("Discover feeds") | Scan the site you enter for RSS / Atom / JSON Feed links |
 | Each configured iCal feed URL | Calendar widget | Direct fetch first |
 | `api.allorigins.win` | RSS / News / Calendar (fallback) | Used **only** when direct fetch is blocked by CORS |
 | `corsproxy.io` | RSS / News / Calendar (second fallback) | Tried after allorigins fails |
 | `www.google.com/s2/favicons` | Quick Links / Top Sites / Bookmarks / Feeds | 32-64px favicon images |
 | `api.coingecko.com` | Crypto widget | Current prices for selected coins |
-| `api.github.com` | GitHub widget | Public events / trending repos |
+| `api.github.com` | GitHub widget | Public user activity and repository search for trending repos |
 | `api.github.com/gists` | Settings → Data → Gist transfer | Import public settings Gists; create a public Gist only when you provide a one-shot GitHub token |
 | `picsum.photos` | Photo widget (default) | Random daily photo |
 | `api.nasa.gov` | Photo widget (NASA APOD mode) | Astronomy picture of the day |
 | `www.bing.com` | Background → Bing daily | Daily wallpaper image |
+| Each configured image URL | Background image URL | Load the direct wallpaper image URL you enter |
+| Each configured iframe URL | Embed widget | Render the iframe URL you add; blocked sites can be opened in a new tab |
+| `embed.windy.com` | Windy radar widget | Weather radar iframe centered on your configured weather location |
+| `en.wikipedia.org` | Quote author link | Opens only when you click the author link; no background fetch |
 
 Nothing else. No analytics, no error reporting, no auto-update server.
 
