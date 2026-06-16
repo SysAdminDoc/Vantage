@@ -51,8 +51,7 @@ $RuntimeItems = @(
     'icons',
     'assets',
     '_locales',
-    'LICENSE',
-    'PRIVACY.md'
+    'LICENSE'
 )
 
 foreach ($Item in $RuntimeItems) {

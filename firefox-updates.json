@@ -5,6 +5,7 @@
         {
           "version": "1.2.0",
           "update_link": "https://github.com/SysAdminDoc/Vantage/releases/download/v1.2.0/Vantage-v1.2.0-firefox.xpi",
+          "update_hash": "sha256:d15b1248842f1cc54f4e9f6c4093b5453add3086caa7730a7076990abeabf662",
           "browser_specific_settings": {
             "gecko": {
               "strict_min_version": "109.0"
