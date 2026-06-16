@@ -8,7 +8,16 @@
 export function applyWorkspace(baseSettings, workspace) {
   if (!workspace?.snapshot) return baseSettings;
   const s = baseSettings;
-  const snap = workspace.snapshot;
+  let snap = workspace.snapshot;
+
+  const presetIdx = workspace.activePreset;
+  if (presetIdx != null && workspace.presets?.[presetIdx]?.snapshot) {
+    snap = { ...snap, ...workspace.presets[presetIdx].snapshot };
+    if (snap.background && workspace.presets[presetIdx].snapshot.background) {
+      snap.background = { ...workspace.snapshot.background, ...workspace.presets[presetIdx].snapshot.background };
+    }
+  }
+
   const merged = { ...s };
 
   if (snap.theme !== undefined)      merged.theme = snap.theme;
