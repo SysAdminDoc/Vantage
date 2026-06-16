@@ -4751,6 +4751,69 @@ a {
   color: var(--text);
 }
 
+/* Feed video cards — YouTube/Vimeo/MP4 thumbnail embeds */
+.feed-video {
+  position: relative;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  margin-bottom: var(--s-2);
+  aspect-ratio: 16 / 9;
+  background: var(--surface0);
+}
+.feed-video__thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.feed-video__player {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+.feed-video__badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  color: #fff;
+  pointer-events: none;
+  transition: background var(--t-fast);
+}
+.feed-item:hover .feed-video__badge {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.feed-video--vimeo {
+  aspect-ratio: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  background: color-mix(in srgb, var(--surface0) 60%, transparent);
+}
+.feed-video__badge--standalone {
+  position: static;
+  transform: none;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.feed-video__label {
+  font-size: var(--text-xs);
+  color: var(--subtext0);
+  font-weight: 600;
+}
+
 .feed-error-note {
   margin: 0;
   padding: var(--s-2) var(--s-3);
