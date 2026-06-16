@@ -4,6 +4,11 @@ import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { relativeTime } from "../utils/dom.js";
 
+const GITHUB_CACHE_KEY = "vantageGithubCache";
+const GITHUB_CACHE_TTL_MS = 10 * 60 * 1000;
+const GITHUB_CACHE_MAX_ENTRIES = 20;
+const githubInflight = new Map();
+
 const EVENT_LABELS = {
   PushEvent:              (e) => `Pushed to ${shortRepo(e.repo.name)}`,
   CreateEvent:            (e) => `Created ${e.payload?.ref_type || "branch"} in ${shortRepo(e.repo.name)}`,
@@ -91,9 +96,13 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
       ]));
       return;
     }
-    const resp  = await fetch(`https://api.github.com/users/${encodeURIComponent(cfg.username)}/events/public?per_page=15`);
-    if (!resp.ok) throw new Error(resp.status === 404 ? "User not found" : `GitHub API ${resp.status}`);
-    const events = await resp.json();
+    const username = cfg.username.trim();
+    const result = await fetchGithubJson(
+      `activity:${username.toLowerCase()}`,
+      `https://api.github.com/users/${encodeURIComponent(username)}/events/public?per_page=15`,
+      { notFoundMessage: "User not found" }
+    );
+    const events = result.data;
     body.innerHTML = "";
     if (!events.length) {
       body.appendChild(el("p", { class: "panel-empty" }, ["No recent public activity."]));
@@ -112,15 +121,15 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
       ]));
     }
     body.appendChild(list);
+    appendCacheNotice(body, result);
   }
 
   async function loadTrending() {
     const since = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
     const lang  = cfg.language ? `+language:${encodeURIComponent(cfg.language)}` : "";
     const url   = `https://api.github.com/search/repositories?q=created:>${since}${lang}&sort=stars&order=desc&per_page=8`;
-    const resp  = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
-    if (!resp.ok) throw new Error(`GitHub API ${resp.status}`);
-    const { items } = await resp.json();
+    const result = await fetchGithubJson(`trending:${cfg.language || "all"}:${since}`, url);
+    const { items } = result.data;
     body.innerHTML = "";
     if (!items?.length) {
       body.appendChild(el("p", { class: "panel-empty" }, ["No trending repos found."]));
@@ -140,7 +149,111 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
       ]));
     }
     body.appendChild(list);
+    appendCacheNotice(body, result);
   }
 
   loadTab();
+}
+
+async function fetchGithubJson(key, url, { notFoundMessage } = {}) {
+  const now = Date.now();
+  const cached = await readGithubCacheEntry(key);
+  if (cached?.data && now - cached.cachedAt < GITHUB_CACHE_TTL_MS) {
+    return { data: cached.data, fromCache: true };
+  }
+  if (cached?.rateLimitedUntil && cached.rateLimitedUntil > now) {
+    if (cached.data) {
+      return { data: cached.data, fromCache: true, stale: true, rateLimitedUntil: cached.rateLimitedUntil };
+    }
+    throw new Error(githubRateLimitMessage(cached.rateLimitedUntil));
+  }
+  if (githubInflight.has(key)) return githubInflight.get(key);
+
+  const request = (async () => {
+    const resp = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
+    const rateLimitedUntil = githubRateLimitedUntil(resp);
+    if (rateLimitedUntil) {
+      await writeGithubCacheEntry(key, {
+        ...cached,
+        rateLimitedUntil,
+        rateLimitedAt: now,
+        cachedAt: cached?.cachedAt || 0
+      });
+      if (cached?.data) {
+        return { data: cached.data, fromCache: true, stale: true, rateLimitedUntil };
+      }
+      throw new Error(githubRateLimitMessage(rateLimitedUntil));
+    }
+    if (!resp.ok) {
+      throw new Error(resp.status === 404 && notFoundMessage ? notFoundMessage : `GitHub API ${resp.status}`);
+    }
+    const data = await resp.json();
+    await writeGithubCacheEntry(key, { data, cachedAt: Date.now(), rateLimitedUntil: 0 });
+    return { data, fromCache: false };
+  })().finally(() => {
+    githubInflight.delete(key);
+  });
+
+  githubInflight.set(key, request);
+  return request;
+}
+
+async function readGithubCacheEntry(key) {
+  const cache = await readGithubCache();
+  return cache[key] || null;
+}
+
+async function readGithubCache() {
+  const api = globalThis.chrome?.storage?.local;
+  if (!api?.get) return {};
+  try {
+    const stored = await api.get(GITHUB_CACHE_KEY);
+    const cache = stored?.[GITHUB_CACHE_KEY];
+    return cache && typeof cache === "object" ? cache : {};
+  } catch {
+    return {};
+  }
+}
+
+async function writeGithubCacheEntry(key, entry) {
+  const api = globalThis.chrome?.storage?.local;
+  if (!api?.set) return;
+  const cache = await readGithubCache();
+  cache[key] = entry;
+  const entries = Object.entries(cache)
+    .sort(([, a], [, b]) => (b.cachedAt || b.rateLimitedAt || 0) - (a.cachedAt || a.rateLimitedAt || 0));
+  const pruned = Object.fromEntries(entries.slice(0, GITHUB_CACHE_MAX_ENTRIES));
+  try { await api.set({ [GITHUB_CACHE_KEY]: pruned }); } catch {}
+}
+
+function githubRateLimitedUntil(resp) {
+  if (!(resp.status === 403 || resp.status === 429)) return 0;
+  const retryAfter = Number(resp.headers.get("retry-after"));
+  if (Number.isFinite(retryAfter) && retryAfter > 0) {
+    return Date.now() + retryAfter * 1000;
+  }
+  const reset = Number(resp.headers.get("x-ratelimit-reset"));
+  if (Number.isFinite(reset) && reset > 0) {
+    return reset * 1000;
+  }
+  if (resp.status === 429 || resp.headers.get("x-ratelimit-remaining") === "0") {
+    return Date.now() + 60 * 60 * 1000;
+  }
+  return 0;
+}
+
+function githubRateLimitMessage(untilMs) {
+  return `GitHub API rate-limited this request — try again after ${formatRetryAt(untilMs)}`;
+}
+
+function appendCacheNotice(body, result) {
+  if (!result?.stale || !result.rateLimitedUntil) return;
+  body.appendChild(el("p", { class: "panel-empty" }, [
+    `Showing cached GitHub data — API rate-limited until ${formatRetryAt(result.rateLimitedUntil)}.`
+  ]));
+}
+
+function formatRetryAt(ms) {
+  if (!Number.isFinite(ms)) return "later";
+  return new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
