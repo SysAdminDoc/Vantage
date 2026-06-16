@@ -30,7 +30,6 @@ desktop.ini
 
 # Node (in case build tooling is added later)
 node_modules/
-package-lock.json
 .npm/
 
 # Markdown files local-only (except README)

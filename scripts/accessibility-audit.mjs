@@ -2,7 +2,7 @@
 /**
  * WCAG 2.2 AA accessibility audit for Vantage NTP
  * 
- * Runs automated axe-core v4.11.4+ scan against the rendered NTP.
+ * Runs automated axe-core v4.11.3+ scan against the rendered NTP.
  * Outputs: accessibility-report.md + detailed JSON
  * 
  * Usage:
@@ -11,10 +11,19 @@
  *   node scripts/accessibility-audit.mjs [--headless]
  */
 
-import puppeteer from 'puppeteer';
-import { AxeBuilder } from '@axe-core/puppeteer';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
+
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log(`Usage: npm run audit -- [--headless]\n\nRuns the Vantage accessibility audit with Puppeteer and axe-core.`);
+  process.exit(0);
+}
+
+const [{ default: puppeteer }, axeModule] = await Promise.all([
+  import('puppeteer'),
+  import('@axe-core/puppeteer')
+]);
+const AxePuppeteer = axeModule.AxePuppeteer || axeModule.default;
 
 const EXTENSION_PATH = new URL('.', import.meta.url).pathname.replace(/\/$/, '').replace(/scripts$/, '');
 const DOCS_DIR = join(EXTENSION_PATH, 'docs');
@@ -46,8 +55,8 @@ async function runAudit() {
     });
     
     // Run axe scan
-    console.log('🧪 Running axe-core v4.11.4 scan...');
-    const results = await new AxeBuilder({ page })
+    console.log('🧪 Running axe-core v4.11.3 scan...');
+    const results = await new AxePuppeteer(page)
       .withTags(['wcag2aa', 'wcag22aa'])
       .analyze();
     
@@ -83,7 +92,7 @@ function generateMarkdownReport(results) {
 
 **Date:** ${date}  
 **Standard:** WCAG 2.2 Level AA  
-**Tool:** axe-core v4.11.4  
+**Tool:** axe-core v4.11.3  
 
 ## Summary
 

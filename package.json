@@ -10,7 +10,7 @@
     "build:unpacked:firefox": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-unpacked.ps1 -Target firefox"
   },
   "devDependencies": {
-    "@axe-core/puppeteer": "^4.11.4",
-    "puppeteer": "^23.0.0"
+    "@axe-core/puppeteer": "^4.11.3",
+    "puppeteer": "^25.1.0"
   }
 }
