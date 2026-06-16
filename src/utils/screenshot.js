@@ -50,7 +50,6 @@ function buildSVGString(node, width, height, css) {
   // open when triggering capture). Also drop the skip-to-main link.
   const stripSelectors = [
     "#toast-host",
-    "#settings-backdrop",
     "#settings-panel",
     "#widget-picker",
     ".skip-to-main",

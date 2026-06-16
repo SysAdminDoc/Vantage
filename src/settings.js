@@ -138,57 +138,28 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildResetSection(onChange));
 }
 
-let _panelTrapHandler = null;
 let _panelFocusTimer = null;
-let _backdropHideTimer = null;
 let _panelOverlayCleanup = null;
 
 export function openPanel(panel) {
   clearTimeout(_panelFocusTimer);
-  clearTimeout(_backdropHideTimer);
-  if (_panelTrapHandler) {
-    document.removeEventListener("keydown", _panelTrapHandler);
-    _panelTrapHandler = null;
-  }
   _panelOverlayCleanup?.();
   _panelOverlayCleanup = registerOverlay({
     id: "settings-panel",
     root: panel,
     trigger: () => document.getElementById("settings-toggle"),
     close: () => closePanel(panel),
-    closeOnEscape: () => !document.querySelector("dialog[open]"),
-    closeOnOutside: true
+    closeOnEscape: () => !panel.querySelector("dialog[open]"),
+    closeOnOutside: false
   });
   panel.dataset.open = "true";
-  panel.setAttribute("aria-hidden", "false");
   document.getElementById("settings-toggle")?.setAttribute("aria-expanded", "true");
-  const backdrop = document.getElementById("settings-backdrop");
-  if (backdrop) {
-    backdrop.hidden = false;
-    requestAnimationFrame(() => { backdrop.dataset.open = "true"; });
-  }
-  document.body.style.overflow = "hidden";
-  // Focus first interactive element after transition.
+  try { panel.showModal(); } catch { panel.setAttribute("open", ""); }
   _panelFocusTimer = setTimeout(() => {
-    if (panel.dataset.open !== "true") return;
+    if (!panel.open) return;
     const first = panel.querySelector(".settings-panel__body button, .settings-panel__body input, .settings-panel__body [tabindex]:not([tabindex='-1'])");
     if (first) first.focus({ preventScroll: true });
   }, 280);
-
-  // Focus trap — Tab/Shift+Tab cycles within the panel
-  _panelTrapHandler = (e) => {
-    if (e.key !== "Tab" || panel.dataset.open !== "true") return;
-    const focusable = panel.querySelectorAll(
-      'button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    );
-    const visible = [...focusable].filter(el => el.offsetParent !== null);
-    if (!visible.length) return;
-    const first = visible[0];
-    const last  = visible[visible.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-  };
-  document.addEventListener("keydown", _panelTrapHandler);
 }
 
 export function closePanel(panel) {
@@ -196,20 +167,8 @@ export function closePanel(panel) {
   _panelOverlayCleanup?.();
   _panelOverlayCleanup = null;
   panel.dataset.open = "false";
-  panel.setAttribute("aria-hidden", "true");
   document.getElementById("settings-toggle")?.setAttribute("aria-expanded", "false");
-  const backdrop = document.getElementById("settings-backdrop");
-  if (backdrop) {
-    backdrop.dataset.open = "false";
-    _backdropHideTimer = setTimeout(() => {
-      if (panel.dataset.open !== "true") backdrop.hidden = true;
-    }, 280);
-  }
-  document.body.style.overflow = "";
-  if (_panelTrapHandler) {
-    document.removeEventListener("keydown", _panelTrapHandler);
-    _panelTrapHandler = null;
-  }
+  try { panel.close(); } catch {}
   document.getElementById("settings-toggle")?.focus({ preventScroll: true });
 }
 
