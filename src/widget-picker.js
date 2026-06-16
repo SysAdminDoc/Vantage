@@ -120,7 +120,7 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
     const pickerHeader = el("div", { class: "widget-picker__header" }, [
       el("div", { class: "widget-picker__heading" }, [
         el("h2", { id: "widget-picker-title", class: "widget-picker__title" }, ["Widgets"]),
-        el("p", { class: "widget-picker__subtitle" }, ["Show, hide, or add page modules."])
+        el("p", { class: "widget-picker__subtitle" }, ["Choose what appears on this new tab."])
       ]),
       el("button", {
         type: "button",
@@ -144,7 +144,7 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
     const embeds = settings.embeds || [];
     if (embeds.length === 0) {
       inner.appendChild(el("p", { class: "widget-picker__empty-embeds" }, [
-        "No custom embeds yet."
+        "No custom embeds yet. Add one when a live page belongs on your dashboard."
       ]));
     }
     for (const embed of embeds) {

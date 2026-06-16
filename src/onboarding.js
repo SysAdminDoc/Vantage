@@ -138,7 +138,7 @@ export function showOnboarding(settings, onComplete) {
     content.appendChild(el("div", { class: "onboard-header" }, [
       el("h2", { class: "onboard-title" }, ["Welcome to Vantage"]),
       el("p",  { class: "onboard-subtitle" }, [
-        "Choose a starting layout. Everything can be changed later in settings."
+        "Choose a starting layout for this browser. You can change every module later."
       ])
     ]));
 
@@ -195,7 +195,7 @@ export function showOnboarding(settings, onComplete) {
     content.appendChild(el("div", { class: "onboard-header" }, [
       el("h2", { class: "onboard-title" }, ["Personalize"]),
       el("p",  { class: "onboard-subtitle" }, [
-        "Set your name and location for weather. Both optional — skip freely."
+        "Add a greeting name and a weather city. Leave either blank to start clean."
       ])
     ]));
 
@@ -232,9 +232,9 @@ export function showOnboarding(settings, onComplete) {
     }, ["Set"]);
     const detectBtn = el("button", {
       type: "button",
-      class: "button button--ghost button--small",
+      class: "button button--ghost button--small onboard-detect-btn",
       onClick: () => detectFromGeo(cityInput, statusEl)
-    }, ["Detect location"]);
+    }, [iconNode("globe", { size: 14 }), "Detect location"]);
 
     cityInput.addEventListener("keydown", e => { if (e.key === "Enter") setBtn.click(); });
 
@@ -244,7 +244,7 @@ export function showOnboarding(settings, onComplete) {
         el("span", { class: "onboard-optional" }, ["optional"])
       ]),
       el("div", { class: "onboard-location-row" }, [cityInput, setBtn]),
-      detectBtn,
+      el("div", { class: "onboard-location-actions" }, [detectBtn]),
       statusEl
     ]));
 
@@ -304,8 +304,8 @@ export function showOnboarding(settings, onComplete) {
       el("div", { class: "onboard-done__check" }, [iconNode("check", { size: 28 })]),
       el("h2", { class: "onboard-title" }, ["You're all set!"]),
       el("p",  { class: "onboard-subtitle" }, [
-        `Using the "${preset.label}" layout. Open settings anytime to add feeds, ` +
-        `change your search engine, or enable more widgets.`
+        `The "${preset.label}" layout is ready. Open settings anytime to add feeds, ` +
+        `change search, or enable more widgets.`
       ])
     ]));
     content.appendChild(el("div", { class: "onboard-footer" }, [
