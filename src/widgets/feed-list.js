@@ -14,6 +14,21 @@ import { canonicalize as canonicalizeStarred } from "../utils/starred-feed.js";
 // hidden when the API is missing, no UX wart, no error toast.
 const READING_LIST_AVAILABLE = !!globalThis.chrome?.readingList?.addEntry;
 
+// Video URL detection for inline feed embeds.
+const YT_RE = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/;
+const VIMEO_RE = /vimeo\.com\/(\d+)/;
+const MP4_RE = /\.mp4(\?|#|$)/i;
+
+function detectVideo(url) {
+  if (!url) return null;
+  const yt = YT_RE.exec(url);
+  if (yt) return { type: "youtube", id: yt[1] };
+  const vm = VIMEO_RE.exec(url);
+  if (vm) return { type: "vimeo", id: vm[1] };
+  if (MP4_RE.test(url)) return { type: "mp4", url };
+  return null;
+}
+
 export async function renderFeedList(mount, options) {
   const {
     title,
@@ -179,7 +194,7 @@ export async function renderFeedList(mount, options) {
       referrerpolicy: "no-referrer",
       onError: (e) => { e.target.style.display = "none"; }
     });
-    
+
     // Populate favicon asynchronously using cache
     getFaviconUrl(item.link).then(dataUrl => {
       if (dataUrl) {
@@ -190,13 +205,17 @@ export async function renderFeedList(mount, options) {
     }).catch(() => {
       favicon.style.display = "none";
     });
-    
+
+    const video = detectVideo(item.link);
+    const videoCard = video ? buildVideoCard(video, item) : null;
+
     const link = el("a", {
       href: item.link,
       target: "_blank",
       rel: "noopener noreferrer",
       class: "feed-item__link"
     }, [
+      videoCard,
       titleEl,
       el("div", { class: "feed-item__meta" }, [
         favicon,
@@ -455,3 +474,47 @@ function buildEmpty(iconName, title, hint) {
 }
 
 // Favicon loading moved to favicon-cache.js for shared use and caching (v1.0.0+)
+
+function buildVideoCard(video, item) {
+  if (video.type === "youtube") {
+    const thumb = el("div", { class: "feed-video" }, [
+      el("img", {
+        class: "feed-video__thumb",
+        src: `https://img.youtube.com/vi/${video.id}/mqdefault.jpg`,
+        alt: item.title || "Video thumbnail",
+        loading: "lazy",
+        referrerpolicy: "no-referrer",
+        onError: (e) => { e.target.parentElement.remove(); }
+      }),
+      el("span", { class: "feed-video__badge", "aria-hidden": "true" }, [
+        iconNode("play", { size: 16 })
+      ])
+    ]);
+    return thumb;
+  }
+  if (video.type === "vimeo") {
+    return el("div", { class: "feed-video feed-video--vimeo" }, [
+      el("span", { class: "feed-video__badge feed-video__badge--standalone", "aria-hidden": "true" }, [
+        iconNode("play", { size: 16 })
+      ]),
+      el("span", { class: "feed-video__label" }, ["Vimeo"])
+    ]);
+  }
+  if (video.type === "mp4") {
+    const vid = el("video", {
+      class: "feed-video__player",
+      preload: "metadata",
+      muted: true,
+      playsinline: true,
+      onError: (e) => { e.target.parentElement?.remove(); }
+    });
+    const source = el("source", { src: video.url, type: "video/mp4" });
+    vid.appendChild(source);
+    return el("div", { class: "feed-video" }, [vid,
+      el("span", { class: "feed-video__badge", "aria-hidden": "true" }, [
+        iconNode("play", { size: 16 })
+      ])
+    ]);
+  }
+  return null;
+}
