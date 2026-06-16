@@ -1634,6 +1634,16 @@ function applyImageBackground(mount, src, bg) {
 
   setBackgroundUrl(src, blur > 0 || brightness !== 100);
 
+  const probe = new Image();
+  probe.onerror = () => {
+    console.warn("[background] image decode failed — falling back to gradient");
+    applyFallbackBackground(mount, "fallback");
+    import("../utils/dom.js").then(m =>
+      m.toast("Background image is corrupt or missing. Clear it in Settings → Background.", "error", 8000)
+    ).catch(() => {});
+  };
+  probe.src = src;
+
   // OffscreenCanvas pre-blur: render the blur ONCE in a Canvas2D
   // surface and apply the result as a flat bitmap, eliminating the
   // per-paint blur cost. Falls through silently on any failure
@@ -1700,12 +1710,17 @@ function applyVideoBackground(mount, src, bg) {
   };
   document.addEventListener("visibilitychange", handleVisibility);
   
+  video.addEventListener("error", () => {
+    console.warn("[background] video decode failed — falling back to gradient");
+    applyFallbackBackground(mount, "fallback");
+    import("../utils/dom.js").then(m =>
+      m.toast("Background video is corrupt or missing. Clear it in Settings → Background.", "error", 8000)
+    ).catch(() => {});
+  }, { once: true });
+
   mount.appendChild(video);
-  
-  // Attempt to play; some browsers require user interaction
-  video.play().catch(() => {
-    // Autoplay blocked by browser policy — show first frame
-  });
+
+  video.play().catch(() => {});
 }
 
 function updateScene(mount, weather, sunTimes) {
