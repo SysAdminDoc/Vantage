@@ -32,7 +32,7 @@ import { renderPhoto }      from "./widgets/photo.js";
 import { renderCountdown }  from "./widgets/countdown.js";
 import { renderConverter }  from "./widgets/converter.js";
 import { renderTopsites }   from "./widgets/topsites.js";
-import { renderSettingsPanel, openPanel, closePanel, normalizeImportedSettings } from "./settings.js";
+import { renderSettingsPanel, openPanel, closePanel, normalizeImportedSettings, reviewHostPermissionsForSettings } from "./settings.js";
 import { showPartialImportDialog } from "./utils/partial-import.js";
 import { showOnboarding } from "./onboarding.js";
 import { renderWidgetPicker } from "./widget-picker.js";
@@ -46,6 +46,7 @@ import { attachThemeColorListener, applyThemeColorFromSettings } from "./utils/t
 import { attachContextMenu } from "./utils/context-menu.js";
 import { THEME_OPTIONS } from "./utils/theme.js";
 import { attachErrorListeners } from "./utils/error-log.js";
+import { markHostPermissionsDenied, onHostPermissionsRemoved } from "./utils/host-permissions.js";
 window._vantageWorkspaceHelpers = { captureSnapshot: () => captureSnapshot(currentSettings) };
 
 let currentSettings;
@@ -59,6 +60,7 @@ let systemThemeCleanup   = null;
 let reducedMotionCleanup = null;
 let settingsPanelOnChange = null;
 let contextMenuCleanup   = null;
+let hostPermissionCleanup = null;
 
 // Fixed panel kinds (static mounts in newtab.html)
 const FIXED_PANEL_KINDS = [
@@ -92,8 +94,9 @@ async function init() {
       const existing = await loadSettings();
       const merged = await showPartialImportDialog(existing, imported, "the shared link");
       if (merged) {
-        await saveSettings(merged);
-        sharedImportedSettings = merged;
+        const mergedWithPermissions = await reviewHostPermissionsForSettings(merged, "the shared link");
+        await saveSettings(mergedWithPermissions);
+        sharedImportedSettings = mergedWithPermissions;
         sharedImportNotice = { message: "Shared settings imported.", kind: "success" };
       } else {
         sharedImportNotice = { message: "Shared import canceled.", kind: "info" };
@@ -129,6 +132,7 @@ async function init() {
   applyThemeColorFromSettings(initialEffectiveSettings);
   watchSystemTheme();
   watchReducedMotion();
+  watchHostPermissionRemovals();
 
   const isFirstInstall = !sharedImportedSettings && !(await hasStoredSettings());
   if (isFirstInstall && !currentSettings.onboardingComplete) {
@@ -736,6 +740,17 @@ function watchReducedMotion() {
       mountAll();
       rerenderSettingsPanelIfOpen();
     }
+  });
+}
+
+function watchHostPermissionRemovals() {
+  if (hostPermissionCleanup) return;
+  hostPermissionCleanup = onHostPermissionsRemoved(async (origins) => {
+    if (!currentSettings || !origins?.length) return;
+    markHostPermissionsDenied(currentSettings, origins);
+    await saveSettings(currentSettings);
+    mountAll();
+    toast("Host access was removed in the browser. Affected URLs now show Grant access in Settings.", "warning", 9000);
   });
 }
 

@@ -5,6 +5,7 @@
 import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { parseICal } from "../utils/ical-parser.js";
+import { hasHostPermission } from "../utils/host-permissions.js";
 
 const PROXIES = [
   (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -13,6 +14,7 @@ const PROXIES = [
 
 async function fetchICal(url) {
   try {
+    if (!(await hasHostPermission(url))) throw new Error("Host access not granted");
     const r = await fetch(url, { cache: "no-store" });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return r.text();

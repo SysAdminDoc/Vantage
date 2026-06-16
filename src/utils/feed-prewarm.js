@@ -66,11 +66,16 @@ export async function getPrewarmed(url, maxAgeMs = DEFAULT_MAX_AGE_MS) {
 export async function prewarmAll(feedUrls) {
   if (!feedUrls?.length) return { ok: 0, failed: 0 };
   const { fetchFeed } = await import("./rss-parser.js");
+  const { hasHostPermission } = await import("./host-permissions.js");
   const cache = await loadCache();
   let ok = 0, failed = 0;
   // Sequential to avoid CORS-proxy rate-limit storms.
   for (const url of feedUrls) {
     try {
+      if (!(await hasHostPermission(url))) {
+        failed++;
+        continue;
+      }
       const parsed = await fetchFeed(url, { skipPrewarmRead: true });
       // Serialize Date -> ISO so chrome.storage round-trip is clean.
       const serialized = {

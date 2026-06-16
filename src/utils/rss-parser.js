@@ -17,6 +17,8 @@ const PROXIES = [
   (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
 ];
 
+import { hasHostPermission } from "./host-permissions.js";
+
 export async function fetchFeed(url, opts = {}) {
   // Pre-warm cache short-circuit. Background.js maintains this when
   // the user enables Settings → Feed pre-warming. The recursive
@@ -36,6 +38,7 @@ export async function fetchFeed(url, opts = {}) {
 
   // Direct fetch first — works for most feeds that send permissive CORS headers.
   try {
+    if (!(await hasHostPermission(url))) throw new Error("Host access not granted");
     const direct = await fetch(url, { cache: "no-store" });
     if (!direct.ok) throw new Error(`HTTP ${direct.status}`);
     contentType = direct.headers.get("content-type") || "";

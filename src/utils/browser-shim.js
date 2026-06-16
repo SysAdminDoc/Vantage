@@ -1,5 +1,8 @@
 (() => {
-  if (globalThis.chrome) return;
+  if (globalThis.chrome?.storage?.local) {
+    if (!globalThis.browser) globalThis.browser = globalThis.chrome;
+    return;
+  }
   if (globalThis.browser) {
     globalThis.chrome = globalThis.browser;
     return;
@@ -95,4 +98,5 @@
       }
     }
   };
+  if (!globalThis.browser) globalThis.browser = globalThis.chrome;
 })();

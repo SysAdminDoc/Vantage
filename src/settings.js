@@ -14,6 +14,16 @@ import { createSettingsGist, loadSettingsFromGist, generateShareUrl } from "./ut
 import { THEME_OPTIONS, applyThemePreference } from "./utils/theme.js";
 import { clearFaviconCache, getFaviconCacheStats } from "./utils/favicon-cache.js";
 import {
+  collectUserUrlPermissionTargets,
+  hasDeniedHostOrigin,
+  hostPermissionLabel,
+  hostPermissionOrigin,
+  markHostPermissionsDenied,
+  missingHostPermissionTargets,
+  requestHostPermission,
+  requestHostPermissions
+} from "./utils/host-permissions.js";
+import {
   clearBackgroundPreview,
   getBackgroundPreview,
   hasBackgroundPreview,
@@ -767,13 +777,21 @@ function buildBackground(settings, onChange) {
         placeholder: "https://…/wallpaper.jpg",
         value: settings.background.imageUrl || "",
         "aria-label": "Image URL",
-        onChange: (e) => { settings.background.imageUrl = e.target.value.trim(); onChange(settings); }
+        onChange: async (e) => {
+          const value = e.target.value.trim();
+          settings.background.imageUrl = value;
+          if (value) await requestAndRecordHostAccess(settings, value, "background image loading");
+          onChange(settings);
+          renderKindRows();
+        }
       });
       kindHost.appendChild(rowColumn(
         "Image URL",
         inp,
         "Use a direct image URL. Vantage falls back to the theme gradient until one is set."
       ));
+      const grant = hostPermissionAction(settings, onChange, settings.background.imageUrl, "background image loading", renderKindRows);
+      if (grant) kindHost.appendChild(row("", null, grant));
     }
 
     if (kind === "image-upload") {
@@ -2573,11 +2591,13 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
       return;
     }
     cfg.feeds.forEach((feed, idx) => {
+      const grant = hostPermissionAction(settings, onChange, feed.url, `${title} feed`, refreshList);
       list.appendChild(el("li", { class: "item-list__row" }, [
         el("div", { class: "item-list__row-content" }, [
           el("span", { class: "item-list__title" }, [feed.title || feed.url]),
           el("span", { class: "item-list__hint" }, [hostnameLabel(feed.url)])
         ]),
+        grant,
         el("button", {
           type: "button",
           class: "icon-button icon-button--ghost icon-button--small",
@@ -2595,7 +2615,7 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
             });
           }
         }, [iconNode("trash", { size: 14 })])
-      ]));
+      ].filter(Boolean)));
     });
   };
   refreshList();
@@ -2634,6 +2654,12 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
       discoveryStatus.textContent = "Discovering feeds...";
       
       try {
+        const permission = await requestAndRecordHostAccess(settings, url.href, "feed discovery");
+        if (permission.required && !permission.granted) {
+          onChange(settings);
+          discoveryStatus.textContent = "Host access was not granted, so Vantage could not inspect that site for feeds.";
+          return;
+        }
         const { discoverFeeds } = await import("./utils/feed-discovery.js");
         discoveredFeeds = await discoverFeeds(url.href);
         
@@ -2656,7 +2682,8 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
               class: "icon-button icon-button--primary icon-button--small",
               "aria-label": `Subscribe to ${feed.title}`,
               title: "Subscribe",
-              onClick: () => {
+              onClick: async () => {
+                await requestAndRecordHostAccess(settings, feed.url, "feed loading");
                 cfg.feeds.push({ title: feed.title, url: feed.url });
                 onChange(settings);
                 clear(discoveredList);
@@ -2682,7 +2709,7 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
   const addBtn = el("button", {
     type: "button",
     class: "button button--primary",
-    onClick: () => {
+    onClick: async () => {
       const t = titleInput.value.trim();
       const u = urlInput.value.trim();
       if (!u) {
@@ -2693,6 +2720,7 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
         toast("That doesn't look like a valid URL.", "error");
         return;
       }
+      await requestAndRecordHostAccess(settings, u, "feed loading");
       cfg.feeds.push({ title: t || hostnameLabel(u), url: u });
       onChange(settings);
       titleInput.value = "";
@@ -2766,8 +2794,9 @@ function buildPresetGroup(label, presets, cfg, onChange, refreshList, settings) 
       type: "button",
       class: `button button--ghost button--small${already ? " button--muted" : ""}`,
       disabled: already,
-      onClick: () => {
+      onClick: async () => {
         if (already) return;
+        await requestAndRecordHostAccess(settings, p.url, "feed loading");
         cfg.feeds.push({ title: p.title, url: p.url });
         onChange(settings);
         refreshList();
@@ -2942,19 +2971,24 @@ function buildEmbedsSection(settings, onChange) {
         value: embed.url || "",
         placeholder: "https://…",
         "aria-label": "Embed URL",
-        onChange: (e) => {
+        onChange: async (e) => {
           embed.url = e.target.value.trim();
+          if (embed.url) await requestAndRecordHostAccess(settings, embed.url, "embed loading");
           onChange(settings);
+          refreshList();
         }
       });
       const tog = toggle({
         checked: embed.enabled ?? false,
         ariaLabel: "Enable this embed",
-        onChange: (v) => {
+        onChange: async (v) => {
+          if (v && embed.url) await requestAndRecordHostAccess(settings, embed.url, "embed loading");
           embed.enabled = v;
           onChange(settings);
+          refreshList();
         }
       });
+      const grant = hostPermissionAction(settings, onChange, embed.url, "embed loading", refreshList);
       const del = el("button", {
         type: "button", class: "icon-button icon-button--ghost icon-button--small",
         "aria-label": "Remove embed", title: "Remove",
@@ -2975,7 +3009,7 @@ function buildEmbedsSection(settings, onChange) {
       listEl.appendChild(el("div", { class: "embed-item" }, [
         el("div", { class: "embed-item__row" }, [
           tog,
-          el("div", { class: "embed-item__inputs" }, [titleIn, urlIn]),
+          el("div", { class: "embed-item__inputs" }, [titleIn, urlIn, grant].filter(Boolean)),
           del
         ])
       ]));
@@ -3037,11 +3071,13 @@ function buildCalendarSection(settings, onChange) {
     const feeds = settings.calendar?.feeds || [];
     if (!feeds.length) { list.appendChild(el("li", { class: "item-list__empty" }, ["No calendars yet."])); return; }
     feeds.forEach((feed, idx) => {
+      const grant = hostPermissionAction(settings, onChange, feed.url, "calendar loading", refreshList);
       list.appendChild(el("li", { class: "item-list__row" }, [
         el("div", { class: "item-list__row-content" }, [
           el("span", { class: "item-list__title" }, [feed.title || feed.url]),
           el("span", { class: "item-list__hint" }, [hostnameLabel(feed.url)])
         ]),
+        grant,
         el("button", {
           type: "button", class: "icon-button icon-button--ghost icon-button--small",
           "aria-label": `Remove ${feed.title || feed.url}`, title: "Remove",
@@ -3057,7 +3093,7 @@ function buildCalendarSection(settings, onChange) {
             });
           }
         }, [iconNode("trash", { size: 14 })])
-      ]));
+      ].filter(Boolean)));
     });
   };
   refreshList();
@@ -3067,10 +3103,11 @@ function buildCalendarSection(settings, onChange) {
   const urlInput   = el("input", { type: "text", class: "text-input", placeholder: "https://calendar.google.com/…/basic.ics" });
   const addBtn = el("button", {
     type: "button", class: "button button--primary",
-    onClick: () => {
+    onClick: async () => {
       const t = titleInput.value.trim(), u = urlInput.value.trim();
       if (!u) { toast("iCal URL is required.", "error"); return; }
       try { new URL(u); } catch { toast("That doesn't look like a valid URL.", "error"); return; }
+      await requestAndRecordHostAccess(settings, u, "calendar loading");
       if (!settings.calendar) settings.calendar = { enabled: false, feeds: [], maxItems: 10, daysAhead: 7 };
       settings.calendar.feeds.push({ title: t || hostnameLabel(u), url: u });
       onChange(settings);
@@ -3300,8 +3337,9 @@ function buildDataSection(settings, onChange, showWizard) {
           jsonImportInput.value = "";
           return;
         }
-        await saveSettings(merged);
-        onChange(merged);
+        const mergedWithPermissions = await reviewHostPermissionsForSettings(merged, file.name);
+        await saveSettings(mergedWithPermissions);
+        onChange(mergedWithPermissions);
         toast(`Settings imported from ${file.name}.`, "success", 8000, {
           label: "Undo",
           onClick: async () => {
@@ -3372,6 +3410,7 @@ function buildDataSection(settings, onChange, showWizard) {
           toast(`No new feeds found in ${file.name}.`, "info");
           return;
         }
+        await reviewHostPermissionsForSettings(settings, `${file.name} OPML import`);
         await saveSettings(settings);
         onChange(settings);
         toast(`Imported ${addedCount} new feed${addedCount === 1 ? "" : "s"} from ${file.name}.`, "success", 8000, {
@@ -3498,8 +3537,9 @@ This will add all your YouTube channels as RSS feeds (when available).`;
               toast("Gist import canceled.", "info");
               return;
             }
-            await saveSettings(merged);
-            onChange(merged);
+            const mergedWithPermissions = await reviewHostPermissionsForSettings(merged, "GitHub Gist");
+            await saveSettings(mergedWithPermissions);
+            onChange(mergedWithPermissions);
             toast("Settings imported from Gist.", "success", 8000, {
               label: "Undo",
               onClick: async () => {
@@ -3803,6 +3843,113 @@ function triggerDownload(content, filename, mimeType) {
   const a    = Object.assign(document.createElement("a"), { href: url, download: filename });
   a.click();
   URL.revokeObjectURL(url);
+}
+
+async function requestAndRecordHostAccess(settings, rawUrl, label = "this URL") {
+  const origin = hostPermissionOrigin(rawUrl);
+  if (!origin) return { required: false, granted: true };
+  toast(`Vantage will ask your browser for scoped access to ${hostPermissionLabel(rawUrl)} for ${label}.`, "info", 5000);
+  const result = await requestHostPermission(origin, settings);
+  if (result.granted) {
+    toast(`Host access granted for ${hostPermissionLabel(rawUrl)}.`, "success");
+  } else {
+    toast(`Host access was not granted for ${hostPermissionLabel(rawUrl)}. You can grant it later from Settings.`, "warning", 9000);
+  }
+  return result;
+}
+
+function hostPermissionAction(settings, onChange, rawUrl, label, refresh) {
+  if (!hasDeniedHostOrigin(settings, rawUrl)) return null;
+  return el("button", {
+    type: "button",
+    class: "button button--ghost button--small",
+    onClick: async () => {
+      await requestAndRecordHostAccess(settings, rawUrl, label);
+      onChange(settings);
+      refresh?.();
+    }
+  }, [iconNode("globe", { size: 12 }), " Grant access"]);
+}
+
+export async function reviewHostPermissionsForSettings(settings, source = "import") {
+  const targets = await missingHostPermissionTargets(collectUserUrlPermissionTargets(settings));
+  if (!targets.length) return settings;
+
+  return new Promise((resolve) => {
+    const dialog = el("dialog", {
+      class: "import-dialog",
+      "aria-labelledby": "host-permission-title",
+      closedby: "any"
+    });
+
+    let resolved = false;
+    const close = (nextSettings) => {
+      if (resolved) return;
+      resolved = true;
+      try { dialog.close(); } catch {}
+      dialog.remove();
+      resolve(nextSettings);
+    };
+
+    dialog.addEventListener("cancel", (e) => { e.preventDefault(); });
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) {
+        markHostPermissionsDenied(settings, targets.map(t => t.origin));
+        close(settings);
+      }
+    });
+
+    const list = el("div", { class: "import-dialog__sections" });
+    for (const target of targets.slice(0, 12)) {
+      list.appendChild(el("div", { class: "import-dialog__section", style: "cursor: default;" }, [
+        el("div", { class: "import-dialog__section-text" }, [
+          el("span", { class: "import-dialog__section-title" }, [target.label || hostPermissionLabel(target.url)]),
+          el("span", { class: "import-dialog__section-hint" }, [target.origin])
+        ])
+      ]));
+    }
+    if (targets.length > 12) {
+      list.appendChild(el("p", { class: "import-dialog__extra-note" }, [
+        `${targets.length - 12} additional origin${targets.length - 12 === 1 ? "" : "s"} will be requested in the same browser prompt.`
+      ]));
+    }
+
+    dialog.appendChild(el("header", { class: "import-dialog__header" }, [
+      el("h2", { id: "host-permission-title" }, ["Grant host access"]),
+      el("p", {}, [
+        `${source} includes user URLs that need scoped browser host access for direct feed, calendar, image, or embed loading.`
+      ])
+    ]));
+    dialog.appendChild(list);
+    dialog.appendChild(el("footer", { class: "import-dialog__actions" }, [
+      el("button", {
+        type: "button",
+        class: "button button--ghost",
+        onClick: () => {
+          markHostPermissionsDenied(settings, targets.map(t => t.origin));
+          toast("Imported URLs saved without host access. Grant access later from Settings if a widget cannot load directly.", "warning", 9000);
+          close(settings);
+        }
+      }, ["Skip for now"]),
+      el("span", { class: "import-dialog__spacer" }),
+      el("button", {
+        type: "button",
+        class: "button button--primary",
+        onClick: async () => {
+          const result = await requestHostPermissions(targets.map(t => t.origin), settings);
+          if (result.granted) {
+            toast("Host access granted for imported URLs.", "success");
+          } else {
+            toast("Some imported origins were not granted. Grant buttons will appear beside affected URLs.", "warning", 9000);
+          }
+          close(settings);
+        }
+      }, [iconNode("globe", { size: 14 }), " Grant access"])
+    ]));
+
+    document.body.appendChild(dialog);
+    try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
+  });
 }
 
 /** Return a deep clone of settings with secret fields cleared.
