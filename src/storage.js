@@ -249,7 +249,8 @@ const DEFAULTS = {
   photo: {
     enabled: false,
     source: "picsum",
-    nasaKey: ""
+    nasaKey: "",
+    apodCache: null            // { key:"YYYY-MM-DD:demo|custom", data, error, fetchedAt }
   },
   countdown: {
     enabled: false,

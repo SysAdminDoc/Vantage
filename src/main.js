@@ -318,7 +318,7 @@ function mountAll() {
   });
   renderCrypto(document.getElementById("crypto-mount"), effectiveSettings, { onAttachDragHandle: onAttach("crypto") });
   renderGithub(document.getElementById("github-mount"), effectiveSettings, { onAttachDragHandle: onAttach("github") });
-  renderPhoto(document.getElementById("photo-mount"), effectiveSettings, { onAttachDragHandle: onAttach("photo") });
+  renderPhoto(document.getElementById("photo-mount"), effectiveSettings, { onAttachDragHandle: onAttach("photo"), onSave: persist });
   countdownTeardown = renderCountdown(document.getElementById("countdown-mount"), effectiveSettings, { onChange: persist, onAttachDragHandle: onAttach("countdown") });
   renderConverter(document.getElementById("converter-mount"), effectiveSettings, { onAttachDragHandle: onAttach("converter") });
 

@@ -4242,7 +4242,7 @@ function buildPhotoSection(settings, onChange) {
       onChange: (v) => { settings.photo = { ...cfg, enabled: v }; onChange(settings); } })
   ));
   g.appendChild(row("Source",
-    "Picsum requires no configuration. NASA APOD shows astronomy imagery (DEMO_KEY has rate limits).",
+    "Picsum requires no configuration. NASA APOD shows astronomy imagery and is cached per day to protect DEMO_KEY rate limits.",
     segmented({
       ariaLabel: "Photo source",
       value: cfg.source || "picsum",
