@@ -133,6 +133,8 @@ For visual QA, open `qa-scenes.html` from the same local server as `newtab.html`
 
 Three paths for Chromium browsers, one for Firefox. Pick the one that fits.
 
+Release artifacts are built by the GitHub Release workflow. Use the published ZIP/XPI/CRX assets for installs and store submissions; use `.\scripts\build-unpacked.ps1` only for local source testing. Do not hand-package the repo, because ignored docs, QA state, or signing files can accidentally enter an ad hoc ZIP.
+
 ### Option A — One-line PowerShell installer (Windows, recommended, Chromium only)
 
 Downloads the latest release, extracts to `%LOCALAPPDATA%\Vantage\extension`, and adds `--load-extension="<that path>"` to every Brave / Chrome / Edge / Vivaldi / Opera shortcut on the system (Start Menu, Desktop, Taskbar pin — user-level and system-wide). Relaunch the browser from any of those shortcuts and Vantage loads.
