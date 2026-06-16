@@ -42,10 +42,18 @@ export function renderEmbed(mount, embedCfg, { onAttachDragHandle } = {}) {
       "Add a URL in Settings \u2192 Embeds."
     ]));
   } else {
+    const sandbox = embedCfg.sandbox !== false
+      ? "allow-scripts allow-same-origin allow-popups allow-forms"
+      : undefined;
+    const allow = [
+      embedCfg.allowFullscreen !== false ? "fullscreen" : null,
+      embedCfg.allowGeolocation ? "geolocation" : null
+    ].filter(Boolean).join("; ") || undefined;
     const iframe = el("iframe", {
       src: url,
       class: "map-iframe",
-      allow: "geolocation; fullscreen",
+      ...(sandbox ? { sandbox } : {}),
+      ...(allow ? { allow } : {}),
       "aria-label": title
     });
     iframe.setAttribute("loading", "lazy");
