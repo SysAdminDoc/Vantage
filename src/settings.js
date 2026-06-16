@@ -108,6 +108,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildAirQualitySection(settings, onChange));
   body.appendChild(buildMarineSection(settings, onChange));
   body.appendChild(buildFloodSection(settings, onChange));
+  body.appendChild(buildSolarRadiationSection(settings, onChange));
   body.appendChild(buildWindySection(settings, onChange));
   body.appendChild(buildEmbedsSection(settings, onChange));
   body.appendChild(buildCalendarSection(settings, onChange));
@@ -2910,6 +2911,28 @@ function buildFloodSection(settings, onChange) {
       onChange: (v) => {
         if (!settings.flood) settings.flood = {};
         settings.flood.enabled = v;
+        onChange(settings);
+      }
+    })
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Solar radiation --------------------------------------------------- */
+
+function buildSolarRadiationSection(settings, onChange) {
+  const sec = section("Solar radiation", "sun");
+  const g = group();
+  g.appendChild(row(
+    "Show solar radiation pill",
+    "Satellite-derived solar radiation (GHI, DNI, DHI, direct, GTI, terrestrial) via Open-Meteo Forecast API. Integrates EUMETSAT CM SAF SARAH3, JMA Himawari-9, and DWD MTG data. Auto-hides when the API returns nulls.",
+    toggle({
+      checked: settings.solarRadiation?.enabled || false,
+      ariaLabel: "Show solar radiation pill",
+      onChange: (v) => {
+        if (!settings.solarRadiation) settings.solarRadiation = {};
+        settings.solarRadiation.enabled = v;
         onChange(settings);
       }
     })

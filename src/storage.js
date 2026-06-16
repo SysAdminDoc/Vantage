@@ -171,6 +171,15 @@ const DEFAULTS = {
     // location not near a major river).
     enabled: false
   },
+  solarRadiation: {
+    // Open-Meteo Satellite Radiation API — satellite-derived solar
+    // radiation (GHI, DNI, DHI, direct, GTI, terrestrial) via
+    // EUMETSAT CM SAF SARAH3, JMA Himawari-9, and DWD MTG data at
+    // 2.5-5 km resolution. Useful for gardeners, solar panel owners,
+    // and outdoor enthusiasts. Off by default; auto-hides when all
+    // fields are null.
+    enabled: false
+  },
   windy: {
     enabled: false,
     overlay: "wind",
