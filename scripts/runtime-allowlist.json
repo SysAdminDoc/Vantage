@@ -1,0 +1,16 @@
+{
+  "_comment": "Allowlist of files/dirs included in release artifacts and local unpacked builds. Both CI (release.yml) and local (build-unpacked.ps1) read this file. Anything not listed here is excluded from release packages.",
+  "items": [
+    "newtab.html",
+    "sidepanel.html",
+    "qa-scenes.html",
+    "src",
+    "icons",
+    "assets",
+    "_locales",
+    "LICENSE",
+    "README.md"
+  ],
+  "chromium_manifest": "manifest.json",
+  "firefox_manifest": "manifest.firefox.json"
+}

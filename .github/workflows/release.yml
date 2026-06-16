@@ -41,23 +41,24 @@ jobs:
         run: |
           mkdir -p dist
           python -c "
-          import zipfile, os
+          import zipfile, os, json
           from pathlib import Path
           src = Path('.')
-          excludes = {'.git', '.github', 'scripts', 'dist', '.claude', 'node_modules'}
-          exclude_files = {'CLAUDE.md', 'CODEX_CHANGELOG.md', 'Vantage-selfhost.pem', 'manifest.firefox.json'}
-          exclude_suffix = ('.bak', '.pem', '.zip', '.crx', '.xpi', '.log')
+          allowlist = json.loads(Path('scripts/runtime-allowlist.json').read_text())
+          manifest = allowlist['chromium_manifest']
+          items = [manifest] + allowlist['items']
           out = 'dist/Vantage-v${{ inputs.version }}.zip'
           with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
-              for root, dirs, files in os.walk(src):
-                  dirs[:] = [d for d in dirs if d not in excludes and not d.startswith('.')]
-                  for f in files:
-                      if f in exclude_files: continue
-                      if f.endswith(exclude_suffix): continue
-                      if f.startswith('.') and f != '.gitignore': continue
-                      p = Path(root) / f
-                      rel = p.relative_to(src).as_posix()
-                      zf.write(p, rel)
+              for item in items:
+                  p = src / item
+                  if not p.exists():
+                      raise FileNotFoundError(f'Allowlisted item missing: {item}')
+                  if p.is_dir():
+                      for child in sorted(p.rglob('*')):
+                          if child.is_file():
+                              zf.write(child, child.relative_to(src).as_posix())
+                  else:
+                      zf.write(p, p.relative_to(src).as_posix())
           print(f'wrote {out} ({os.path.getsize(out):,} bytes)')
           "
 
@@ -84,27 +85,25 @@ jobs:
       - name: Build Firefox XPI
         run: |
           python -c "
-          import zipfile, os
+          import zipfile, os, json
           from pathlib import Path
           src = Path('.')
-          excludes = {'.git', '.github', 'scripts', 'dist', '.claude', 'node_modules'}
-          # Exclude Chrome manifest — we'll inject the Firefox one as manifest.json
-          exclude_files = {'CLAUDE.md', 'CODEX_CHANGELOG.md', 'Vantage-selfhost.pem', 'manifest.json'}
-          exclude_suffix = ('.bak', '.pem', '.zip', '.crx', '.xpi', '.log')
+          allowlist = json.loads(Path('scripts/runtime-allowlist.json').read_text())
+          firefox_manifest = allowlist['firefox_manifest']
+          items = allowlist['items']
           out = 'dist/Vantage-v${{ inputs.version }}-firefox.xpi'
           with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
-              # Write the Firefox manifest as manifest.json at root
-              zf.write('manifest.firefox.json', 'manifest.json')
-              for root, dirs, files in os.walk(src):
-                  dirs[:] = [d for d in dirs if d not in excludes and not d.startswith('.')]
-                  for f in files:
-                      if f in exclude_files: continue
-                      if f == 'manifest.firefox.json': continue
-                      if f.endswith(exclude_suffix): continue
-                      if f.startswith('.') and f != '.gitignore': continue
-                      p = Path(root) / f
-                      rel = p.relative_to(src).as_posix()
-                      zf.write(p, rel)
+              zf.write(firefox_manifest, 'manifest.json')
+              for item in items:
+                  p = src / item
+                  if not p.exists():
+                      raise FileNotFoundError(f'Allowlisted item missing: {item}')
+                  if p.is_dir():
+                      for child in sorted(p.rglob('*')):
+                          if child.is_file():
+                              zf.write(child, child.relative_to(src).as_posix())
+                  else:
+                      zf.write(p, p.relative_to(src).as_posix())
           print(f'wrote {out} ({os.path.getsize(out):,} bytes)')
           "
 

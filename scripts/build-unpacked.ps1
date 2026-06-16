@@ -40,19 +40,12 @@ if (Test-Path -LiteralPath $OutputFull) {
 
 New-Item -ItemType Directory -Path $OutputFull -Force | Out-Null
 
-$ManifestSource = if ($Target -eq 'firefox') { 'manifest.firefox.json' } else { 'manifest.json' }
+$AllowlistPath = Join-Path $PSScriptRoot 'runtime-allowlist.json'
+$Allowlist = Get-Content -LiteralPath $AllowlistPath -Raw | ConvertFrom-Json
 
-$RuntimeItems = @(
-    $ManifestSource,
-    'newtab.html',
-    'sidepanel.html',
-    'qa-scenes.html',
-    'src',
-    'icons',
-    'assets',
-    '_locales',
-    'LICENSE'
-)
+$ManifestSource = if ($Target -eq 'firefox') { $Allowlist.firefox_manifest } else { $Allowlist.chromium_manifest }
+
+$RuntimeItems = @($ManifestSource) + @($Allowlist.items)
 
 foreach ($Item in $RuntimeItems) {
     $Source = Join-Path $RepoRoot $Item
