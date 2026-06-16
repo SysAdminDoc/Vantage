@@ -41,6 +41,7 @@ import { showOnboarding } from "./onboarding.js";
 import { renderWidgetPicker } from "./widget-picker.js";
 import { toast } from "./utils/dom.js";
 import { makeReorderable, arrayMove } from "./utils/drag.js";
+import { initLayoutEditor, applyPanelSizes } from "./utils/layout-editor.js";
 import { applyThemePreference, onSystemThemeChange } from "./utils/theme.js";
 import { applyWorkspace, getActiveWorkspace, captureSnapshot, resolveWorkspaceSettings } from "./utils/workspace.js";
 import { BACKGROUND_PREVIEW_EVENT } from "./utils/background-preview.js";
@@ -155,6 +156,10 @@ async function init() {
   wireWidgetPicker();
   wireKeyboard();
   wireContextMenu();
+  initLayoutEditor(currentSettings, async (next) => {
+    currentSettings = next;
+    await saveSettings(currentSettings);
+  });
   if (sharedImportNotice) {
     requestAnimationFrame(() => toast(sharedImportNotice.message, sharedImportNotice.kind));
   }
@@ -299,6 +304,7 @@ function mountAll() {
   // Sync dynamic embed mounts before applying order
   syncEmbedMounts(effectiveSettings);
   applyPanelOrder(effectiveSettings);
+  applyPanelSizes(effectiveSettings);
 
   // Collect drag handles; wire reorder after all renders complete
   const panelHandles = {};
