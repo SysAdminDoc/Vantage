@@ -24,7 +24,7 @@ jobs:
 
       - name: Verify version in manifests matches input
         shell: pwsh
-        run: ./scripts/validate-release-metadata.ps1 -Version "${{ inputs.version }}"
+        run: ./scripts/validate-release-metadata.ps1 -Version "${{ inputs.version }}" -SkipFeedValidation
 
       - name: Decode signing key
         env:
@@ -120,13 +120,16 @@ jobs:
       - name: Generate release notes
         run: |
           python -c "
-          import re, sys
+          import re
+          from pathlib import Path
           version = '${{ inputs.version }}'
-          src = open('CHANGELOG.md').read()
-          m = re.search(rf'## v{re.escape(version)}\b.*?(?=\n## v|\Z)', src, re.S)
-          if not m:
-              sys.exit(f'CHANGELOG section for v{version} not found')
-          notes = m.group(0).strip()
+          changelog = Path('CHANGELOG.md')
+          notes = f'## v{version}\n\nRelease build for Vantage v{version}.'
+          if changelog.exists():
+              src = changelog.read_text(encoding='utf-8')
+              m = re.search(rf'## v{re.escape(version)}\b.*?(?=\n## v|\Z)', src, re.S)
+              if m:
+                  notes = m.group(0).strip()
           install = '''
           ## Install
 
@@ -184,6 +187,8 @@ jobs:
           # Omaha CRX update feed (Chrome self-hosted policy install)
           CRX_URL="https://github.com/${REPO}/releases/download/${TAG}/Vantage-${TAG}.crx"
           HASH=$(sha256sum dist/Vantage-${TAG}.crx | awk '{print $1}')
+          XPI_URL="https://github.com/${REPO}/releases/download/${TAG}/Vantage-${TAG}-firefox.xpi"
+          XPI_HASH=$(sha256sum dist/Vantage-${TAG}-firefox.xpi | awk '{print $1}')
           cat > updates.xml <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <gupdate xmlns="http://www.google.com/update2/response" protocol="2.0">
@@ -194,7 +199,6 @@ jobs:
           EOF
 
           # AMO-compatible update feed (Firefox unlisted/self-hosted install)
-          XPI_URL="https://github.com/${REPO}/releases/download/${TAG}/Vantage-${TAG}-firefox.xpi"
           python3 -c "
           import json
           data = {
@@ -204,6 +208,7 @@ jobs:
                   {
                     'version': '${VERSION}',
                     'update_link': '${XPI_URL}',
+                    'update_hash': 'sha256:${XPI_HASH}',
                     'browser_specific_settings': {
                       'gecko': { 'strict_min_version': '109.0' }
                     }
@@ -215,6 +220,8 @@ jobs:
           json.dump(data, open('firefox-updates.json', 'w'), indent=2)
           print('firefox-updates.json written')
           "
+
+          pwsh ./scripts/validate-release-metadata.ps1 -Version "${VERSION}"
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

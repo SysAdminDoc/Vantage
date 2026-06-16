@@ -294,18 +294,17 @@ Nothing else. No analytics, no error reporting, no auto-update server.
 
 ## Documentation
 
-Full docs site: **<https://sysadmindoc.github.io/Vantage/>** (sourced from
-the [`docs/`](docs/) folder via GitHub Pages).
+The public clean-checkout docs live in this README:
 
-- [Getting started](docs/getting-started.md) — install, first run, enterprise auto-install, where data lives.
-- [Widgets reference](docs/widgets.md) — every widget with its costs (network / storage / permissions).
-- [FAQ](docs/faq.md) — privacy, permissions, data export, theming, contributing.
-- [Privacy practices](docs/privacy-practices-cws.md) — full Privacy Table + permission justifications.
-- [Widget API spec](docs/widget-api.md) — frozen postMessage protocol for third-party iframe widgets.
+- [Install](#install) — Chromium, Firefox, local source testing, updates, and uninstall.
+- [Features](#features) — widgets, search, personalization, productivity, and privacy UX.
+- [Customize](#customize) — settings available from the gear menu.
+- [Privacy & network](#privacy--network) — every outbound endpoint and why it is used.
+- [Architecture](#architecture) — runtime file map and implementation boundaries.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md). Short version: AMO unlisted Firefox signing, Chrome Web Store listing, more meteor-shower-style "celebrate this date" calendar events, and continued biome / locality refinement.
+Near-term work is focused on release trust, store-readiness evidence, least-privilege permissions, and continued biome / locality refinement.
 
 ## License
 
