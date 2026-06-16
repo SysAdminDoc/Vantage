@@ -5,8 +5,21 @@
 const isFirefox = typeof browser !== "undefined";
 const ext = isFirefox ? browser : chrome;
 
-ext.action.onClicked.addListener(() => {
-  isFirefox ? ext.tabs.create({}) : ext.tabs.create({ url: "chrome://newtab" });
+ext.action.onClicked.addListener(async () => {
+  if (isFirefox) {
+    const hasSidebar = !!ext.sidebarAction?.toggle;
+    const stored = hasSidebar
+      ? await ext.storage.local.get("vantageSettings").catch(() => ({}))
+      : {};
+    const openSidebar = !!stored?.vantageSettings?.sidePanel?.openOnActionClick;
+    if (hasSidebar && openSidebar) {
+      ext.sidebarAction.toggle();
+    } else {
+      ext.tabs.create({});
+    }
+  } else {
+    ext.tabs.create({ url: "chrome://newtab" });
+  }
 });
 
 // Side panel (Chrome 114+) — re-apply the user's saved

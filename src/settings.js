@@ -1767,43 +1767,43 @@ function buildSecuritySection(settings, onChange) {
   return sec;
 }
 
-/* ---- Side Panel (Chrome-only) ----------------------------------------- */
+/* ---- Side Panel -------------------------------------------------------- */
 
 function buildSidePanelSection(settings, onChange) {
   const sec = section("Side panel", "rss");
-  // Feature-detect at render time — Firefox just gets a hint that
-  // explains the gap rather than a non-functional toggle.
-  const supported = !!globalThis.chrome?.sidePanel;
+  const chromeSupported = !!globalThis.chrome?.sidePanel;
+  const firefoxSupported = !!globalThis.browser?.sidebarAction;
+  const supported = chromeSupported || firefoxSupported;
   const cfg = settings.sidePanel || {};
 
   if (!supported) {
     sec.appendChild(el("p", { class: "settings-section__hint" }, [
-      "Side panel is a Chrome 114+ feature — your current browser doesn't expose chrome.sidePanel. The side-panel feed reader will appear here when you switch to a supporting browser."
+      "Side panel requires Chrome 114+ or Firefox 109+. The feed reader sidebar will appear here when you switch to a supporting browser."
     ]));
     return sec;
   }
 
-  sec.appendChild(el("p", { class: "settings-section__hint" }, [
-    "Read your News + Reading list in Chrome's native side panel. Open from the side-panel button next to the bookmarks bar (\"Vantage\" entry), or enable the toolbar-click shortcut below."
-  ]));
+  const hint = firefoxSupported
+    ? "Read your News + Reading list in Firefox's sidebar. Open from View → Sidebar → Vantage, or enable the toolbar-click shortcut below."
+    : "Read your News + Reading list in Chrome's native side panel. Open from the side-panel button next to the bookmarks bar (\"Vantage\" entry), or enable the toolbar-click shortcut below.";
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [hint]));
   const g = group();
 
   g.appendChild(row(
     "Open side panel on toolbar click",
-    "When on, clicking the Vantage toolbar icon opens the side panel instead of a new tab. Off keeps the original new-tab behavior.",
+    "When on, clicking the Vantage toolbar icon opens the sidebar instead of a new tab. Off keeps the original new-tab behavior.",
     toggle({
       checked: cfg.openOnActionClick || false,
       ariaLabel: "Open side panel on toolbar click",
       onChange: async (v) => {
         settings.sidePanel = { ...cfg, openOnActionClick: v };
         onChange(settings);
-        try {
-          await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: v });
-        } catch (err) {
-          // Older Chrome versions may not support the call — toast and
-          // unwind so the user knows their setting won't actually
-          // do anything yet.
-          toast(`Couldn't update side panel behavior — ${err?.message?.toLowerCase() || "API missing"}.`, "error");
+        if (chromeSupported) {
+          try {
+            await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: v });
+          } catch (err) {
+            toast(`Couldn't update side panel behavior — ${err?.message?.toLowerCase() || "API missing"}.`, "error");
+          }
         }
       }
     })

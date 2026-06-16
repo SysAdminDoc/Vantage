@@ -30,6 +30,15 @@
   "background": {
     "service_worker": "src/background.js"
   },
+  "sidebar_action": {
+    "default_title": "Vantage — Feeds",
+    "default_panel": "sidepanel.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+    },
+    "open_at_install": false
+  },
   "permissions": [
     "storage",
     "alarms",
