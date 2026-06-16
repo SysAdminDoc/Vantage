@@ -18,6 +18,12 @@ const SIZE_OPTIONS = [
 
 export function isEditMode() { return editMode; }
 
+export function activateLayoutEditor(settings, onSave) {
+  const section = document.querySelector(".reading");
+  if (!section) return;
+  enterEditMode(section, settings, onSave);
+}
+
 export function initLayoutEditor(settings, onSave) {
   const section = document.querySelector(".reading");
   if (!section) return () => {};

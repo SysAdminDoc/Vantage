@@ -40,9 +40,9 @@ import { renderSettingsPanel, openPanel, closePanel, normalizeImportedSettings, 
 import { showPartialImportDialog } from "./utils/partial-import.js";
 import { showOnboarding } from "./onboarding.js";
 import { renderWidgetPicker } from "./widget-picker.js";
-import { toast } from "./utils/dom.js";
+import { el, toast } from "./utils/dom.js";
 import { makeReorderable, arrayMove } from "./utils/drag.js";
-import { initLayoutEditor, applyPanelSizes } from "./utils/layout-editor.js";
+import { activateLayoutEditor, initLayoutEditor, applyPanelSizes } from "./utils/layout-editor.js";
 import { applyThemePreference, onSystemThemeChange } from "./utils/theme.js";
 import { applyWorkspace, getActiveWorkspace, captureSnapshot, resolveWorkspaceSettings } from "./utils/workspace.js";
 import { BACKGROUND_PREVIEW_EVENT } from "./utils/background-preview.js";
@@ -67,6 +67,8 @@ let reducedMotionCleanup = null;
 let settingsPanelOnChange = null;
 let contextMenuCleanup   = null;
 let hostPermissionCleanup = null;
+let localStatusTimer = null;
+let settingsFilterShortcutWired = false;
 
 // Fixed panel kinds (static mounts in newtab.html)
 const FIXED_PANEL_KINDS = [
@@ -154,6 +156,7 @@ async function init() {
 
   mountAll();
   wireSettings();
+  wireSettingsFilterShortcut();
   wireWidgetPicker();
   wireKeyboard();
   wireContextMenu();
@@ -161,6 +164,7 @@ async function init() {
     currentSettings = next;
     await saveSettings(currentSettings);
   });
+  wireLayoutEditButton();
   if (sharedImportNotice) {
     requestAnimationFrame(() => toast(sharedImportNotice.message, sharedImportNotice.kind));
   }
@@ -234,6 +238,18 @@ function injectStaticIcons() {
   if (pickerBtn && !pickerBtn.firstChild) {
     pickerBtn.appendChild(iconNode("layout-grid", { size: 18 }));
   }
+  const editBtn = document.getElementById("layout-edit-toggle");
+  if (editBtn && !editBtn.firstChild) {
+    editBtn.appendChild(iconNode("pencil", { size: 18 }));
+  }
+  const lockIcon = document.getElementById("trust-lock-icon");
+  if (lockIcon && !lockIcon.firstChild) {
+    lockIcon.appendChild(iconNode("lock", { size: 14 }));
+  }
+  const heartIcon = document.getElementById("trust-heart-icon");
+  if (heartIcon && !heartIcon.firstChild) {
+    heartIcon.appendChild(iconNode("heart", { size: 14 }));
+  }
 }
 
 function mountAll() {
@@ -244,6 +260,7 @@ function mountAll() {
   if (worldclockTeardown) { worldclockTeardown(); worldclockTeardown = null; }
   if (countdownTeardown)  { countdownTeardown();  countdownTeardown  = null; }
   if (panelDragCleanup)   { panelDragCleanup();   panelDragCleanup   = null; }
+  if (localStatusTimer)   { clearInterval(localStatusTimer); localStatusTimer = null; }
 
   // Crypto interval cleanup (stored on mount element)
   const cryptoMount = document.getElementById("crypto-mount");
@@ -275,6 +292,7 @@ function mountAll() {
   renderMarine(document.getElementById("marine-mount"), effectiveSettings);
   renderFlood(document.getElementById("flood-mount"), effectiveSettings);
   renderSolarRadiation(document.getElementById("solar-radiation-mount"), effectiveSettings);
+  localStatusTimer = renderLocalStatus(document.getElementById("local-status-mount"), effectiveSettings);
   renderWeatherForecast(document.getElementById("weather-forecast-mount"), effectiveSettings);
   renderTopsites(document.getElementById("topsites-mount"), effectiveSettings);
   renderQuickLinks(
@@ -358,6 +376,25 @@ function mountAll() {
 
   // Wire drag-to-reorder after all renders finish
   requestAnimationFrame(() => wirePanelReorder(panelHandles));
+}
+
+function renderLocalStatus(mount, settings) {
+  if (!mount) return null;
+  const city = settings.weather?.location?.name || "Local";
+  const render = () => {
+    const time = new Intl.DateTimeFormat([], { hour: "numeric", minute: "2-digit" }).format(new Date());
+    mount.replaceChildren(
+      el("div", { class: "local-status", title: `${city} time` }, [
+        iconNode("map-pin", { size: 16 }),
+        el("span", { class: "local-status__text" }, [
+          el("strong", {}, [city]),
+          el("span", {}, [time])
+        ])
+      ])
+    );
+  };
+  render();
+  return setInterval(render, 30_000);
 }
 
 function renderWorkspaceBar(settings) {
@@ -588,6 +625,18 @@ function wireWidgetPicker() {
   );
 }
 
+function wireLayoutEditButton() {
+  const btn = document.getElementById("layout-edit-toggle");
+  if (!btn || btn.dataset.wired === "true") return;
+  btn.dataset.wired = "true";
+  btn.addEventListener("click", () => {
+    activateLayoutEditor(currentSettings, async (next) => {
+      currentSettings = next;
+      await saveSettings(currentSettings);
+    });
+  });
+}
+
 function launchWizard() {
   const panel  = document.getElementById("settings-panel");
   const toggle = document.getElementById("settings-toggle");
@@ -637,6 +686,33 @@ function wireSettings() {
     rerenderSettingsPanelIfOpen();
   });
 
+}
+
+function wireSettingsFilterShortcut() {
+  if (settingsFilterShortcutWired) return;
+  settingsFilterShortcutWired = true;
+  window.addEventListener("vantage:open-settings-filter", (event) => {
+    const panel = document.getElementById("settings-panel");
+    const toggle = document.getElementById("settings-toggle");
+    if (!panel || !toggle) return;
+    if (!panel.open && panel.dataset.open !== "true") {
+      toggle.click();
+    }
+    const query = event.detail?.query || "";
+    if (!query) return;
+    requestAnimationFrame(() => {
+      const input = panel.querySelector(".settings-search");
+      if (!input) return;
+      input.value = query;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.focus({ preventScroll: true });
+      const match = [...panel.querySelectorAll(".settings-section")]
+        .find((section) => section.textContent.toLowerCase().includes(query.toLowerCase()));
+      const title = match?.querySelector(".settings-section__title");
+      if (title?.getAttribute("aria-expanded") !== "true") title?.click();
+      match?.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+  });
 }
 
 function wireContextMenu() {
