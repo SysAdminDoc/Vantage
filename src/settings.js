@@ -120,6 +120,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildZenShelfSection(settings, onChange));
   body.appendChild(buildBookmarksSection(settings, onChange));
   body.appendChild(buildStarredSection(settings, onChange));
+  body.appendChild(buildInboxSection(settings, onChange));
   body.appendChild(buildWorldClockSection(settings, onChange));
   body.appendChild(buildCryptoSection(settings, onChange));
   body.appendChild(buildGithubSection(settings, onChange));
@@ -335,6 +336,24 @@ function buildAppearance(settings, onChange) {
     }));
   }
   g.appendChild(row("Accent color", "Color for buttons, toggles, and highlights.", accentRow));
+
+  g.appendChild(row(
+    "Community themes",
+    "Browse and apply theme bundles from the vantage-themes repository. Each theme sets colors, accent, and optionally a background.",
+    el("button", {
+      type: "button", class: "button button--ghost",
+      onClick: async () => {
+        try {
+          const { fetchThemeManifest, applyThemeBundle, validateThemeBundle } = await import("../utils/theme-marketplace.js");
+          const themes = await fetchThemeManifest();
+          if (!themes.length) { toast("No community themes available yet.", "info"); return; }
+          showThemeBrowser(themes, settings, onChange, applyThemeBundle, validateThemeBundle);
+        } catch (err) {
+          toast(`Couldn't load themes — ${err?.message || "fetch failed"}.`, "error");
+        }
+      }
+    }, [iconNode("download", { size: 14 }), " Browse themes"])
+  ));
 
   if (!settings.contextMenu) settings.contextMenu = { enabled: true };
   g.appendChild(row(
@@ -4515,6 +4534,55 @@ function buildStarredSection(settings, onChange) {
   return sec;
 }
 
+/* ---- Inbox ------------------------------------------------------------- */
+
+function buildInboxSection(settings, onChange) {
+  const cfg = settings.inbox || {};
+  const sec = section("Inbox", "bookmark");
+  const g   = group();
+  g.appendChild(row(
+    "Show Inbox",
+    "A local read-later queue. Save tabs for triage — archive or delete when done. All data stays in your browser.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show inbox panel",
+      onChange: (v) => { settings.inbox = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+  const maxIn = el("input", {
+    type: "number", min: "50", max: "1000",
+    value: String(cfg.maxItems ?? 200), class: "text-input number-input",
+    "aria-label": "Max inbox items",
+    onChange: (e) => {
+      const v = parseInt(e.target.value, 10);
+      if (!isNaN(v) && v >= 50 && v <= 1000) {
+        settings.inbox = { ...cfg, maxItems: v };
+        onChange(settings);
+      }
+    }
+  });
+  g.appendChild(row("Max items", "Hard cap on inbox size (50–1000). Oldest entries drop off when exceeded.", maxIn));
+
+  const archivedCount = (cfg.archived || []).length;
+  g.appendChild(row(
+    "Archived",
+    `${archivedCount} item${archivedCount === 1 ? "" : "s"} archived.`,
+    el("button", {
+      type: "button", class: "button button--ghost",
+      disabled: archivedCount === 0,
+      onClick: () => {
+        if (!cfg.archived?.length) return;
+        const removed = cfg.archived.slice();
+        settings.inbox = { ...cfg, archived: [] };
+        onChange(settings);
+        toastUndo(`Cleared ${removed.length} archived item${removed.length === 1 ? "" : "s"}.`, () => {
+          settings.inbox = { ...cfg, archived: removed };
+          onChange(settings);
+        });
+      }
+    }, [iconNode("trash", { size: 14 }), " Clear archived"])
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
 /* ---- World Clock ------------------------------------------------------- */
 
 function buildWorldClockSection(settings, onChange) {
@@ -4947,6 +5015,48 @@ async function applyFontPreference(fontPref) {
     const { applyFontPreference: apply } = await import("./utils/local-fonts.js");
     apply(fontPref);
   } catch { /* ignore */ }
+}
+
+function showThemeBrowser(themes, settings, onChange, applyThemeBundle, validateThemeBundle) {
+  const dialog = el("dialog", {
+    class: "import-dialog",
+    closedby: "any",
+    "aria-labelledby": "theme-browser-title"
+  });
+  const close = () => { try { dialog.close(); } catch {} dialog.remove(); };
+  dialog.addEventListener("cancel", (e) => { e.preventDefault(); close(); });
+  dialog.addEventListener("close", close);
+
+  const header = el("header", { class: "import-dialog__header" }, [
+    el("h2", { id: "theme-browser-title" }, ["Community Themes"]),
+    el("button", { type: "button", class: "icon-button icon-button--ghost", "aria-label": "Close", onClick: close }, [iconNode("close", { size: 16 })])
+  ]);
+
+  const list = el("div", { class: "item-list", style: "max-height: 400px; overflow-y: auto;" });
+  for (const theme of themes) {
+    const errs = validateThemeBundle(theme);
+    if (errs.length) continue;
+    const preview = el("div", {
+      class: "theme-preview",
+      style: `background: ${theme.colors?.base || "#1e1e2e"}; color: ${theme.colors?.text || "#cdd6f4"}; padding: 8px 12px; border-radius: var(--r-1); border: 1px solid ${theme.colors?.surface1 || "#45475a"}; margin-bottom: 8px; cursor: pointer;`,
+      onClick: () => {
+        applyThemeBundle(settings, theme);
+        onChange(settings);
+        toast(`Applied "${theme.name}".`, "success");
+        close();
+      }
+    }, [
+      el("strong", {}, [theme.name]),
+      theme.author ? el("span", { style: "margin-left: 8px; opacity: 0.6; font-size: 12px;" }, [`by ${theme.author}`]) : null,
+      theme.description ? el("p", { style: "margin: 4px 0 0; font-size: 12px; opacity: 0.8;" }, [theme.description]) : null
+    ].filter(Boolean));
+    list.appendChild(preview);
+  }
+
+  dialog.appendChild(header);
+  dialog.appendChild(list);
+  document.body.appendChild(dialog);
+  try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
 }
 
 // Modal-ish font picker. Uses a native <dialog> with a search filter
