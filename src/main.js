@@ -18,6 +18,7 @@ import { renderSolarRadiation } from "./widgets/solar-radiation.js";
 import { renderCalendar }   from "./widgets/calendar.js";
 import { renderWindy }      from "./widgets/windy.js";
 import { renderEmbed }      from "./widgets/embed.js";
+import { renderExternalWidget, broadcastThemeChange } from "./widgets/external-widget.js";
 import { renderPomodoro }   from "./widgets/pomodoro.js";
 import { renderTodo }       from "./widgets/todo.js";
 import { renderNotes }      from "./widgets/notes.js";
@@ -33,6 +34,7 @@ import { renderPhoto }      from "./widgets/photo.js";
 import { renderCountdown }  from "./widgets/countdown.js";
 import { renderConverter }  from "./widgets/converter.js";
 import { renderTopsites }   from "./widgets/topsites.js";
+import { renderZenShelf }   from "./widgets/zen-shelf.js";
 import { renderSettingsPanel, openPanel, closePanel, normalizeImportedSettings, reviewHostPermissionsForSettings } from "./settings.js";
 import { showPartialImportDialog } from "./utils/partial-import.js";
 import { showOnboarding } from "./onboarding.js";
@@ -336,6 +338,16 @@ function mountAll() {
     if (mount) renderEmbed(mount, embed, { onAttachDragHandle: onAttach(kind) });
   }
 
+  // External manifest-based widgets
+  for (const widget of (effectiveSettings.externalWidgets || [])) {
+    const kind = `extwidget-${widget.id}`;
+    const mount = document.getElementById(`${kind}-mount`);
+    if (mount) renderExternalWidget(mount, widget, effectiveSettings, { onAttachDragHandle: onAttach(kind) });
+  }
+
+  // Zen Shelf — free-position sticker overlay
+  renderZenShelf(document.getElementById("zen-shelf-mount"), effectiveSettings, { onSave: persist });
+
   // Wire drag-to-reorder after all renders finish
   requestAnimationFrame(() => wirePanelReorder(panelHandles));
 }
@@ -472,14 +484,15 @@ function syncEmbedMounts(effectiveSettings) {
   const section = document.querySelector(".reading");
   if (!section) return;
 
-  const neededIds = new Set((effectiveSettings.embeds || []).map(e => `embed-${e.id}-mount`));
+  const neededIds = new Set([
+    ...(effectiveSettings.embeds || []).map(e => `embed-${e.id}-mount`),
+    ...(effectiveSettings.externalWidgets || []).map(w => `extwidget-${w.id}-mount`)
+  ]);
 
-  // Remove stale embed mounts
   section.querySelectorAll(".embed-dynamic-mount").forEach((el) => {
     if (!neededIds.has(el.id)) el.remove();
   });
 
-  // Add missing embed mounts
   for (const embed of (effectiveSettings.embeds || [])) {
     const id = `embed-${embed.id}-mount`;
     if (!document.getElementById(id)) {
@@ -487,6 +500,17 @@ function syncEmbedMounts(effectiveSettings) {
       div.id        = id;
       div.className = "panel panel--map embed-dynamic-mount";
       div.dataset.widget = `embed-${embed.id}`;
+      section.appendChild(div);
+    }
+  }
+
+  for (const widget of (effectiveSettings.externalWidgets || [])) {
+    const id = `extwidget-${widget.id}-mount`;
+    if (!document.getElementById(id)) {
+      const div = document.createElement("div");
+      div.id        = id;
+      div.className = "panel panel--map embed-dynamic-mount";
+      div.dataset.widget = `extwidget-${widget.id}`;
       section.appendChild(div);
     }
   }
@@ -714,6 +738,7 @@ function rerenderSettingsPanelIfOpen() {
 
 function applyTheme(settings) {
   applyThemePreference(settings?.theme || "mocha");
+  broadcastThemeChange(settings);
 }
 
 /** Apply Local-Font-Access selections to the live page. Called from

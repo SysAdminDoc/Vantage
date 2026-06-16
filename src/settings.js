@@ -111,11 +111,13 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildSolarRadiationSection(settings, onChange));
   body.appendChild(buildWindySection(settings, onChange));
   body.appendChild(buildEmbedsSection(settings, onChange));
+  body.appendChild(buildExternalWidgetsSection(settings, onChange));
   body.appendChild(buildCalendarSection(settings, onChange));
   body.appendChild(buildPomodoroSection(settings, onChange));
   body.appendChild(buildAmbientSection(settings, onChange));
   body.appendChild(buildTodoSection(settings, onChange));
   body.appendChild(buildNotesSection(settings, onChange));
+  body.appendChild(buildZenShelfSection(settings, onChange));
   body.appendChild(buildBookmarksSection(settings, onChange));
   body.appendChild(buildStarredSection(settings, onChange));
   body.appendChild(buildWorldClockSection(settings, onChange));
@@ -3115,6 +3117,118 @@ function buildEmbedsSection(settings, onChange) {
   return sec;
 }
 
+/* ---- External Widgets -------------------------------------------------- */
+
+function buildExternalWidgetsSection(settings, onChange) {
+  const sec = section("External Widgets", "layout-grid");
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    "Add third-party widgets by pasting a widget manifest URL. Widgets run in sandboxed iframes with no access to your data."
+  ]));
+
+  if (!settings.externalWidgets) settings.externalWidgets = [];
+  const listEl = el("div", { class: "item-list" });
+
+  function refreshList() {
+    clear(listEl);
+    const current = settings.externalWidgets || [];
+    if (!current.length) {
+      listEl.appendChild(el("div", { class: "item-list__empty" }, ["No external widgets added yet."]));
+      return;
+    }
+    current.forEach((widget, idx) => {
+      const name = widget.manifest?.name || widget.manifestUrl || "Loading…";
+      const status = widget.manifest?.src ? "Ready" : widget.error || "Not loaded";
+      const tog = toggle({
+        checked: widget.enabled ?? false,
+        ariaLabel: `Enable ${name}`,
+        onChange: (v) => { widget.enabled = v; onChange(settings); }
+      });
+      const del = el("button", {
+        type: "button", class: "icon-button icon-button--ghost icon-button--small",
+        "aria-label": "Remove widget", title: "Remove",
+        onClick: () => {
+          settings.externalWidgets.splice(idx, 1);
+          onChange(settings);
+          refreshList();
+          toast(`Removed "${name}".`, "info");
+        }
+      }, [iconNode("trash", { size: 14 })]);
+      const reload = el("button", {
+        type: "button", class: "icon-button icon-button--ghost icon-button--small",
+        "aria-label": "Reload manifest", title: "Reload",
+        onClick: async () => {
+          if (!widget.manifestUrl) return;
+          reload.disabled = true;
+          try {
+            const { fetchManifest, validateManifest } = await import("../utils/widget-host.js");
+            const manifest = await fetchManifest(widget.manifestUrl);
+            const errs = validateManifest(manifest);
+            if (errs.length) { toast(`Invalid manifest: ${errs.join(", ")}`, "error"); return; }
+            widget.manifest = manifest;
+            widget.error = "";
+            onChange(settings);
+            refreshList();
+            toast(`Loaded "${manifest.name}".`, "success");
+          } catch (err) {
+            widget.error = err?.message || "fetch failed";
+            onChange(settings);
+            refreshList();
+            toast(`Couldn't load manifest — ${widget.error}.`, "error");
+          } finally {
+            reload.disabled = false;
+          }
+        }
+      }, [iconNode("refresh", { size: 14 })]);
+      listEl.appendChild(el("div", { class: "embed-item" }, [
+        el("div", { class: "embed-item__row" }, [
+          tog,
+          el("div", { class: "embed-item__inputs" }, [
+            el("span", { class: "item-list__title" }, [name]),
+            el("span", { class: "feed-item__source" }, [status])
+          ]),
+          reload,
+          del
+        ])
+      ]));
+    });
+  }
+  refreshList();
+  sec.appendChild(listEl);
+
+  const urlIn = el("input", { type: "url", class: "text-input", placeholder: "https://example.com/widget-manifest.json", "aria-label": "Widget manifest URL" });
+  const addBtn = el("button", {
+    type: "button", class: "button button--ghost",
+    onClick: async () => {
+      const url = urlIn.value.trim();
+      if (!url) return;
+      addBtn.disabled = true;
+      try {
+        const { fetchManifest, validateManifest } = await import("../utils/widget-host.js");
+        const manifest = await fetchManifest(url);
+        const errs = validateManifest(manifest);
+        if (errs.length) { toast(`Invalid manifest: ${errs.join(", ")}`, "error"); return; }
+        settings.externalWidgets.push({
+          id: manifest.id || String(Date.now()),
+          manifestUrl: url,
+          manifest,
+          enabled: true,
+          data: {}
+        });
+        onChange(settings);
+        refreshList();
+        urlIn.value = "";
+        toast(`Added "${manifest.name}".`, "success");
+      } catch (err) {
+        toast(`Couldn't load — ${err?.message || "fetch failed"}.`, "error");
+      } finally {
+        addBtn.disabled = false;
+      }
+    }
+  }, [iconNode("plus", { size: 14 }), " Add widget"]);
+  sec.appendChild(el("div", { class: "embed-item__row" }, [urlIn, addBtn]));
+  return sec;
+}
+
 /* ---- Calendar ---------------------------------------------------------- */
 
 function buildCalendarSection(settings, onChange) {
@@ -4285,6 +4399,20 @@ function buildNotesSection(settings, onChange) {
   g.appendChild(row("Show notes panel", "Color-coded sticky notes stored in your browser.",
     toggle({ checked: cfg.enabled || false, ariaLabel: "Show notes panel",
       onChange: (v) => { settings.notes = { ...cfg, enabled: v }; onChange(settings); } })
+  ));
+  sec.appendChild(g);
+  return sec;
+}
+
+/* ---- Zen Shelf --------------------------------------------------------- */
+
+function buildZenShelfSection(settings, onChange) {
+  const cfg = settings.zenShelf || {};
+  const sec = section("Zen Shelf", "note");
+  const g   = group();
+  g.appendChild(row("Show Zen Shelf", "Free-position sticky notes on the dashboard. Drag to move, resize from the corner.",
+    toggle({ checked: cfg.enabled || false, ariaLabel: "Show Zen Shelf",
+      onChange: (v) => { settings.zenShelf = { ...cfg, enabled: v }; onChange(settings); } })
   ));
   sec.appendChild(g);
   return sec;

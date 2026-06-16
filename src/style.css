@@ -9326,3 +9326,112 @@ html[dir="rtl"] .workflow-pill {
     transition: none;
   }
 }
+
+/* Zen Shelf — free-position sticker canvas */
+.zen-shelf-mount {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+.zen-sticker {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  min-height: 80px;
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+  overflow: hidden;
+  transition: box-shadow var(--t-fast);
+}
+.zen-sticker:hover {
+  box-shadow: var(--shadow-lg);
+}
+.zen-sticker__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  cursor: grab;
+  user-select: none;
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity var(--t-fast);
+}
+.zen-sticker:hover .zen-sticker__bar {
+  opacity: 1;
+}
+.zen-sticker__bar:active {
+  cursor: grabbing;
+}
+.zen-sticker__close {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 2px;
+  line-height: 1;
+  font-size: 14px;
+  opacity: 0.6;
+}
+.zen-sticker__close:hover {
+  opacity: 1;
+}
+.zen-sticker__body {
+  flex: 1;
+  padding: 8px 12px;
+  overflow: auto;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  outline: none;
+  word-break: break-word;
+}
+.zen-sticker__body:empty::before {
+  content: "Double-click to type\2026";
+  color: rgba(0,0,0,0.3);
+  font-style: italic;
+}
+.zen-sticker__body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--r-1);
+}
+.zen-sticker__resize {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  opacity: 0;
+  transition: opacity var(--t-fast);
+}
+.zen-sticker:hover .zen-sticker__resize {
+  opacity: 0.5;
+}
+.zen-shelf__add {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  z-index: 51;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+  transition: all var(--t-fast);
+}
+.zen-shelf__add:hover {
+  background: var(--accent);
+  color: var(--accent-fg);
+  transform: scale(1.1);
+}

@@ -180,12 +180,17 @@ const DEFAULTS = {
     // fields are null.
     enabled: false
   },
+  zenShelf: {
+    enabled: false,
+    stickers: []
+  },
   windy: {
     enabled: false,
     overlay: "wind",
     zoom: 5
   },
   embeds: [],
+  externalWidgets: [],       // [{ id, manifestUrl, manifest, enabled, data }]
   calendar: {
     enabled: false,
     feeds: [],
