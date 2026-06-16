@@ -89,7 +89,16 @@ async function fetchFaviconWithFallback(hostname, pageUrl) {
     console.warn(`[Favicon] s2/favicons timeout/error for ${hostname}:`, e.message);
   }
   
-  // Fallback: Try to extract from page's Open Graph or favicon.ico
+  // Secondary: DuckDuckGo favicon service (no API key, good coverage)
+  try {
+    const ddgUrl = `https://icons.duckduckgo.com/ip3/${hostname}.ico`;
+    const data = await fetchWithTimeout(ddgUrl, FAVICON_FETCH_TIMEOUT);
+    if (data) return data;
+  } catch (e) {
+    console.warn(`[Favicon] DDG fallback failed for ${hostname}:`, e.message);
+  }
+
+  // Tertiary: Try to extract from page's Open Graph or favicon.ico
   try {
     if (!(await hasHostPermission(pageUrl))) return "";
     return await extractFaviconFromPage(pageUrl, hostname);

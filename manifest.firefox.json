@@ -62,6 +62,7 @@
     "https://corsproxy.io/*",
     "https://www.bing.com/*",
     "https://www.google.com/*",
+    "https://icons.duckduckgo.com/*",
     "https://api.github.com/*",
     "https://gist.githubusercontent.com/*",
     "https://api.coingecko.com/*",
