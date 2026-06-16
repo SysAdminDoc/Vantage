@@ -48,6 +48,7 @@ const WIDGET_GROUPS = [
     items: [
       { key: "todo",       path: "todo.enabled",        icon: "check-square",   label: "To-Do List" },
       { key: "notes",      path: "notes.enabled",       icon: "note",           label: "Notes" },
+      { key: "zenShelf",   path: "zenShelf.enabled",    icon: "note",           label: "Zen Shelf" },
       { key: "bookmarks",  path: "bookmarks.enabled",   icon: "bookmark",       label: "Bookmarks" },
       { key: "starred",    path: "starred.enabled",     icon: "star",           label: "Starred Items" },
       { key: "ambient",    path: "ambient.enabled",     icon: "play",           label: "Ambient Sounds" },
