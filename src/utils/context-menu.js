@@ -16,6 +16,7 @@
 
 import { el, clear } from "./dom.js";
 import { iconNode } from "../icons.js";
+import { hasOpenOverlay, registerOverlay } from "./overlay-stack.js";
 
 // Selectors for elements where the native browser context menu must win.
 // Right-clicks ON these elements fall through unchanged so users keep
@@ -58,13 +59,7 @@ export function attachContextMenu(actionsFn) {
     // Suppress on interactive elements — let the browser's menu win.
     if (e.target?.closest?.(NATIVE_MENU_SELECTOR)) return;
     // Suppress when any modal-ish surface is open.
-    if (document.getElementById("settings-panel")?.dataset.open === "true") return;
-    if (document.querySelector(".import-dialog")) return;
-    if (document.querySelector(".onboard-overlay")) return;
-    // Widget-picker is a floating overlay; while it's open we let the
-    // user dismiss-by-right-click via native + don't compete for focus.
-    const picker = document.getElementById("widget-picker");
-    if (picker && picker.hidden === false) return;
+    if (hasOpenOverlay() || document.querySelector(".onboard-overlay")) return;
 
     // Resolve actions FIRST so we can no-op cleanly when the feature is
     // disabled. Calling preventDefault() before this would suppress the
@@ -154,11 +149,6 @@ function openMenu(x, y, actions) {
   };
 
   const onKey = (e) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      closeMenu();
-      return;
-    }
     const current = items.indexOf(document.activeElement);
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -178,23 +168,26 @@ function openMenu(x, y, actions) {
     }
   };
 
-  const onPointerDown = (e) => {
-    if (!menu.contains(e.target)) closeMenu();
-  };
-
   // Defer listener attachment so the contextmenu event that opened us
   // doesn't immediately close us via its own pointerdown.
   requestAnimationFrame(() => {
-    document.addEventListener("keydown", onKey);
-    document.addEventListener("pointerdown", onPointerDown, true);
+    if (!document.body.contains(menu)) return;
+    const unregisterOverlay = registerOverlay({
+      id: "context-menu",
+      root: menu,
+      close: closeMenu
+    });
+    menu.addEventListener("keydown", onKey);
     items[0]?.focus({ preventScroll: true });
+    if (activeMenu) activeMenu.unregisterOverlay = unregisterOverlay;
   });
 
   activeMenu = {
     node: menu,
+    unregisterOverlay: null,
     cleanup: () => {
-      document.removeEventListener("keydown", onKey);
-      document.removeEventListener("pointerdown", onPointerDown, true);
+      activeMenu?.unregisterOverlay?.();
+      menu.removeEventListener("keydown", onKey);
     }
   };
 }

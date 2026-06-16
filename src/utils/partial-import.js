@@ -21,6 +21,7 @@
 // link") used in the dialog header so users know what they're applying.
 
 import { el, clear } from "./dom.js";
+import { registerOverlay } from "./overlay-stack.js";
 
 // Detect and summarize nightTab backup format.
 // nightTab stores settings under root.nightTab.data (v7.x structure).
@@ -55,18 +56,18 @@ function showNightTabMigrationSummary(mapping) {
     });
 
     let resolved = false;
+    let unregisterOverlay = null;
     const close = (result) => {
       if (resolved) return;
       resolved = true;
-      document.removeEventListener("keydown", onEscape);
+      unregisterOverlay?.();
+      unregisterOverlay = null;
       try { dialog.close(); } catch {}
       dialog.remove();
       resolve(result);
     };
-    const onEscape = (e) => { if (e.key === "Escape") close(false); };
     dialog.addEventListener("cancel", (e) => { e.preventDefault(); close(false); });
     dialog.addEventListener("close", () => close(false));
-    document.addEventListener("keydown", onEscape);
     dialog.addEventListener("click", (e) => {
       if (e.target === dialog) close(false);
     });
@@ -122,6 +123,12 @@ function showNightTabMigrationSummary(mapping) {
     dialog.appendChild(actions);
     document.body.appendChild(dialog);
     try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
+    unregisterOverlay = registerOverlay({
+      id: "nighttab-import-dialog",
+      root: dialog,
+      close: () => close(false),
+      closeOnOutside: false
+    });
 
     requestAnimationFrame(() => {
       actions.querySelector(".button--primary").focus();
@@ -253,22 +260,22 @@ export function showPartialImportDialog(current, imported, source) {
     });
 
     let resolved = false;
+    let unregisterOverlay = null;
     const close = (result) => {
       if (resolved) return;
       resolved = true;
-      document.removeEventListener("keydown", onEscape);
+      unregisterOverlay?.();
+      unregisterOverlay = null;
       try { dialog.close(); } catch {}
       dialog.remove();
       resolve(result);
     };
-    const onEscape = (e) => { if (e.key === "Escape") close(null); };
     // Native <dialog> dispatches `cancel` on Esc and `close` on
     // closedby outside-click. Both should resolve(null) so the
     // import flow doesn't hang waiting for a result.
     dialog.addEventListener("cancel", (e) => { e.preventDefault(); close(null); });
     dialog.addEventListener("close", () => close(null));
     // Fallback Esc + outside-click for browsers without closedby:
-    document.addEventListener("keydown", onEscape);
     dialog.addEventListener("click", (e) => {
       // Click on the dialog element itself (not its children) means
       // the user clicked the backdrop area — close.
@@ -398,6 +405,12 @@ export function showPartialImportDialog(current, imported, source) {
       // trap. Keep the dialog visible so the import still works.
       dialog.setAttribute("open", "");
     }
+    unregisterOverlay = registerOverlay({
+      id: "partial-import-dialog",
+      root: dialog,
+      close: () => close(null),
+      closeOnOutside: false
+    });
 
     // Focus the first checkbox so keyboard users land in the live region.
     requestAnimationFrame(() => {

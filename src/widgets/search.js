@@ -4,6 +4,7 @@
 import { el, clear } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
 import { SEARCH_ENGINES, buildSearchUrl } from "../search-engines.js";
+import { registerOverlay } from "../utils/overlay-stack.js";
 
 // The stock customUrl shipped in storage.js DEFAULTS — using it as a real
 // destination is almost certainly accidental. Treat it as "not configured".
@@ -159,25 +160,28 @@ function openQuickPick(form, query, settings) {
 
   form.appendChild(popover);
 
-  function close() {
-    document.removeEventListener("keydown", onKey);
-    document.removeEventListener("pointerdown", onOutside, true);
+  let unregisterOverlay = null;
+  function close({ restoreFocus = false } = {}) {
+    unregisterOverlay?.();
+    unregisterOverlay = null;
+    popover.removeEventListener("keydown", onKey);
     popover.remove();
+    if (restoreFocus) form.querySelector(".search-input")?.focus();
   }
   function onKey(e) {
     const i = items.indexOf(document.activeElement);
-    if (e.key === "Escape") { e.preventDefault(); close(); form.querySelector(".search-input")?.focus(); return; }
     if (e.key === "ArrowDown") { e.preventDefault(); items[(i + 1 + items.length) % items.length]?.focus(); return; }
     if (e.key === "ArrowUp") { e.preventDefault(); items[(i - 1 + items.length) % items.length]?.focus(); return; }
     if (e.key === "Home") { e.preventDefault(); items[0]?.focus(); return; }
     if (e.key === "End") { e.preventDefault(); items[items.length - 1]?.focus(); return; }
   }
-  function onOutside(e) {
-    if (!popover.contains(e.target)) close();
-  }
   requestAnimationFrame(() => {
-    document.addEventListener("keydown", onKey);
-    document.addEventListener("pointerdown", onOutside, true);
+    popover.addEventListener("keydown", onKey);
+    unregisterOverlay = registerOverlay({
+      id: "search-quickpick",
+      root: popover,
+      close: ({ reason }) => close({ restoreFocus: reason === "escape" })
+    });
     items[0]?.focus({ preventScroll: true });
   });
 }
@@ -203,23 +207,27 @@ function buildEnginePicker(settings, onChange, refocusInput, onEngineChange) {
   // Type-ahead state
   let typeAheadBuffer = "";
   let typeAheadTimer = null;
+  let unregisterOverlay = null;
 
-  const closePopover = () => {
+  const closePopover = ({ restoreFocus = false } = {}) => {
     if (popover.hidden) return;
     popover.hidden = true;
     trigger.setAttribute("aria-expanded", "false");
-    document.removeEventListener("pointerdown", outsideHandler, true);
-  };
-
-  const outsideHandler = (e) => {
-    if (!picker.contains(e.target)) closePopover();
+    unregisterOverlay?.();
+    unregisterOverlay = null;
+    if (restoreFocus) trigger.focus({ preventScroll: true });
   };
 
   const openPopover = ({ focusFirst = false, focusLast = false } = {}) => {
     if (!popover.hidden) return;
     popover.hidden = false;
     trigger.setAttribute("aria-expanded", "true");
-    document.addEventListener("pointerdown", outsideHandler, true);
+    unregisterOverlay?.();
+    unregisterOverlay = registerOverlay({
+      id: "engine-picker",
+      root: picker,
+      close: ({ reason }) => closePopover({ restoreFocus: reason === "escape" })
+    });
     requestAnimationFrame(() => {
       const opts = popover.querySelectorAll(".engine-option");
       if (focusFirst) opts[0]?.focus();
@@ -310,8 +318,7 @@ function buildEnginePicker(settings, onChange, refocusInput, onEngineChange) {
         break;
       case "Escape":
         e.preventDefault();
-        closePopover();
-        trigger.focus();
+        closePopover({ restoreFocus: true });
         break;
       case "Tab":
         // Tab leaves the popover; close it and let the focus go where it goes.

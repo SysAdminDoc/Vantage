@@ -6,6 +6,7 @@ import { makeReorderable, arrayMove } from "../utils/drag.js";
 import { iconNode } from "../icons.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
 import { SUPPORTS_TAB_GROUPS, activateTabGroup, getColorClass } from "../utils/tab-groups.js";
+import { registerOverlay } from "../utils/overlay-stack.js";
 
 export function renderQuickLinks(mount, settings, { onChange } = {}) {
   clear(mount);
@@ -148,6 +149,7 @@ function buildGroupButton(group, mount) {
 
   let popover = null;
   let closeTimer = null;
+  let unregisterOverlay = null;
   wrap.appendChild(btn);
 
   btn.addEventListener("click", (e) => {
@@ -180,7 +182,7 @@ function buildGroupButton(group, mount) {
       clearTimeout(closeTimer);
       btn.setAttribute("aria-expanded", "true");
       popover.classList.add("ql-group-popover--open");
-      addDocumentListeners();
+      registerPopoverOverlay();
       focusMenuItem(focus);
       return;
     }
@@ -235,7 +237,7 @@ function buildGroupButton(group, mount) {
     }
 
     wrap.appendChild(popover);
-    addDocumentListeners();
+    registerPopoverOverlay();
     requestAnimationFrame(() => {
       popover?.classList.add("ql-group-popover--open");
       focusMenuItem(focus);
@@ -287,25 +289,21 @@ function buildGroupButton(group, mount) {
     }
   }
 
-  function addDocumentListeners() {
-    document.addEventListener("pointerdown", onDocPointerDown, true);
-    document.addEventListener("keydown", onDocKeydown);
-  }
-
   function removeDocumentListeners() {
-    document.removeEventListener("pointerdown", onDocPointerDown, true);
-    document.removeEventListener("keydown", onDocKeydown);
+    unregisterOverlay?.();
+    unregisterOverlay = null;
   }
 
-  function onDocPointerDown(e) {
-    if (popover && !wrap.contains(e.target)) closePopover();
-  }
-
-  function onDocKeydown(e) {
-    if (e.key === "Escape" && popover) {
-      closePopover();
-      btn.focus({ preventScroll: true });
-    }
+  function registerPopoverOverlay() {
+    unregisterOverlay?.();
+    unregisterOverlay = registerOverlay({
+      id: "quicklink-group",
+      root: wrap,
+      close: ({ reason }) => {
+        closePopover();
+        if (reason === "escape") btn.focus({ preventScroll: true });
+      }
+    });
   }
 
   return wrap;

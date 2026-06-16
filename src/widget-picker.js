@@ -2,6 +2,7 @@
 
 import { el, clear, toggle, toast } from "./utils/dom.js";
 import { iconNode } from "./icons.js";
+import { registerOverlay } from "./utils/overlay-stack.js";
 
 const WIDGET_GROUPS = [
   {
@@ -69,15 +70,7 @@ const WIDGET_GROUPS = [
 export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, openSettingsPanel) {
   let isOpen = false;
   let closeTimer = null;
-
-  const onDocKey = (e) => {
-    if (e.key === "Escape" && isOpen) close();
-  };
-  const onDocPointerDown = (e) => {
-    if (isOpen && !pickerEl.contains(e.target) && !toggleBtn.contains(e.target)) {
-      close({ restoreFocus: false });
-    }
-  };
+  let unregisterOverlay = null;
 
   function open() {
     clearTimeout(closeTimer);
@@ -88,11 +81,18 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
     pickerEl.setAttribute("aria-hidden", "false");
     requestAnimationFrame(() => pickerEl.classList.add("widget-picker--open"));
     setTimeout(() => pickerEl.querySelector(".widget-picker__inner")?.focus?.(), 50);
-    document.addEventListener("keydown", onDocKey);
-    document.addEventListener("pointerdown", onDocPointerDown, true);
+    unregisterOverlay?.();
+    unregisterOverlay = registerOverlay({
+      id: "widget-picker",
+      root: pickerEl,
+      trigger: toggleBtn,
+      close: ({ reason }) => close({ restoreFocus: reason !== "outside" })
+    });
   }
 
   function close({ restoreFocus = true, immediate = false } = {}) {
+    unregisterOverlay?.();
+    unregisterOverlay = null;
     isOpen = false;
     pickerEl.classList.remove("widget-picker--open");
     toggleBtn.setAttribute("aria-expanded", "false");
@@ -104,8 +104,6 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
       closeTimer = setTimeout(() => { pickerEl.hidden = true; }, 220);
     }
     if (restoreFocus) toggleBtn.focus({ preventScroll: true });
-    document.removeEventListener("keydown", onDocKey);
-    document.removeEventListener("pointerdown", onDocPointerDown, true);
   }
 
   toggleBtn.addEventListener("click", () => isOpen ? close() : open());
