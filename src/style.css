@@ -10081,6 +10081,18 @@ html[dir="rtl"] .workflow-pill {
   flex: 1;
   min-width: 0;
 }
+.inbox-hygiene-menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+  padding: var(--s-2);
+  background: color-mix(in srgb, var(--surface0) 60%, transparent);
+  border-radius: var(--r-md);
+}
+.inbox-item--forgotten {
+  border-left: 2px solid var(--yellow);
+}
 
 /* Two action buttons (archive + delete) side by side.
    Position the archive button further left so they don't overlap. */

@@ -10,6 +10,7 @@ import { iconString, iconNode } from "../icons.js";
 import { saveSettings } from "../storage.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
 import { ext } from "../utils/ext.js";
+import { findDuplicateUrls, findForgotten, checkBrokenLinks } from "../utils/inbox-hygiene.js";
 
 const toastUndo = (message, onUndo) =>
   toast(message, "warning", 6500, { label: "Undo", onClick: onUndo });
@@ -137,6 +138,87 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
       }
     }, [iconNode("link", { size: 14 })]);
 
+    const hygieneBtn = el("button", {
+      type: "button",
+      class: "icon-button icon-button--ghost icon-button--small",
+      "aria-label": "Inbox hygiene tools",
+      title: "Find duplicates, forgotten items, or broken links",
+      onClick: () => {
+        const existing = mount.querySelector(".inbox-hygiene-menu");
+        if (existing) { existing.remove(); return; }
+
+        const menu = el("div", { class: "inbox-hygiene-menu" }, [
+          el("button", {
+            type: "button", class: "button button--ghost button--small",
+            onClick: () => {
+              menu.remove();
+              const items = cfg.items || [];
+              const dupes = findDuplicateUrls(items);
+              if (!dupes.length) { toast("No duplicate URLs found.", "success"); return; }
+              const total = dupes.reduce((s, g) => s + g.length - 1, 0);
+              toast(`${total} duplicate${total === 1 ? "" : "s"} across ${dupes.length} URL${dupes.length === 1 ? "" : "s"}. Keeping newest, removing older copies.`, "info");
+              const keep = new Set();
+              for (const group of dupes) {
+                group.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+                keep.add(group[0]);
+              }
+              cfg.items = items.filter(i => {
+                const isDupe = dupes.some(g => g.includes(i));
+                return !isDupe || keep.has(i);
+              });
+              persist().then(draw);
+            }
+          }, ["Find duplicates"]),
+          el("button", {
+            type: "button", class: "button button--ghost button--small",
+            onClick: () => {
+              menu.remove();
+              const forgotten = findForgotten(cfg.items || [], 30);
+              if (!forgotten.length) { toast("No items older than 30 days.", "success"); return; }
+              toast(`${forgotten.length} item${forgotten.length === 1 ? "" : "s"} saved more than 30 days ago.`, "info");
+              searchQuery = "";
+              const host = mount.querySelector(".inbox-list-host");
+              if (host) {
+                clear(host);
+                const list = el("ul", { class: "feed-list inbox-list" });
+                for (const entry of forgotten) {
+                  list.appendChild(el("li", { class: "feed-item inbox-item inbox-item--forgotten" }, [
+                    el("a", { href: entry.url, target: "_blank", rel: "noopener noreferrer", class: "feed-item__link" }, [
+                      el("p", { class: "feed-item__title" }, [entry.title || entry.url]),
+                      el("div", { class: "feed-item__meta" }, [
+                        el("span", {}, [relativeTime(new Date(entry.savedAt))])
+                      ])
+                    ])
+                  ]));
+                }
+                host.appendChild(list);
+              }
+            }
+          }, ["Forgotten (30d+)"]),
+          el("button", {
+            type: "button", class: "button button--ghost button--small",
+            onClick: async () => {
+              menu.remove();
+              const urls = (cfg.items || []).map(i => i.url).filter(Boolean);
+              if (!urls.length) { toast("No items to check.", "info"); return; }
+              toast(`Checking ${urls.length} link${urls.length === 1 ? "" : "s"} — this sends HEAD requests to each URL.`, "info");
+              const ctrl = new AbortController();
+              const results = await checkBrokenLinks(urls, {
+                signal: ctrl.signal,
+                onProgress: (done, total) => {
+                  if (done === total) toast(`Link check complete.`, "success");
+                }
+              });
+              const broken = results.filter(r => !r.ok);
+              if (!broken.length) { toast("All links are reachable.", "success"); return; }
+              toast(`${broken.length} link${broken.length === 1 ? "" : "s"} may be broken.`, "warning");
+            }
+          }, ["Check links"])
+        ]);
+        body.insertBefore(menu, body.firstChild);
+      }
+    }, [iconNode("filter", { size: 14 })]);
+
     const clearBtn = el("button", {
       type: "button",
       class: "icon-button icon-button--ghost icon-button--small",
@@ -165,7 +247,7 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
           ...(badge ? [" ", badge] : [])
         ])
       ]),
-      el("div", { class: "panel-header__right" }, [saveTabBtn, addUrlBtn, clearBtn])
+      el("div", { class: "panel-header__right" }, [saveTabBtn, addUrlBtn, hygieneBtn, clearBtn])
     ]);
     mount.appendChild(header);
     if (onAttachDragHandle) onAttachDragHandle(dragSpan);
