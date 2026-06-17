@@ -60,5 +60,11 @@ export function validateThemeBundle(theme) {
   if (!theme?.id) errors.push("missing id");
   if (!theme?.name) errors.push("missing name");
   if (!theme?.colors || typeof theme.colors !== "object") errors.push("missing colors object");
+  if (theme?.colors) {
+    for (const [key, val] of Object.entries(theme.colors)) {
+      if (!ALLOWED_COLOR_KEY.test(key)) { errors.push(`invalid color key: ${key}`); break; }
+      if (!ALLOWED_COLOR_VAL.test(String(val).trim())) { errors.push(`invalid color value for ${key}`); break; }
+    }
+  }
   return errors;
 }
