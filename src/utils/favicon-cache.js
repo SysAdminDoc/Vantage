@@ -40,13 +40,15 @@ export async function getFaviconUrl(pageUrl) {
     // 1. Check cache first (synchronous, no network)
     const cached = localStorage.getItem(`${FAVICON_CACHE_PREFIX}${hostname}`);
     if (cached) {
-      const { data, ts } = JSON.parse(cached);
-      if (Date.now() - ts < FAVICON_CACHE_MAX_AGE) {
-        return data; // Return cached base64 data URL
-      } else {
-        // TTL expired; evict
-        localStorage.removeItem(`${FAVICON_CACHE_PREFIX}${hostname}`);
+      try {
+        const { data, ts } = JSON.parse(cached);
+        if (data && ts && Date.now() - ts < FAVICON_CACHE_MAX_AGE) {
+          return data;
+        }
+      } catch {
+        // Corrupted cache entry — evict silently
       }
+      localStorage.removeItem(`${FAVICON_CACHE_PREFIX}${hostname}`);
     }
     
     // 2. Fetch from service with timeout

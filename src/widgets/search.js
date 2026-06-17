@@ -341,10 +341,9 @@ function buildEnginePicker(settings, onChange, refocusInput, onEngineChange) {
           // Find first option whose name starts with the buffer (after current focus).
           const startIdx = activeIdx >= 0 ? activeIdx : 0;
           const ordered = [...opts.slice(startIdx + 1), ...opts.slice(0, startIdx + 1)];
-          let match = ordered.find((o) => o.dataset.name.startsWith(typeAheadBuffer));
+          let match = ordered.find((o) => o.dataset.name.toLowerCase().startsWith(typeAheadBuffer));
           if (!match && typeAheadBuffer.length === 1) {
-            // single-char repeat: cycle to next match instead of staying
-            match = ordered.find((o) => o.dataset.name.startsWith(typeAheadBuffer));
+            match = ordered.find((o) => o.dataset.name.toLowerCase().startsWith(typeAheadBuffer));
           }
           if (match) {
             e.preventDefault();

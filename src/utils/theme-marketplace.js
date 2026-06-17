@@ -28,11 +28,17 @@ export async function fetchThemeManifest() {
   return themes;
 }
 
+const ALLOWED_COLOR_KEY = /^[a-z][a-z0-9-]{0,30}$/;
+const ALLOWED_COLOR_VAL = /^#[0-9a-fA-F]{3,8}$|^rgb|^hsl|^color-mix|^var\(--/;
+
 export function applyThemeBundle(settings, theme) {
-  if (theme.colors) {
+  if (theme.colors && typeof theme.colors === "object") {
     const style = document.documentElement.style;
     for (const [key, val] of Object.entries(theme.colors)) {
-      style.setProperty(`--${key}`, val);
+      if (!ALLOWED_COLOR_KEY.test(key)) continue;
+      const v = String(val).trim();
+      if (!ALLOWED_COLOR_VAL.test(v)) continue;
+      style.setProperty(`--${key}`, v);
     }
   }
   if (theme.accent) settings.accent = theme.accent;

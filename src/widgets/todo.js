@@ -3,8 +3,10 @@
 import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 
-let _uid = Date.now();
-function uid() { return String(++_uid); }
+function uid() {
+  if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
 
 export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {}) {
   clear(mount);

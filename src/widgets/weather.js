@@ -97,10 +97,14 @@ export async function renderWeather(mount, settings, saveSettings) {
     const unit = settings.weather.units === "celsius" ? "°C" : "°F";
     const unitLabel = settings.weather.units === "celsius" ? "Celsius" : "Fahrenheit";
     const locName = location.name || "Current location";
+    if (cur.temperature_2m == null) {
+      mount.appendChild(el("div", { class: "weather-chip", "aria-label": "Weather data unavailable" }, ["—"]));
+      return;
+    }
     const temp = Math.round(cur.temperature_2m);
-    const feelsLike = Math.round(cur.apparent_temperature);
-    const feelsDelta = feelsLike - temp;
-    const showFeelsLike = Math.abs(feelsDelta) >= FEELS_LIKE_DELTA;
+    const feelsLike = cur.apparent_temperature != null ? Math.round(cur.apparent_temperature) : null;
+    const feelsDelta = feelsLike != null ? feelsLike - temp : 0;
+    const showFeelsLike = feelsLike != null && Math.abs(feelsDelta) >= FEELS_LIKE_DELTA;
 
     const precipProb = cur.precipitation_probability;
     const showPrecip = typeof precipProb === "number" && precipProb >= PRECIP_CHIP_THRESHOLD;
@@ -113,7 +117,8 @@ export async function renderWeather(mount, settings, saveSettings) {
 
     // Build the title (hover) and aria-label (spoken). Title is dense, aria
     // stays terse to avoid SR fatigue.
-    const titleParts = [`${meta.label}`, `feels like ${feelsLike}${unit}`];
+    const titleParts = [`${meta.label}`];
+    if (feelsLike != null) titleParts.push(`feels like ${feelsLike}${unit}`);
     if (showPrecip) titleParts.push(`precip ${precipProb}%`);
     if (dewPoint != null) titleParts.push(`dew ${Math.round(dewPoint)}${unit}`);
     if (humidity != null) titleParts.push(`humidity ${Math.round(humidity)}%`);
