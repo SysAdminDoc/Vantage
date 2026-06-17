@@ -6151,7 +6151,6 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
-  cursor: not-allowed;
   pointer-events: none;
   transform: none;
   box-shadow: none;
