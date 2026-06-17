@@ -9,6 +9,7 @@ import { el, clear, relativeTime, hostnameLabel, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { saveSettings } from "../storage.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
+import { ext } from "../utils/ext.js";
 
 const toastUndo = (message, onUndo) =>
   toast(message, "warning", 6500, { label: "Undo", onClick: onUndo });
@@ -72,7 +73,6 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
       onClick: async () => {
         saveTabBtn.disabled = true;
         try {
-          const ext = globalThis.chrome || globalThis.browser;
           if (!ext?.runtime?.sendMessage) {
             toast("Tab capture is unavailable.", "error");
             return;
