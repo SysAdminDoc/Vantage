@@ -6625,6 +6625,36 @@ input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
   }
 }
 
+/* Firefox split-view and half-width dashboard adaptation.
+   Split-view typically renders at ~640px. Reduce panel min-width
+   so two-column reading grids can still fit, and tighten utility
+   pill spacing. Also applies to any narrow Chromium window. */
+@media (max-width: 640px) {
+  .reading {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .quicklinks {
+    gap: var(--s-2);
+  }
+
+  .quicklink {
+    font-size: var(--text-xs);
+    padding: var(--s-1) var(--s-2);
+  }
+
+  .utility-bar {
+    flex-wrap: wrap;
+    gap: var(--s-1);
+  }
+
+  .bg-tree,
+  .bg-constellation,
+  .bg-milkyway {
+    display: none;
+  }
+}
+
 @media (max-width: 420px) {
   .toast {
     min-width: 0;
