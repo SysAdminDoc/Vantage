@@ -25,6 +25,7 @@ export function renderAmbient(mount, settings, { onAttachDragHandle, onChange } 
   const cfg = settings.ambient;
   if (!cfg?.enabled) {
     mount.style.display = "none";
+    if (isPlaying()) stopAmbient();
     return;
   }
   mount.style.display = "";
