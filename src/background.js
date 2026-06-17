@@ -70,6 +70,33 @@ ext.storage?.onChanged?.addListener?.((changes, area) => {
   if (area === "local" && changes.vantageSettings) syncPrewarmAlarm();
 });
 
+// Tab capture for Inbox — the NTP is the active tab so a naive
+// chrome.tabs.query({ active: true }) returns the NTP itself.
+// Instead the inbox widget sends a message and we pick the most
+// recently accessed non-internal tab in the same window.
+const INTERNAL_URL = /^(chrome|edge|brave|vivaldi|opera|moz-extension|chrome-extension|about|file|view-source):/i;
+
+ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type !== "vantage:get-capture-tab") return false;
+  (async () => {
+    try {
+      const senderTabId = sender.tab?.id;
+      const windowId = sender.tab?.windowId;
+      const tabs = await ext.tabs.query(windowId != null ? { windowId } : { currentWindow: true });
+      const candidates = tabs
+        .filter(t => t.id !== senderTabId && t.url && !INTERNAL_URL.test(t.url));
+      candidates.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
+      const best = candidates[0];
+      sendResponse({
+        tab: best ? { url: best.url, title: best.title } : null
+      });
+    } catch (err) {
+      sendResponse({ tab: null, error: err.message });
+    }
+  })();
+  return true;
+});
+
 if (ext.alarms?.onAlarm) {
   ext.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name !== PREWARM_ALARM) return;

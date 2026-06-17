@@ -33,7 +33,8 @@
     "sidePanel"
   ],
   "optional_permissions": [
-    "history"
+    "history",
+    "tabs"
   ],
   "side_panel": {
     "default_path": "sidepanel.html"

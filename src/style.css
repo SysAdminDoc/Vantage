@@ -10042,6 +10042,15 @@ html[dir="rtl"] .workflow-pill {
   width: 100%;
   margin-bottom: var(--s-2);
 }
+.inbox-url-form {
+  display: flex;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+}
+.inbox-url-input {
+  flex: 1;
+  min-width: 0;
+}
 
 /* Two action buttons (archive + delete) side by side.
    Position the archive button further left so they don't overlap. */

@@ -300,7 +300,7 @@ Vantage/
 
 Nothing else. No analytics, no error reporting, no auto-update server.
 
-Vantage does not request `*://*/*` at install. Fixed service hosts above are required in the manifest; user-entered `http`/`https` origins are listed as optional host permissions and requested only when you add, discover, or import URLs that need them. Denied origins stay local in `chrome.storage.local` so Settings can show a `Grant access` recovery button.
+Vantage does not request `*://*/*` at install. Fixed service hosts above are required in the manifest; user-entered `http`/`https` origins are listed as optional host permissions and requested only when you add, discover, or import URLs that need them. Denied origins stay local in `chrome.storage.local` so Settings can show a `Grant access` recovery button. The `tabs` permission is optional and requested only when you click "Save previous tab" in the Inbox widget — it lets the service worker read the title and URL of the tab you were viewing before opening the new tab.
 
 ## Documentation
 
