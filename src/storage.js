@@ -1,4 +1,49 @@
-// Vantage v0.8.0 — chrome.storage.local wrapper with deep-merged defaults.
+// Vantage — chrome.storage.local wrapper with deep-merged defaults
+// and versioned schema migrations.
+
+export const SCHEMA_VERSION = 3;
+
+const MIGRATIONS = [
+  {
+    version: 1,
+    migrate(s) {
+      if (s.embed !== undefined) {
+        if (!s.embeds || s.embeds.length === 0) {
+          if (s.embed?.url) {
+            s.embeds = [{
+              id: "1",
+              title: s.embed.title || "Embed",
+              url: s.embed.url,
+              enabled: s.embed.enabled ?? false
+            }];
+          }
+        }
+        delete s.embed;
+      }
+    }
+  },
+  {
+    version: 2,
+    migrate(s) {
+      if (Array.isArray(s.quicklinks)) {
+        s.quicklinks = { enabled: true, items: s.quicklinks, groups: [] };
+      }
+    }
+  },
+  {
+    version: 3,
+    migrate(_s) {}
+  }
+];
+
+function runMigrations(settings) {
+  const from = settings.schemaVersion || 0;
+  for (const m of MIGRATIONS) {
+    if (from < m.version) m.migrate(settings);
+  }
+  settings.schemaVersion = SCHEMA_VERSION;
+  return settings;
+}
 
 const DEFAULTS = {
   theme: "mocha",
@@ -361,27 +406,7 @@ export async function loadSettings() {
   }
   const stored = await chromeApi.storage.local.get("vantageSettings");
   const merged = mergeDeep(structuredClone(DEFAULTS), stored.vantageSettings || {});
-
-  // v0.6.x → v0.7.0: singular embed → embeds array
-  if (merged.embed !== undefined) {
-    if (!merged.embeds || merged.embeds.length === 0) {
-      if (merged.embed?.url) {
-        merged.embeds = [{
-          id: "1",
-          title: merged.embed.title || "Embed",
-          url: merged.embed.url,
-          enabled: merged.embed.enabled ?? false
-        }];
-      }
-    }
-    delete merged.embed;
-  }
-
-  // v0.7.x → v0.8.0: quicklinks.items flat array → quicklinks object shape
-  if (Array.isArray(merged.quicklinks)) {
-    merged.quicklinks = { enabled: true, items: merged.quicklinks, groups: [] };
-  }
-
+  runMigrations(merged);
   return merged;
 }
 
