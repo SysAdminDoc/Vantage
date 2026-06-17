@@ -71,12 +71,12 @@ export function renderFlood(mount, settings) {
       const data = await fetchFlood(loc.latitude, loc.longitude);
       const daily = data.daily || {};
       const todays = daily.river_discharge?.[0];
-      const max7 = Array.isArray(daily.river_discharge_max)
-        ? Math.max(...daily.river_discharge_max.filter(v => v != null))
-        : null;
+      const validMax = Array.isArray(daily.river_discharge_max)
+        ? daily.river_discharge_max.filter(v => v != null)
+        : [];
+      const max7 = validMax.length ? Math.max(...validMax) : null;
 
-      // No river / no data — silently hide.
-      if (todays == null || max7 == null || max7 === 0) {
+      if (todays == null || max7 == null || max7 <= 0 || !isFinite(max7)) {
         clear(mount);
         return;
       }

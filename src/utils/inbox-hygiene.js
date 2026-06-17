@@ -28,15 +28,23 @@ export async function checkBrokenLinks(urls, { signal, onProgress } = {}) {
   for (let i = 0; i < urls.length; i++) {
     if (signal?.aborted) break;
     const url = urls[i];
+    const timeout = AbortSignal.timeout(8000);
+    const sig = signal ? AbortSignal.any([signal, timeout]) : timeout;
     try {
-      const resp = await fetch(url, {
-        method: "HEAD",
-        mode: "no-cors",
-        signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(8000)]) : AbortSignal.timeout(8000)
-      });
-      results.push({ url, status: resp.status, ok: resp.ok || resp.type === "opaque" });
+      const resp = await fetch(url, { method: "HEAD", signal: sig });
+      results.push({ url, status: resp.status, ok: resp.ok });
     } catch (err) {
-      results.push({ url, status: 0, ok: false, error: err.message });
+      if (err.name === "TypeError") {
+        // CORS block — try opaque no-cors to at least confirm reachability
+        try {
+          await fetch(url, { method: "HEAD", mode: "no-cors", signal: sig });
+          results.push({ url, status: 0, ok: true });
+        } catch (e2) {
+          results.push({ url, status: 0, ok: false, error: e2.message });
+        }
+      } else {
+        results.push({ url, status: 0, ok: false, error: err.message });
+      }
     }
     onProgress?.(i + 1, urls.length);
   }

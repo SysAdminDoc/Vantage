@@ -12,9 +12,10 @@ export function applyWorkspace(baseSettings, workspace) {
 
   const presetIdx = workspace.activePreset;
   if (presetIdx != null && workspace.presets?.[presetIdx]?.snapshot) {
-    snap = { ...snap, ...workspace.presets[presetIdx].snapshot };
-    if (snap.background && workspace.presets[presetIdx].snapshot.background) {
-      snap.background = { ...workspace.snapshot.background, ...workspace.presets[presetIdx].snapshot.background };
+    const presetSnap = workspace.presets[presetIdx].snapshot;
+    snap = { ...snap, ...presetSnap };
+    if (snap.background && presetSnap.background) {
+      snap.background = { ...snap.background, ...presetSnap.background };
     }
   }
 
