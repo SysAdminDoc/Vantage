@@ -7,6 +7,18 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 ### Fixed
 - **Inbox tab capture saves the previous tab, not the NTP** — "Save previous tab" now uses message passing to the service worker which finds the most recently accessed non-internal tab. `tabs` permission is optional and requested on-demand. Manual URL input added as a permission-free alternative.
 - **Widget host postMessage hardened** — explicit `targetOrigin` (manifest src origin) replaces `"*"`, inbound messages validate `event.origin`, sandbox drops `allow-same-origin`, widget IDs are format-validated, messages are truncated to 2 KB and rate-limited. Widget API docs corrected: CSP is the widget server's responsibility, not injected by the host.
+- **Favicon cache corruption crash** — JSON.parse of corrupted localStorage entries no longer crashes the favicon loading pipeline; corrupted entries are evicted silently.
+- **Theme marketplace CSS injection blocked** — `applyThemeBundle()` now whitelists CSS variable key format (`/^[a-z][a-z0-9-]{0,30}$/`) and value patterns (hex, rgb, hsl, color-mix, var references) to prevent injection via remote theme bundles. `validateThemeBundle()` also rejects invalid color entries.
+- **Workspace preset background merge used wrong source** — preset background properties now correctly merge over the accumulated snapshot, not the parent workspace's raw snapshot.
+- **Todo UID collision on concurrent adds** — replaced `Date.now()` counter with `crypto.randomUUID()` (notes widget also updated). Prevents duplicate IDs when two tabs add tasks simultaneously.
+- **Flood widget -Infinity on empty discharge data** — `Math.max()` on an empty filtered array returned `-Infinity` which bypassed the null/zero hide check; now properly guards with array-length check.
+- **Engine picker type-ahead is case-insensitive** — typing "B" now finds "Bing" regardless of how `data-name` is cased.
+- **Inbox hygiene link checker no longer always reports "reachable"** — was using `mode: "no-cors"` which returns opaque responses with status 0; now tries CORS first, falls back to no-cors for reachability confirmation only.
+- **Weather chip shows dash instead of NaN** — when Open-Meteo returns null temperature data, the weather chip renders "—" instead of "NaN°F".
+- **Ambient audio stops on widget disable** — disabling the ambient widget now stops any playing audio instead of letting it leak.
+- **NASA APOD fetch has a 10-second timeout** — previously could hang indefinitely.
+- **WebCAL Basic auth supports non-ASCII usernames** — `btoa()` now encodes to UTF-8 first via `unescape(encodeURIComponent())`.
+- **Disabled button CSS no longer declares cursor twice.**
 
 ### Added
 - **Versioned settings schema with migration pipeline** — `schemaVersion` field and an ordered, idempotent migration array replace the previous ad-hoc shape checks. Regression test with 8 fixture cases.
