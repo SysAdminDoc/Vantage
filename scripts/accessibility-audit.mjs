@@ -29,14 +29,14 @@ const AxePuppeteer = axeModule.AxePuppeteer || axeModule.default;
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, '..');
 const UNPACKED_DIR = join(REPO_ROOT, 'dist', 'unpacked-chromium');
-const DOCS_DIR = join(REPO_ROOT, 'docs');
-const REPORT_PATH = join(DOCS_DIR, 'accessibility-report.md');
-const RESULTS_PATH = join(DOCS_DIR, 'accessibility-results.json');
+const AUDIT_DIR = join(REPO_ROOT, 'dist', 'audit');
+const REPORT_PATH = join(AUDIT_DIR, 'accessibility-report.md');
+const RESULTS_PATH = join(AUDIT_DIR, 'accessibility-results.json');
 
 async function runAudit() {
   let browser;
   try {
-    mkdirSync(DOCS_DIR, { recursive: true });
+    mkdirSync(AUDIT_DIR, { recursive: true });
 
     const extPath =
       existsSync(UNPACKED_DIR) && existsSync(join(UNPACKED_DIR, '.vantage-unpacked'))
