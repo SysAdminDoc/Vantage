@@ -15,8 +15,11 @@
  */
 
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
+import { createServer } from "node:http";
+import { dirname, extname, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, "..");
@@ -44,16 +47,21 @@ async function run() {
     ]
   });
 
+  let staticServer = null;
   let extId;
   try {
     extId = await discoverExtensionId(browser);
   } catch {
-    console.warn("Could not discover extension ID; using file:// fallback.");
+    console.warn("Could not discover extension ID; using local HTTP fallback.");
   }
 
-  const ntpUrl = extId
-    ? `chrome-extension://${extId}/newtab.html`
-    : pathToFileURL(join(REPO_ROOT, "newtab.html")).href;
+  let ntpUrl;
+  if (extId) {
+    ntpUrl = `chrome-extension://${extId}/newtab.html`;
+  } else {
+    staticServer = await startStaticServer(REPO_ROOT);
+    ntpUrl = `${staticServer.origin}/newtab.html`;
+  }
 
   const page = await browser.newPage();
 
@@ -62,13 +70,14 @@ async function run() {
     await page.goto(ntpUrl, { waitUntil: "networkidle2" });
     await seedOnboarding(page);
     await page.reload({ waitUntil: "networkidle2" });
+    await waitForDashboardReady(page);
 
-    const hasSearch = await page.$(".search");
+    const hasSearch = await page.$(".search-form");
     if (hasSearch) ok("Onboarding skip — dashboard renders");
-    else fail("Onboarding skip", "search box not found after seeding");
+    else fail("Onboarding skip", "rendered search form not found after seeding");
 
     // ── 2. Settings panel open/close ────────────────────────
-    const settingsBtn = await page.$('[aria-label*="ettings"], .settings-button, [data-action="settings"]');
+    const settingsBtn = await page.$("#settings-toggle");
     if (settingsBtn) {
       await settingsBtn.click();
       await page.waitForSelector("dialog[open], .settings-panel[data-open], aside[data-open]", { timeout: 3000 }).catch(() => null);
@@ -102,7 +111,7 @@ async function run() {
     const qlCountBefore = qlBefore.length;
 
     // Open settings, find the quick links section, add a link
-    const settingsBtn2 = await page.$('[aria-label*="ettings"], .settings-button, [data-action="settings"]');
+    const settingsBtn2 = await page.$("#settings-toggle");
     if (settingsBtn2) {
       await settingsBtn2.click();
       await new Promise(r => setTimeout(r, 500));
@@ -139,7 +148,7 @@ async function run() {
     }
 
     // ── 5. JSON export ──────────────────────────────────────
-    const settingsBtn3 = await page.$('[aria-label*="ettings"], .settings-button, [data-action="settings"]');
+    const settingsBtn3 = await page.$("#settings-toggle");
     if (settingsBtn3) {
       await settingsBtn3.click();
       await new Promise(r => setTimeout(r, 500));
@@ -177,6 +186,7 @@ async function run() {
 
   } finally {
     await browser.close();
+    if (staticServer) await staticServer.close();
   }
 
   // ── Summary ─────────────────────────────────────────────
@@ -187,6 +197,64 @@ async function run() {
   console.log("=".repeat(40));
 
   if (failed > 0) process.exit(1);
+}
+
+async function startStaticServer(root) {
+  const rootFull = resolve(root);
+  const types = new Map([
+    [".css", "text/css; charset=utf-8"],
+    [".html", "text/html; charset=utf-8"],
+    [".js", "text/javascript; charset=utf-8"],
+    [".json", "application/json; charset=utf-8"],
+    [".svg", "image/svg+xml"],
+    [".png", "image/png"],
+    [".jpg", "image/jpeg"],
+    [".jpeg", "image/jpeg"],
+    [".webp", "image/webp"]
+  ]);
+
+  const server = createServer(async (req, res) => {
+    try {
+      const pathName = decodeURIComponent(new URL(req.url || "/", "http://127.0.0.1").pathname);
+      const requested = resolve(rootFull, `.${pathName}`);
+      const rel = relative(rootFull, requested);
+      if (rel.startsWith("..") || rel.includes(`..${sep}`) || rel === "..") {
+        res.writeHead(403);
+        res.end("Forbidden");
+        return;
+      }
+      const info = await stat(requested);
+      if (!info.isFile()) {
+        res.writeHead(404);
+        res.end("Not found");
+        return;
+      }
+      res.writeHead(200, {
+        "Content-Type": types.get(extname(requested).toLowerCase()) || "application/octet-stream",
+        "Cache-Control": "no-store"
+      });
+      createReadStream(requested).pipe(res);
+    } catch {
+      res.writeHead(404);
+      res.end("Not found");
+    }
+  });
+
+  await new Promise((resolveListen) => server.listen(0, "127.0.0.1", resolveListen));
+  const address = server.address();
+  return {
+    origin: `http://127.0.0.1:${address.port}`,
+    close: () => new Promise((resolveClose) => server.close(resolveClose))
+  };
+}
+
+async function waitForDashboardReady(page) {
+  await page.waitForFunction(() => {
+    const settings = document.querySelector("#settings-toggle");
+    return !!document.querySelector("#search-mount .search-form") &&
+      !!settings?.firstElementChild &&
+      typeof globalThis.chrome?.storage?.local?.get === "function";
+  }, { timeout: 10000 });
 }
 
 async function discoverExtensionId(browser) {

@@ -1,9 +1,11 @@
 (() => {
+  const existingBrowser = globalThis.browser;
+
   if (globalThis.chrome?.storage?.local) {
     if (!globalThis.browser) globalThis.browser = globalThis.chrome;
     return;
   }
-  if (globalThis.browser) {
+  if (existingBrowser?.storage?.local) {
     globalThis.chrome = globalThis.browser;
     return;
   }
@@ -99,4 +101,5 @@
     }
   };
   if (!globalThis.browser) globalThis.browser = globalThis.chrome;
+  if (!globalThis.browser?.storage?.local) globalThis.browser = globalThis.chrome;
 })();

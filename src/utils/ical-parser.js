@@ -1,6 +1,6 @@
 // Vantage v0.6.0 — minimal iCal / ICS parser.
 // Handles VEVENT blocks with DTSTART / DTEND / SUMMARY / DESCRIPTION / LOCATION.
-// Supports: UTC timestamps (Z suffix), floating timestamps, DATE-only values.
+// Supports: UTC timestamps (Z suffix), TZID datetimes, floating timestamps, DATE-only values.
 // Does NOT handle RRULE (recurring events) — fetches next-occurrence only.
 
 export function parseICal(text) {
@@ -22,14 +22,13 @@ export function parseICal(text) {
     // Split "PROPERTY;PARAMS:value" — value starts after first colon
     const colonIdx = line.indexOf(":");
     if (colonIdx < 0) continue;
-    const propFull = line.slice(0, colonIdx).toUpperCase();
+    const propFull = line.slice(0, colonIdx);
+    const propFullUpper = propFull.toUpperCase();
     const value    = line.slice(colonIdx + 1);
 
     // Strip parameters (e.g. DTSTART;TZID=America/New_York → DTSTART)
-    const prop = propFull.split(";")[0];
-    // Extract TZID if present for future use
-    const tzidMatch = propFull.match(/TZID=([^;:]+)/);
-    const tzid = tzidMatch ? tzidMatch[1] : null;
+    const prop = propFullUpper.split(";")[0];
+    const tzid = getParam(propFull, "TZID");
 
     switch (prop) {
       case "DTSTART": current.start    = parseICalDate(value, tzid); break;
@@ -63,13 +62,79 @@ function parseICalDate(str, tzid) {
   }
 
   // Floating or TZID datetime: 20260501T140000
-  // Treat as local time (browser's timezone) — best-effort without a full TZDB.
   const m = str.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
   if (m) {
-    return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+    const parts = {
+      year: +m[1],
+      month: +m[2],
+      day: +m[3],
+      hour: +m[4],
+      minute: +m[5],
+      second: +m[6]
+    };
+    if (tzid) {
+      return zonedDateTimeToDate(parts, tzid) ||
+        new Date(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+    }
+    return new Date(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
   }
 
   return null;
+}
+
+function getParam(propFull, name) {
+  const target = name.toUpperCase();
+  for (const part of propFull.split(";").slice(1)) {
+    const eq = part.indexOf("=");
+    if (eq < 0) continue;
+    if (part.slice(0, eq).toUpperCase() !== target) continue;
+    const raw = part.slice(eq + 1).trim();
+    return raw.replace(/^"|"$/g, "") || null;
+  }
+  return null;
+}
+
+function zonedDateTimeToDate(parts, timeZone) {
+  if (timeZone.toUpperCase() === "UTC") {
+    return new Date(Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second));
+  }
+  try {
+    const utcGuess = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+    let offset = timeZoneOffsetMs(timeZone, new Date(utcGuess));
+    let corrected = utcGuess - offset;
+    const correctedOffset = timeZoneOffsetMs(timeZone, new Date(corrected));
+    if (correctedOffset !== offset) corrected = utcGuess - correctedOffset;
+    return new Date(corrected);
+  } catch {
+    return null;
+  }
+}
+
+function timeZoneOffsetMs(timeZone, date) {
+  const dtf = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour12: false,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+  const values = {};
+  for (const part of dtf.formatToParts(date)) {
+    if (part.type !== "literal") values[part.type] = part.value;
+  }
+  const asUtc = Date.UTC(
+    Number(values.year),
+    Number(values.month) - 1,
+    Number(values.day),
+    Number(values.hour),
+    Number(values.minute),
+    Number(values.second)
+  );
+  return asUtc - date.getTime();
 }
 
 function unescapeIcal(s) {

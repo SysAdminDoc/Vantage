@@ -79,7 +79,8 @@ export function iconString(name, size = 18) {
 export function iconNode(name, { size = 18, className = "" } = {}) {
   const wrap = document.createElement("template");
   wrap.innerHTML = iconString(name, size);
-  const svg = wrap.content.firstChild;
+  const svg = wrap.content.firstElementChild;
+  if (!svg) return document.createTextNode("");
   if (className) svg.setAttribute("class", className);
   return svg;
 }

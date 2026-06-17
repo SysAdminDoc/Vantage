@@ -5,6 +5,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 ## Unreleased
 
 ### Fixed
+- **Audit follow-up reliability fixes** — NASA APOD now caches 403/404 responses for 5 minutes, iCal `TZID` datetimes convert through `Intl`, rapid To-Do adds debounce storage writes, CoinGecko 429 copy no longer implies an invalid key, ambient audio resumes on focus only when the user left it playing, local QA no longer aborts when a dev-browser namespace or icon parse edge case is present, and browser smoke fallback now uses HTTP instead of blocked `file://` modules.
 - **Inbox tab capture saves the previous tab, not the NTP** — "Save previous tab" now uses message passing to the service worker which finds the most recently accessed non-internal tab. `tabs` permission is optional and requested on-demand. Manual URL input added as a permission-free alternative.
 - **Widget host postMessage hardened** — explicit `targetOrigin` (manifest src origin) replaces `"*"`, inbound messages validate `event.origin`, sandbox drops `allow-same-origin`, widget IDs are format-validated, messages are truncated to 2 KB and rate-limited. Widget API docs corrected: CSP is the widget server's responsibility, not injected by the host.
 - **Favicon cache corruption crash** — JSON.parse of corrupted localStorage entries no longer crashes the favicon loading pipeline; corrupted entries are evicted silently.

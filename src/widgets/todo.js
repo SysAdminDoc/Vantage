@@ -3,6 +3,8 @@
 import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 
+const TODO_PERSIST_DEBOUNCE_MS = 300;
+
 function uid() {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -19,9 +21,12 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
 
   let items = [...(cfg.items || [])];
 
-  function persist() {
-    const next = { ...settings, todo: { ...cfg, items } };
-    onChange?.(next);
+  function nextSettings(nextItems = items) {
+    return { ...settings, todo: { ...cfg, items: nextItems } };
+  }
+
+  function persist(next = nextSettings(), { debounce = false } = {}) {
+    commitTodoChange(mount, next, onChange, { debounce });
   }
 
   // Header
@@ -44,7 +49,7 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
       if (!removed.length) return;
       items = items.filter(i => !i.done);
       persist();
-      renderTodo(mount, { ...settings, todo: { ...cfg, items } }, { onChange, onAttachDragHandle });
+      renderTodo(mount, nextSettings(), { onChange, onAttachDragHandle });
       toast(`Cleared ${removed.length} completed task${removed.length === 1 ? "" : "s"}.`, "warning", 6500, {
         label: "Undo",
         onClick: () => {
@@ -52,8 +57,8 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
           for (const { item, index } of removed) {
             restored.splice(Math.min(index, restored.length), 0, item);
           }
-          const next = { ...settings, todo: { ...cfg, items: restored } };
-          onChange?.(next);
+          const next = nextSettings(restored);
+          persist(next);
           renderTodo(mount, next, { onChange, onAttachDragHandle });
         }
       });
@@ -90,8 +95,9 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
     const text = inputVal.trim();
     if (!text) return;
     items.unshift({ id: uid(), text, done: false, createdAt: Date.now() });
-    persist();
-    renderTodo(mount, { ...settings, todo: { ...cfg, items } }, { onChange, onAttachDragHandle });
+    const next = nextSettings();
+    persist(next, { debounce: true });
+    renderTodo(mount, next, { onChange, onAttachDragHandle });
   }
 
   const addRow = el("div", { class: "todo-add-row" }, [
@@ -139,7 +145,7 @@ function buildTaskRow(item, items, cfg, settings, onChange, onAttachDragHandle, 
     onClick: () => {
       item.done = !item.done;
       const next = { ...settings, todo: { ...cfg, items } };
-      onChange?.(next);
+      commitTodoChange(mount, next, onChange);
       renderTodo(mount, next, { onChange, onAttachDragHandle });
     }
   });
@@ -154,7 +160,7 @@ function buildTaskRow(item, items, cfg, settings, onChange, onAttachDragHandle, 
       const idx = items.indexOf(item);
       if (idx > -1) items.splice(idx, 1);
       const next = { ...settings, todo: { ...cfg, items } };
-      onChange?.(next);
+      commitTodoChange(mount, next, onChange);
       renderTodo(mount, next, { onChange, onAttachDragHandle });
       toast("Task deleted.", "warning", 6500, {
         label: "Undo",
@@ -162,7 +168,7 @@ function buildTaskRow(item, items, cfg, settings, onChange, onAttachDragHandle, 
           const restored = [...items];
           restored.splice(Math.max(0, idx), 0, item);
           const restoredNext = { ...settings, todo: { ...cfg, items: restored } };
-          onChange?.(restoredNext);
+          commitTodoChange(mount, restoredNext, onChange);
           renderTodo(mount, restoredNext, { onChange, onAttachDragHandle });
         }
       });
@@ -170,4 +176,27 @@ function buildTaskRow(item, items, cfg, settings, onChange, onAttachDragHandle, 
   }, [iconNode("trash", { size: 12 })]);
 
   return el("li", { class: "todo-item", role: "listitem" }, [checkbox, label, del]);
+}
+
+function commitTodoChange(mount, next, onChange, { debounce = false } = {}) {
+  if (!debounce) {
+    clearTodoPersist(mount);
+    onChange?.(next);
+    return;
+  }
+  if (mount._todoPersistTimer) clearTimeout(mount._todoPersistTimer);
+  mount._todoPendingSettings = next;
+  mount._todoPersistTimer = setTimeout(() => {
+    const pending = mount._todoPendingSettings;
+    clearTodoPersist(mount);
+    if (pending) onChange?.(pending);
+  }, TODO_PERSIST_DEBOUNCE_MS);
+}
+
+function clearTodoPersist(mount) {
+  if (mount._todoPersistTimer) {
+    clearTimeout(mount._todoPersistTimer);
+    mount._todoPersistTimer = null;
+  }
+  mount._todoPendingSettings = null;
 }
