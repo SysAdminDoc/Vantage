@@ -45,46 +45,56 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
       ? el("span", { class: "panel-badge" }, [String(itemCount)])
       : null;
 
+    const addItem = async (url, title) => {
+      if ((cfg.items || []).some(i => i.url === url)) {
+        toast("Already in your inbox.", "info");
+        return;
+      }
+      if (!cfg.items) cfg.items = [];
+      const maxItems = cfg.maxItems || 200;
+      cfg.items.unshift({
+        url,
+        title: title || hostnameLabel(url),
+        hostname: hostnameLabel(url),
+        savedAt: Date.now()
+      });
+      if (cfg.items.length > maxItems) cfg.items = cfg.items.slice(0, maxItems);
+      await persist();
+      draw();
+      toast("Saved to inbox.", "success");
+    };
+
     const saveTabBtn = el("button", {
       type: "button",
       class: "icon-button icon-button--ghost icon-button--small",
-      "aria-label": "Save current tab",
-      title: "Save current tab to inbox",
+      "aria-label": "Save previous tab",
+      title: "Save the tab you were viewing",
       onClick: async () => {
         saveTabBtn.disabled = true;
         try {
           const ext = globalThis.chrome || globalThis.browser;
-          if (!ext?.tabs?.query) {
-            toast("Tab access is unavailable.", "error");
+          if (!ext?.runtime?.sendMessage) {
+            toast("Tab capture is unavailable.", "error");
             return;
           }
-          const tabs = await ext.tabs.query({ active: true, currentWindow: true });
-          const tab = tabs?.[0];
-          if (!tab?.url) {
-            toast("No active tab found.", "warning");
+          // Ensure we have the tabs permission so the service worker
+          // can read the previous tab's URL and title.
+          if (ext.permissions?.request) {
+            const has = await ext.permissions.contains({ permissions: ["tabs"] }).catch(() => false);
+            if (!has) {
+              const granted = await ext.permissions.request({ permissions: ["tabs"] }).catch(() => false);
+              if (!granted) {
+                toast("Tab permission denied — use Add URL instead.", "warning");
+                return;
+              }
+            }
+          }
+          const resp = await ext.runtime.sendMessage({ type: "vantage:get-capture-tab" });
+          if (!resp?.tab?.url) {
+            toast("No saveable tab found in this window.", "warning");
             return;
           }
-          // Deduplicate
-          if ((cfg.items || []).some(i => i.url === tab.url)) {
-            toast("Already in your inbox.", "info");
-            return;
-          }
-          if (!cfg.items) cfg.items = [];
-          const maxItems = cfg.maxItems || 200;
-          const item = {
-            url: tab.url,
-            title: tab.title || hostnameLabel(tab.url),
-            hostname: hostnameLabel(tab.url),
-            savedAt: Date.now()
-          };
-          cfg.items.unshift(item);
-          // Enforce cap
-          if (cfg.items.length > maxItems) {
-            cfg.items = cfg.items.slice(0, maxItems);
-          }
-          await persist();
-          draw();
-          toast("Saved to inbox.", "success");
+          await addItem(resp.tab.url, resp.tab.title);
         } catch (err) {
           toast("Couldn't save tab.", "error");
         } finally {
@@ -92,6 +102,40 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
         }
       }
     }, [iconNode("plus", { size: 14 })]);
+
+    const addUrlBtn = el("button", {
+      type: "button",
+      class: "icon-button icon-button--ghost icon-button--small",
+      "aria-label": "Add URL to inbox",
+      title: "Add a URL manually",
+      onClick: () => {
+        const existing = mount.querySelector(".inbox-url-form");
+        if (existing) { existing.remove(); return; }
+        const urlInput = el("input", {
+          type: "url",
+          class: "text-input inbox-url-input",
+          placeholder: "https://example.com/article",
+          "aria-label": "URL to save"
+        });
+        const submitBtn = el("button", {
+          type: "submit",
+          class: "button button--small",
+          onClick: async (e) => {
+            e.preventDefault();
+            const raw = urlInput.value.trim();
+            if (!raw) return;
+            try { new URL(raw); } catch {
+              toast("Enter a valid URL.", "warning");
+              return;
+            }
+            await addItem(raw, "");
+          }
+        }, ["Save"]);
+        const form = el("div", { class: "inbox-url-form" }, [urlInput, submitBtn]);
+        body.insertBefore(form, body.firstChild);
+        urlInput.focus();
+      }
+    }, [iconNode("link", { size: 14 })]);
 
     const clearBtn = el("button", {
       type: "button",
@@ -121,7 +165,7 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
           ...(badge ? [" ", badge] : [])
         ])
       ]),
-      el("div", { class: "panel-header__right" }, [saveTabBtn, clearBtn])
+      el("div", { class: "panel-header__right" }, [saveTabBtn, addUrlBtn, clearBtn])
     ]);
     mount.appendChild(header);
     if (onAttachDragHandle) onAttachDragHandle(dragSpan);

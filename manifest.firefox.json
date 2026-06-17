@@ -48,6 +48,7 @@
   ],
   "optional_permissions": [
     "history",
+    "tabs",
     "http://*/*",
     "https://*/*"
   ],
