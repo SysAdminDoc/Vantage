@@ -1,0 +1,11 @@
+title: Vantage
+description: Customizable new tab dashboard for Chromium + Firefox.
+theme: jekyll-theme-minimal
+markdown: GFM
+exclude:
+  - i18n-strategy.md
+  - rtl-support-roadmap.md
+  - store-submission-guide.md
+  - store-listing-content.md
+  - accessibility-report.md
+  - accessibility-results.json

@@ -32,9 +32,25 @@ desktop.ini
 node_modules/
 .npm/
 
-# Markdown files local-only (except README)
+# Markdown files local-only (except README and public docs)
 *.md
 !README.md
+!CHANGELOG.md
+!PRIVACY.md
+!LICENSE.md
+!docs/index.md
+!docs/getting-started.md
+!docs/widgets.md
+!docs/faq.md
+!docs/widget-api.md
+!docs/privacy-practices-cws.md
 
 # Generated accessibility audit output
 docs/accessibility-results.json
+
+# Internal-only planning docs (never tracked)
+docs/i18n-strategy.md
+docs/rtl-support-roadmap.md
+docs/store-submission-guide.md
+docs/store-listing-content.md
+docs/accessibility-report.md
