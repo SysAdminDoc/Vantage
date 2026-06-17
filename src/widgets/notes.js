@@ -4,8 +4,10 @@ import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { registerOverlay } from "../utils/overlay-stack.js";
 
-let _uid = Date.now();
-function uid() { return String(++_uid); }
+function uid() {
+  if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
 
 const NOTE_COLORS = ["blue", "green", "yellow", "red", "mauve"];
 

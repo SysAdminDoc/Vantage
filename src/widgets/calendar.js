@@ -17,7 +17,8 @@ async function fetchICal(url, auth) {
   if (auth?.type === "bearer" && auth.token) {
     headers["Authorization"] = `Bearer ${auth.token}`;
   } else if (auth?.type === "basic" && auth.username) {
-    headers["Authorization"] = `Basic ${btoa(`${auth.username}:${auth.password || ""}`)}`;
+    const raw = `${auth.username}:${auth.password || ""}`;
+    headers["Authorization"] = `Basic ${btoa(unescape(encodeURIComponent(raw)))}`;
   }
   const hasAuth = !!headers["Authorization"];
 

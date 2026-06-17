@@ -77,7 +77,9 @@ async function loadNasa(body, settings, dateStr, { onSave } = {}) {
 
   body.appendChild(el("div", { class: "panel-spinner" }, [iconNode("refresh", { size: 20, className: "spin" })]));
   try {
-    const resp = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${encodeURIComponent(apiKey)}&date=${encodeURIComponent(dateStr)}`);
+    const resp = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${encodeURIComponent(apiKey)}&date=${encodeURIComponent(dateStr)}`, {
+      signal: AbortSignal.timeout(10000)
+    });
     if (resp.status === 429) {
       const retryAtIso = new Date(Date.now() + 60 * 60 * 1000).toISOString();
       saveApodCache(settings, cfg, {
