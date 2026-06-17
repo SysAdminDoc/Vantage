@@ -5,6 +5,8 @@
 // vantage:init / vantage:theme-change and receives vantage:ready /
 // vantage:error / vantage:log from the guest.
 
+import { logError } from "./error-log.js";
+
 const THEME_VARS = [
   "surface0", "surface1", "surface2", "text", "subtext0", "subtext1",
   "accent", "red", "green", "yellow", "blue", "mauve", "peach", "teal"
@@ -101,6 +103,11 @@ export function createWidgetFrame(manifest, settings) {
 
     if (data.type === "vantage:error") {
       console.warn(`[widget:${manifest.id}] error:`, msg);
+      logError({
+        message: msg,
+        source: `widget:${manifest.id}`,
+        url: event.origin || ""
+      });
     }
     if (data.type === "vantage:log") {
       const now = Date.now();
@@ -111,6 +118,13 @@ export function createWidgetFrame(manifest, settings) {
       if (++logCount > LOG_RATE_CAP) return;
       const level = data.level === "warn" ? "warn" : data.level === "error" ? "error" : "log";
       console[level](`[widget:${manifest.id}]`, msg);
+      if (level !== "log") {
+        logError({
+          message: msg,
+          source: `widget:${manifest.id}:${level}`,
+          url: event.origin || ""
+        });
+      }
     }
   };
 
