@@ -9,7 +9,7 @@
 
 Vantage widgets are sandboxed `<iframe>` elements embedded in the new tab page. A third-party widget is a remote-origin HTML document that:
 
-1. Loads in a `<iframe sandbox="allow-scripts allow-same-origin allow-popups">` container
+1. Loads in a `<iframe sandbox="allow-scripts allow-popups">` container
 2. Communicates with the Vantage host via `postMessage` (cross-origin)
 3. Declares its type, size, and data requirements in a JSON manifest
 4. Receives a `vantage:*` message API for configuration, theme, and size updates
@@ -18,7 +18,9 @@ Vantage widgets are sandboxed `<iframe>` elements embedded in the new tab page. 
 - Access `chrome.*` APIs
 - Read Vantage settings or other widgets' data
 - Execute arbitrary code outside the sandbox
-- Make requests to arbitrary domains (limited by `Cross-Origin-Resource-Sharing` on the iframe `src` URL)
+- Navigate the top frame or escape the sandbox
+
+Vantage validates inbound messages by checking both `event.source` (must be the widget's iframe) and `event.origin` (must match the manifest `src` origin). Outbound messages use the manifest origin as `targetOrigin`. Widget log/error messages are truncated to 2 KB and rate-limited to 20 per 10-second window.
 
 ---
 
@@ -311,21 +313,13 @@ window.parent.postMessage({
 
 ### Content Security Policy
 
-The iframe has a strict CSP:
+Vantage does **not** inject a CSP into the widget iframe. The iframe's CSP is whatever the widget's own HTTPS server returns. Widget authors should set a strict `Content-Security-Policy` header on their widget HTML — for example:
 
 ```
-content-security-policy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src *; font-src 'self' data:; connect-src *"
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src * data:; font-src 'self' data:; connect-src *
 ```
 
-This allows:
-- Local scripts and styles (inlined OK)
-- Remote images and fonts (for CDN assets)
-- Fetch requests to any CORS-enabled endpoint
-
-It blocks:
-- `eval()` and `Function()`
-- External `<script>` tags (unless inlined at build time)
-- Remote stylesheets (embed via `@import` or inline)
+Vantage enforces isolation through the `sandbox` attribute (`allow-scripts allow-popups` — no `allow-same-origin`), origin-validated `postMessage`, and the HTTPS-only `src` requirement.
 
 ---
 
