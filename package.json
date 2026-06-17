@@ -6,6 +6,8 @@
   "license": "MIT",
   "scripts": {
     "audit": "node scripts/accessibility-audit.mjs",
+    "test": "node scripts/test-migrations.mjs",
+    "smoke": "node scripts/smoke-test.mjs",
     "build:unpacked": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-unpacked.ps1",
     "build:unpacked:firefox": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-unpacked.ps1 -Target firefox"
   },
