@@ -81,13 +81,12 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
 
   function showApiKeyPrompt(status) {
     body.innerHTML = "";
-    const reason = status === 401
+    const isAuthError = status === 401;
+    const reason = isAuthError
       ? "CoinGecko rejected the request — your API key may be invalid or missing."
-      : "CoinGecko rate-limited this request — keyless quota exhausted.";
-    body.appendChild(el("div", { class: "panel-empty crypto-empty--keyprompt" }, [
-      el("div", { class: "crypto-empty__inner" }, [
-        el("p", { class: "crypto-empty__lead" }, [reason]),
-        el("p", { class: "crypto-empty__hint" }, [
+      : "CoinGecko rate-limited this request — try again later.";
+    const hint = isAuthError
+      ? [
           "Set up a free CoinGecko demo API key (no credit card) at ",
           el("a", {
             href: COINGECKO_DASHBOARD,
@@ -96,7 +95,16 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
             class: "crypto-empty__link"
           }, ["coingecko.com/en/api"]),
           ", then paste it into Settings → Crypto."
-        ])
+        ]
+      : apiKey
+        ? ["Your configured API key hit a rate limit. Wait a few minutes, then refresh the panel."]
+        : [
+            "Keyless requests are rate-limited aggressively. Wait a few minutes, or add a free demo API key in Settings → Crypto for more quota."
+          ];
+    body.appendChild(el("div", { class: "panel-empty crypto-empty--keyprompt" }, [
+      el("div", { class: "crypto-empty__inner" }, [
+        el("p", { class: "crypto-empty__lead" }, [reason]),
+        el("p", { class: "crypto-empty__hint" }, hint)
       ])
     ]));
   }

@@ -2,8 +2,8 @@
 //
 // Five Web-Audio-synthesized soundscapes (white / pink / brown noise,
 // rain, café). No shipped audio assets. Pauses on tab blur,
-// resumes on tab focus IF currently playing. Never auto-plays
-// without a user gesture (autoplay policy compliance).
+// resumes on tab focus only after the user had started playback.
+// Never starts fresh without a user gesture (autoplay policy compliance).
 
 import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
@@ -19,12 +19,18 @@ const SOUNDS = [
 ];
 
 let blurHandlerInstalled = false;
+let ambientSettingsRef = null;
+let shouldResumeAfterBlur = false;
+let resumeUiCallback = null;
 
 export function renderAmbient(mount, settings, { onAttachDragHandle, onChange } = {}) {
   clear(mount);
   const cfg = settings.ambient;
   if (!cfg?.enabled) {
     mount.style.display = "none";
+    ambientSettingsRef = null;
+    resumeUiCallback = null;
+    shouldResumeAfterBlur = false;
     if (isPlaying()) stopAmbient();
     return;
   }
@@ -34,15 +40,25 @@ export function renderAmbient(mount, settings, { onAttachDragHandle, onChange } 
     await saveSettings(settings);
     onChange?.(settings);
   };
+  ambientSettingsRef = cfg;
 
   // Pause-on-blur — install once per page lifetime.
   if (!blurHandlerInstalled) {
     blurHandlerInstalled = true;
-    document.addEventListener("visibilitychange", () => {
-      // Only stop if currently playing — don't auto-restart on focus.
-      // Users who re-enter the tab can hit play again; surprise audio
-      // is the worst possible UX.
-      if (document.hidden && isPlaying()) stopAmbient();
+    document.addEventListener("visibilitychange", async () => {
+      if (document.hidden) {
+        shouldResumeAfterBlur = isPlaying();
+        if (shouldResumeAfterBlur) stopAmbient();
+        return;
+      }
+      if (!shouldResumeAfterBlur || !ambientSettingsRef) return;
+      shouldResumeAfterBlur = false;
+      try {
+        await playAmbient(ambientSettingsRef.sound, ambientSettingsRef.volume);
+        resumeUiCallback?.();
+      } catch (err) {
+        toast(`Couldn't resume audio — ${err?.message?.toLowerCase() || "unknown error"}.`, "error");
+      }
     });
   }
 
@@ -61,6 +77,14 @@ export function renderAmbient(mount, settings, { onAttachDragHandle, onChange } 
   mount.appendChild(body);
 
   const playing = isPlaying();
+  const setButtonPlaying = (nextPlaying) => {
+    playBtn.classList.toggle("ambient-play-btn--playing", nextPlaying);
+    playBtn.setAttribute("aria-pressed", String(nextPlaying));
+    playBtn.replaceChildren(
+      iconNode(nextPlaying ? "pause" : "play", { size: 14 }),
+      document.createTextNode(nextPlaying ? " Stop" : " Play")
+    );
+  };
 
   const select = el("select", { class: "text-input ambient-sound-select", "aria-label": "Ambient sound" },
     SOUNDS.map(s => el("option", { value: s.value, selected: cfg.sound === s.value }, [s.label]))
@@ -92,16 +116,13 @@ export function renderAmbient(mount, settings, { onAttachDragHandle, onChange } 
     "aria-pressed": String(playing),
     onClick: async () => {
       if (isPlaying()) {
+        shouldResumeAfterBlur = false;
         stopAmbient();
-        playBtn.classList.remove("ambient-play-btn--playing");
-        playBtn.setAttribute("aria-pressed", "false");
-        playBtn.replaceChildren(iconNode("play", { size: 14 }), document.createTextNode(" Play"));
+        setButtonPlaying(false);
       } else {
         try {
           await playAmbient(cfg.sound, cfg.volume);
-          playBtn.classList.add("ambient-play-btn--playing");
-          playBtn.setAttribute("aria-pressed", "true");
-          playBtn.replaceChildren(iconNode("pause", { size: 14 }), document.createTextNode(" Stop"));
+          setButtonPlaying(true);
         } catch (err) {
           toast(`Couldn't start audio — ${err?.message?.toLowerCase() || "unknown error"}.`, "error");
         }
@@ -111,6 +132,7 @@ export function renderAmbient(mount, settings, { onAttachDragHandle, onChange } 
     iconNode(playing ? "pause" : "play", { size: 14 }),
     document.createTextNode(playing ? " Stop" : " Play")
   ]);
+  resumeUiCallback = () => setButtonPlaying(true);
 
   body.appendChild(el("div", { class: "ambient-controls" }, [select, playBtn]));
   body.appendChild(el("div", { class: "ambient-volume-row" }, [

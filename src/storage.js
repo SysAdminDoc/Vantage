@@ -255,7 +255,7 @@ const DEFAULTS = {
     // Web Audio synthesized ambient soundscapes (white/pink/brown
     // noise, rain, cafe murmur). No shipped audio assets — all
     // generated on-the-fly to keep the install ≤ 1 MB. Pauses on
-    // tab blur; never auto-plays.
+    // tab blur and resumes only if the user left it playing.
     enabled: false,
     sound: "rain",           // "white" | "pink" | "brown" | "rain" | "cafe"
     volume: 50,              // 0-100

@@ -3,6 +3,10 @@
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 
+const APOD_RATE_LIMIT_TTL_MS = 60 * 60 * 1000;
+const APOD_SHORT_ERROR_TTL_MS = 5 * 60 * 1000;
+const APOD_CACHED_ERROR_STATUSES = new Set([403, 404, 429]);
+
 export function renderPhoto(mount, settings, { onAttachDragHandle, onSave } = {}) {
   clear(mount);
   const cfg = settings.photo;
@@ -67,11 +71,10 @@ async function loadNasa(body, settings, dateStr, { onSave } = {}) {
     return;
   }
 
-  const retryAt = cached?.key === cacheKey && cached.error?.status === 429
-    ? Date.parse(cached.error.retryAt || "")
-    : 0;
+  const cachedError = cached?.key === cacheKey ? cached.error : null;
+  const retryAt = cachedError ? Date.parse(cachedError.retryAt || "") : 0;
   if (retryAt > Date.now()) {
-    renderNasaError(body, rateLimitMessage(retryAt));
+    renderNasaError(body, apodErrorMessage(cachedError.status, retryAt));
     return;
   }
 
@@ -80,14 +83,15 @@ async function loadNasa(body, settings, dateStr, { onSave } = {}) {
     const resp = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${encodeURIComponent(apiKey)}&date=${encodeURIComponent(dateStr)}`, {
       signal: AbortSignal.timeout(10000)
     });
-    if (resp.status === 429) {
-      const retryAtIso = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    if (APOD_CACHED_ERROR_STATUSES.has(resp.status)) {
+      const ttl = resp.status === 429 ? APOD_RATE_LIMIT_TTL_MS : APOD_SHORT_ERROR_TTL_MS;
+      const retryAtIso = new Date(Date.now() + ttl).toISOString();
       saveApodCache(settings, cfg, {
         key: cacheKey,
         fetchedAt: new Date().toISOString(),
-        error: { status: 429, retryAt: retryAtIso }
+        error: { status: resp.status, retryAt: retryAtIso }
       }, onSave);
-      renderNasaError(body, rateLimitMessage(Date.parse(retryAtIso)));
+      renderNasaError(body, apodErrorMessage(resp.status, Date.parse(retryAtIso)));
       return;
     }
     if (!resp.ok) throw new Error(`NASA API ${resp.status}`);
@@ -190,9 +194,18 @@ function apodCacheKey(dateStr, apiKey) {
   return `${dateStr}:${keyMode}`;
 }
 
-function rateLimitMessage(retryAtMs) {
+function apodErrorMessage(status, retryAtMs) {
   const retry = Number.isFinite(retryAtMs)
     ? new Date(retryAtMs).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     : "later";
+  if (status === 429) {
+    return `NASA APOD is rate limited — add a free API key in Settings -> Photo, or try again after ${retry}.`;
+  }
+  if (status === 404) {
+    return `NASA APOD is not available for today's date yet — trying again after ${retry}.`;
+  }
+  if (status === 403) {
+    return `NASA APOD rejected this request — check the API key in Settings -> Photo, or try again after ${retry}.`;
+  }
   return `NASA APOD is rate limited — add a free API key in Settings -> Photo, or try again after ${retry}.`;
 }
