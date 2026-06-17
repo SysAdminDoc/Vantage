@@ -4,6 +4,22 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 
 ## Unreleased
 
+### Fixed
+- **Inbox tab capture saves the previous tab, not the NTP** — "Save previous tab" now uses message passing to the service worker which finds the most recently accessed non-internal tab. `tabs` permission is optional and requested on-demand. Manual URL input added as a permission-free alternative.
+- **Widget host postMessage hardened** — explicit `targetOrigin` (manifest src origin) replaces `"*"`, inbound messages validate `event.origin`, sandbox drops `allow-same-origin`, widget IDs are format-validated, messages are truncated to 2 KB and rate-limited. Widget API docs corrected: CSP is the widget server's responsibility, not injected by the host.
+
+### Added
+- **Versioned settings schema with migration pipeline** — `schemaVersion` field and an ordered, idempotent migration array replace the previous ad-hoc shape checks. Regression test with 8 fixture cases.
+- **Unified `ext.js` browser namespace wrapper** — new code can `import { ext } from "./utils/ext.js"` instead of inline `globalThis.browser || globalThis.chrome` detection.
+- **Firefox split-view and half-width dashboard adaptation** — new 640px CSS breakpoint reduces reading-panel minimum column width, tightens quick-link spacing, and hides decorative background elements at narrow widths.
+- **Inbox hygiene tools** — filter button opens duplicate detection (auto-removes older copies), forgotten item surfacing (items older than 30 days), and user-initiated broken-link check with HEAD requests and clear network disclosure.
+- **Browser workflow smoke tests** — Puppeteer-based tests covering onboarding skip, settings panel, keyword filter, quick-link add, JSON export, and widget manifest validation.
+
+### Changed
+- **Public docs tracked for clean-checkout safety** — CHANGELOG.md, PRIVACY.md, and public docs/ pages are whitelisted in .gitignore. Jekyll `_config.yml` added for GitHub Pages. Internal planning docs remain gitignored.
+- **Accessibility audit writes to CI artifacts** — audit output moved from `docs/` to `dist/audit/` (gitignored). Release workflow runs the audit headless and uploads the report as a GitHub Actions artifact.
+- **Widget error/warn messages routed to the debug log** — widget `vantage:error` and warn-level `vantage:log` messages are now recorded in the 50-entry ring buffer alongside unhandled errors, visible in Copy Debug Log.
+
 ### Changed
 - **Install and store packaging docs reflect real delivery paths** — README now points users at release workflow artifacts for installs/store submissions and reserves `build-unpacked.ps1` for source QA; local docs remove the obsolete Chromium force-install path and ad hoc ZIP command.
 - **Host permissions are scoped at runtime** — Chromium and Firefox manifests no longer request `*://*/*` at install. Fixed service endpoints stay explicit; user-entered feed, calendar, image, and embed origins move to `optional_host_permissions` and are requested from Settings/import flows with local denied-origin recovery.
