@@ -11,7 +11,7 @@
  *   6. Widget error state (external widget with bad manifest)
  *
  * Usage:
- *   node scripts/smoke-test.mjs [--headless]
+ *   node scripts/smoke-test.mjs [--headless] [--extension-dir dist/unpacked-chromium]
  */
 
 import { existsSync } from "node:fs";

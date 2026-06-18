@@ -5,6 +5,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 ## Unreleased
 
 ### Fixed
+- **User-supplied URLs are normalized consistently** — quick links, feeds, calendar feeds, embeds, background images, OPML/Pocket/Instapaper imports, Gist imports, and imported settings now reject non-web schemes, malformed URLs, and credentialed URLs before saving or rendering.
 - **Release packages now verify runtime contents** — CI checks Chrome ZIP and Firefox XPI entries against `scripts/runtime-allowlist.json`, catching stale or overbroad packages before signing, checksums, or release upload.
 - **External widget manifests are strictly bounded** — third-party widget manifests now require parseable HTTPS `src` and `homepage` URLs, reject credentialed/malformed endpoints, cap manifest payload size, bound iframe dimensions, and never fall back to wildcard `postMessage` targets.
 - **Audit follow-up reliability fixes** — NASA APOD now caches 403/404 responses for 5 minutes, iCal `TZID` datetimes convert through `Intl`, rapid To-Do adds debounce storage writes, CoinGecko 429 copy no longer implies an invalid key, ambient audio resumes on focus only when the user left it playing, local QA no longer aborts when a dev-browser namespace or icon parse edge case is present, and browser smoke fallback now uses HTTP instead of blocked `file://` modules.

@@ -7,6 +7,7 @@ import { iconNode } from "../icons.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
 import { SUPPORTS_TAB_GROUPS, activateTabGroup, getColorClass } from "../utils/tab-groups.js";
 import { registerOverlay } from "../utils/overlay-stack.js";
+import { normalizeWebUrl } from "../utils/url-safety.js";
 
 export function renderQuickLinks(mount, settings, { onChange } = {}) {
   clear(mount);
@@ -42,7 +43,9 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
     return;
   }
 
-  const pills = (cfg.items || []).map((item) => {
+  const renderedItems = [];
+  const pills = [];
+  (cfg.items || []).forEach((item, sourceIndex) => {
     // Tab Group item (v1.2.0): pinned Tab Group from chrome.tabGroups
     if (item.groupId && SUPPORTS_TAB_GROUPS) {
       const btn = el("button", {
@@ -71,20 +74,26 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
       }
       
       btn.addEventListener("dragstart", () => btn.classList.add("quicklink--dragging-self"));
-      return btn;
+      renderedItems.push({ sourceIndex, node: btn });
+      pills.push(btn);
+      return;
     }
+
+    const safeUrl = normalizeWebUrl(item.url);
+    if (!safeUrl) return;
+    const title = item.title || item.label || hostnameLabel(safeUrl);
     
     // Regular URL item
-    const fallbackGlyph = (item.title || hostnameLabel(item.url) || "?").trim().slice(0, 1).toUpperCase() || "?";
+    const fallbackGlyph = (title || "?").trim().slice(0, 1).toUpperCase() || "?";
     const fallbackIcon = el("span", {
       class: "quicklink__fallback",
       "aria-hidden": "true"
     }, [fallbackGlyph]);
     const link = el("a", {
       class: "quicklink",
-      href: item.url,
-      title: `${item.title} — ${hostnameLabel(item.url)}\nDrag to reorder`,
-      "aria-label": `${item.title} (${hostnameLabel(item.url)})`
+      href: safeUrl,
+      title: `${title} — ${hostnameLabel(safeUrl)}\nDrag to reorder`,
+      "aria-label": `${title} (${hostnameLabel(safeUrl)})`
     }, [
       el("img", {
         class: "quicklink__favicon",
@@ -99,7 +108,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
         }
       }),
       fallbackIcon,
-      el("span", { class: "quicklink__label" }, [item.title])
+      el("span", { class: "quicklink__label" }, [title])
     ]);
     
     // Manual cell placement override (v1.1.0+): if cellOverride is set,
@@ -116,7 +125,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
     
     // Populate favicon asynchronously (cache hit = instant, miss = fallback)
     const imgEl = link.querySelector("img");
-    getFaviconUrl(item.url).then(dataUrl => {
+    getFaviconUrl(safeUrl).then(dataUrl => {
       if (dataUrl) {
         imgEl.src = dataUrl;
         imgEl.hidden = false;
@@ -132,7 +141,8 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
     });
     
     link.addEventListener("dragstart", () => link.classList.add("quicklink--dragging-self"));
-    return link;
+    renderedItems.push({ sourceIndex, node: link });
+    pills.push(link);
   });
 
   pills.forEach((p) => mount.appendChild(p));
@@ -140,7 +150,10 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
   makeReorderable({
     items: pills,
     onReorder: (from, to) => {
-      cfg.items = arrayMove(cfg.items, from, to);
+      const sourceFrom = renderedItems[from]?.sourceIndex;
+      const sourceTo = renderedItems[to]?.sourceIndex;
+      if (sourceFrom == null || sourceTo == null) return;
+      cfg.items = arrayMove(cfg.items, sourceFrom, sourceTo);
       onChange?.(settings);
     }
   });
@@ -216,7 +229,11 @@ function buildGroupButton(group, mount) {
       "aria-label": `${group.name} links`
     });
 
-    for (const item of (group.items || [])) {
+    const safeItems = (group.items || [])
+      .map(item => ({ ...item, url: normalizeWebUrl(item.url), title: item.title || item.label || "" }))
+      .filter(item => item.url);
+
+    for (const item of safeItems) {
       const a = el("a", {
         class: "ql-group-item",
         href: item.url,
@@ -252,7 +269,7 @@ function buildGroupButton(group, mount) {
       popover.appendChild(a);
     }
 
-    if (!group.items?.length) {
+    if (!safeItems.length) {
       popover.appendChild(el("p", { class: "ql-group-empty" }, ["No links in this group."]));
     }
 

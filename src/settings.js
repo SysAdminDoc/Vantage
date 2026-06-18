@@ -13,6 +13,7 @@ import { exportOPML, importOPML } from "./utils/opml.js";
 import { createSettingsGist, loadSettingsFromGist, generateShareUrl } from "./utils/gist-sync.js";
 import { THEME_OPTIONS, applyThemePreference } from "./utils/theme.js";
 import { clearFaviconCache, getFaviconCacheStats } from "./utils/favicon-cache.js";
+import { normalizeWebUrl } from "./utils/url-safety.js";
 import {
   collectUserUrlPermissionTargets,
   hasDeniedHostOrigin,
@@ -773,8 +774,14 @@ function buildBackground(settings, onChange) {
         "aria-label": "Image URL",
         onChange: async (e) => {
           const value = e.target.value.trim();
-          settings.background.imageUrl = value;
-          if (value) await requestAndRecordHostAccess(settings, value, "background image loading");
+          const url = value ? normalizeWebUrl(value) : "";
+          if (value && !url) {
+            toast("That doesn't look like a valid image URL.", "error");
+            e.target.value = settings.background.imageUrl || "";
+            return;
+          }
+          settings.background.imageUrl = url;
+          if (url) await requestAndRecordHostAccess(settings, url, "background image loading");
           onChange(settings);
           renderKindRows();
         }
@@ -2523,11 +2530,12 @@ function buildLinksSection(settings, onChange) {
         toast("Label and URL are both required.", "error");
         return;
       }
-      try { new URL(u); } catch {
+      const url = normalizeWebUrl(u);
+      if (!url) {
         toast("That doesn't look like a valid URL.", "error");
         return;
       }
-      settings.quicklinks.items.push({ title: t, url: u });
+      settings.quicklinks.items.push({ title: t, url });
       onChange(settings);
       titleInput.value = "";
       urlInput.value = "";
@@ -2706,15 +2714,12 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
         toast("Website URL is required.", "error");
         return;
       }
-      let url;
-      try { 
-        url = new URL(u);
-        // If user entered just a domain, assume https://
-        if (!url.protocol) url = new URL("https://" + u);
-      } catch {
+      const normalizedUrl = normalizeWebUrl(u, { assumeHttps: true });
+      if (!normalizedUrl) {
         toast("That doesn't look like a valid URL.", "error");
         return;
       }
+      const url = new URL(normalizedUrl);
       
       discoverBtn.disabled = true;
       discoveryStatus.style.display = "block";
@@ -2728,7 +2733,10 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
           return;
         }
         const { discoverFeeds } = await import("./utils/feed-discovery.js");
-        discoveredFeeds = await discoverFeeds(url.href);
+        discoveredFeeds = (await discoverFeeds(url.href)).map(feed => {
+          const feedUrl = normalizeWebUrl(feed?.url);
+          return feedUrl ? { ...feed, url: feedUrl } : null;
+        }).filter(Boolean);
         
         clear(discoveredList);
         if (!discoveredFeeds.length) {
@@ -2783,12 +2791,13 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
         toast("Feed URL is required.", "error");
         return;
       }
-      try { new URL(u); } catch {
+      const url = normalizeWebUrl(u);
+      if (!url) {
         toast("That doesn't look like a valid URL.", "error");
         return;
       }
-      await requestAndRecordHostAccess(settings, u, "feed loading");
-      cfg.feeds.push({ title: t || hostnameLabel(u), url: u });
+      await requestAndRecordHostAccess(settings, url, "feed loading");
+      cfg.feeds.push({ title: t || hostnameLabel(url), url });
       onChange(settings);
       titleInput.value = "";
       urlInput.value = "";
@@ -3061,8 +3070,15 @@ function buildEmbedsSection(settings, onChange) {
         placeholder: "https://…",
         "aria-label": "Embed URL",
         onChange: async (e) => {
-          embed.url = e.target.value.trim();
-          if (embed.url) await requestAndRecordHostAccess(settings, embed.url, "embed loading");
+          const value = e.target.value.trim();
+          const url = value ? normalizeWebUrl(value) : "";
+          if (value && !url) {
+            toast("That doesn't look like a valid embed URL.", "error");
+            e.target.value = embed.url || "";
+            return;
+          }
+          embed.url = url;
+          if (url) await requestAndRecordHostAccess(settings, url, "embed loading");
           onChange(settings);
           refreshList();
         }
@@ -3071,7 +3087,18 @@ function buildEmbedsSection(settings, onChange) {
         checked: embed.enabled ?? false,
         ariaLabel: "Enable this embed",
         onChange: async (v) => {
-          if (v && embed.url) await requestAndRecordHostAccess(settings, embed.url, "embed loading");
+          if (v && embed.url) {
+            const url = normalizeWebUrl(embed.url);
+            if (!url) {
+              toast("Add a valid embed URL before enabling this panel.", "error");
+              embed.enabled = false;
+              onChange(settings);
+              refreshList();
+              return;
+            }
+            embed.url = url;
+            await requestAndRecordHostAccess(settings, url, "embed loading");
+          }
           embed.enabled = v;
           onChange(settings);
           refreshList();
@@ -3338,10 +3365,11 @@ function buildCalendarSection(settings, onChange) {
     onClick: async () => {
       const t = titleInput.value.trim(), u = urlInput.value.trim();
       if (!u) { toast("iCal URL is required.", "error"); return; }
-      try { new URL(u); } catch { toast("That doesn't look like a valid URL.", "error"); return; }
-      await requestAndRecordHostAccess(settings, u, "calendar loading");
+      const url = normalizeWebUrl(u);
+      if (!url) { toast("That doesn't look like a valid URL.", "error"); return; }
+      await requestAndRecordHostAccess(settings, url, "calendar loading");
       if (!settings.calendar) settings.calendar = { enabled: false, feeds: [], maxItems: 10, daysAhead: 7 };
-      const feed = { title: t || hostnameLabel(u), url: u };
+      const feed = { title: t || hostnameLabel(url), url };
       if (authSelect.value === "bearer" && tokenInput.value.trim()) {
         feed.auth = { type: "bearer", token: tokenInput.value.trim() };
       } else if (authSelect.value === "basic") {
@@ -3708,17 +3736,20 @@ This will add all your YouTube channels as RSS feeds (when available).`;
       const doc = new DOMParser().parseFromString(html, "text/html");
       const links = [...doc.querySelectorAll("a[href]")];
       if (!links.length) { toast("No links found in file.", "error"); return; }
-      const items = links.map(a => ({
-        url: a.href,
-        title: a.textContent?.trim() || a.href
-      })).filter(it => it.url.startsWith("http"));
+      const items = links.map(a => {
+        const url = normalizeWebUrl(a.href);
+        return url ? {
+          url,
+          title: a.textContent?.trim() || url
+        } : null;
+      }).filter(Boolean);
       if (!settings.quicklinks) settings.quicklinks = { items: [] };
       if (!settings.quicklinks.items) settings.quicklinks.items = [];
       let added = 0;
       const existing = new Set(settings.quicklinks.items.map(it => it.url));
       for (const it of items) {
         if (!existing.has(it.url)) {
-          settings.quicklinks.items.push({ url: it.url, label: it.title });
+          settings.quicklinks.items.push({ title: it.title, url: it.url });
           existing.add(it.url);
           added++;
         }
@@ -3755,9 +3786,10 @@ This will add all your YouTube channels as RSS feeds (when available).`;
       for (const line of lines) {
         const match = line.match(/^"?([^",]+)"?,\s*"?([^"]*)"?/);
         if (!match) continue;
-        const [, url, title] = match;
-        if (!url.startsWith("http") || existing.has(url)) continue;
-        settings.quicklinks.items.push({ url, label: title?.trim() || url });
+        const url = normalizeWebUrl(match[1]);
+        const title = match[2];
+        if (!url || existing.has(url)) continue;
+        settings.quicklinks.items.push({ title: title?.trim() || url, url });
         existing.add(url);
         added++;
       }
@@ -4375,7 +4407,53 @@ export function normalizeImportedSettings(value) {
       merged.search.customUrl = getDefaults().search.customUrl;
     }
   }
+  sanitizeImportedWebUrls(merged);
   return merged;
+}
+
+function sanitizeImportedWebUrls(settings) {
+  const sanitizeList = (items = []) => items.map(item => {
+    if (!item || typeof item !== "object") return null;
+    if (item.groupId) return item;
+    const url = normalizeWebUrl(item.url);
+    if (!url) return null;
+    return { ...item, title: item.title || item.label || hostnameLabel(url), url };
+  }).filter(Boolean);
+
+  if (settings.quicklinks && typeof settings.quicklinks === "object") {
+    settings.quicklinks.items = sanitizeList(settings.quicklinks.items || []);
+    settings.quicklinks.groups = (settings.quicklinks.groups || []).map(group => ({
+      ...group,
+      items: sanitizeList(group.items || [])
+    }));
+  }
+
+  for (const key of ["rss", "news"]) {
+    if (settings[key]?.feeds) {
+      settings[key].feeds = settings[key].feeds.map(feed => {
+        const url = normalizeWebUrl(feed?.url);
+        return url ? { ...feed, title: feed.title || hostnameLabel(url), url } : null;
+      }).filter(Boolean);
+    }
+  }
+
+  if (settings.calendar?.feeds) {
+    settings.calendar.feeds = settings.calendar.feeds.map(feed => {
+      const url = normalizeWebUrl(feed?.url);
+      return url ? { ...feed, title: feed.title || hostnameLabel(url), url } : null;
+    }).filter(Boolean);
+  }
+
+  if (Array.isArray(settings.embeds)) {
+    settings.embeds = settings.embeds.map(embed => {
+      const url = normalizeWebUrl(embed?.url);
+      return url ? { ...embed, title: embed.title || "Embed", url } : null;
+    }).filter(Boolean);
+  }
+
+  if (settings.background?.kind === "image-url") {
+    settings.background.imageUrl = normalizeWebUrl(settings.background.imageUrl);
+  }
 }
 
 function mergeSettings(base, incoming) {
