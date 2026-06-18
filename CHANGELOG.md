@@ -5,6 +5,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 ## Unreleased
 
 ### Fixed
+- **Zen Shelf image stickers reject unsafe URLs** — image sticker URLs now use the shared web-URL normalizer, invalid saved images render an empty prompt instead of a broken image, imported sticker URLs are scrubbed, and Tab Groups/i18n browser API feature checks avoid unshimmed `chrome` references.
 - **Accessibility audit no longer hangs on live network activity** — the Puppeteer audit waits for dashboard readiness instead of `networkidle2`, and supports `--no-markdown` for hygiene-constrained verification runs.
 - **Encrypted API-key vault handles corrupt payloads calmly** — malformed salt, IV, or ciphertext fields now surface the same generic vault-unlock error as a wrong passphrase instead of leaking low-level decode failures.
 - **User-supplied URLs are normalized consistently** — quick links, feeds, calendar feeds, embeds, background images, OPML/Pocket/Instapaper imports, Gist imports, and imported settings now reject non-web schemes, malformed URLs, and credentialed URLs before saving or rendering.

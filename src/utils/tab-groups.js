@@ -7,7 +7,7 @@
 // Requirements: Chrome 88+ (Tab Groups API)
 // Feature detection: chrome.tabGroups is available (Chrome only, not Edge private)
 
-export const SUPPORTS_TAB_GROUPS = !!chrome?.tabGroups;
+export const SUPPORTS_TAB_GROUPS = !!globalThis.chrome?.tabGroups;
 
 /**
  * Get all available Tab Groups for the current window.
@@ -18,7 +18,7 @@ export async function getTabGroups() {
   if (!SUPPORTS_TAB_GROUPS) return [];
   
   try {
-    const groups = await chrome.tabGroups.query({});
+    const groups = await globalThis.chrome.tabGroups.query({});
     return groups.map(g => ({
       id: g.id,
       title: g.title || "(unnamed group)",
@@ -44,18 +44,18 @@ export async function activateTabGroup(groupId) {
   
   try {
     // First, uncollapse the group (if collapsed)
-    await chrome.tabGroups.update(groupId, { collapsed: false });
+    await globalThis.chrome.tabGroups.update(groupId, { collapsed: false });
     
     // Get the group to find its window, then switch to that window
-    const group = await chrome.tabGroups.get(groupId);
+    const group = await globalThis.chrome.tabGroups.get(groupId);
     if (group && group.windowId) {
-      await chrome.windows.update(group.windowId, { focused: true });
+      await globalThis.chrome.windows.update(group.windowId, { focused: true });
     }
     
     // Get the first tab in this group to bring it to focus
-    const tabs = await chrome.tabs.query({ groupId });
+    const tabs = await globalThis.chrome.tabs.query({ groupId });
     if (tabs.length > 0) {
-      await chrome.tabs.update(tabs[0].id, { active: true });
+      await globalThis.chrome.tabs.update(tabs[0].id, { active: true });
     }
   } catch (e) {
     console.warn("Failed to activate Tab Group", groupId, e);
