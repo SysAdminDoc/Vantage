@@ -8,7 +8,7 @@
  * Usage:
  *   npm run audit
  *     or
- *   node scripts/accessibility-audit.mjs [--headless]
+ *   node scripts/accessibility-audit.mjs [--headless] [--no-markdown]
  */
 
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
@@ -32,6 +32,7 @@ const UNPACKED_DIR = join(REPO_ROOT, 'dist', 'unpacked-chromium');
 const AUDIT_DIR = join(REPO_ROOT, 'dist', 'audit');
 const REPORT_PATH = join(AUDIT_DIR, 'accessibility-report.md');
 const RESULTS_PATH = join(AUDIT_DIR, 'accessibility-results.json');
+const writeMarkdownReport = !process.argv.includes('--no-markdown');
 
 async function runAudit() {
   let browser;
@@ -61,12 +62,11 @@ async function runAudit() {
       auditUrl = pathToFileURL(join(REPO_ROOT, 'newtab.html')).href;
     }
 
-    await page.goto(auditUrl, { waitUntil: 'networkidle2' });
+    await page.goto(auditUrl, { waitUntil: 'domcontentloaded' });
     await seedDashboardState(page);
-    await page.reload({ waitUntil: 'networkidle2' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
     
-    // Wait for main content to render
-    await page.waitForSelector('[data-widget]', { timeout: 5000 }).catch(() => {
+    await waitForDashboardReady(page).catch(() => {
       console.warn('⚠ Widgets not yet rendered; proceeding with available DOM');
     });
     
@@ -80,10 +80,13 @@ async function runAudit() {
     writeFileSync(RESULTS_PATH, JSON.stringify(results, null, 2));
     console.log(`✅ Raw results: ${RESULTS_PATH}`);
     
-    // Generate markdown report
-    const report = generateMarkdownReport(results);
-    writeFileSync(REPORT_PATH, report);
-    console.log(`📄 Report: ${REPORT_PATH}`);
+    if (writeMarkdownReport) {
+      const report = generateMarkdownReport(results);
+      writeFileSync(REPORT_PATH, report);
+      console.log(`📄 Report: ${REPORT_PATH}`);
+    } else {
+      console.log('📄 Markdown report skipped (--no-markdown)');
+    }
     
     // Print summary
     printSummary(results);
@@ -111,6 +114,15 @@ async function discoverExtensionId(browser) {
   await page.close();
   if (id) return id;
   throw new Error('Could not discover extension ID. Build the unpacked extension first: scripts/build-unpacked.ps1');
+}
+
+async function waitForDashboardReady(page) {
+  await page.waitForFunction(() => {
+    const settings = document.querySelector("#settings-toggle");
+    return !!document.querySelector("#search-mount .search-form") &&
+      !!settings?.firstElementChild &&
+      typeof globalThis.chrome?.storage?.local?.get === "function";
+  }, { timeout: 10000 });
 }
 
 async function seedDashboardState(page) {
