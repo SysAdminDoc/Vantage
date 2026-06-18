@@ -2,6 +2,8 @@
 // Public Gist import stays unauthenticated. Creating a Gist requires a
 // one-shot GitHub token with Gists: write and the token is never persisted.
 
+import { normalizeWebUrl } from "./url-safety.js";
+
 const GIST_FILENAME = "vantage-settings.json";
 const GIST_DESCRIPTION = "Vantage NTP settings (generated via https://vantage.dashboard)";
 const GITHUB_API_HEADERS = {
@@ -68,17 +70,21 @@ export async function createSettingsGist(settings, token) {
  * Returns the parsed settings object, or throws an error.
  */
 export async function loadSettingsFromGist(gistUrlOrId) {
+  const input = String(gistUrlOrId || "").trim();
   let gistId = null;
 
   // Parse the Gist ID from URL or use directly
-  if (gistUrlOrId.startsWith("http")) {
-    const match = gistUrlOrId.match(/gist\.github\.com\/(?:[\w\-]+\/)?([a-f0-9]+)/i);
-    if (!match) {
+  if (/^https?:\/\//i.test(input)) {
+    const normalized = normalizeWebUrl(input);
+    let url = null;
+    try { url = normalized ? new URL(normalized) : null; } catch {}
+    if (!url || url.protocol !== "https:" || url.hostname !== "gist.github.com") {
       throw new Error("Invalid Gist URL. Use https://gist.github.com/user/id or https://gist.github.com/id");
     }
-    gistId = match[1];
+    const parts = url.pathname.split("/").filter(Boolean);
+    gistId = parts.at(-1) || "";
   } else {
-    gistId = gistUrlOrId.trim();
+    gistId = input;
   }
 
   if (!/^[a-f0-9]+$/i.test(gistId)) {
@@ -149,7 +155,13 @@ async function readGistFile(file) {
     return file.content;
   }
   if (file.raw_url) {
-    const rawResponse = await fetch(file.raw_url, { headers: { Accept: "application/json" } });
+    const rawUrl = normalizeWebUrl(file.raw_url);
+    let parsedRawUrl = null;
+    try { parsedRawUrl = rawUrl ? new URL(rawUrl) : null; } catch {}
+    if (!parsedRawUrl || parsedRawUrl.protocol !== "https:" || parsedRawUrl.hostname !== "gist.githubusercontent.com") {
+      throw new Error("The Gist raw file URL was not trusted.");
+    }
+    const rawResponse = await fetch(rawUrl, { headers: { Accept: "application/json" } });
     if (!rawResponse.ok) {
       throw new Error(`Couldn't load the raw Gist file (${rawResponse.status}).`);
     }

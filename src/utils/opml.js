@@ -1,6 +1,8 @@
 // OPML 2.0 generator + parser for Vantage RSS / News feeds.
 // Export bundles both panels into one file; import distributes by category attr.
 
+import { normalizeWebUrl } from "./url-safety.js";
+
 export function exportOPML(settings) {
   const date = new Date().toUTCString();
   const rssFeeds  = settings.rss?.feeds  || [];
@@ -33,9 +35,11 @@ export function importOPML(xmlText) {
 
   const rss = [], news = [];
   doc.querySelectorAll("outline[xmlUrl]").forEach((o) => {
+    const url = normalizeWebUrl(o.getAttribute("xmlUrl"));
+    if (!url) return;
     const feed = {
-      title: o.getAttribute("text") || o.getAttribute("title") || o.getAttribute("xmlUrl"),
-      url:   o.getAttribute("xmlUrl")
+      title: o.getAttribute("text") || o.getAttribute("title") || url,
+      url
     };
     // Use category attr if present; otherwise check parent outline text.
     const cat = (o.getAttribute("category") || "").toLowerCase();

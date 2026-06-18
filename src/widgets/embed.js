@@ -2,6 +2,7 @@
 
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
+import { normalizeWebUrl } from "../utils/url-safety.js";
 
 /**
  * @param {HTMLElement} mount
@@ -17,7 +18,7 @@ export function renderEmbed(mount, embedCfg, { onAttachDragHandle } = {}) {
   mount.style.display = "";
 
   const title = embedCfg.title || "Embed";
-  const url   = (embedCfg.url || "").trim();
+  const url   = normalizeWebUrl(embedCfg.url);
 
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
@@ -39,7 +40,7 @@ export function renderEmbed(mount, embedCfg, { onAttachDragHandle } = {}) {
 
   if (!url) {
     body.appendChild(el("p", { class: "panel-empty" }, [
-      "Add a URL in Settings \u2192 Embeds."
+      "Add a valid web URL in Settings \u2192 Embeds."
     ]));
   } else {
     const sandbox = embedCfg.sandbox !== false
