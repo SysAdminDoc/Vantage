@@ -1,7 +1,8 @@
 // Vantage — Zen Shelf: free-position text and image stickers on the dashboard canvas.
 
-import { el, clear } from "../utils/dom.js";
+import { el, clear, toast } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
+import { normalizeWebUrl } from "../utils/url-safety.js";
 
 const STICKER_COLORS = [
   "#fef3c7",
@@ -120,17 +121,24 @@ function buildSticker(sticker, stickers, persist, mount, settings, cfg, onSave) 
   // Body
   let body;
   if (sticker.type === "image") {
-    const img = el("img", {
-      src: sticker.content,
-      alt: "Sticker image",
-      draggable: "false",
-      style: { maxWidth: "100%", height: "auto" }
-    });
-    body = el("div", { class: "zen-sticker__body" }, [img]);
+    const imageUrl = normalizeWebUrl(sticker.content);
+    body = el("div", { class: "zen-sticker__body" }, imageUrl
+      ? [el("img", {
+          src: imageUrl,
+          alt: "Sticker image",
+          draggable: "false",
+          style: { maxWidth: "100%", height: "auto" }
+        })]
+      : ["Double-click to add an image URL."]);
     body.addEventListener("dblclick", () => {
       const url = prompt("Image URL:", sticker.content || "");
       if (url !== null) {
-        sticker.content = url.trim();
+        const nextUrl = normalizeWebUrl(url);
+        if (url.trim() && !nextUrl) {
+          toast("Add a valid image URL.", "error");
+          return;
+        }
+        sticker.content = nextUrl;
         persist();
         renderZenShelf(mount, { ...settings, zenShelf: { ...cfg, stickers } }, { onSave });
       }

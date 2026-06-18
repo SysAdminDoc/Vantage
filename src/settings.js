@@ -2550,7 +2550,7 @@ function buildLinksSection(settings, onChange) {
   ]));
 
   // Tab Groups section (v1.2.0+): Pin Tab Groups as quick-links
-  if (chrome?.tabGroups) {
+  if (globalThis.chrome?.tabGroups) {
     const tabGroupsDiv = el("div", { class: "tab-groups-section" });
     
     const tabGroupsList = el("ul", { class: "item-list" });
@@ -4453,6 +4453,13 @@ function sanitizeImportedWebUrls(settings) {
 
   if (settings.background?.kind === "image-url") {
     settings.background.imageUrl = normalizeWebUrl(settings.background.imageUrl);
+  }
+
+  if (Array.isArray(settings.zenShelf?.stickers)) {
+    settings.zenShelf.stickers = settings.zenShelf.stickers.map(sticker => {
+      if (sticker?.type !== "image") return sticker;
+      return { ...sticker, content: normalizeWebUrl(sticker.content) };
+    });
   }
 }
 

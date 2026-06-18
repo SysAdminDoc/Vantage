@@ -22,7 +22,7 @@ export function i18n(messageKey, substitutions = null) {
 }
 
 export function getLanguage() {
-  return chrome?.i18n?.getUILanguage?.() || 'en';
+  return globalThis.chrome?.i18n?.getUILanguage?.() || 'en';
 }
 
 export function isRTL() {
