@@ -17,13 +17,14 @@
 import { existsSync } from "node:fs";
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { dirname, extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, "..");
-const UNPACKED_DIR = join(REPO_ROOT, "dist", "unpacked-chromium");
+const SMOKE_UNPACKED_DIR = join(REPO_ROOT, "dist", "smoke-unpacked-chromium");
 
 const headless = process.argv.includes("--headless");
 const results = [];
@@ -34,10 +35,7 @@ function fail(name, reason) { results.push({ name, pass: false, reason }); conso
 async function run() {
   const { default: puppeteer } = await import("puppeteer");
 
-  const extPath =
-    existsSync(join(UNPACKED_DIR, ".vantage-unpacked"))
-      ? UNPACKED_DIR
-      : REPO_ROOT;
+  const extPath = await resolveExtensionPath();
 
   const browser = await puppeteer.launch({
     headless: headless ? "new" : false,
@@ -67,9 +65,9 @@ async function run() {
 
   try {
     // ── 1. Onboarding skip ──────────────────────────────────
-    await page.goto(ntpUrl, { waitUntil: "networkidle2" });
+    await page.goto(ntpUrl, { waitUntil: "domcontentloaded" });
     await seedOnboarding(page);
-    await page.reload({ waitUntil: "networkidle2" });
+    await page.reload({ waitUntil: "domcontentloaded" });
     await waitForDashboardReady(page);
 
     const hasSearch = await page.$(".search-form");
@@ -171,11 +169,14 @@ async function run() {
     }
 
     // ── 6. Widget error state (bad manifest) ────────────────
-    const widgetErrorResult = await page.evaluate(() => {
+    const widgetErrorResult = await page.evaluate(async () => {
       try {
-        const mod = globalThis._vantageWidgetHostModule;
+        const moduleUrl = globalThis.chrome?.runtime?.getURL
+          ? globalThis.chrome.runtime.getURL("src/utils/widget-host.js")
+          : new URL("src/utils/widget-host.js", location.href).href;
+        const mod = await import(moduleUrl);
         if (!mod?.validateManifest) return "module-not-exposed";
-        const errors = mod.validateManifest({ id: "", src: "http://bad" });
+        const errors = mod.validateManifest({ id: "", src: "https://" });
         return errors.length > 0 ? "ok" : "no-errors";
       } catch {
         return "eval-error";
@@ -197,6 +198,44 @@ async function run() {
   console.log("=".repeat(40));
 
   if (failed > 0) process.exit(1);
+}
+
+async function resolveExtensionPath() {
+  const explicit = argValue("--extension-dir");
+  if (explicit) {
+    const full = resolve(REPO_ROOT, explicit);
+    if (!existsSync(join(full, "manifest.json"))) {
+      throw new Error(`--extension-dir does not contain manifest.json: ${full}`);
+    }
+    return full;
+  }
+
+  const script = join(REPO_ROOT, "scripts", "build-unpacked.ps1");
+  const shell = process.platform === "win32" ? "powershell" : "pwsh";
+  const args = process.platform === "win32"
+    ? ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script, "-OutputPath", SMOKE_UNPACKED_DIR]
+    : ["-NoProfile", "-File", script, "-OutputPath", SMOKE_UNPACKED_DIR];
+  const result = spawnSync(shell, args, {
+    cwd: REPO_ROOT,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"]
+  });
+  if (result.status !== 0) {
+    const detail = (result.stderr || result.stdout || "").trim();
+    throw new Error(`Failed to build smoke extension: ${detail || `${shell} exited ${result.status}`}`);
+  }
+  if (!existsSync(join(SMOKE_UNPACKED_DIR, ".vantage-unpacked"))) {
+    throw new Error("Smoke extension build did not produce a marked unpacked folder");
+  }
+  return SMOKE_UNPACKED_DIR;
+}
+
+function argValue(name) {
+  const prefix = `${name}=`;
+  const inline = process.argv.find(arg => arg.startsWith(prefix));
+  if (inline) return inline.slice(prefix.length);
+  const idx = process.argv.indexOf(name);
+  return idx >= 0 ? process.argv[idx + 1] : "";
 }
 
 async function startStaticServer(root) {
