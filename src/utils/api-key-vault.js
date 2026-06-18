@@ -29,6 +29,24 @@ function base64ToBytes(b64) {
   return out;
 }
 
+function decodeVaultField(value, expectedBytes = null) {
+  if (typeof value !== "string" || !value) {
+    throw new Error("Wrong passphrase or corrupt vault");
+  }
+  try {
+    const bytes = base64ToBytes(value);
+    if (expectedBytes != null && bytes.length !== expectedBytes) {
+      throw new Error("invalid length");
+    }
+    if (expectedBytes == null && bytes.length === 0) {
+      throw new Error("empty value");
+    }
+    return bytes;
+  } catch {
+    throw new Error("Wrong passphrase or corrupt vault");
+  }
+}
+
 /* ── key derivation + encrypt / decrypt ──────────────────────────── */
 
 async function deriveAesKey(passphrase, saltBytes) {
@@ -94,11 +112,11 @@ export async function decryptKeys(passphrase, security) {
   if (!security?.encryptKeys || !security.encryptedBlob) {
     throw new Error("Vault not configured");
   }
-  const salt = base64ToBytes(security.salt);
-  const iv   = base64ToBytes(security.iv);
-  const ct   = base64ToBytes(security.encryptedBlob);
-  const aes  = await deriveAesKey(passphrase, salt);
   try {
+    const salt = decodeVaultField(security.salt, SALT_BYTES);
+    const iv   = decodeVaultField(security.iv, IV_BYTES);
+    const ct   = decodeVaultField(security.encryptedBlob);
+    const aes  = await deriveAesKey(passphrase, salt);
     const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, aes, ct);
     return JSON.parse(new TextDecoder().decode(pt));
   } catch {

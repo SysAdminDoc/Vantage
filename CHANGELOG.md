@@ -5,6 +5,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 ## Unreleased
 
 ### Fixed
+- **Encrypted API-key vault handles corrupt payloads calmly** — malformed salt, IV, or ciphertext fields now surface the same generic vault-unlock error as a wrong passphrase instead of leaking low-level decode failures.
 - **User-supplied URLs are normalized consistently** — quick links, feeds, calendar feeds, embeds, background images, OPML/Pocket/Instapaper imports, Gist imports, and imported settings now reject non-web schemes, malformed URLs, and credentialed URLs before saving or rendering.
 - **Release packages now verify runtime contents** — CI checks Chrome ZIP and Firefox XPI entries against `scripts/runtime-allowlist.json`, catching stale or overbroad packages before signing, checksums, or release upload.
 - **External widget manifests are strictly bounded** — third-party widget manifests now require parseable HTTPS `src` and `homepage` URLs, reject credentialed/malformed endpoints, cap manifest payload size, bound iframe dimensions, and never fall back to wildcard `postMessage` targets.
