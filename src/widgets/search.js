@@ -149,7 +149,7 @@ function openQuickPick(form, query, settings) {
         window.location.href = url;
       }
     }, [
-      el("span", { class: "engine-avatar", "aria-hidden": "true" }, [(label[0] || "?").toUpperCase()]),
+      el("span", { class: "engine-avatar", "aria-hidden": "true", "data-initial": (label[0] || "?").toUpperCase() }),
       el("span", {}, [label])
     ]);
     items.push(btn);
@@ -283,7 +283,7 @@ function buildEnginePicker(settings, onChange, refocusInput, onEngineChange) {
       "aria-selected": String(key === settings.search.engine),
       onClick: () => selectEngine(key)
     }, [
-      el("span", { class: "engine-avatar", "aria-hidden": "true" }, [initial]),
+      el("span", { class: "engine-avatar", "aria-hidden": "true", "data-initial": initial }),
       el("span", { class: "engine-option__name" }, [eng.name]),
       iconNode("check", { size: 14, className: "engine-option__check" })
     ]);
@@ -359,7 +359,7 @@ function buildEnginePicker(settings, onChange, refocusInput, onEngineChange) {
     const initial = eng.name[0].toUpperCase();
     clear(trigger);
     trigger.append(
-      el("span", { class: "engine-avatar", "aria-hidden": "true" }, [initial]),
+      el("span", { class: "engine-avatar", "aria-hidden": "true", "data-initial": initial }),
       el("span", { class: "engine-picker__name" }, [eng.name]),
       iconNode("chevron-down", { size: 14, className: "engine-picker__chevron" })
     );

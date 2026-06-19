@@ -87,8 +87,9 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
     const fallbackGlyph = (title || "?").trim().slice(0, 1).toUpperCase() || "?";
     const fallbackIcon = el("span", {
       class: "quicklink__fallback",
-      "aria-hidden": "true"
-    }, [fallbackGlyph]);
+      "aria-hidden": "true",
+      "data-initial": fallbackGlyph
+    });
     const link = el("a", {
       class: "quicklink",
       href: safeUrl,
