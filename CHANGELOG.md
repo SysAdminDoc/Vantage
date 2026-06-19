@@ -5,6 +5,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 ## Unreleased
 
 ### Fixed
+- **Automated contrast audit now resolves cleanly** — decorative search and quick-link initials render through CSS-generated content instead of text nodes, and search/empty-state surfaces use determinate semantic backgrounds so axe no longer needs manual color-contrast review for the default dashboard.
 - **Settings restore covers modern feature state** — the partial-import dialog now exposes current top-level settings for environmental widgets, feed archive/alerts/prewarm, external widgets, inbox, Zen Shelf, starred items, browser integrations, and Firefox container auto-mapping; imported external-widget records are normalized before saving, and a regression test prevents future settings from becoming silently unimportable.
 - **Zen Shelf image stickers reject unsafe URLs** — image sticker URLs now use the shared web-URL normalizer, invalid saved images render an empty prompt instead of a broken image, imported sticker URLs are scrubbed, and Tab Groups/i18n browser API feature checks avoid unshimmed `chrome` references.
 - **Accessibility audit no longer hangs on live network activity** — the Puppeteer audit waits for dashboard readiness instead of `networkidle2`, and supports `--no-markdown` for hygiene-constrained verification runs.
