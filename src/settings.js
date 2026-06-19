@@ -60,9 +60,11 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   const searchWrap = el("div", { class: "settings-search-wrap" });
   const searchIn = el("input", {
     type: "search",
+    id: "settings-filter-input",
     class: "text-input settings-search",
-    placeholder: "Filter sections…",
+    placeholder: "Filter settings...",
     "aria-label": "Filter settings sections",
+    "aria-describedby": "settings-filter-hint",
     onInput: (e) => {
       const q = e.target.value.toLowerCase().trim();
       let visibleCount = 0;
@@ -81,12 +83,18 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
     }
   });
   searchWrap.appendChild(searchIn);
+  searchWrap.appendChild(el("p", {
+    id: "settings-filter-hint",
+    class: "settings-search-hint"
+  }, ["Filter by widget, privacy setting, feed, or visual preference. Matching sections open automatically."]));
   body.appendChild(searchWrap);
 
   const filterEmpty = el("p", {
     class: "panel-empty settings-filter-empty",
-    hidden: true
-  }, ["No matching sections."]);
+    hidden: true,
+    role: "status",
+    "aria-live": "polite"
+  }, ["No settings match that filter. Try a widget name, feature, or privacy setting."]);
   body.appendChild(filterEmpty);
 
   body.appendChild(buildAppearance(settings, onChange));
