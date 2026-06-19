@@ -3,61 +3,62 @@
 import { el, clear, toggle, toast } from "./utils/dom.js";
 import { iconNode } from "./icons.js";
 import { registerOverlay } from "./utils/overlay-stack.js";
+import { normalizeWebUrl } from "./utils/url-safety.js";
 
 const WIDGET_GROUPS = [
   {
     label: "Hero",
     items: [
-      { key: "clock",      path: "clock.enabled",      icon: "clock",          label: "Clock" },
-      { key: "greeting",   path: "greeting.enabled",   icon: "circle-check",   label: "Greeting" },
-      { key: "quicklinks", path: "quicklinks.enabled",  icon: "link",           label: "Quick Links" },
-      { key: "topsites",   path: "topsites.enabled",    icon: "star",           label: "Top Sites" },
-      { key: "worldclock", path: "worldclock.enabled",  icon: "globe",          label: "World Clocks" },
-      { key: "quote",      path: "quote.enabled",       icon: "message-square", label: "Quote of the Day" },
+      { key: "clock",      path: "clock.enabled",      icon: "clock",          label: "Clock",            hint: "Time and date" },
+      { key: "greeting",   path: "greeting.enabled",   icon: "circle-check",   label: "Greeting",         hint: "Personal welcome" },
+      { key: "quicklinks", path: "quicklinks.enabled",  icon: "link",           label: "Quick Links",      hint: "Pinned shortcuts" },
+      { key: "topsites",   path: "topsites.enabled",    icon: "star",           label: "Top Sites",        hint: "Frequent visits" },
+      { key: "worldclock", path: "worldclock.enabled",  icon: "globe",          label: "World Clocks",     hint: "Saved time zones" },
+      { key: "quote",      path: "quote.enabled",       icon: "message-square", label: "Quote of the Day", hint: "Daily reflection" },
     ]
   },
   {
     label: "Status Bar",
     items: [
-      { key: "weather",    path: "weather.enabled",     icon: "cloud",          label: "Weather" },
-      { key: "airquality", path: "airquality.enabled",  icon: "alert",          label: "Air Quality" },
+      { key: "weather",    path: "weather.enabled",     icon: "cloud",          label: "Weather",     hint: "Local conditions" },
+      { key: "airquality", path: "airquality.enabled",  icon: "alert",          label: "Air Quality", hint: "AQI and pollen" },
     ]
   },
   {
     label: "Timer",
     items: [
-      { key: "pomodoro",   path: "pomodoro.enabled",    icon: "timer",          label: "Pomodoro" },
-      { key: "countdown",  path: "countdown.enabled",   icon: "hourglass",      label: "Countdowns" },
+      { key: "pomodoro",   path: "pomodoro.enabled",    icon: "timer",          label: "Pomodoro",   hint: "Focus sessions" },
+      { key: "countdown",  path: "countdown.enabled",   icon: "hourglass",      label: "Countdowns", hint: "Important dates" },
     ]
   },
   {
     label: "Reading Panels",
     items: [
-      { key: "news",       path: "news.enabled",        icon: "newspaper",      label: "News" },
-      { key: "rss",        path: "rss.enabled",         icon: "rss",            label: "RSS / Reading List" },
-      { key: "calendar",   path: "calendar.enabled",    icon: "calendar",       label: "Calendar" },
-      { key: "windy",      path: "windy.enabled",       icon: "wind",           label: "Windy Radar" },
-      { key: "background", path: "background.enabled",  icon: "image",          label: "Animated Background" },
-      { key: "marine",     path: "marine.enabled",       icon: "wind",           label: "Marine Weather" },
-      { key: "flood",      path: "flood.enabled",        icon: "layers",         label: "River Flood Risk" },
-      { key: "solarRadiation", path: "solarRadiation.enabled", icon: "sun",        label: "Solar Radiation" },
+      { key: "news",       path: "news.enabled",        icon: "newspaper",      label: "News",                hint: "Curated headlines" },
+      { key: "rss",        path: "rss.enabled",         icon: "rss",            label: "RSS / Reading List",  hint: "Personal feeds" },
+      { key: "calendar",   path: "calendar.enabled",    icon: "calendar",       label: "Calendar",            hint: "iCal agenda" },
+      { key: "windy",      path: "windy.enabled",       icon: "wind",           label: "Windy Radar",         hint: "Weather map" },
+      { key: "background", path: "background.enabled",  icon: "image",          label: "Animated Background", hint: "Live sky scene" },
+      { key: "marine",     path: "marine.enabled",      icon: "wind",           label: "Marine Weather",      hint: "Waves and currents" },
+      { key: "flood",      path: "flood.enabled",       icon: "layers",         label: "River Flood Risk",    hint: "Local river risk" },
+      { key: "solarRadiation", path: "solarRadiation.enabled", icon: "sun",     label: "Solar Radiation",    hint: "UV and irradiance" },
     ]
   },
   {
     label: "Tools & Content",
     items: [
-      { key: "todo",       path: "todo.enabled",        icon: "check-square",   label: "To-Do List" },
-      { key: "notes",      path: "notes.enabled",       icon: "note",           label: "Notes" },
-      { key: "zenShelf",   path: "zenShelf.enabled",    icon: "note",           label: "Zen Shelf" },
-      { key: "bookmarks",  path: "bookmarks.enabled",   icon: "bookmark",       label: "Bookmarks" },
-      { key: "starred",    path: "starred.enabled",     icon: "star",           label: "Starred Items" },
-      { key: "inbox",      path: "inbox.enabled",       icon: "bookmark",       label: "Inbox" },
-      { key: "ambient",    path: "ambient.enabled",     icon: "play",           label: "Ambient Sounds" },
-      { key: "history",    path: "historySearch.enabled", icon: "clock",         label: "History Search" },
-      { key: "crypto",     path: "crypto.enabled",      icon: "trending-up",    label: "Crypto Prices" },
-      { key: "github",     path: "github.enabled",      icon: "github",         label: "GitHub" },
-      { key: "photo",      path: "photo.enabled",       icon: "image",          label: "Photo of the Day" },
-      { key: "converter",  path: "converter.enabled",   icon: "calculator",     label: "Unit Converter" },
+      { key: "todo",       path: "todo.enabled",          icon: "check-square", label: "To-Do List",      hint: "Task capture" },
+      { key: "notes",      path: "notes.enabled",         icon: "note",         label: "Notes",           hint: "Scratch notes" },
+      { key: "zenShelf",   path: "zenShelf.enabled",      icon: "note",         label: "Zen Shelf",       hint: "Visual stickers" },
+      { key: "bookmarks",  path: "bookmarks.enabled",     icon: "bookmark",     label: "Bookmarks",       hint: "Browser bookmarks" },
+      { key: "starred",    path: "starred.enabled",       icon: "star",         label: "Starred Items",   hint: "Pinned reads" },
+      { key: "inbox",      path: "inbox.enabled",         icon: "bookmark",     label: "Inbox",           hint: "Read-later queue" },
+      { key: "ambient",    path: "ambient.enabled",       icon: "play",         label: "Ambient Sounds",  hint: "Focus sound" },
+      { key: "history",    path: "historySearch.enabled", icon: "clock",        label: "History Search",  hint: "Opt-in browser history" },
+      { key: "crypto",     path: "crypto.enabled",        icon: "trending-up",  label: "Crypto Prices",   hint: "Market prices" },
+      { key: "github",     path: "github.enabled",        icon: "github",       label: "GitHub",          hint: "Repository activity" },
+      { key: "photo",      path: "photo.enabled",         icon: "image",        label: "Photo of the Day", hint: "NASA APOD" },
+      { key: "converter",  path: "converter.enabled",     icon: "calculator",   label: "Unit Converter",  hint: "Quick conversions" },
     ]
   },
 ];
@@ -79,10 +80,10 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
     clearTimeout(closeTimer);
     isOpen = true;
     rebuildPicker();
+    pickerEl.classList.add("widget-picker--open");
     pickerEl.hidden = false;
     toggleBtn.setAttribute("aria-expanded", "true");
     pickerEl.setAttribute("aria-hidden", "false");
-    requestAnimationFrame(() => pickerEl.classList.add("widget-picker--open"));
     setTimeout(() => pickerEl.querySelector(".widget-picker__inner")?.focus?.(), 50);
     unregisterOverlay?.();
     unregisterOverlay = registerOverlay({
@@ -120,7 +121,7 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
     const pickerHeader = el("div", { class: "widget-picker__header" }, [
       el("div", { class: "widget-picker__heading" }, [
         el("h2", { id: "widget-picker-title", class: "widget-picker__title" }, ["Widgets"]),
-        el("p", { class: "widget-picker__subtitle" }, ["Choose what appears on this new tab."])
+        el("p", { class: "widget-picker__subtitle" }, ["Toggle dashboard modules and add live embeds."])
       ]),
       el("button", {
         type: "button",
@@ -132,19 +133,19 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
     inner.appendChild(pickerHeader);
 
     for (const group of WIDGET_GROUPS) {
-      inner.appendChild(el("div", { class: "widget-picker__group-label" }, [group.label]));
+      inner.appendChild(buildGroupLabel(group.label, `${activeCountForGroup(group, settings)}/${group.items.length} on`));
       for (const item of group.items) {
         inner.appendChild(buildRow(item, settings, onSave, rebuildPicker));
       }
     }
 
     // Embeds section
-    inner.appendChild(el("div", { class: "widget-picker__group-label" }, ["Embeds"]));
-
     const embeds = settings.embeds || [];
+    const activeEmbeds = embeds.filter(embed => embed.enabled).length;
+    inner.appendChild(buildGroupLabel("Embeds", embeds.length ? `${activeEmbeds}/${embeds.length} on` : "0 custom"));
     if (embeds.length === 0) {
       inner.appendChild(el("p", { class: "widget-picker__empty-embeds" }, [
-        "No custom embeds yet. Add one when a live page belongs on your dashboard."
+        "Add a trusted web page when it belongs beside your dashboard."
       ]));
     }
     for (const embed of embeds) {
@@ -160,9 +161,25 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
   }
 }
 
+function buildGroupLabel(label, countText) {
+  return el("div", { class: "widget-picker__group-label" }, [
+    el("span", {}, [label]),
+    countText ? el("span", { class: "widget-picker__group-count" }, [countText]) : null
+  ]);
+}
+
+function activeCountForGroup(group, settings) {
+  return group.items.reduce((count, item) => count + (getPathValue(settings, item.path) ? 1 : 0), 0);
+}
+
+function getPathValue(settings, path) {
+  const [section, prop] = path.split(".");
+  return settings[section]?.[prop] ?? false;
+}
+
 function buildRow(item, settings, onSave, rebuildPicker) {
   const [section, prop] = item.path.split(".");
-  const checked = settings[section]?.[prop] ?? false;
+  const checked = getPathValue(settings, item.path);
 
   const tog = toggle({
     checked,
@@ -180,7 +197,10 @@ function buildRow(item, settings, onSave, rebuildPicker) {
   return el("div", { class: "widget-picker__row" }, [
     el("div", { class: "widget-picker__row-left" }, [
       el("span", { class: "widget-picker__row-icon" }, [iconNode(item.icon, { size: 14 })]),
-      el("span", { class: "widget-picker__row-label" }, [item.label])
+      el("span", { class: "widget-picker__row-text" }, [
+        el("span", { class: "widget-picker__row-label" }, [item.label]),
+        item.hint ? el("span", { class: "widget-picker__row-hint" }, [item.hint]) : null
+      ])
     ]),
     tog
   ]);
@@ -233,10 +253,21 @@ function buildEmbedRow(embed, settings, onSave, rebuildPicker, openSettingsPanel
   return el("div", { class: "widget-picker__row" }, [
     el("div", { class: "widget-picker__row-left" }, [
       el("span", { class: "widget-picker__row-icon" }, [iconNode("plane", { size: 14 })]),
-      el("span", { class: "widget-picker__row-label" }, [embed.title || "Untitled Embed"])
+      el("span", { class: "widget-picker__row-text" }, [
+        el("span", { class: "widget-picker__row-label" }, [embed.title || "Untitled Embed"]),
+        el("span", { class: "widget-picker__row-hint" }, [embedHostLabel(embed.url)])
+      ])
     ]),
     el("div", { class: "widget-picker__row-right" }, [editBtn, delBtn, tog])
   ]);
+}
+
+function embedHostLabel(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "") || "Custom web embed";
+  } catch {
+    return "Custom web embed";
+  }
 }
 
 function buildAddEmbedRow(settings, onSave, rebuildPicker) {
@@ -270,7 +301,7 @@ function buildAddEmbedRow(settings, onSave, rebuildPicker) {
     const urlIn = el("input", {
       type: "url",
       class: "text-input",
-      placeholder: "https://…",
+      placeholder: "example.com/dashboard",
       "aria-label": "Embed URL",
       onInput: (e) => {
         newUrl = e.target.value;
@@ -293,16 +324,17 @@ function buildAddEmbedRow(settings, onSave, rebuildPicker) {
           toast("Enter the embed URL.", "warning");
           return;
         }
-        try { new URL(newUrl.trim()); } catch {
+        const normalizedUrl = normalizeWebUrl(newUrl, { assumeHttps: true });
+        if (!normalizedUrl) {
           urlIn.setAttribute("aria-invalid", "true");
           urlIn.focus({ preventScroll: true });
-          toast("That doesn't look like a valid URL.", "error");
+          toast("Enter a valid web URL without a username or password.", "error");
           return;
         }
         const newEmbed = {
           id: String(Date.now()),
           title: newTitle.trim(),
-          url: newUrl.trim(),
+          url: normalizedUrl,
           enabled: true
         };
         const next = { ...settings, embeds: [...(settings.embeds || []), newEmbed] };

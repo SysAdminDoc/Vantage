@@ -138,7 +138,7 @@ export function showOnboarding(settings, onComplete) {
     content.appendChild(el("div", { class: "onboard-header" }, [
       el("h2", { class: "onboard-title" }, ["Choose your layout"]),
       el("p",  { class: "onboard-subtitle" }, [
-        "Pick a starting point. You can change this anytime."
+        "Start with the dashboard pace you want. Every choice stays editable later."
       ])
     ]));
 
@@ -154,6 +154,7 @@ export function showOnboarding(settings, onComplete) {
         class: `onboard-preset${selected ? " onboard-preset--selected" : ""}`,
         role: "radio",
         "aria-checked": String(selected),
+        "aria-label": `${p.label}. ${p.tagline} Includes ${p.features.slice(0, 3).join(", ")}.`,
         "data-preset": p.id,
         onClick: () => selectPreset(p),
         onKeydown: (e) => {
@@ -171,6 +172,11 @@ export function showOnboarding(settings, onComplete) {
         renderPresetPreview(p.id),
         el("div", { class: "onboard-preset__label" }, [p.label]),
         el("div", { class: "onboard-preset__tagline" }, [p.tagline]),
+        el("span", { class: "onboard-preset__features", "aria-hidden": "true" },
+          p.features.slice(0, 3).map(feature =>
+            el("span", { class: "onboard-preset__feature" }, [feature])
+          )
+        ),
         el("span", { class: "onboard-preset__radio", "aria-hidden": "true" })
       ]);
       grid.appendChild(presetCard);
@@ -211,7 +217,7 @@ export function showOnboarding(settings, onComplete) {
     content.appendChild(el("div", { class: "onboard-header" }, [
       el("h2", { class: "onboard-title" }, ["Personalize"]),
       el("p",  { class: "onboard-subtitle" }, [
-        "Add a greeting name and a weather city. Leave either blank to start clean."
+        "Add a greeting name and weather city now, or leave either blank for a clean start."
       ])
     ]));
 
@@ -320,12 +326,12 @@ export function showOnboarding(settings, onComplete) {
       el("div", { class: "onboard-done__check" }, [iconNode("check", { size: 28 })]),
       el("h2", { class: "onboard-title" }, ["All set. You're ready."]),
       el("p",  { class: "onboard-subtitle" }, [
-        "Your preferences are saved locally on this device. Everything stays private."
+        "Your preferences are saved locally on this device. You can refine the setup from Settings."
       ])
     ]));
     content.appendChild(el("div", { class: "onboard-footer" }, [
       el("button", { type: "button", class: "button button--primary onboard-launch-btn", onClick: finish }, [
-        "Open Vantage",
+        "Open dashboard",
         iconNode("external", { size: 14 })
       ])
     ]));
