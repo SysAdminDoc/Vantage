@@ -167,9 +167,9 @@ const SECTIONS = [
   },
   {
     id: "weather",
-    title: "Weather & air quality",
-    hint: "Location, units, air-quality settings.",
-    keys: ["weather", "airquality"]
+    title: "Weather & environment",
+    hint: "Location, units, air quality, marine, flood, and solar settings.",
+    keys: ["weather", "airquality", "marine", "flood", "solarRadiation"]
   },
   {
     id: "links",
@@ -180,30 +180,49 @@ const SECTIONS = [
   {
     id: "reading",
     title: "Reading panels",
-    hint: "RSS feeds, News feeds, calendar feeds, embeds, filter rules.",
-    keys: ["rss", "news", "calendar", "embeds", "feedFilters", "windy"]
+    hint: "Feeds, calendars, embeds, external widgets, alerts, archive, and filters.",
+    keys: ["rss", "news", "calendar", "embeds", "externalWidgets", "feedFilters", "feedPreWarm", "feedArchive", "feedAlerts", "windy"]
   },
   {
     id: "productivity",
     title: "Productivity widgets",
-    hint: "To-do, notes, bookmarks, pomodoro, countdown, converter.",
-    keys: ["todo", "notes", "bookmarks", "pomodoro", "countdown", "converter"]
+    hint: "To-do, notes, bookmarks, inbox, Zen Shelf, ambient sounds, pomodoro, countdown, converter.",
+    keys: ["todo", "notes", "bookmarks", "inbox", "zenShelf", "ambient", "pomodoro", "countdown", "converter"]
   },
   {
     id: "info",
     title: "Information widgets",
-    hint: "Crypto, GitHub, photo, quote, world clocks.",
-    keys: ["crypto", "github", "photo", "quote", "worldclock"]
+    hint: "Crypto, GitHub, photo, quote, world clocks, and starred feed items.",
+    keys: ["crypto", "github", "photo", "quote", "worldclock", "starred"]
   },
   {
     id: "workspace",
     title: "Layout & workspaces",
     hint: "Panel order, workspace profiles, Firefox container mappings.",
-    keys: ["layout", "workspaces", "containerMap"]
+    keys: ["layout", "workspaces", "containerMap", "containerAutoMap"]
+  },
+  {
+    id: "browser",
+    title: "Browser integrations",
+    hint: "History search, context menu behavior, and Chrome side panel preferences.",
+    keys: ["historySearch", "contextMenu", "sidePanel"]
   }
 ];
 
 const ALL_KEYS = new Set(SECTIONS.flatMap(s => s.keys));
+const LOCAL_ONLY_KEYS = new Set([
+  "hostPermissions",     // Recomputed after import from user-entered URLs.
+  "security",            // Export strips vault ciphertext; never restore stale encrypted blobs.
+  "onboardingComplete"   // A restore should not rerun first-launch state on this device.
+]);
+
+export function getImportSectionCoverage() {
+  return {
+    sections: SECTIONS.map(({ id, keys }) => ({ id, keys: [...keys] })),
+    allKeys: [...ALL_KEYS],
+    localOnlyKeys: [...LOCAL_ONLY_KEYS]
+  };
+}
 
 /**
  * Render the partial-import dialog. Returns a Promise that resolves to
@@ -290,8 +309,8 @@ export function showPartialImportDialog(current, imported, source) {
     // Surface keys in the imported payload that aren't covered by any
     // known section. These are usually fields from a newer version of
     // Vantage (e.g. someone exporting from v1.2 importing into v1.1)
-    // or the `notifiedUrls` LRU and other private state that isn't
-    // worth showing in the section list. We list them as a heads-up
+    // or other private/local-only state that isn't worth showing in
+    // the section list. We list them as a heads-up
     // so the user knows the backup is a strict superset of what we
     // can restore — the fields stay in storage, we just won't
     // overwrite them.
@@ -302,7 +321,8 @@ export function showPartialImportDialog(current, imported, source) {
     // no-op on Firefox / older Chrome — the section-level diff is
     // already sufficient for the normal case.
     const importedTopKeys = new Set(Object.keys(imported || {}));
-    const unknownInImport = [...importedTopKeys].filter(k => !ALL_KEYS.has(k) && k !== "schemaVersion");
+    const unknownInImport = [...importedTopKeys]
+      .filter(k => !ALL_KEYS.has(k) && !LOCAL_ONLY_KEYS.has(k) && k !== "schemaVersion");
     let extraNote = null;
     if (unknownInImport.length) {
       extraNote = el("p", { class: "import-dialog__extra-note" }, [
@@ -322,7 +342,8 @@ export function showPartialImportDialog(current, imported, source) {
         const settingsBlob = liveKeys.find(k => k === "vantageSettings");
         if (settingsBlob) {
           const currentTopKeys = new Set(Object.keys(current || {}));
-          const missingInImport = [...currentTopKeys].filter(k => !importedTopKeys.has(k) && !ALL_KEYS.has(k));
+          const missingInImport = [...currentTopKeys]
+            .filter(k => !importedTopKeys.has(k) && !ALL_KEYS.has(k) && !LOCAL_ONLY_KEYS.has(k));
           if (missingInImport.length && extraNote) {
             extraNote.appendChild(el("br"));
             extraNote.appendChild(document.createTextNode(

@@ -37,6 +37,10 @@ function parseHttpsUrl(value) {
   }
 }
 
+export function normalizeWidgetHttpsUrl(value) {
+  return parseHttpsUrl(value)?.href || "";
+}
+
 function inRange(value, min, max) {
   return Number.isFinite(value) && value >= min && value <= max;
 }
