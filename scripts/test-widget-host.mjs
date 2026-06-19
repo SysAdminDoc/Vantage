@@ -2,7 +2,7 @@
 // Regression tests for the external widget manifest trust boundary.
 
 import { strict as assert } from "node:assert";
-import { fetchManifest, sanitizeWidgetSize, validateManifest } from "../src/utils/widget-host.js";
+import { fetchManifest, normalizeWidgetHttpsUrl, sanitizeWidgetSize, validateManifest } from "../src/utils/widget-host.js";
 
 const VALID_MANIFEST = Object.freeze({
   id: "sample-widget",
@@ -51,6 +51,12 @@ await test("malformed HTTPS-like src is rejected", () => {
 await test("credentialed widget src is rejected", () => {
   const errors = validateManifest({ ...VALID_MANIFEST, src: "https://user:pass@widgets.example.com/widget.html" });
   assert.ok(errors.includes("src must be a valid HTTPS URL"));
+});
+
+await test("manifest URLs normalize to HTTPS hrefs", () => {
+  assert.equal(normalizeWidgetHttpsUrl(" https://widgets.example.com/widget.json "), "https://widgets.example.com/widget.json");
+  assert.equal(normalizeWidgetHttpsUrl("http://widgets.example.com/widget.json"), "");
+  assert.equal(normalizeWidgetHttpsUrl("https://user:pass@widgets.example.com/widget.json"), "");
 });
 
 await test("non-HTTPS homepage is rejected", () => {

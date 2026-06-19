@@ -14,6 +14,7 @@ import { createSettingsGist, loadSettingsFromGist, generateShareUrl } from "./ut
 import { THEME_OPTIONS, applyThemePreference } from "./utils/theme.js";
 import { clearFaviconCache, getFaviconCacheStats } from "./utils/favicon-cache.js";
 import { normalizeWebUrl } from "./utils/url-safety.js";
+import { normalizeWidgetHttpsUrl, validateManifest } from "./utils/widget-host.js";
 import {
   collectUserUrlPermissionTargets,
   hasDeniedHostOrigin,
@@ -3190,8 +3191,16 @@ function buildExternalWidgetsSection(settings, onChange) {
       return;
     }
     current.forEach((widget, idx) => {
-      const name = widget.manifest?.name || widget.manifestUrl || "Loading…";
-      const status = widget.manifest?.src ? "Ready" : widget.error || "Not loaded";
+      const name = typeof widget.manifest?.name === "string"
+        ? widget.manifest.name
+        : typeof widget.manifestUrl === "string" && widget.manifestUrl
+          ? widget.manifestUrl
+          : "Widget";
+      const status = typeof widget.manifest?.src === "string"
+        ? "Ready"
+        : typeof widget.error === "string" && widget.error
+          ? widget.error
+          : "Not loaded";
       const tog = toggle({
         checked: widget.enabled ?? false,
         ariaLabel: `Enable ${name}`,
@@ -3261,9 +3270,10 @@ function buildExternalWidgetsSection(settings, onChange) {
         const manifest = await fetchManifest(url);
         const errs = validateManifest(manifest);
         if (errs.length) { toast(`Invalid manifest: ${errs.join(", ")}`, "error"); return; }
+        const normalizedManifestUrl = normalizeWidgetHttpsUrl(url);
         settings.externalWidgets.push({
           id: manifest.id || String(Date.now()),
-          manifestUrl: url,
+          manifestUrl: normalizedManifestUrl || url,
           manifest,
           enabled: true,
           data: {}
@@ -4469,6 +4479,39 @@ function sanitizeImportedWebUrls(settings) {
       return { ...sticker, content: normalizeWebUrl(sticker.content) };
     });
   }
+
+  if (Array.isArray(settings.externalWidgets)) {
+    settings.externalWidgets = settings.externalWidgets.map(sanitizeImportedExternalWidget).filter(Boolean);
+  }
+}
+
+function sanitizeImportedExternalWidget(widget) {
+  if (!widget || typeof widget !== "object" || Array.isArray(widget)) return null;
+  const manifestUrl = normalizeWidgetHttpsUrl(widget.manifestUrl);
+  const manifest = widget.manifest && typeof widget.manifest === "object" && !Array.isArray(widget.manifest)
+    ? cloneValue(widget.manifest)
+    : null;
+  const manifestErrors = manifest ? validateManifest(manifest) : ["missing manifest"];
+  if (!manifestUrl && manifestErrors.length) return null;
+
+  const cleaned = {
+    id: typeof widget.id === "string" && /^[a-z0-9][a-z0-9-]{0,63}$/.test(widget.id)
+      ? widget.id
+      : manifest && !manifestErrors.length
+        ? manifest.id
+        : String(Date.now()),
+    manifestUrl,
+    enabled: widget.enabled === true,
+    data: widget.data && typeof widget.data === "object" && !Array.isArray(widget.data) ? cloneValue(widget.data) : {}
+  };
+
+  if (!manifestErrors.length) {
+    cleaned.id = manifest.id;
+    cleaned.manifest = manifest;
+  } else {
+    cleaned.error = "Manifest needs reload";
+  }
+  return cleaned;
 }
 
 function mergeSettings(base, incoming) {
