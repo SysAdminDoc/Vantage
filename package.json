@@ -13,6 +13,6 @@
   },
   "devDependencies": {
     "@axe-core/puppeteer": "^4.11.3",
-    "puppeteer": "^25.1.0"
+    "puppeteer": "^25.2.0"
   }
 }
