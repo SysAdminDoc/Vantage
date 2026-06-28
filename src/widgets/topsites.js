@@ -1,7 +1,8 @@
 // Vantage v0.8.0 → v1.0.0 — Most-visited sites widget (chrome.topSites) + favicon caching.
 
-import { el, clear } from "../utils/dom.js";
+import { el, clear, toast } from "../utils/dom.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
+import { hasBrowserPermission, requestBrowserPermission } from "../utils/browser-permissions.js";
 
 export async function renderTopsites(mount, settings) {
   clear(mount);
@@ -9,15 +10,16 @@ export async function renderTopsites(mount, settings) {
   if (!cfg?.enabled) { mount.style.display = "none"; return; }
   mount.style.display = "";
 
-  const chromeApi = globalThis.chrome;
-  if (!chromeApi?.topSites?.get) {
-    mount.style.display = "none";
+  const api = globalThis.browser || globalThis.chrome;
+  const granted = await hasBrowserPermission("topSites");
+  if (!granted || !api?.topSites?.get) {
+    mount.appendChild(permissionPrompt(() => renderTopsites(mount, settings)));
     return;
   }
 
   let sites = [];
   try {
-    sites = await chromeApi.topSites.get();
+    sites = await api.topSites.get();
   } catch {
     mount.style.display = "none";
     return;
@@ -71,6 +73,29 @@ export async function renderTopsites(mount, settings) {
 }
 
 // Favicon loading moved to favicon-cache.js for shared use and caching (v1.0.0+)
+function permissionPrompt(onGranted) {
+  const btn = el("button", {
+    type: "button",
+    class: "button button--ghost",
+    onClick: async () => {
+      btn.disabled = true;
+      const result = await requestBrowserPermission("topSites");
+      if (result.granted) {
+        toast("Top Sites access granted.", "success");
+        onGranted?.();
+      } else {
+        toast("Top Sites permission denied. Grant access to show this row.", "warning");
+        btn.disabled = false;
+      }
+    }
+  }, ["Grant Top Sites access"]);
+
+  return el("div", { class: "panel-empty" }, [
+    el("p", {}, ["Top Sites permission not granted. Vantage only reads most-visited sites after you allow access."]),
+    btn
+  ]);
+}
+
 function hostnameShort(url) {
   try { return new URL(url).hostname.replace(/^www\./, ""); }
   catch { return url; }

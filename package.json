@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "audit": "node scripts/accessibility-audit.mjs",
-    "test": "node scripts/test-migrations.mjs && node scripts/test-ical-parser.mjs && node scripts/test-widget-host.mjs && node scripts/test-url-safety.mjs && node scripts/test-gist-sync.mjs && node scripts/test-api-key-vault.mjs && node scripts/test-partial-import.mjs",
+    "test": "node scripts/test-migrations.mjs && node scripts/test-ical-parser.mjs && node scripts/test-widget-host.mjs && node scripts/test-url-safety.mjs && node scripts/test-gist-sync.mjs && node scripts/test-api-key-vault.mjs && node scripts/test-partial-import.mjs && node scripts/test-browser-permissions.mjs",
     "smoke": "node scripts/smoke-test.mjs",
     "build:release": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-release.ps1",
     "build:unpacked": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-unpacked.ps1",

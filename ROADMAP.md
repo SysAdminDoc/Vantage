@@ -5,13 +5,6 @@ Blocked items live in Roadmap_Blocked.md.
 
 ## Research-Driven Additions
 
-- [ ] P0 - Move optional browser-data features behind runtime permission grants
-  Why: Install-time `bookmarks`, `topSites`, and `readingList` prompts weaken store trust for widgets that are off or user-triggered.
-  Evidence: `manifest.json`, `manifest.firefox.json`, `src/widgets/bookmarks.js`, `src/widgets/topsites.js`, `src/widgets/feed-list.js`, Chrome optional permissions docs.
-  Touches: `manifest.json`, `manifest.firefox.json`, `src/settings.js`, `src/widgets/bookmarks.js`, `src/widgets/topsites.js`, `src/widgets/feed-list.js`, `src/utils/host-permissions.js`, smoke tests.
-  Acceptance: Fresh Chromium install prompt excludes browser-data permissions where supported; enabling each affected widget requests permission, denial shows recovery copy, and granted/revoked states survive reloads.
-  Complexity: L
-
 - [ ] P0 - Reconcile external-widget docs with runtime security
   Why: The widget host requires HTTPS manifests, but `docs/widget-api.md` tells developers to test with `http://localhost`.
   Evidence: `src/utils/widget-host.js`, `docs/widget-api.md`, Chrome MV3 remote-code policy, OWASP extension messaging guidance.

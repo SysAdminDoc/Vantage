@@ -27,13 +27,13 @@
   "permissions": [
     "storage",
     "alarms",
-    "bookmarks",
-    "topSites",
-    "readingList",
     "sidePanel"
   ],
   "optional_permissions": [
+    "bookmarks",
     "history",
+    "readingList",
+    "topSites",
     "tabs"
   ],
   "side_panel": {

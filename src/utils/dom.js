@@ -37,7 +37,16 @@ export function toggle({ checked = false, onChange, label, ariaLabel } = {}) {
     type: "checkbox",
     checked,
     "aria-label": ariaLabel || label || "Toggle",
-    onChange: (e) => onChange?.(e.target.checked)
+    onChange: async (e) => {
+      const previous = !e.target.checked;
+      try {
+        const result = await onChange?.(e.target.checked, e);
+        if (result === false) e.target.checked = previous;
+      } catch (err) {
+        e.target.checked = previous;
+        console.warn("[toggle] change handler failed:", err);
+      }
+    }
   });
   return el("label", { class: "toggle" }, [
     input,

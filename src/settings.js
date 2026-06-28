@@ -15,6 +15,7 @@ import { THEME_OPTIONS, applyThemePreference } from "./utils/theme.js";
 import { clearFaviconCache, getFaviconCacheStats } from "./utils/favicon-cache.js";
 import { normalizeWebUrl } from "./utils/url-safety.js";
 import { normalizeWidgetHttpsUrl, validateManifest } from "./utils/widget-host.js";
+import { removeBrowserPermission, requestBrowserPermission } from "./utils/browser-permissions.js";
 import {
   collectUserUrlPermissionTargets,
   hasDeniedHostOrigin,
@@ -974,7 +975,19 @@ function buildTopSitesSection(settings, onChange) {
     toggle({
       checked: cfg.enabled || false,
       ariaLabel: "Show top sites",
-      onChange: (v) => { settings.topsites = { ...cfg, enabled: v }; onChange(settings); }
+      onChange: async (v) => {
+        if (v) {
+          const result = await requestBrowserPermission("topSites");
+          if (!result.granted) {
+            toast("Top Sites permission denied. The row stays disabled.", "warning");
+            return false;
+          }
+        } else {
+          await removeBrowserPermission("topSites");
+        }
+        settings.topsites = { ...cfg, enabled: v };
+        onChange(settings);
+      }
     })
   ));
   const maxIn = el("input", {
@@ -1902,11 +1915,11 @@ function buildHistorySearchSection(settings, onChange) {
             granted = await ext.permissions.request({ permissions: ["history"] });
           } catch (err) {
             toast(`Permission request failed — ${err?.message?.toLowerCase() || "unknown error"}.`, "error");
-            return;
+            return false;
           }
           if (!granted) {
             toast("History permission denied. The panel stays disabled.", "warning");
-            return;
+            return false;
           }
           settings.historySearch = { ...cfg, enabled: true };
           onChange(settings);
@@ -4605,7 +4618,19 @@ function buildBookmarksSection(settings, onChange) {
   const g   = group();
   g.appendChild(row("Show bookmarks panel", "Tiles from your browser\u2019s bookmark library.",
     toggle({ checked: cfg.enabled || false, ariaLabel: "Show bookmarks panel",
-      onChange: (v) => { settings.bookmarks = { ...cfg, enabled: v }; onChange(settings); } })
+      onChange: async (v) => {
+        if (v) {
+          const result = await requestBrowserPermission("bookmarks");
+          if (!result.granted) {
+            toast("Bookmarks permission denied. The panel stays disabled.", "warning");
+            return false;
+          }
+        } else {
+          await removeBrowserPermission("bookmarks");
+        }
+        settings.bookmarks = { ...cfg, enabled: v };
+        onChange(settings);
+      } })
   ));
   const maxIn = el("input", {
     type: "number", min: "4", max: "100",

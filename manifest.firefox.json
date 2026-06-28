@@ -42,12 +42,12 @@
   "permissions": [
     "storage",
     "alarms",
-    "bookmarks",
-    "topSites",
     "contextualIdentities"
   ],
   "optional_permissions": [
+    "bookmarks",
     "history",
+    "topSites",
     "tabs",
     "http://*/*",
     "https://*/*"

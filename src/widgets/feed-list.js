@@ -8,11 +8,15 @@ import { iconNode } from "../icons.js";
 import { fetchFeed } from "../utils/rss-parser.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
 import { canonicalize as canonicalizeStarred } from "../utils/starred-feed.js";
+import { requestBrowserPermission } from "../utils/browser-permissions.js";
+import { isFirefox } from "../utils/ext.js";
 
-// chrome.readingList requires Chrome 120+ and the "readingList" manifest
-// permission. Firefox has no equivalent yet — the addEntry button stays
-// hidden when the API is missing, no UX wart, no error toast.
-const READING_LIST_AVAILABLE = !!globalThis.chrome?.readingList?.addEntry;
+// chrome.readingList requires Chrome 120+ and the optional "readingList"
+// permission. Firefox has no equivalent yet; Chromium users see the
+// action and grant access only when they save an item.
+function canShowReadingListAction() {
+  return !isFirefox && (!!globalThis.chrome?.readingList?.addEntry || !!globalThis.chrome?.permissions?.request);
+}
 
 // Video URL detection for inline feed embeds.
 const YT_RE = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/;
@@ -167,6 +171,7 @@ export async function renderFeedList(mount, options) {
   }
 
   const readSet = new Set(readItems);
+  const showReadingListAction = canShowReadingListAction();
   const list = el("ul", { class: "feed-list" });
   let unreadCount = 0;
 
@@ -263,7 +268,7 @@ export async function renderFeedList(mount, options) {
     // Save-to-Reading-List button (Chrome 120+ only). Tucked into a
     // hover-revealed action group so the row stays visually quiet
     // when the user is just scanning.
-    if (READING_LIST_AVAILABLE) {
+    if (showReadingListAction) {
       const saveBtn = el("button", {
         type: "button",
         class: "feed-item__action feed-item__action--save",
@@ -353,10 +358,21 @@ export async function renderFeedList(mount, options) {
 // URL is already saved — we treat that as a success ("already saved")
 // because that's the user-meaningful outcome.
 async function saveToReadingList(item, btn) {
-  const api = globalThis.chrome?.readingList;
-  if (!api?.addEntry) return;
+  let api = globalThis.chrome?.readingList;
   if (btn) btn.disabled = true;
   try {
+    if (!api?.addEntry) {
+      const result = await requestBrowserPermission("readingList");
+      if (!result.granted) {
+        toast("Reading List permission denied. Grant access to save feed items.", "warning");
+        return;
+      }
+      api = globalThis.chrome?.readingList;
+    }
+    if (!api?.addEntry) {
+      toast("Reading List is unavailable in this browser.", "warning");
+      return;
+    }
     await api.addEntry({
       title: item.title || item.link,
       url: item.link,

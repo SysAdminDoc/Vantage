@@ -1,10 +1,11 @@
 // Vantage → v1.0.0 — Browser Bookmarks panel widget + favicon caching.
 
-import { el, clear } from "../utils/dom.js";
+import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
+import { hasBrowserPermission, requestBrowserPermission } from "../utils/browser-permissions.js";
 
-export function renderBookmarks(mount, settings, { onAttachDragHandle } = {}) {
+export async function renderBookmarks(mount, settings, { onAttachDragHandle } = {}) {
   clear(mount);
   const cfg = settings.bookmarks;
   if (!cfg?.enabled) {
@@ -28,15 +29,14 @@ export function renderBookmarks(mount, settings, { onAttachDragHandle } = {}) {
 
   if (onAttachDragHandle) onAttachDragHandle(header.querySelector(".panel-header__drag"));
 
-  const chromeApi = globalThis.chrome;
-  if (!chromeApi?.bookmarks) {
-    body.appendChild(el("p", { class: "panel-empty" }, [
-      "Bookmarks unavailable — grant the bookmarks permission in your browser's extension settings."
-    ]));
+  const api = globalThis.browser || globalThis.chrome;
+  const granted = await hasBrowserPermission("bookmarks");
+  if (!granted || !api?.bookmarks?.getTree) {
+    body.appendChild(permissionPrompt(() => renderBookmarks(mount, settings, { onAttachDragHandle })));
     return;
   }
 
-  chromeApi.bookmarks.getTree().then((tree) => {
+  api.bookmarks.getTree().then((tree) => {
     const flat = flattenBookmarks(tree, cfg.maxItems || 24);
     if (flat.length === 0) {
       body.appendChild(el("p", { class: "panel-empty" }, ["No bookmarks found."]));
@@ -73,6 +73,29 @@ export function renderBookmarks(mount, settings, { onAttachDragHandle } = {}) {
   }).catch(() => {
     body.appendChild(el("p", { class: "panel-error" }, ["Couldn't load bookmarks."]));
   });
+}
+
+function permissionPrompt(onGranted) {
+  const btn = el("button", {
+    type: "button",
+    class: "button button--ghost",
+    onClick: async () => {
+      btn.disabled = true;
+      const result = await requestBrowserPermission("bookmarks");
+      if (result.granted) {
+        toast("Bookmarks access granted.", "success");
+        onGranted?.();
+      } else {
+        toast("Bookmarks permission denied. Grant access to show this panel.", "warning");
+        btn.disabled = false;
+      }
+    }
+  }, [iconNode("bookmark", { size: 14 }), " Grant bookmarks access"]);
+
+  return el("div", { class: "panel-empty" }, [
+    el("p", {}, ["Bookmarks permission not granted. Vantage only reads bookmarks after you allow access."]),
+    btn
+  ]);
 }
 
 function flattenBookmarks(nodes, max, out = []) {

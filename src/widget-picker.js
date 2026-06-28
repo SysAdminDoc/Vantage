@@ -4,6 +4,7 @@ import { el, clear, toggle, toast } from "./utils/dom.js";
 import { iconNode } from "./icons.js";
 import { registerOverlay } from "./utils/overlay-stack.js";
 import { normalizeWebUrl } from "./utils/url-safety.js";
+import { removeBrowserPermission, requestBrowserPermission } from "./utils/browser-permissions.js";
 
 const WIDGET_GROUPS = [
   {
@@ -12,7 +13,7 @@ const WIDGET_GROUPS = [
       { key: "clock",      path: "clock.enabled",      icon: "clock",          label: "Clock",            hint: "Time and date" },
       { key: "greeting",   path: "greeting.enabled",   icon: "circle-check",   label: "Greeting",         hint: "Personal welcome" },
       { key: "quicklinks", path: "quicklinks.enabled",  icon: "link",           label: "Quick Links",      hint: "Pinned shortcuts" },
-      { key: "topsites",   path: "topsites.enabled",    icon: "star",           label: "Top Sites",        hint: "Frequent visits" },
+      { key: "topsites",   path: "topsites.enabled",    icon: "star",           label: "Top Sites",        hint: "Frequent visits", permission: "topSites" },
       { key: "worldclock", path: "worldclock.enabled",  icon: "globe",          label: "World Clocks",     hint: "Saved time zones" },
       { key: "quote",      path: "quote.enabled",       icon: "message-square", label: "Quote of the Day", hint: "Daily reflection" },
     ]
@@ -50,11 +51,11 @@ const WIDGET_GROUPS = [
       { key: "todo",       path: "todo.enabled",          icon: "check-square", label: "To-Do List",      hint: "Task capture" },
       { key: "notes",      path: "notes.enabled",         icon: "note",         label: "Notes",           hint: "Scratch notes" },
       { key: "zenShelf",   path: "zenShelf.enabled",      icon: "note",         label: "Zen Shelf",       hint: "Visual stickers" },
-      { key: "bookmarks",  path: "bookmarks.enabled",     icon: "bookmark",     label: "Bookmarks",       hint: "Browser bookmarks" },
+      { key: "bookmarks",  path: "bookmarks.enabled",     icon: "bookmark",     label: "Bookmarks",       hint: "Browser bookmarks", permission: "bookmarks" },
       { key: "starred",    path: "starred.enabled",       icon: "star",         label: "Starred Items",   hint: "Pinned reads" },
       { key: "inbox",      path: "inbox.enabled",         icon: "bookmark",     label: "Inbox",           hint: "Read-later queue" },
       { key: "ambient",    path: "ambient.enabled",       icon: "play",         label: "Ambient Sounds",  hint: "Focus sound" },
-      { key: "history",    path: "historySearch.enabled", icon: "clock",        label: "History Search",  hint: "Opt-in browser history" },
+      { key: "history",    path: "historySearch.enabled", icon: "clock",        label: "History Search",  hint: "Opt-in browser history", permission: "history" },
       { key: "crypto",     path: "crypto.enabled",        icon: "trending-up",  label: "Crypto Prices",   hint: "Market prices" },
       { key: "github",     path: "github.enabled",        icon: "github",       label: "GitHub",          hint: "Repository activity" },
       { key: "photo",      path: "photo.enabled",         icon: "image",        label: "Photo of the Day", hint: "NASA APOD" },
@@ -184,12 +185,23 @@ function buildRow(item, settings, onSave, rebuildPicker) {
   const tog = toggle({
     checked,
     ariaLabel: `Toggle ${item.label}`,
-    onChange: (val) => {
+    onChange: async (val) => {
+      if (item.permission) {
+        if (val) {
+          const result = await requestBrowserPermission(item.permission);
+          if (!result.granted) {
+            toast(`${item.label} permission denied. The widget stays disabled.`, "warning");
+            return false;
+          }
+        } else {
+          await removeBrowserPermission(item.permission);
+        }
+      }
       const next = {
         ...settings,
         [section]: { ...(settings[section] || {}), [prop]: val }
       };
-      onSave(next);
+      await onSave(next);
       rebuildPicker();
     }
   });
