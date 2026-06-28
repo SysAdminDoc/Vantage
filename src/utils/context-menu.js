@@ -7,7 +7,7 @@
 // through to the browser's native menu so users can copy/paste/spell-
 // check normally.
 //
-// Design constraints (per repo CLAUDE.md and stack convention):
+// Design constraints:
 //   - vanilla JS modules; no framework
 //   - keyboard-accessible (Esc, ArrowUp/Down, Enter, Tab)
 //   - theme-aware via the existing CSS tokens
