@@ -5,13 +5,6 @@ Blocked items live in Roadmap_Blocked.md.
 
 ## Research-Driven Additions
 
-- [ ] P0 - Clear stale GitHub Actions dependency automation
-  Why: Dependabot PRs for removed workflows remain open and can recreate automation churn unless repo settings are disabled.
-  Evidence: GitHub PRs #4, #5, #6, #7; `.github/workflows/` absent from `git ls-files`; `gh pr close` returned HTTP 401 in this session.
-  Touches: GitHub repo settings, open PRs, `.github/` verification.
-  Acceptance: No open Dependabot/Renovate PRs, no `.github/dependabot.yml`, no `.github/workflows/`, and repo vulnerability/dependency automation is disabled.
-  Complexity: S
-
 - [ ] P0 - Move optional browser-data features behind runtime permission grants
   Why: Install-time `bookmarks`, `topSites`, and `readingList` prompts weaken store trust for widgets that are off or user-triggered.
   Evidence: `manifest.json`, `manifest.firefox.json`, `src/widgets/bookmarks.js`, `src/widgets/topsites.js`, `src/widgets/feed-list.js`, Chrome optional permissions docs.
