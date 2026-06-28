@@ -50,6 +50,24 @@
   "bookmarks": {
     "message": "Signets"
   },
+  "bookmarksAccessGranted": {
+    "message": "Bookmarks access granted."
+  },
+  "bookmarksEmpty": {
+    "message": "No bookmarks found."
+  },
+  "bookmarksGrantAccess": {
+    "message": "Grant bookmarks access"
+  },
+  "bookmarksLoadError": {
+    "message": "Couldn't load bookmarks."
+  },
+  "bookmarksPermissionDeniedPanel": {
+    "message": "Bookmarks permission denied. Grant access to show this panel."
+  },
+  "bookmarksPermissionPrompt": {
+    "message": "Bookmarks permission not granted. Vantage only reads bookmarks after you allow access."
+  },
   "calendar": {
     "message": "Calendrier"
   },
@@ -185,8 +203,35 @@
   "export": {
     "message": "Exporter"
   },
+  "feedMarkAllReadAria": {
+    "message": "Mark all $1 read"
+  },
+  "feedMarkAllReadTitle": {
+    "message": "Mark all as read"
+  },
+  "feedRefreshAria": {
+    "message": "Refresh $1"
+  },
+  "feedStarError": {
+    "message": "Couldn't star item."
+  },
+  "feedUnreadCount": {
+    "message": "$1 unread"
+  },
+  "feedUpdated": {
+    "message": "Updated $1"
+  },
   "feeds": {
     "message": "Flux"
+  },
+  "feedsEmptyTitle": {
+    "message": "No feeds yet"
+  },
+  "feedsLoadErrorTitle": {
+    "message": "Couldn't load feeds"
+  },
+  "feedsNothingTitle": {
+    "message": "Nothing to show yet"
   },
   "firstTimeSetup": {
     "message": "First-time setup"
@@ -209,8 +254,29 @@
   "help": {
     "message": "Aide"
   },
+  "history": {
+    "message": "History"
+  },
+  "historyNoQueryMatches": {
+    "message": "No history entries matching \"$1\"."
+  },
+  "historyNoRecent": {
+    "message": "No recent browser history."
+  },
+  "historyPermissionPrompt": {
+    "message": "History permission not granted. Enable it from Settings -> History search to use this panel."
+  },
   "historySearch": {
     "message": "History Search"
+  },
+  "historySearchAria": {
+    "message": "Search browser history"
+  },
+  "historySearchFailed": {
+    "message": "History search failed - $1."
+  },
+  "historySearchPlaceholder": {
+    "message": "Search browsing history..."
   },
   "import": {
     "message": "Importer"
@@ -311,6 +377,9 @@
   "news": {
     "message": "Actualités"
   },
+  "newsEmptyHint": {
+    "message": "Add a news feed URL in Settings -> News."
+  },
   "next": {
     "message": "Next"
   },
@@ -380,8 +449,29 @@
   "readMore": {
     "message": "En savoir plus"
   },
+  "readingListAlreadySaved": {
+    "message": "Already in Reading list."
+  },
+  "readingListPermissionDeniedSave": {
+    "message": "Reading List permission denied. Grant access to save feed items."
+  },
+  "readingListSaveAria": {
+    "message": "Save to Reading list"
+  },
+  "readingListSaveFailed": {
+    "message": "Couldn't save - $1."
+  },
+  "readingListSaved": {
+    "message": "Saved to Reading list."
+  },
+  "readingListUnavailable": {
+    "message": "Reading List is unavailable in this browser."
+  },
   "readingPanels": {
     "message": "Reading panels"
+  },
+  "refresh": {
+    "message": "Refresh"
   },
   "refreshFeeds": {
     "message": "Refresh feeds"
@@ -400,6 +490,9 @@
   },
   "riverFloodRisk": {
     "message": "River Flood Risk"
+  },
+  "rssEmptyHint": {
+    "message": "Add an RSS or Atom feed URL in Settings -> Reading list."
   },
   "rssReadingList": {
     "message": "RSS / Reading List"
@@ -769,6 +862,18 @@
   },
   "topSites": {
     "message": "Sites principaux"
+  },
+  "topSitesAccessGranted": {
+    "message": "Top Sites access granted."
+  },
+  "topSitesGrantAccess": {
+    "message": "Grant Top Sites access"
+  },
+  "topSitesPermissionDeniedRow": {
+    "message": "Top Sites permission denied. Grant access to show this row."
+  },
+  "topSitesPermissionPrompt": {
+    "message": "Top Sites permission not granted. Vantage only reads most-visited sites after you allow access."
   },
   "undo": {
     "message": "Undo"

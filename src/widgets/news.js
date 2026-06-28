@@ -5,6 +5,7 @@ import { saveSettings, pushRead } from "../storage.js";
 import { toggleStar, canonicalize as canonicalizeStarred } from "../utils/starred-feed.js";
 import { findAlertMatches, fireAlerts, markNotified } from "../utils/feed-alerts.js";
 import { archiveItems, pruneToCap } from "../utils/feed-archive.js";
+import { i18n } from "../utils/i18n.js";
 
 export function renderNews(mount, settings, { onAttachDragHandle } = {}) {
   if (!settings.news.enabled) {
@@ -18,14 +19,14 @@ export function renderNews(mount, settings, { onAttachDragHandle } = {}) {
   );
 
   const draw = (initiator) => renderFeedList(mount, {
-    title: "News",
+    title: i18n("news"),
     iconName: "newspaper",
     feeds: settings.news.feeds,
     maxItems: settings.news.maxItems,
     readItems: settings.news.readItems || [],
     filterRules: settings.feedFilters?.rules || [],
     starredSet: buildStarredSet(),
-    emptyHint: "Add a news feed URL in Settings → News.",
+    emptyHint: i18n("newsEmptyHint", null, "Add a news feed URL in Settings -> News."),
     initiator,
     onRefresh: () => draw("refresh"),
     onMarkRead: async (urls) => {

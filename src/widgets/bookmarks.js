@@ -4,6 +4,7 @@ import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
 import { hasBrowserPermission, requestBrowserPermission } from "../utils/browser-permissions.js";
+import { i18n } from "../utils/i18n.js";
 
 export async function renderBookmarks(mount, settings, { onAttachDragHandle } = {}) {
   clear(mount);
@@ -17,7 +18,7 @@ export async function renderBookmarks(mount, settings, { onAttachDragHandle } = 
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
       el("span", { class: "panel-header__drag", "aria-hidden": "true", innerHTML: iconString("grip", 14) }),
-      el("h2", { class: "panel-header__title" }, [iconNode("bookmark", { size: 14 }), " Bookmarks"])
+      el("h2", { class: "panel-header__title" }, [iconNode("bookmark", { size: 14 }), ` ${i18n("bookmarks")}`])
     ]),
     el("div", { class: "panel-header__right" })
   ]);
@@ -39,7 +40,7 @@ export async function renderBookmarks(mount, settings, { onAttachDragHandle } = 
   api.bookmarks.getTree().then((tree) => {
     const flat = flattenBookmarks(tree, cfg.maxItems || 24);
     if (flat.length === 0) {
-      body.appendChild(el("p", { class: "panel-empty" }, ["No bookmarks found."]));
+      body.appendChild(el("p", { class: "panel-empty" }, [i18n("bookmarksEmpty", null, "No bookmarks found.")]));
       return;
     }
     const grid = el("div", { class: "bookmarks-grid" });
@@ -71,7 +72,7 @@ export async function renderBookmarks(mount, settings, { onAttachDragHandle } = 
     }
     body.appendChild(grid);
   }).catch(() => {
-    body.appendChild(el("p", { class: "panel-error" }, ["Couldn't load bookmarks."]));
+    body.appendChild(el("p", { class: "panel-error" }, [i18n("bookmarksLoadError", null, "Couldn't load bookmarks.")]));
   });
 }
 
@@ -83,17 +84,17 @@ function permissionPrompt(onGranted) {
       btn.disabled = true;
       const result = await requestBrowserPermission("bookmarks");
       if (result.granted) {
-        toast("Bookmarks access granted.", "success");
+        toast(i18n("bookmarksAccessGranted", null, "Bookmarks access granted."), "success");
         onGranted?.();
       } else {
-        toast("Bookmarks permission denied. Grant access to show this panel.", "warning");
+        toast(i18n("bookmarksPermissionDeniedPanel", null, "Bookmarks permission denied. Grant access to show this panel."), "warning");
         btn.disabled = false;
       }
     }
-  }, [iconNode("bookmark", { size: 14 }), " Grant bookmarks access"]);
+  }, [iconNode("bookmark", { size: 14 }), ` ${i18n("bookmarksGrantAccess", null, "Grant bookmarks access")}`]);
 
   return el("div", { class: "panel-empty" }, [
-    el("p", {}, ["Bookmarks permission not granted. Vantage only reads bookmarks after you allow access."]),
+    el("p", {}, [i18n("bookmarksPermissionPrompt", null, "Bookmarks permission not granted. Vantage only reads bookmarks after you allow access.")]),
     btn
   ]);
 }

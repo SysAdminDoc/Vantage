@@ -23,13 +23,18 @@ function placeholders(message) {
 }
 
 async function collectSourceKeys() {
+  const widgetFiles = (await readdir(join(ROOT, "src", "widgets")))
+    .filter(file => file.endsWith(".js"))
+    .map(file => `src/widgets/${file}`);
   const files = [
     "newtab.html",
     "sidepanel.html",
     "src/main.js",
     "src/sidepanel.js",
+    "src/settings.js",
     "src/onboarding.js",
-    "src/widget-picker.js"
+    "src/widget-picker.js",
+    ...widgetFiles
   ];
   const keys = new Set();
   const patterns = [

@@ -11,7 +11,7 @@
  *   6. Widget error state (external widget with bad manifest)
  *
  * Usage:
- *   node scripts/smoke-test.mjs [--headless] [--extension-dir dist/unpacked-chromium]
+ *   node scripts/smoke-test.mjs [--headed] [--extension-dir dist/unpacked-chromium]
  */
 
 import { existsSync } from "node:fs";
@@ -27,7 +27,7 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, "..");
 const SMOKE_UNPACKED_DIR = join(REPO_ROOT, "dist", "smoke-unpacked-chromium");
 
-const headless = process.argv.includes("--headless");
+const headed = process.argv.includes("--headed");
 const results = [];
 
 function ok(name) { results.push({ name, pass: true }); console.log(`  PASS  ${name}`); }
@@ -40,7 +40,7 @@ async function run() {
   const userDataDir = await mkdtemp(join(tmpdir(), "vantage-smoke-profile-"));
 
   const browser = await puppeteer.launch({
-    headless: headless ? "new" : false,
+    headless: headed ? false : "new",
     userDataDir,
     args: [
       `--disable-extensions-except=${extPath}`,

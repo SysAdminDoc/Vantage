@@ -10,6 +10,7 @@ import { getFaviconUrl } from "../utils/favicon-cache.js";
 import { canonicalize as canonicalizeStarred } from "../utils/starred-feed.js";
 import { requestBrowserPermission } from "../utils/browser-permissions.js";
 import { isFirefox } from "../utils/ext.js";
+import { i18n } from "../utils/i18n.js";
 
 // chrome.readingList requires Chrome 120+ and the optional "readingList"
 // permission. Firefox has no equivalent yet; Chromium users see the
@@ -76,16 +77,16 @@ export async function renderFeedList(mount, options) {
   const markAllBtn = el("button", {
     type: "button",
     class: "icon-button icon-button--ghost icon-button--small",
-    "aria-label": `Mark all ${title} read`,
-    title: "Mark all as read",
+    "aria-label": i18n("feedMarkAllReadAria", [title], "Mark all $1 read"),
+    title: i18n("feedMarkAllReadTitle", null, "Mark all as read"),
     onClick: () => markAllVisibleRead()
   }, [iconNode("check-all", { size: 14 })]);
 
   const refreshBtn = el("button", {
     type: "button",
     class: "icon-button icon-button--ghost icon-button--small",
-    "aria-label": `Refresh ${title}`,
-    title: "Refresh",
+    "aria-label": i18n("feedRefreshAria", [title], "Refresh $1"),
+    title: i18n("refresh", null, "Refresh"),
     onClick: () => onRefresh?.()
   }, [iconNode("refresh", { size: 14 })]);
 
@@ -101,7 +102,7 @@ export async function renderFeedList(mount, options) {
   }
 
   if (!feeds.length) {
-    listHost.appendChild(buildEmpty(iconName, "No feeds yet", emptyHint));
+    listHost.appendChild(buildEmpty(iconName, i18n("feedsEmptyTitle", null, "No feeds yet"), emptyHint));
     updatedNode.textContent = "";
     markAllBtn.disabled = true;
     return;
@@ -160,7 +161,9 @@ export async function renderFeedList(mount, options) {
   if (!merged.length) {
     listHost.appendChild(buildEmpty(
       "alert",
-      errors.length ? "Couldn't load feeds" : "Nothing to show yet",
+      errors.length
+        ? i18n("feedsLoadErrorTitle", null, "Couldn't load feeds")
+        : i18n("feedsNothingTitle", null, "Nothing to show yet"),
       errors.length
         ? `Failed: ${errors.join(", ")}. Check your connection or these feed URLs.`
         : emptyHint
@@ -256,7 +259,7 @@ export async function renderFeedList(mount, options) {
             starBtn.title = nowStarred ? "Starred — click to remove" : "Star this item";
             toast(nowStarred ? "Starred." : "Unstarred.", "success", 2000);
           } catch (err) {
-            toast(err?.message || "Couldn't star item.", "error");
+            toast(err?.message || i18n("feedStarError", null, "Couldn't star item."), "error");
           } finally {
             starBtn.disabled = false;
           }
@@ -274,8 +277,8 @@ export async function renderFeedList(mount, options) {
         class: "feed-item__action feed-item__action--save",
         // Keep aria-label terse — long feed titles produce noisy SR
         // announcements; the row link itself already names the article.
-        "aria-label": "Save to Reading list",
-        title: "Save to Reading list",
+        "aria-label": i18n("readingListSaveAria", null, "Save to Reading list"),
+        title: i18n("readingListSaveAria", null, "Save to Reading list"),
         onClick: (e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -320,7 +323,7 @@ export async function renderFeedList(mount, options) {
     if (unreadCount > 0) {
       unreadBadge.hidden = false;
       unreadBadge.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
-      unreadBadge.setAttribute("aria-label", `${unreadCount} unread`);
+      unreadBadge.setAttribute("aria-label", i18n("feedUnreadCount", [unreadCount], "$1 unread"));
     } else {
       unreadBadge.hidden = true;
       unreadBadge.textContent = "";
@@ -342,7 +345,7 @@ export async function renderFeedList(mount, options) {
 
   // ---- Live timestamp ----
   const stamp = new Date();
-  const updateStamp = () => { updatedNode.textContent = `Updated ${relativeTime(stamp)}`; };
+  const updateStamp = () => { updatedNode.textContent = i18n("feedUpdated", [relativeTime(stamp)], "Updated $1"); };
   updateStamp();
   const interval = setInterval(updateStamp, 30_000);
   const observer = new MutationObserver(() => {
@@ -364,13 +367,13 @@ async function saveToReadingList(item, btn) {
     if (!api?.addEntry) {
       const result = await requestBrowserPermission("readingList");
       if (!result.granted) {
-        toast("Reading List permission denied. Grant access to save feed items.", "warning");
+        toast(i18n("readingListPermissionDeniedSave", null, "Reading List permission denied. Grant access to save feed items."), "warning");
         return;
       }
       api = globalThis.chrome?.readingList;
     }
     if (!api?.addEntry) {
-      toast("Reading List is unavailable in this browser.", "warning");
+      toast(i18n("readingListUnavailable", null, "Reading List is unavailable in this browser."), "warning");
       return;
     }
     await api.addEntry({
@@ -379,14 +382,14 @@ async function saveToReadingList(item, btn) {
       hasBeenRead: false
     });
     if (btn) btn.classList.add("feed-item__action--saved");
-    toast("Saved to Reading list.", "success");
+    toast(i18n("readingListSaved", null, "Saved to Reading list."), "success");
   } catch (err) {
     const msg = String(err?.message || err || "");
     if (/duplicate|already|exists/i.test(msg)) {
       if (btn) btn.classList.add("feed-item__action--saved");
-      toast("Already in Reading list.", "info");
+      toast(i18n("readingListAlreadySaved", null, "Already in Reading list."), "info");
     } else {
-      toast(`Couldn't save — ${msg.toLowerCase() || "unknown error"}.`, "error");
+      toast(i18n("readingListSaveFailed", [msg.toLowerCase() || "unknown error"], "Couldn't save - $1."), "error");
     }
   } finally {
     if (btn) btn.disabled = false;
@@ -471,7 +474,7 @@ function normalizeUrl(url) {
 }
 
 function buildSkeleton(rows) {
-  const wrap = el("ul", { class: "feed-list", "aria-label": "Loading" });
+  const wrap = el("ul", { class: "feed-list", "aria-label": i18n("loading", null, "Loading...") });
   for (let i = 0; i < rows; i++) {
     wrap.appendChild(el("li", { class: "feed-skeleton", "aria-hidden": "true" }, [
       el("div", { class: "skel-line skel-line--title" }),

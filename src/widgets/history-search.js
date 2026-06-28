@@ -10,6 +10,7 @@
 import { el, clear, relativeTime, hostnameLabel } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
+import { i18n } from "../utils/i18n.js";
 
 const SEARCH_DEBOUNCE_MS = 220;
 
@@ -26,7 +27,7 @@ export function renderHistorySearch(mount, settings, { onAttachDragHandle } = {}
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
       dragSpan,
-      el("h2", { class: "panel-header__title" }, [iconNode("clock", { size: 14 }), " History"])
+      el("h2", { class: "panel-header__title" }, [iconNode("clock", { size: 14 }), ` ${i18n("history", null, "History")}`])
     ]),
     el("div", { class: "panel-header__right" })
   ]);
@@ -48,7 +49,7 @@ export function renderHistorySearch(mount, settings, { onAttachDragHandle } = {}
       : !!ext?.history;
     if (!granted || !ext?.history) {
       body.appendChild(el("p", { class: "panel-empty" }, [
-        "History permission not granted. Enable it from Settings → History search to use this panel."
+        i18n("historyPermissionPrompt", null, "History permission not granted. Enable it from Settings -> History search to use this panel.")
       ]));
       return;
     }
@@ -56,9 +57,9 @@ export function renderHistorySearch(mount, settings, { onAttachDragHandle } = {}
     const searchInput = el("input", {
       type: "search",
       class: "text-input",
-      placeholder: "Search browsing history…",
+      placeholder: i18n("historySearchPlaceholder", null, "Search browsing history..."),
       autocomplete: "off",
-      "aria-label": "Search browser history"
+      "aria-label": i18n("historySearchAria", null, "Search browser history")
     });
     body.appendChild(searchInput);
 
@@ -80,7 +81,9 @@ export function renderHistorySearch(mount, settings, { onAttachDragHandle } = {}
         if (token !== lastQueryToken) return;
         if (!items.length) {
           resultsHost.appendChild(el("p", { class: "panel-empty" }, [
-            query ? `No history entries matching "${query}".` : "No recent browser history."
+            query
+              ? i18n("historyNoQueryMatches", [query], "No history entries matching \"$1\".")
+              : i18n("historyNoRecent", null, "No recent browser history.")
           ]));
           return;
         }
@@ -120,7 +123,7 @@ export function renderHistorySearch(mount, settings, { onAttachDragHandle } = {}
       } catch (err) {
         if (token !== lastQueryToken) return;
         resultsHost.appendChild(el("p", { class: "panel-error" }, [
-          `History search failed — ${err?.message?.toLowerCase() || "unknown error"}.`
+          i18n("historySearchFailed", [err?.message?.toLowerCase() || "unknown error"], "History search failed - $1.")
         ]));
       }
     };

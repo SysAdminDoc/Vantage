@@ -67,6 +67,30 @@
     "message": "Bookmarks",
     "description": "Widget title"
   },
+  "bookmarksAccessGranted": {
+    "message": "Bookmarks access granted.",
+    "description": "Widget UI string"
+  },
+  "bookmarksEmpty": {
+    "message": "No bookmarks found.",
+    "description": "Widget UI string"
+  },
+  "bookmarksGrantAccess": {
+    "message": "Grant bookmarks access",
+    "description": "Widget UI string"
+  },
+  "bookmarksLoadError": {
+    "message": "Couldn't load bookmarks.",
+    "description": "Widget UI string"
+  },
+  "bookmarksPermissionDeniedPanel": {
+    "message": "Bookmarks permission denied. Grant access to show this panel.",
+    "description": "Widget UI string"
+  },
+  "bookmarksPermissionPrompt": {
+    "message": "Bookmarks permission not granted. Vantage only reads bookmarks after you allow access.",
+    "description": "Widget UI string"
+  },
   "calendar": {
     "message": "Calendar",
     "description": "Widget title"
@@ -247,9 +271,45 @@
     "message": "Export",
     "description": "Export button label"
   },
+  "feedMarkAllReadAria": {
+    "message": "Mark all $1 read",
+    "description": "Widget UI string"
+  },
+  "feedMarkAllReadTitle": {
+    "message": "Mark all as read",
+    "description": "Widget UI string"
+  },
+  "feedRefreshAria": {
+    "message": "Refresh $1",
+    "description": "Widget UI string"
+  },
+  "feedStarError": {
+    "message": "Couldn't star item.",
+    "description": "Widget UI string"
+  },
+  "feedUnreadCount": {
+    "message": "$1 unread",
+    "description": "Widget UI string"
+  },
+  "feedUpdated": {
+    "message": "Updated $1",
+    "description": "Widget UI string"
+  },
   "feeds": {
     "message": "Feeds",
     "description": "Widget title for RSS/News feed"
+  },
+  "feedsEmptyTitle": {
+    "message": "No feeds yet",
+    "description": "Widget UI string"
+  },
+  "feedsLoadErrorTitle": {
+    "message": "Couldn't load feeds",
+    "description": "Widget UI string"
+  },
+  "feedsNothingTitle": {
+    "message": "Nothing to show yet",
+    "description": "Widget UI string"
   },
   "firstTimeSetup": {
     "message": "First-time setup",
@@ -279,9 +339,37 @@
     "message": "Help",
     "description": "Help button label"
   },
+  "history": {
+    "message": "History",
+    "description": "Widget UI string"
+  },
+  "historyNoQueryMatches": {
+    "message": "No history entries matching \"$1\".",
+    "description": "Widget UI string"
+  },
+  "historyNoRecent": {
+    "message": "No recent browser history.",
+    "description": "Widget UI string"
+  },
+  "historyPermissionPrompt": {
+    "message": "History permission not granted. Enable it from Settings -> History search to use this panel.",
+    "description": "Widget UI string"
+  },
   "historySearch": {
     "message": "History Search",
     "description": "UI string"
+  },
+  "historySearchAria": {
+    "message": "Search browser history",
+    "description": "Widget UI string"
+  },
+  "historySearchFailed": {
+    "message": "History search failed - $1.",
+    "description": "Widget UI string"
+  },
+  "historySearchPlaceholder": {
+    "message": "Search browsing history...",
+    "description": "Widget UI string"
   },
   "import": {
     "message": "Import",
@@ -415,6 +503,10 @@
     "message": "News",
     "description": "Widget title"
   },
+  "newsEmptyHint": {
+    "message": "Add a news feed URL in Settings -> News.",
+    "description": "Widget UI string"
+  },
   "next": {
     "message": "Next",
     "description": "UI string"
@@ -513,9 +605,37 @@
     "message": "Read more",
     "description": "Link to read full content"
   },
+  "readingListAlreadySaved": {
+    "message": "Already in Reading list.",
+    "description": "Widget UI string"
+  },
+  "readingListPermissionDeniedSave": {
+    "message": "Reading List permission denied. Grant access to save feed items.",
+    "description": "Widget UI string"
+  },
+  "readingListSaveAria": {
+    "message": "Save to Reading list",
+    "description": "Widget UI string"
+  },
+  "readingListSaveFailed": {
+    "message": "Couldn't save - $1.",
+    "description": "Widget UI string"
+  },
+  "readingListSaved": {
+    "message": "Saved to Reading list.",
+    "description": "Widget UI string"
+  },
+  "readingListUnavailable": {
+    "message": "Reading List is unavailable in this browser.",
+    "description": "Widget UI string"
+  },
   "readingPanels": {
     "message": "Reading panels",
     "description": "UI string"
+  },
+  "refresh": {
+    "message": "Refresh",
+    "description": "Widget UI string"
   },
   "refreshFeeds": {
     "message": "Refresh feeds",
@@ -546,6 +666,10 @@
   "riverFloodRisk": {
     "message": "River Flood Risk",
     "description": "UI string"
+  },
+  "rssEmptyHint": {
+    "message": "Add an RSS or Atom feed URL in Settings -> Reading list.",
+    "description": "Widget UI string"
   },
   "rssReadingList": {
     "message": "RSS / Reading List",
@@ -1038,6 +1162,22 @@
   "topSites": {
     "message": "Top sites",
     "description": "Section title for browser top sites"
+  },
+  "topSitesAccessGranted": {
+    "message": "Top Sites access granted.",
+    "description": "Widget UI string"
+  },
+  "topSitesGrantAccess": {
+    "message": "Grant Top Sites access",
+    "description": "Widget UI string"
+  },
+  "topSitesPermissionDeniedRow": {
+    "message": "Top Sites permission denied. Grant access to show this row.",
+    "description": "Widget UI string"
+  },
+  "topSitesPermissionPrompt": {
+    "message": "Top Sites permission not granted. Vantage only reads most-visited sites after you allow access.",
+    "description": "Widget UI string"
   },
   "undo": {
     "message": "Undo",

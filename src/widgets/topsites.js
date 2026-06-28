@@ -3,6 +3,7 @@
 import { el, clear, toast } from "../utils/dom.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
 import { hasBrowserPermission, requestBrowserPermission } from "../utils/browser-permissions.js";
+import { i18n } from "../utils/i18n.js";
 
 export async function renderTopsites(mount, settings) {
   clear(mount);
@@ -81,17 +82,17 @@ function permissionPrompt(onGranted) {
       btn.disabled = true;
       const result = await requestBrowserPermission("topSites");
       if (result.granted) {
-        toast("Top Sites access granted.", "success");
+        toast(i18n("topSitesAccessGranted", null, "Top Sites access granted."), "success");
         onGranted?.();
       } else {
-        toast("Top Sites permission denied. Grant access to show this row.", "warning");
+        toast(i18n("topSitesPermissionDeniedRow", null, "Top Sites permission denied. Grant access to show this row."), "warning");
         btn.disabled = false;
       }
     }
-  }, ["Grant Top Sites access"]);
+  }, [i18n("topSitesGrantAccess", null, "Grant Top Sites access")]);
 
   return el("div", { class: "panel-empty" }, [
-    el("p", {}, ["Top Sites permission not granted. Vantage only reads most-visited sites after you allow access."]),
+    el("p", {}, [i18n("topSitesPermissionPrompt", null, "Top Sites permission not granted. Vantage only reads most-visited sites after you allow access.")]),
     btn
   ]);
 }

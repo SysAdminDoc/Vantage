@@ -5,6 +5,7 @@ import { saveSettings, pushRead } from "../storage.js";
 import { toggleStar, canonicalize as canonicalizeStarred } from "../utils/starred-feed.js";
 import { findAlertMatches, fireAlerts, markNotified } from "../utils/feed-alerts.js";
 import { archiveItems, pruneToCap } from "../utils/feed-archive.js";
+import { i18n } from "../utils/i18n.js";
 
 export function renderRss(mount, settings, { onAttachDragHandle } = {}) {
   if (!settings.rss.enabled) {
@@ -18,14 +19,14 @@ export function renderRss(mount, settings, { onAttachDragHandle } = {}) {
   );
 
   const draw = (initiator) => renderFeedList(mount, {
-    title: "Reading list",
+    title: i18n("settingsReadingList", null, "Reading list"),
     iconName: "rss",
     feeds: settings.rss.feeds,
     maxItems: settings.rss.maxItems,
     readItems: settings.rss.readItems || [],
     filterRules: settings.feedFilters?.rules || [],
     starredSet: buildStarredSet(),
-    emptyHint: "Add an RSS or Atom feed URL in Settings → Reading list.",
+    emptyHint: i18n("rssEmptyHint", null, "Add an RSS or Atom feed URL in Settings -> Reading list."),
     initiator,
     onRefresh: () => draw("refresh"),
     onMarkRead: async (urls) => {
