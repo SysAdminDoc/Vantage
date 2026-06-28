@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>New Tab</title>
+  <title data-i18n="newTabTitle">New Tab</title>
   <link rel="icon" type="image/png" href="icons/icon48.png" />
   <link rel="stylesheet" href="src/style.css" />
 </head>
 <body>
-  <a href="#vantage-root" class="skip-to-main">Skip to main content</a>
+  <a href="#vantage-root" class="skip-to-main" data-i18n="skipToMain">Skip to main content</a>
 
   <div id="background-mount" class="bg" aria-hidden="true"></div>
 
   <main id="vantage-root" class="vantage" role="main">
 
     <header class="utility-bar">
-      <a class="brand-mark" href="#vantage-root" aria-label="Vantage home">
+      <a class="brand-mark" href="#vantage-root" aria-label="Vantage home" data-i18n-aria-label="vantageHome">
         <span class="brand-mark__glyph" aria-hidden="true">V</span>
         <span class="brand-mark__word">Vantage</span>
       </a>
-      <div class="utility-bar__status" aria-label="Local status">
+      <div class="utility-bar__status" aria-label="Local status" data-i18n-aria-label="localStatus">
         <div id="weather-mount" class="weather-mount" aria-live="polite"></div>
         <div id="airquality-mount" class="airquality-mount" aria-live="polite"></div>
         <div id="marine-mount" class="airquality-mount" aria-live="polite"></div>
@@ -27,13 +27,15 @@
         <div id="solar-radiation-mount" class="airquality-mount" aria-live="polite"></div>
         <div id="local-status-mount" class="local-status-mount" aria-live="off"></div>
       </div>
-      <div class="utility-bar__actions" aria-label="Page controls">
+      <div class="utility-bar__actions" aria-label="Page controls" data-i18n-aria-label="pageControls">
         <button
           id="widget-picker-toggle"
           class="icon-button"
           type="button"
           title="Customize widgets"
           aria-label="Customize widgets"
+          data-i18n-title="customizeWidgets"
+          data-i18n-aria-label="customizeWidgets"
           aria-haspopup="dialog"
           aria-controls="widget-picker"
           aria-expanded="false"
@@ -44,6 +46,8 @@
           type="button"
           title="Edit layout"
           aria-label="Edit layout"
+          data-i18n-title="editLayout"
+          data-i18n-aria-label="editLayout"
         ></button>
         <button
           id="settings-toggle"
@@ -51,6 +55,8 @@
           type="button"
           title="Open settings"
           aria-label="Open settings"
+          data-i18n-title="openSettings"
+          data-i18n-aria-label="openSettings"
           aria-haspopup="dialog"
           aria-expanded="false"
           data-rotate="hover"
@@ -68,9 +74,9 @@
       aria-hidden="true"
     ></div>
 
-    <div id="workspace-bar" class="workspace-bar" hidden aria-label="Workspaces"></div>
+    <div id="workspace-bar" class="workspace-bar" hidden aria-label="Workspaces" data-i18n-aria-label="workspaces"></div>
 
-    <section class="hero" aria-label="Search and quick links">
+    <section class="hero" aria-label="Search and quick links" data-i18n-aria-label="searchAndQuickLinks">
       <div id="greeting-mount" class="greeting"></div>
       <div id="search-mount" class="search" role="search"></div>
       <div id="topsites-mount" class="topsites-mount"></div>
@@ -84,7 +90,7 @@
 
     <div id="pomodoro-mount" class="pomodoro-mount"></div>
 
-    <section class="reading" aria-label="Reading panels">
+    <section class="reading" aria-label="Reading panels" data-i18n-aria-label="readingPanels">
       <div id="news-mount"      class="panel" data-widget="news"></div>
       <div id="rss-mount"       class="panel" data-widget="rss"></div>
       <div id="calendar-mount"  class="panel" data-widget="calendar"></div>
@@ -106,13 +112,13 @@
 
     <div id="zen-shelf-mount" class="zen-shelf-mount"></div>
 
-    <footer class="vantage-footer" aria-label="Privacy and sync status">
+    <footer class="vantage-footer" aria-label="Privacy and sync status" data-i18n-aria-label="privacyAndSyncStatus">
       <span class="vantage-footer__trust">
         <span id="trust-lock-icon" class="vantage-footer__icon" aria-hidden="true"></span>
-        <span>Local-first. Private by default.</span>
+        <span data-i18n="localFirstPrivate">Local-first. Private by default.</span>
       </span>
       <span class="vantage-footer__sync">
-        <span>No sync. No tracking. No profile.</span>
+        <span data-i18n="noSyncNoTracking">No sync. No tracking. No profile.</span>
         <span id="trust-heart-icon" class="vantage-footer__icon vantage-footer__icon--heart" aria-hidden="true"></span>
       </span>
     </footer>

@@ -17,12 +17,13 @@ import { toggleStar, canonicalize as canonicalizeStarred } from "./utils/starred
 import { findAlertMatches, fireAlerts, markNotified } from "./utils/feed-alerts.js";
 import { archiveItems, pruneToCap } from "./utils/feed-archive.js";
 import { applyThemePreference } from "./utils/theme.js";
-import { setupRTL } from "./utils/i18n.js";
+import { i18n, localizeDocument, setupRTL } from "./utils/i18n.js";
 
 let settings = null;
 
 async function init() {
   setupRTL();
+  localizeDocument();
   settings = await loadSettings();
   applyTheme();
 
@@ -91,14 +92,14 @@ function render(initiator) {
     settings.news?.maxItems || 15
   );
   renderFeedList(mount, {
-    title: "Feeds",
+    title: i18n("feeds"),
     iconName: "rss",
     feeds,
     maxItems,
     readItems: combinedReadItems(),
     filterRules: settings.feedFilters?.rules || [],
     starredSet: buildStarredSet(),
-    emptyHint: "Add an RSS / News feed in Settings → Reading list or News.",
+    emptyHint: i18n("sidePanelEmptyHint"),
     initiator,
     onRefresh: () => render("refresh"),
     onMarkRead: persistRead,

@@ -1,69 +1,67 @@
 {
-  "appName": {
-    "message": "Vantage",
-    "description": "The name of the application"
+  "about": {
+    "message": "About",
+    "description": "About button label"
   },
-  "appDesc": {
-    "message": "Next Tab Page — Composable, high-performance NTP with weather, feeds, bookmarks, crypto, and more.",
-    "description": "Extension description (for store listing)"
+  "accentColor": {
+    "message": "Accent color",
+    "description": "Setting label"
   },
-  "customizeWidgets": {
-    "message": "Customize widgets",
-    "description": "Tooltip for widget picker button"
+  "activeCountSuffix": {
+    "message": "on",
+    "description": "UI string"
   },
-  "openSettings": {
-    "message": "Open settings",
-    "description": "Tooltip for settings button"
+  "add": {
+    "message": "Add",
+    "description": "Add button label"
   },
-  "searchPlaceholder": {
-    "message": "Search the web...",
-    "description": "Placeholder text in search input"
-  },
-  "searchWeb": {
-    "message": "Search the web",
-    "description": "ARIA label for search section"
-  },
-  "skipToMain": {
-    "message": "Skip to main content",
-    "description": "Skip navigation link"
-  },
-  "quickLinks": {
-    "message": "Quick links",
-    "description": "Section title for quick links"
+  "addEmbed": {
+    "message": "Add embed",
+    "description": "UI string"
   },
   "addLink": {
     "message": "Add link",
     "description": "Button label to add a quick link"
   },
-  "removeLink": {
-    "message": "Remove $ITEM$",
-    "description": "ARIA label for remove link button",
-    "placeholders": {
-      "item": {
-        "content": "$1",
-        "example": "GitHub"
-      }
-    }
+  "addTrustedEmbedHint": {
+    "message": "Add a trusted web page when it belongs beside your dashboard.",
+    "description": "UI string"
   },
-  "topSites": {
-    "message": "Top sites",
-    "description": "Section title for browser top sites"
+  "airQuality": {
+    "message": "Air Quality",
+    "description": "UI string"
   },
-  "weather": {
-    "message": "Weather",
-    "description": "Widget title"
+  "allSetReady": {
+    "message": "All set. You're ready.",
+    "description": "UI string"
   },
-  "quote": {
-    "message": "Quote",
-    "description": "Widget title"
+  "ambientSounds": {
+    "message": "Ambient Sounds",
+    "description": "UI string"
   },
-  "news": {
-    "message": "News",
-    "description": "Widget title"
+  "animatedBackground": {
+    "message": "Animated Background",
+    "description": "UI string"
   },
-  "feeds": {
-    "message": "Feeds",
-    "description": "Widget title for RSS/News feed"
+  "appDesc": {
+    "message": "Next Tab Page — Composable, high-performance NTP with weather, feeds, bookmarks, crypto, and more.",
+    "description": "Extension description (for store listing)"
+  },
+  "appName": {
+    "message": "Vantage",
+    "description": "The name of the application"
+  },
+  "appearanceTab": {
+    "message": "Appearance",
+    "description": "Settings tab label"
+  },
+  "back": {
+    "message": "Back",
+    "description": "UI string"
+  },
+  "background": {
+    "message": "Background",
+    "description": "Setting label"
   },
   "bookmarks": {
     "message": "Bookmarks",
@@ -73,175 +71,353 @@
     "message": "Calendar",
     "description": "Widget title"
   },
-  "todo": {
-    "message": "To-Do",
-    "description": "Widget title"
+  "cancel": {
+    "message": "Cancel",
+    "description": "Cancel button label"
   },
-  "notes": {
-    "message": "Notes",
-    "description": "Widget title"
+  "chooseLayoutSubtitle": {
+    "message": "Start with the dashboard pace you want. Every choice stays editable later.",
+    "description": "UI string"
+  },
+  "chooseStartingLayout": {
+    "message": "Choose a starting layout",
+    "description": "UI string"
+  },
+  "chooseYourLayout": {
+    "message": "Choose your layout",
+    "description": "UI string"
+  },
+  "cityForWeather": {
+    "message": "City for weather",
+    "description": "UI string"
+  },
+  "cityPlaceholder": {
+    "message": "City - e.g. Chicago",
+    "description": "UI string"
   },
   "clock": {
     "message": "Clock",
     "description": "Widget title"
   },
-  "pomodoro": {
-    "message": "Pomodoro",
-    "description": "Widget title"
-  },
-  "crypto": {
-    "message": "Crypto",
-    "description": "Widget title"
-  },
-  "settings": {
-    "message": "Settings",
-    "description": "Settings panel title"
-  },
-  "appearanceTab": {
-    "message": "Appearance",
-    "description": "Settings tab label"
-  },
-  "contentTab": {
-    "message": "Content",
-    "description": "Settings tab label"
-  },
-  "dataTab": {
-    "message": "Data",
-    "description": "Settings tab label"
-  },
-  "darkMode": {
-    "message": "Dark mode",
-    "description": "Setting label"
-  },
-  "lightMode": {
-    "message": "Light mode",
-    "description": "Setting label"
-  },
-  "accentColor": {
-    "message": "Accent color",
-    "description": "Setting label"
-  },
-  "theme": {
-    "message": "Theme",
-    "description": "Setting label"
-  },
-  "background": {
-    "message": "Background",
-    "description": "Setting label"
-  },
-  "enabledLabel": {
-    "message": "Enabled",
-    "description": "Generic enabled/disabled toggle label"
-  },
-  "disabled": {
-    "message": "Disabled",
-    "description": "Generic disabled status label"
-  },
   "close": {
     "message": "Close",
     "description": "Close button label"
   },
-  "save": {
-    "message": "Save",
-    "description": "Save button label"
+  "closeWidgetPicker": {
+    "message": "Close widget picker",
+    "description": "UI string"
   },
-  "cancel": {
-    "message": "Cancel",
-    "description": "Cancel button label"
+  "comment": {
+    "message": "Comment",
+    "description": "Label for comment input"
   },
-  "delete": {
-    "message": "Delete",
-    "description": "Delete button label"
-  },
-  "edit": {
-    "message": "Edit",
-    "description": "Edit button label"
-  },
-  "add": {
-    "message": "Add",
-    "description": "Add button label"
-  },
-  "export": {
-    "message": "Export",
-    "description": "Export button label"
-  },
-  "import": {
-    "message": "Import",
-    "description": "Import button label"
+  "configureInSettings": {
+    "message": "Configure in Settings",
+    "description": "UI string"
   },
   "confirmDelete": {
     "message": "Are you sure?",
     "description": "Confirmation prompt before destructive action"
   },
-  "noResults": {
-    "message": "No results",
-    "description": "Empty state message"
-  },
-  "loading": {
-    "message": "Loading...",
-    "description": "Loading indicator text"
-  },
-  "error": {
-    "message": "An error occurred",
-    "description": "Generic error message"
-  },
-  "success": {
-    "message": "Success",
-    "description": "Generic success message"
+  "contentTab": {
+    "message": "Content",
+    "description": "Settings tab label"
   },
   "copied": {
     "message": "Copied",
     "description": "Feedback after copying to clipboard"
   },
-  "language": {
-    "message": "Language",
-    "description": "Settings label for language selection"
+  "countdowns": {
+    "message": "Countdowns",
+    "description": "UI string"
+  },
+  "crypto": {
+    "message": "Crypto",
+    "description": "Widget title"
+  },
+  "cryptoPrices": {
+    "message": "Crypto Prices",
+    "description": "UI string"
+  },
+  "customCountSuffix": {
+    "message": "custom",
+    "description": "UI string"
+  },
+  "customWebEmbed": {
+    "message": "Custom web embed",
+    "description": "UI string"
+  },
+  "customizeWidgets": {
+    "message": "Customize widgets",
+    "description": "Tooltip for widget picker button"
+  },
+  "darkMode": {
+    "message": "Dark mode",
+    "description": "Setting label"
+  },
+  "dataTab": {
+    "message": "Data",
+    "description": "Settings tab label"
+  },
+  "date": {
+    "message": "Date",
+    "description": "Label for date input"
+  },
+  "delete": {
+    "message": "Delete",
+    "description": "Delete button label"
+  },
+  "description": {
+    "message": "Description",
+    "description": "Label for description input"
+  },
+  "detectLocation": {
+    "message": "Detect location",
+    "description": "UI string"
+  },
+  "detectedLocation": {
+    "message": "Detected: $1",
+    "description": "UI string"
+  },
+  "detecting": {
+    "message": "Detecting...",
+    "description": "UI string"
+  },
+  "disabled": {
+    "message": "Disabled",
+    "description": "Generic disabled status label"
+  },
+  "edit": {
+    "message": "Edit",
+    "description": "Edit button label"
+  },
+  "editLayout": {
+    "message": "Edit layout",
+    "description": "UI string"
+  },
+  "embed": {
+    "message": "Embed",
+    "description": "UI string"
+  },
+  "embedTitleAria": {
+    "message": "Embed title",
+    "description": "UI string"
+  },
+  "embedTitlePlaceholder": {
+    "message": "Title (e.g. Flight Tracker)",
+    "description": "UI string"
+  },
+  "embedUrlAria": {
+    "message": "Embed URL",
+    "description": "UI string"
+  },
+  "embedUrlPlaceholder": {
+    "message": "example.com/dashboard",
+    "description": "UI string"
+  },
+  "enabledLabel": {
+    "message": "Enabled",
+    "description": "Generic enabled/disabled toggle label"
+  },
+  "endTime": {
+    "message": "End time",
+    "description": "Label for end time input"
   },
   "english": {
     "message": "English",
     "description": "Language name"
   },
-  "spanish": {
-    "message": "Spanish",
+  "enterEmbedTitle": {
+    "message": "Enter a title for the embed.",
+    "description": "UI string"
+  },
+  "enterEmbedUrl": {
+    "message": "Enter the embed URL.",
+    "description": "UI string"
+  },
+  "enterValidWebUrlNoCredentials": {
+    "message": "Enter a valid web URL without a username or password.",
+    "description": "UI string"
+  },
+  "error": {
+    "message": "An error occurred",
+    "description": "Generic error message"
+  },
+  "export": {
+    "message": "Export",
+    "description": "Export button label"
+  },
+  "feeds": {
+    "message": "Feeds",
+    "description": "Widget title for RSS/News feed"
+  },
+  "firstTimeSetup": {
+    "message": "First-time setup",
+    "description": "UI string"
+  },
+  "french": {
+    "message": "French",
     "description": "Language name"
   },
   "german": {
     "message": "German",
     "description": "Language name"
   },
-  "french": {
-    "message": "French",
-    "description": "Language name"
+  "github": {
+    "message": "GitHub",
+    "description": "UI string"
   },
-  "japanese": {
-    "message": "Japanese",
-    "description": "Language name"
+  "greeting": {
+    "message": "Greeting",
+    "description": "UI string"
+  },
+  "greetingNameAria": {
+    "message": "Your name for the greeting",
+    "description": "UI string"
   },
   "help": {
     "message": "Help",
     "description": "Help button label"
   },
-  "about": {
-    "message": "About",
-    "description": "About button label"
+  "historySearch": {
+    "message": "History Search",
+    "description": "UI string"
   },
-  "version": {
-    "message": "Version $VERSION$",
-    "description": "Version display",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "1.0.0"
-      }
-    }
+  "import": {
+    "message": "Import",
+    "description": "Import button label"
   },
-  "readMore": {
-    "message": "Read more",
-    "description": "Link to read full content"
+  "inbox": {
+    "message": "Inbox",
+    "description": "UI string"
   },
-  "viewAll": {
-    "message": "View all",
-    "description": "Link to view all items"
+  "japanese": {
+    "message": "Japanese",
+    "description": "Language name"
+  },
+  "label": {
+    "message": "Label",
+    "description": "Label for label input"
+  },
+  "language": {
+    "message": "Language",
+    "description": "Settings label for language selection"
+  },
+  "layoutPresetBalanced": {
+    "message": "Balanced",
+    "description": "UI string"
+  },
+  "layoutPresetBalancedFeature1": {
+    "message": "Private search",
+    "description": "UI string"
+  },
+  "layoutPresetBalancedFeature2": {
+    "message": "Greeting",
+    "description": "UI string"
+  },
+  "layoutPresetBalancedFeature3": {
+    "message": "Weather",
+    "description": "UI string"
+  },
+  "layoutPresetBalancedFeature4": {
+    "message": "Quick links",
+    "description": "UI string"
+  },
+  "layoutPresetBalancedFeature5": {
+    "message": "Three panels",
+    "description": "UI string"
+  },
+  "layoutPresetBalancedTagline": {
+    "message": "Three panels for more context.",
+    "description": "UI string"
+  },
+  "layoutPresetExpanded": {
+    "message": "Expanded",
+    "description": "UI string"
+  },
+  "layoutPresetExpandedFeature1": {
+    "message": "Private search",
+    "description": "UI string"
+  },
+  "layoutPresetExpandedFeature2": {
+    "message": "Weather",
+    "description": "UI string"
+  },
+  "layoutPresetExpandedFeature3": {
+    "message": "Air quality",
+    "description": "UI string"
+  },
+  "layoutPresetExpandedFeature4": {
+    "message": "Feeds",
+    "description": "UI string"
+  },
+  "layoutPresetExpandedFeature5": {
+    "message": "Pomodoro",
+    "description": "UI string"
+  },
+  "layoutPresetExpandedTagline": {
+    "message": "Four panels for power users.",
+    "description": "UI string"
+  },
+  "layoutPresetFocused": {
+    "message": "Focused",
+    "description": "UI string"
+  },
+  "layoutPresetFocusedFeature1": {
+    "message": "Private search",
+    "description": "UI string"
+  },
+  "layoutPresetFocusedFeature2": {
+    "message": "Quick links",
+    "description": "UI string"
+  },
+  "layoutPresetFocusedFeature3": {
+    "message": "Two reading panels",
+    "description": "UI string"
+  },
+  "layoutPresetFocusedTagline": {
+    "message": "Search, quick links, and two panels.",
+    "description": "UI string"
+  },
+  "lightMode": {
+    "message": "Light mode",
+    "description": "Setting label"
+  },
+  "loading": {
+    "message": "Loading...",
+    "description": "Loading indicator text"
+  },
+  "localFirstPrivate": {
+    "message": "Local-first. Private by default.",
+    "description": "UI string"
+  },
+  "localStatus": {
+    "message": "Local status",
+    "description": "UI string"
+  },
+  "lookingUp": {
+    "message": "Looking up...",
+    "description": "UI string"
+  },
+  "marineWeather": {
+    "message": "Marine Weather",
+    "description": "UI string"
+  },
+  "name": {
+    "message": "Name",
+    "description": "Label for name input"
+  },
+  "newTabTitle": {
+    "message": "New Tab",
+    "description": "UI string"
+  },
+  "news": {
+    "message": "News",
+    "description": "Widget title"
+  },
+  "next": {
+    "message": "Next",
+    "description": "UI string"
   },
   "noItems": {
     "message": "No $ITEM$ yet",
@@ -253,48 +429,444 @@
       }
     }
   },
+  "noResults": {
+    "message": "No results",
+    "description": "Empty state message"
+  },
+  "noSyncNoTracking": {
+    "message": "No sync. No tracking. No profile.",
+    "description": "UI string"
+  },
+  "notes": {
+    "message": "Notes",
+    "description": "Widget title"
+  },
+  "onboardingDoneSubtitle": {
+    "message": "Your preferences are saved locally on this device. You can refine the setup from Settings.",
+    "description": "UI string"
+  },
+  "openDashboard": {
+    "message": "Open dashboard",
+    "description": "UI string"
+  },
+  "openSettings": {
+    "message": "Open settings",
+    "description": "Tooltip for settings button"
+  },
+  "openSettingsForEmbed": {
+    "message": "Open settings for this embed",
+    "description": "UI string"
+  },
+  "optional": {
+    "message": "optional",
+    "description": "UI string"
+  },
+  "pageControls": {
+    "message": "Page controls",
+    "description": "UI string"
+  },
+  "permissionDeniedWidgetDisabled": {
+    "message": "$1 permission denied. The widget stays disabled.",
+    "description": "UI string"
+  },
+  "personalize": {
+    "message": "Personalize",
+    "description": "UI string"
+  },
+  "personalizeSubtitle": {
+    "message": "Add a greeting name and weather city now, or leave either blank for a clean start.",
+    "description": "UI string"
+  },
+  "photoOfTheDay": {
+    "message": "Photo of the Day",
+    "description": "UI string"
+  },
+  "pomodoro": {
+    "message": "Pomodoro",
+    "description": "Widget title"
+  },
+  "presetAriaLabel": {
+    "message": "$1. $2 Includes $3.",
+    "description": "UI string"
+  },
+  "privacyAndSyncStatus": {
+    "message": "Privacy and sync status",
+    "description": "UI string"
+  },
+  "quickLinks": {
+    "message": "Quick links",
+    "description": "Section title for quick links"
+  },
+  "quote": {
+    "message": "Quote",
+    "description": "Widget title"
+  },
+  "quoteOfTheDay": {
+    "message": "Quote of the Day",
+    "description": "UI string"
+  },
+  "rating": {
+    "message": "Rating",
+    "description": "Label for rating"
+  },
+  "readMore": {
+    "message": "Read more",
+    "description": "Link to read full content"
+  },
+  "readingPanels": {
+    "message": "Reading panels",
+    "description": "UI string"
+  },
+  "refreshFeeds": {
+    "message": "Refresh feeds",
+    "description": "UI string"
+  },
+  "removeEmbed": {
+    "message": "Remove embed",
+    "description": "UI string"
+  },
+  "removeLink": {
+    "message": "Remove $ITEM$",
+    "description": "ARIA label for remove link button",
+    "placeholders": {
+      "item": {
+        "content": "$1",
+        "example": "GitHub"
+      }
+    }
+  },
+  "removeThisEmbed": {
+    "message": "Remove this embed",
+    "description": "UI string"
+  },
+  "removedNamedItem": {
+    "message": "Removed \"$1\".",
+    "description": "UI string"
+  },
+  "riverFloodRisk": {
+    "message": "River Flood Risk",
+    "description": "UI string"
+  },
+  "rssReadingList": {
+    "message": "RSS / Reading List",
+    "description": "UI string"
+  },
+  "save": {
+    "message": "Save",
+    "description": "Save button label"
+  },
+  "searchAndQuickLinks": {
+    "message": "Search and quick links",
+    "description": "UI string"
+  },
+  "searchPlaceholder": {
+    "message": "Search the web...",
+    "description": "Placeholder text in search input"
+  },
+  "searchWeb": {
+    "message": "Search the web",
+    "description": "ARIA label for search section"
+  },
+  "set": {
+    "message": "Set",
+    "description": "UI string"
+  },
+  "setToLocation": {
+    "message": "Set to $1",
+    "description": "UI string"
+  },
+  "settings": {
+    "message": "Settings",
+    "description": "Settings panel title"
+  },
+  "setupStepOf": {
+    "message": "Step $1 of $2",
+    "description": "UI string"
+  },
+  "sidePanelEmptyHint": {
+    "message": "Add an RSS / News feed in Settings -> Reading list or News.",
+    "description": "UI string"
+  },
+  "sidePanelKicker": {
+    "message": "News and reading list in one stream.",
+    "description": "UI string"
+  },
+  "sidePanelTitle": {
+    "message": "Vantage Feeds",
+    "description": "UI string"
+  },
+  "skipSetup": {
+    "message": "Skip setup",
+    "description": "UI string"
+  },
+  "skipToMain": {
+    "message": "Skip to main content",
+    "description": "Skip navigation link"
+  },
+  "solarRadiation": {
+    "message": "Solar Radiation",
+    "description": "UI string"
+  },
+  "spanish": {
+    "message": "Spanish",
+    "description": "Language name"
+  },
+  "starredItems": {
+    "message": "Starred Items",
+    "description": "UI string"
+  },
   "startTime": {
     "message": "Start time",
     "description": "Label for start time input"
   },
-  "endTime": {
-    "message": "End time",
-    "description": "Label for end time input"
+  "success": {
+    "message": "Success",
+    "description": "Generic success message"
   },
-  "date": {
-    "message": "Date",
-    "description": "Label for date input"
+  "theme": {
+    "message": "Theme",
+    "description": "Setting label"
   },
   "time": {
     "message": "Time",
     "description": "Label for time input"
   },
-  "url": {
-    "message": "URL",
-    "description": "Label for URL input"
-  },
   "title": {
     "message": "Title",
     "description": "Label for title input"
   },
-  "description": {
-    "message": "Description",
-    "description": "Label for description input"
+  "todo": {
+    "message": "To-Do",
+    "description": "Widget title"
   },
-  "label": {
-    "message": "Label",
-    "description": "Label for label input"
+  "todoList": {
+    "message": "To-Do List",
+    "description": "UI string"
   },
-  "name": {
-    "message": "Name",
-    "description": "Label for name input"
+  "toggleWidgetLabel": {
+    "message": "Toggle $1",
+    "description": "UI string"
   },
-  "comment": {
-    "message": "Comment",
-    "description": "Label for comment input"
+  "topSites": {
+    "message": "Top sites",
+    "description": "Section title for browser top sites"
   },
-  "rating": {
-    "message": "Rating",
-    "description": "Label for rating"
+  "undo": {
+    "message": "Undo",
+    "description": "UI string"
+  },
+  "unitConverter": {
+    "message": "Unit Converter",
+    "description": "UI string"
+  },
+  "untitledEmbed": {
+    "message": "Untitled Embed",
+    "description": "UI string"
+  },
+  "url": {
+    "message": "URL",
+    "description": "Label for URL input"
+  },
+  "vantageHome": {
+    "message": "Vantage home",
+    "description": "UI string"
+  },
+  "vantageSetup": {
+    "message": "Vantage setup",
+    "description": "UI string"
+  },
+  "version": {
+    "message": "Version $VERSION$",
+    "description": "Version display",
+    "placeholders": {
+      "version": {
+        "content": "$1",
+        "example": "1.0.0"
+      }
+    }
+  },
+  "viewAll": {
+    "message": "View all",
+    "description": "Link to view all items"
+  },
+  "weather": {
+    "message": "Weather",
+    "description": "Widget title"
+  },
+  "weatherLocation": {
+    "message": "Weather location",
+    "description": "UI string"
+  },
+  "widgetGroupEmbeds": {
+    "message": "Embeds",
+    "description": "UI string"
+  },
+  "widgetGroupHero": {
+    "message": "Hero",
+    "description": "UI string"
+  },
+  "widgetGroupReadingPanels": {
+    "message": "Reading Panels",
+    "description": "UI string"
+  },
+  "widgetGroupStatusBar": {
+    "message": "Status Bar",
+    "description": "UI string"
+  },
+  "widgetGroupTimer": {
+    "message": "Timer",
+    "description": "UI string"
+  },
+  "widgetGroupToolsContent": {
+    "message": "Tools & Content",
+    "description": "UI string"
+  },
+  "widgetHintAqiPollen": {
+    "message": "AQI and pollen",
+    "description": "UI string"
+  },
+  "widgetHintBrowserBookmarks": {
+    "message": "Browser bookmarks",
+    "description": "UI string"
+  },
+  "widgetHintCuratedHeadlines": {
+    "message": "Curated headlines",
+    "description": "UI string"
+  },
+  "widgetHintDailyReflection": {
+    "message": "Daily reflection",
+    "description": "UI string"
+  },
+  "widgetHintFocusSessions": {
+    "message": "Focus sessions",
+    "description": "UI string"
+  },
+  "widgetHintFocusSound": {
+    "message": "Focus sound",
+    "description": "UI string"
+  },
+  "widgetHintFrequentVisits": {
+    "message": "Frequent visits",
+    "description": "UI string"
+  },
+  "widgetHintIcalAgenda": {
+    "message": "iCal agenda",
+    "description": "UI string"
+  },
+  "widgetHintImportantDates": {
+    "message": "Important dates",
+    "description": "UI string"
+  },
+  "widgetHintLiveSkyScene": {
+    "message": "Live sky scene",
+    "description": "UI string"
+  },
+  "widgetHintLocalConditions": {
+    "message": "Local conditions",
+    "description": "UI string"
+  },
+  "widgetHintLocalRiverRisk": {
+    "message": "Local river risk",
+    "description": "UI string"
+  },
+  "widgetHintMarketPrices": {
+    "message": "Market prices",
+    "description": "UI string"
+  },
+  "widgetHintNasaApod": {
+    "message": "NASA APOD",
+    "description": "UI string"
+  },
+  "widgetHintOptInHistory": {
+    "message": "Opt-in browser history",
+    "description": "UI string"
+  },
+  "widgetHintPersonalFeeds": {
+    "message": "Personal feeds",
+    "description": "UI string"
+  },
+  "widgetHintPersonalWelcome": {
+    "message": "Personal welcome",
+    "description": "UI string"
+  },
+  "widgetHintPinnedReads": {
+    "message": "Pinned reads",
+    "description": "UI string"
+  },
+  "widgetHintPinnedShortcuts": {
+    "message": "Pinned shortcuts",
+    "description": "UI string"
+  },
+  "widgetHintQuickConversions": {
+    "message": "Quick conversions",
+    "description": "UI string"
+  },
+  "widgetHintReadLaterQueue": {
+    "message": "Read-later queue",
+    "description": "UI string"
+  },
+  "widgetHintRepositoryActivity": {
+    "message": "Repository activity",
+    "description": "UI string"
+  },
+  "widgetHintSavedTimeZones": {
+    "message": "Saved time zones",
+    "description": "UI string"
+  },
+  "widgetHintScratchNotes": {
+    "message": "Scratch notes",
+    "description": "UI string"
+  },
+  "widgetHintTaskCapture": {
+    "message": "Task capture",
+    "description": "UI string"
+  },
+  "widgetHintTimeDate": {
+    "message": "Time and date",
+    "description": "UI string"
+  },
+  "widgetHintUvIrradiance": {
+    "message": "UV and irradiance",
+    "description": "UI string"
+  },
+  "widgetHintVisualStickers": {
+    "message": "Visual stickers",
+    "description": "UI string"
+  },
+  "widgetHintWavesCurrents": {
+    "message": "Waves and currents",
+    "description": "UI string"
+  },
+  "widgetHintWeatherMap": {
+    "message": "Weather map",
+    "description": "UI string"
+  },
+  "widgetPickerSubtitle": {
+    "message": "Toggle dashboard modules and add live embeds.",
+    "description": "UI string"
+  },
+  "widgets": {
+    "message": "Widgets",
+    "description": "UI string"
+  },
+  "windyRadar": {
+    "message": "Windy Radar",
+    "description": "UI string"
+  },
+  "workspaces": {
+    "message": "Workspaces",
+    "description": "UI string"
+  },
+  "worldClocks": {
+    "message": "World Clocks",
+    "description": "UI string"
+  },
+  "yourName": {
+    "message": "Your name",
+    "description": "UI string"
+  },
+  "zenShelf": {
+    "message": "Zen Shelf",
+    "description": "UI string"
   }
 }

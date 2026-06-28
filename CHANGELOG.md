@@ -31,6 +31,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Disabled button CSS no longer declares cursor twice.**
 
 ### Added
+- **i18n parity guard and localized shell surfaces** — locale catalogs now share one required key set, `npm test` fails on missing/extra keys or placeholder drift, and the static new-tab shell, side panel, onboarding wizard, and widget picker route visible copy through message keys with English fallbacks for local smoke runs.
 - **Local release artifact builder** — `npm run build:release` now cleans previous release assets, builds the Chromium ZIP, Firefox XPI, CRX3, and `SHA256SUMS.txt`, and verifies ZIP/XPI contents against the runtime allowlist without remote build automation.
 - **Versioned settings schema with migration pipeline** — `schemaVersion` field and an ordered, idempotent migration array replace the previous ad-hoc shape checks. Regression test with 8 fixture cases.
 - **Unified `ext.js` browser namespace wrapper** — new code can `import { ext } from "./utils/ext.js"` instead of inline `globalThis.browser || globalThis.chrome` detection.

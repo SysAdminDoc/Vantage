@@ -1,45 +1,51 @@
 {
-  "appName": {
-    "message": "Vantage"
+  "about": {
+    "message": "について"
   },
-  "appDesc": {
-    "message": "新しいタブページ — 天気、フィード、ブックマーク、暗号通貨などを備えた構成可能でハイパフォーマンスのNTP。"
+  "accentColor": {
+    "message": "アクセント色"
   },
-  "customizeWidgets": {
-    "message": "ウィジェットをカスタマイズ"
+  "activeCountSuffix": {
+    "message": "on"
   },
-  "openSettings": {
-    "message": "設定を開く"
+  "add": {
+    "message": "追加"
   },
-  "searchPlaceholder": {
-    "message": "ウェブを検索..."
-  },
-  "searchWeb": {
-    "message": "ウェブを検索"
-  },
-  "skipToMain": {
-    "message": "メインコンテンツにスキップ"
-  },
-  "quickLinks": {
-    "message": "クイックリンク"
+  "addEmbed": {
+    "message": "Add embed"
   },
   "addLink": {
     "message": "リンクを追加"
   },
-  "topSites": {
-    "message": "トップサイト"
+  "addTrustedEmbedHint": {
+    "message": "Add a trusted web page when it belongs beside your dashboard."
   },
-  "weather": {
-    "message": "天気"
+  "airQuality": {
+    "message": "Air Quality"
   },
-  "quote": {
-    "message": "引用"
+  "allSetReady": {
+    "message": "All set. You're ready."
   },
-  "news": {
-    "message": "ニュース"
+  "ambientSounds": {
+    "message": "Ambient Sounds"
   },
-  "feeds": {
-    "message": "フィード"
+  "animatedBackground": {
+    "message": "Animated Background"
+  },
+  "appDesc": {
+    "message": "新しいタブページ — 天気、フィード、ブックマーク、暗号通貨などを備えた構成可能でハイパフォーマンスのNTP。"
+  },
+  "appName": {
+    "message": "Vantage"
+  },
+  "appearanceTab": {
+    "message": "外観"
+  },
+  "back": {
+    "message": "Back"
+  },
+  "background": {
+    "message": "背景"
   },
   "bookmarks": {
     "message": "ブックマーク"
@@ -47,133 +53,589 @@
   "calendar": {
     "message": "カレンダー"
   },
-  "todo": {
-    "message": "やることリスト"
+  "cancel": {
+    "message": "キャンセル"
   },
-  "notes": {
-    "message": "メモ"
+  "chooseLayoutSubtitle": {
+    "message": "Start with the dashboard pace you want. Every choice stays editable later."
+  },
+  "chooseStartingLayout": {
+    "message": "Choose a starting layout"
+  },
+  "chooseYourLayout": {
+    "message": "Choose your layout"
+  },
+  "cityForWeather": {
+    "message": "City for weather"
+  },
+  "cityPlaceholder": {
+    "message": "City - e.g. Chicago"
   },
   "clock": {
     "message": "時計"
   },
-  "pomodoro": {
-    "message": "ポモドーロ"
-  },
-  "crypto": {
-    "message": "暗号"
-  },
-  "settings": {
-    "message": "設定"
-  },
-  "appearanceTab": {
-    "message": "外観"
-  },
-  "contentTab": {
-    "message": "コンテンツ"
-  },
-  "dataTab": {
-    "message": "データ"
-  },
-  "darkMode": {
-    "message": "ダークモード"
-  },
-  "lightMode": {
-    "message": "ライトモード"
-  },
-  "accentColor": {
-    "message": "アクセント色"
-  },
-  "theme": {
-    "message": "テーマ"
-  },
-  "background": {
-    "message": "背景"
-  },
   "close": {
     "message": "閉じる"
   },
-  "save": {
-    "message": "保存"
+  "closeWidgetPicker": {
+    "message": "Close widget picker"
   },
-  "cancel": {
-    "message": "キャンセル"
+  "comment": {
+    "message": "Comment"
   },
-  "delete": {
-    "message": "削除"
-  },
-  "edit": {
-    "message": "編集"
-  },
-  "add": {
-    "message": "追加"
-  },
-  "export": {
-    "message": "エクスポート"
-  },
-  "import": {
-    "message": "インポート"
+  "configureInSettings": {
+    "message": "Configure in Settings"
   },
   "confirmDelete": {
     "message": "本当ですか？"
   },
-  "noResults": {
-    "message": "結果なし"
-  },
-  "loading": {
-    "message": "読み込み中..."
-  },
-  "error": {
-    "message": "エラーが発生しました"
-  },
-  "success": {
-    "message": "成功"
+  "contentTab": {
+    "message": "コンテンツ"
   },
   "copied": {
     "message": "コピーしました"
   },
-  "language": {
-    "message": "言語"
+  "countdowns": {
+    "message": "Countdowns"
   },
-  "english": {
-    "message": "英語"
+  "crypto": {
+    "message": "暗号"
   },
-  "spanish": {
-    "message": "スペイン語"
+  "cryptoPrices": {
+    "message": "Crypto Prices"
   },
-  "german": {
-    "message": "ドイツ語"
+  "customCountSuffix": {
+    "message": "custom"
   },
-  "french": {
-    "message": "フランス語"
+  "customWebEmbed": {
+    "message": "Custom web embed"
   },
-  "japanese": {
-    "message": "日本語"
+  "customizeWidgets": {
+    "message": "ウィジェットをカスタマイズ"
   },
-  "help": {
-    "message": "ヘルプ"
+  "darkMode": {
+    "message": "ダークモード"
   },
-  "about": {
-    "message": "について"
+  "dataTab": {
+    "message": "データ"
   },
-  "readMore": {
-    "message": "詳しく読む"
+  "date": {
+    "message": "Date"
   },
-  "viewAll": {
-    "message": "すべて表示"
-  },
-  "url": {
-    "message": "URL"
-  },
-  "title": {
-    "message": "タイトル"
+  "delete": {
+    "message": "削除"
   },
   "description": {
     "message": "説明"
   },
+  "detectLocation": {
+    "message": "Detect location"
+  },
+  "detectedLocation": {
+    "message": "Detected: $1"
+  },
+  "detecting": {
+    "message": "Detecting..."
+  },
+  "disabled": {
+    "message": "Disabled"
+  },
+  "edit": {
+    "message": "編集"
+  },
+  "editLayout": {
+    "message": "Edit layout"
+  },
+  "embed": {
+    "message": "Embed"
+  },
+  "embedTitleAria": {
+    "message": "Embed title"
+  },
+  "embedTitlePlaceholder": {
+    "message": "Title (e.g. Flight Tracker)"
+  },
+  "embedUrlAria": {
+    "message": "Embed URL"
+  },
+  "embedUrlPlaceholder": {
+    "message": "example.com/dashboard"
+  },
+  "enabledLabel": {
+    "message": "Enabled"
+  },
+  "endTime": {
+    "message": "End time"
+  },
+  "english": {
+    "message": "英語"
+  },
+  "enterEmbedTitle": {
+    "message": "Enter a title for the embed."
+  },
+  "enterEmbedUrl": {
+    "message": "Enter the embed URL."
+  },
+  "enterValidWebUrlNoCredentials": {
+    "message": "Enter a valid web URL without a username or password."
+  },
+  "error": {
+    "message": "エラーが発生しました"
+  },
+  "export": {
+    "message": "エクスポート"
+  },
+  "feeds": {
+    "message": "フィード"
+  },
+  "firstTimeSetup": {
+    "message": "First-time setup"
+  },
+  "french": {
+    "message": "フランス語"
+  },
+  "german": {
+    "message": "ドイツ語"
+  },
+  "github": {
+    "message": "GitHub"
+  },
+  "greeting": {
+    "message": "Greeting"
+  },
+  "greetingNameAria": {
+    "message": "Your name for the greeting"
+  },
+  "help": {
+    "message": "ヘルプ"
+  },
+  "historySearch": {
+    "message": "History Search"
+  },
+  "import": {
+    "message": "インポート"
+  },
+  "inbox": {
+    "message": "Inbox"
+  },
+  "japanese": {
+    "message": "日本語"
+  },
   "label": {
     "message": "ラベル"
   },
+  "language": {
+    "message": "言語"
+  },
+  "layoutPresetBalanced": {
+    "message": "Balanced"
+  },
+  "layoutPresetBalancedFeature1": {
+    "message": "Private search"
+  },
+  "layoutPresetBalancedFeature2": {
+    "message": "Greeting"
+  },
+  "layoutPresetBalancedFeature3": {
+    "message": "Weather"
+  },
+  "layoutPresetBalancedFeature4": {
+    "message": "Quick links"
+  },
+  "layoutPresetBalancedFeature5": {
+    "message": "Three panels"
+  },
+  "layoutPresetBalancedTagline": {
+    "message": "Three panels for more context."
+  },
+  "layoutPresetExpanded": {
+    "message": "Expanded"
+  },
+  "layoutPresetExpandedFeature1": {
+    "message": "Private search"
+  },
+  "layoutPresetExpandedFeature2": {
+    "message": "Weather"
+  },
+  "layoutPresetExpandedFeature3": {
+    "message": "Air quality"
+  },
+  "layoutPresetExpandedFeature4": {
+    "message": "Feeds"
+  },
+  "layoutPresetExpandedFeature5": {
+    "message": "Pomodoro"
+  },
+  "layoutPresetExpandedTagline": {
+    "message": "Four panels for power users."
+  },
+  "layoutPresetFocused": {
+    "message": "Focused"
+  },
+  "layoutPresetFocusedFeature1": {
+    "message": "Private search"
+  },
+  "layoutPresetFocusedFeature2": {
+    "message": "Quick links"
+  },
+  "layoutPresetFocusedFeature3": {
+    "message": "Two reading panels"
+  },
+  "layoutPresetFocusedTagline": {
+    "message": "Search, quick links, and two panels."
+  },
+  "lightMode": {
+    "message": "ライトモード"
+  },
+  "loading": {
+    "message": "読み込み中..."
+  },
+  "localFirstPrivate": {
+    "message": "Local-first. Private by default."
+  },
+  "localStatus": {
+    "message": "Local status"
+  },
+  "lookingUp": {
+    "message": "Looking up..."
+  },
+  "marineWeather": {
+    "message": "Marine Weather"
+  },
   "name": {
     "message": "名前"
+  },
+  "newTabTitle": {
+    "message": "New Tab"
+  },
+  "news": {
+    "message": "ニュース"
+  },
+  "next": {
+    "message": "Next"
+  },
+  "noItems": {
+    "message": "No $ITEM$ yet"
+  },
+  "noResults": {
+    "message": "結果なし"
+  },
+  "noSyncNoTracking": {
+    "message": "No sync. No tracking. No profile."
+  },
+  "notes": {
+    "message": "メモ"
+  },
+  "onboardingDoneSubtitle": {
+    "message": "Your preferences are saved locally on this device. You can refine the setup from Settings."
+  },
+  "openDashboard": {
+    "message": "Open dashboard"
+  },
+  "openSettings": {
+    "message": "設定を開く"
+  },
+  "openSettingsForEmbed": {
+    "message": "Open settings for this embed"
+  },
+  "optional": {
+    "message": "optional"
+  },
+  "pageControls": {
+    "message": "Page controls"
+  },
+  "permissionDeniedWidgetDisabled": {
+    "message": "$1 permission denied. The widget stays disabled."
+  },
+  "personalize": {
+    "message": "Personalize"
+  },
+  "personalizeSubtitle": {
+    "message": "Add a greeting name and weather city now, or leave either blank for a clean start."
+  },
+  "photoOfTheDay": {
+    "message": "Photo of the Day"
+  },
+  "pomodoro": {
+    "message": "ポモドーロ"
+  },
+  "presetAriaLabel": {
+    "message": "$1. $2 Includes $3."
+  },
+  "privacyAndSyncStatus": {
+    "message": "Privacy and sync status"
+  },
+  "quickLinks": {
+    "message": "クイックリンク"
+  },
+  "quote": {
+    "message": "引用"
+  },
+  "quoteOfTheDay": {
+    "message": "Quote of the Day"
+  },
+  "rating": {
+    "message": "Rating"
+  },
+  "readMore": {
+    "message": "詳しく読む"
+  },
+  "readingPanels": {
+    "message": "Reading panels"
+  },
+  "refreshFeeds": {
+    "message": "Refresh feeds"
+  },
+  "removeEmbed": {
+    "message": "Remove embed"
+  },
+  "removeLink": {
+    "message": "Remove $ITEM$"
+  },
+  "removeThisEmbed": {
+    "message": "Remove this embed"
+  },
+  "removedNamedItem": {
+    "message": "Removed \"$1\"."
+  },
+  "riverFloodRisk": {
+    "message": "River Flood Risk"
+  },
+  "rssReadingList": {
+    "message": "RSS / Reading List"
+  },
+  "save": {
+    "message": "保存"
+  },
+  "searchAndQuickLinks": {
+    "message": "Search and quick links"
+  },
+  "searchPlaceholder": {
+    "message": "ウェブを検索..."
+  },
+  "searchWeb": {
+    "message": "ウェブを検索"
+  },
+  "set": {
+    "message": "Set"
+  },
+  "setToLocation": {
+    "message": "Set to $1"
+  },
+  "settings": {
+    "message": "設定"
+  },
+  "setupStepOf": {
+    "message": "Step $1 of $2"
+  },
+  "sidePanelEmptyHint": {
+    "message": "Add an RSS / News feed in Settings -> Reading list or News."
+  },
+  "sidePanelKicker": {
+    "message": "News and reading list in one stream."
+  },
+  "sidePanelTitle": {
+    "message": "Vantage Feeds"
+  },
+  "skipSetup": {
+    "message": "Skip setup"
+  },
+  "skipToMain": {
+    "message": "メインコンテンツにスキップ"
+  },
+  "solarRadiation": {
+    "message": "Solar Radiation"
+  },
+  "spanish": {
+    "message": "スペイン語"
+  },
+  "starredItems": {
+    "message": "Starred Items"
+  },
+  "startTime": {
+    "message": "Start time"
+  },
+  "success": {
+    "message": "成功"
+  },
+  "theme": {
+    "message": "テーマ"
+  },
+  "time": {
+    "message": "Time"
+  },
+  "title": {
+    "message": "タイトル"
+  },
+  "todo": {
+    "message": "やることリスト"
+  },
+  "todoList": {
+    "message": "To-Do List"
+  },
+  "toggleWidgetLabel": {
+    "message": "Toggle $1"
+  },
+  "topSites": {
+    "message": "トップサイト"
+  },
+  "undo": {
+    "message": "Undo"
+  },
+  "unitConverter": {
+    "message": "Unit Converter"
+  },
+  "untitledEmbed": {
+    "message": "Untitled Embed"
+  },
+  "url": {
+    "message": "URL"
+  },
+  "vantageHome": {
+    "message": "Vantage home"
+  },
+  "vantageSetup": {
+    "message": "Vantage setup"
+  },
+  "version": {
+    "message": "Version $VERSION$"
+  },
+  "viewAll": {
+    "message": "すべて表示"
+  },
+  "weather": {
+    "message": "天気"
+  },
+  "weatherLocation": {
+    "message": "Weather location"
+  },
+  "widgetGroupEmbeds": {
+    "message": "Embeds"
+  },
+  "widgetGroupHero": {
+    "message": "Hero"
+  },
+  "widgetGroupReadingPanels": {
+    "message": "Reading Panels"
+  },
+  "widgetGroupStatusBar": {
+    "message": "Status Bar"
+  },
+  "widgetGroupTimer": {
+    "message": "Timer"
+  },
+  "widgetGroupToolsContent": {
+    "message": "Tools & Content"
+  },
+  "widgetHintAqiPollen": {
+    "message": "AQI and pollen"
+  },
+  "widgetHintBrowserBookmarks": {
+    "message": "Browser bookmarks"
+  },
+  "widgetHintCuratedHeadlines": {
+    "message": "Curated headlines"
+  },
+  "widgetHintDailyReflection": {
+    "message": "Daily reflection"
+  },
+  "widgetHintFocusSessions": {
+    "message": "Focus sessions"
+  },
+  "widgetHintFocusSound": {
+    "message": "Focus sound"
+  },
+  "widgetHintFrequentVisits": {
+    "message": "Frequent visits"
+  },
+  "widgetHintIcalAgenda": {
+    "message": "iCal agenda"
+  },
+  "widgetHintImportantDates": {
+    "message": "Important dates"
+  },
+  "widgetHintLiveSkyScene": {
+    "message": "Live sky scene"
+  },
+  "widgetHintLocalConditions": {
+    "message": "Local conditions"
+  },
+  "widgetHintLocalRiverRisk": {
+    "message": "Local river risk"
+  },
+  "widgetHintMarketPrices": {
+    "message": "Market prices"
+  },
+  "widgetHintNasaApod": {
+    "message": "NASA APOD"
+  },
+  "widgetHintOptInHistory": {
+    "message": "Opt-in browser history"
+  },
+  "widgetHintPersonalFeeds": {
+    "message": "Personal feeds"
+  },
+  "widgetHintPersonalWelcome": {
+    "message": "Personal welcome"
+  },
+  "widgetHintPinnedReads": {
+    "message": "Pinned reads"
+  },
+  "widgetHintPinnedShortcuts": {
+    "message": "Pinned shortcuts"
+  },
+  "widgetHintQuickConversions": {
+    "message": "Quick conversions"
+  },
+  "widgetHintReadLaterQueue": {
+    "message": "Read-later queue"
+  },
+  "widgetHintRepositoryActivity": {
+    "message": "Repository activity"
+  },
+  "widgetHintSavedTimeZones": {
+    "message": "Saved time zones"
+  },
+  "widgetHintScratchNotes": {
+    "message": "Scratch notes"
+  },
+  "widgetHintTaskCapture": {
+    "message": "Task capture"
+  },
+  "widgetHintTimeDate": {
+    "message": "Time and date"
+  },
+  "widgetHintUvIrradiance": {
+    "message": "UV and irradiance"
+  },
+  "widgetHintVisualStickers": {
+    "message": "Visual stickers"
+  },
+  "widgetHintWavesCurrents": {
+    "message": "Waves and currents"
+  },
+  "widgetHintWeatherMap": {
+    "message": "Weather map"
+  },
+  "widgetPickerSubtitle": {
+    "message": "Toggle dashboard modules and add live embeds."
+  },
+  "widgets": {
+    "message": "Widgets"
+  },
+  "windyRadar": {
+    "message": "Windy Radar"
+  },
+  "workspaces": {
+    "message": "Workspaces"
+  },
+  "worldClocks": {
+    "message": "World Clocks"
+  },
+  "yourName": {
+    "message": "Your name"
+  },
+  "zenShelf": {
+    "message": "Zen Shelf"
   }
 }

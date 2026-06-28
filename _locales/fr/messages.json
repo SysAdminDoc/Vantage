@@ -1,45 +1,51 @@
 {
-  "appName": {
-    "message": "Vantage"
+  "about": {
+    "message": "À propos"
   },
-  "appDesc": {
-    "message": "Nouvel onglet — NTP composable haute performance avec météo, flux, signets, crypto et plus."
+  "accentColor": {
+    "message": "Couleur d'accent"
   },
-  "customizeWidgets": {
-    "message": "Personnaliser les widgets"
+  "activeCountSuffix": {
+    "message": "on"
   },
-  "openSettings": {
-    "message": "Ouvrir les paramètres"
+  "add": {
+    "message": "Ajouter"
   },
-  "searchPlaceholder": {
-    "message": "Rechercher sur le web..."
-  },
-  "searchWeb": {
-    "message": "Rechercher sur le web"
-  },
-  "skipToMain": {
-    "message": "Aller au contenu principal"
-  },
-  "quickLinks": {
-    "message": "Liens rapides"
+  "addEmbed": {
+    "message": "Add embed"
   },
   "addLink": {
     "message": "Ajouter un lien"
   },
-  "topSites": {
-    "message": "Sites principaux"
+  "addTrustedEmbedHint": {
+    "message": "Add a trusted web page when it belongs beside your dashboard."
   },
-  "weather": {
-    "message": "Météo"
+  "airQuality": {
+    "message": "Air Quality"
   },
-  "quote": {
-    "message": "Citation"
+  "allSetReady": {
+    "message": "All set. You're ready."
   },
-  "news": {
-    "message": "Actualités"
+  "ambientSounds": {
+    "message": "Ambient Sounds"
   },
-  "feeds": {
-    "message": "Flux"
+  "animatedBackground": {
+    "message": "Animated Background"
+  },
+  "appDesc": {
+    "message": "Nouvel onglet — NTP composable haute performance avec météo, flux, signets, crypto et plus."
+  },
+  "appName": {
+    "message": "Vantage"
+  },
+  "appearanceTab": {
+    "message": "Apparence"
+  },
+  "back": {
+    "message": "Back"
+  },
+  "background": {
+    "message": "Arrière-plan"
   },
   "bookmarks": {
     "message": "Signets"
@@ -47,133 +53,589 @@
   "calendar": {
     "message": "Calendrier"
   },
-  "todo": {
-    "message": "Tâches"
+  "cancel": {
+    "message": "Annuler"
   },
-  "notes": {
-    "message": "Notes"
+  "chooseLayoutSubtitle": {
+    "message": "Start with the dashboard pace you want. Every choice stays editable later."
+  },
+  "chooseStartingLayout": {
+    "message": "Choose a starting layout"
+  },
+  "chooseYourLayout": {
+    "message": "Choose your layout"
+  },
+  "cityForWeather": {
+    "message": "City for weather"
+  },
+  "cityPlaceholder": {
+    "message": "City - e.g. Chicago"
   },
   "clock": {
     "message": "Horloge"
   },
-  "pomodoro": {
-    "message": "Pomodoro"
-  },
-  "crypto": {
-    "message": "Crypto"
-  },
-  "settings": {
-    "message": "Paramètres"
-  },
-  "appearanceTab": {
-    "message": "Apparence"
-  },
-  "contentTab": {
-    "message": "Contenu"
-  },
-  "dataTab": {
-    "message": "Données"
-  },
-  "darkMode": {
-    "message": "Mode sombre"
-  },
-  "lightMode": {
-    "message": "Mode clair"
-  },
-  "accentColor": {
-    "message": "Couleur d'accent"
-  },
-  "theme": {
-    "message": "Thème"
-  },
-  "background": {
-    "message": "Arrière-plan"
-  },
   "close": {
     "message": "Fermer"
   },
-  "save": {
-    "message": "Enregistrer"
+  "closeWidgetPicker": {
+    "message": "Close widget picker"
   },
-  "cancel": {
-    "message": "Annuler"
+  "comment": {
+    "message": "Comment"
   },
-  "delete": {
-    "message": "Supprimer"
-  },
-  "edit": {
-    "message": "Modifier"
-  },
-  "add": {
-    "message": "Ajouter"
-  },
-  "export": {
-    "message": "Exporter"
-  },
-  "import": {
-    "message": "Importer"
+  "configureInSettings": {
+    "message": "Configure in Settings"
   },
   "confirmDelete": {
     "message": "Êtes-vous sûr?"
   },
-  "noResults": {
-    "message": "Aucun résultat"
-  },
-  "loading": {
-    "message": "Chargement..."
-  },
-  "error": {
-    "message": "Une erreur s'est produite"
-  },
-  "success": {
-    "message": "Succès"
+  "contentTab": {
+    "message": "Contenu"
   },
   "copied": {
     "message": "Copié"
   },
-  "language": {
-    "message": "Langue"
+  "countdowns": {
+    "message": "Countdowns"
   },
-  "english": {
-    "message": "Anglais"
+  "crypto": {
+    "message": "Crypto"
   },
-  "spanish": {
-    "message": "Espagnol"
+  "cryptoPrices": {
+    "message": "Crypto Prices"
   },
-  "german": {
-    "message": "Allemand"
+  "customCountSuffix": {
+    "message": "custom"
   },
-  "french": {
-    "message": "Français"
+  "customWebEmbed": {
+    "message": "Custom web embed"
   },
-  "japanese": {
-    "message": "Japonais"
+  "customizeWidgets": {
+    "message": "Personnaliser les widgets"
   },
-  "help": {
-    "message": "Aide"
+  "darkMode": {
+    "message": "Mode sombre"
   },
-  "about": {
-    "message": "À propos"
+  "dataTab": {
+    "message": "Données"
   },
-  "readMore": {
-    "message": "En savoir plus"
+  "date": {
+    "message": "Date"
   },
-  "viewAll": {
-    "message": "Voir tout"
-  },
-  "url": {
-    "message": "URL"
-  },
-  "title": {
-    "message": "Titre"
+  "delete": {
+    "message": "Supprimer"
   },
   "description": {
     "message": "Description"
   },
+  "detectLocation": {
+    "message": "Detect location"
+  },
+  "detectedLocation": {
+    "message": "Detected: $1"
+  },
+  "detecting": {
+    "message": "Detecting..."
+  },
+  "disabled": {
+    "message": "Disabled"
+  },
+  "edit": {
+    "message": "Modifier"
+  },
+  "editLayout": {
+    "message": "Edit layout"
+  },
+  "embed": {
+    "message": "Embed"
+  },
+  "embedTitleAria": {
+    "message": "Embed title"
+  },
+  "embedTitlePlaceholder": {
+    "message": "Title (e.g. Flight Tracker)"
+  },
+  "embedUrlAria": {
+    "message": "Embed URL"
+  },
+  "embedUrlPlaceholder": {
+    "message": "example.com/dashboard"
+  },
+  "enabledLabel": {
+    "message": "Enabled"
+  },
+  "endTime": {
+    "message": "End time"
+  },
+  "english": {
+    "message": "Anglais"
+  },
+  "enterEmbedTitle": {
+    "message": "Enter a title for the embed."
+  },
+  "enterEmbedUrl": {
+    "message": "Enter the embed URL."
+  },
+  "enterValidWebUrlNoCredentials": {
+    "message": "Enter a valid web URL without a username or password."
+  },
+  "error": {
+    "message": "Une erreur s'est produite"
+  },
+  "export": {
+    "message": "Exporter"
+  },
+  "feeds": {
+    "message": "Flux"
+  },
+  "firstTimeSetup": {
+    "message": "First-time setup"
+  },
+  "french": {
+    "message": "Français"
+  },
+  "german": {
+    "message": "Allemand"
+  },
+  "github": {
+    "message": "GitHub"
+  },
+  "greeting": {
+    "message": "Greeting"
+  },
+  "greetingNameAria": {
+    "message": "Your name for the greeting"
+  },
+  "help": {
+    "message": "Aide"
+  },
+  "historySearch": {
+    "message": "History Search"
+  },
+  "import": {
+    "message": "Importer"
+  },
+  "inbox": {
+    "message": "Inbox"
+  },
+  "japanese": {
+    "message": "Japonais"
+  },
   "label": {
     "message": "Libellé"
   },
+  "language": {
+    "message": "Langue"
+  },
+  "layoutPresetBalanced": {
+    "message": "Balanced"
+  },
+  "layoutPresetBalancedFeature1": {
+    "message": "Private search"
+  },
+  "layoutPresetBalancedFeature2": {
+    "message": "Greeting"
+  },
+  "layoutPresetBalancedFeature3": {
+    "message": "Weather"
+  },
+  "layoutPresetBalancedFeature4": {
+    "message": "Quick links"
+  },
+  "layoutPresetBalancedFeature5": {
+    "message": "Three panels"
+  },
+  "layoutPresetBalancedTagline": {
+    "message": "Three panels for more context."
+  },
+  "layoutPresetExpanded": {
+    "message": "Expanded"
+  },
+  "layoutPresetExpandedFeature1": {
+    "message": "Private search"
+  },
+  "layoutPresetExpandedFeature2": {
+    "message": "Weather"
+  },
+  "layoutPresetExpandedFeature3": {
+    "message": "Air quality"
+  },
+  "layoutPresetExpandedFeature4": {
+    "message": "Feeds"
+  },
+  "layoutPresetExpandedFeature5": {
+    "message": "Pomodoro"
+  },
+  "layoutPresetExpandedTagline": {
+    "message": "Four panels for power users."
+  },
+  "layoutPresetFocused": {
+    "message": "Focused"
+  },
+  "layoutPresetFocusedFeature1": {
+    "message": "Private search"
+  },
+  "layoutPresetFocusedFeature2": {
+    "message": "Quick links"
+  },
+  "layoutPresetFocusedFeature3": {
+    "message": "Two reading panels"
+  },
+  "layoutPresetFocusedTagline": {
+    "message": "Search, quick links, and two panels."
+  },
+  "lightMode": {
+    "message": "Mode clair"
+  },
+  "loading": {
+    "message": "Chargement..."
+  },
+  "localFirstPrivate": {
+    "message": "Local-first. Private by default."
+  },
+  "localStatus": {
+    "message": "Local status"
+  },
+  "lookingUp": {
+    "message": "Looking up..."
+  },
+  "marineWeather": {
+    "message": "Marine Weather"
+  },
   "name": {
     "message": "Nom"
+  },
+  "newTabTitle": {
+    "message": "New Tab"
+  },
+  "news": {
+    "message": "Actualités"
+  },
+  "next": {
+    "message": "Next"
+  },
+  "noItems": {
+    "message": "No $ITEM$ yet"
+  },
+  "noResults": {
+    "message": "Aucun résultat"
+  },
+  "noSyncNoTracking": {
+    "message": "No sync. No tracking. No profile."
+  },
+  "notes": {
+    "message": "Notes"
+  },
+  "onboardingDoneSubtitle": {
+    "message": "Your preferences are saved locally on this device. You can refine the setup from Settings."
+  },
+  "openDashboard": {
+    "message": "Open dashboard"
+  },
+  "openSettings": {
+    "message": "Ouvrir les paramètres"
+  },
+  "openSettingsForEmbed": {
+    "message": "Open settings for this embed"
+  },
+  "optional": {
+    "message": "optional"
+  },
+  "pageControls": {
+    "message": "Page controls"
+  },
+  "permissionDeniedWidgetDisabled": {
+    "message": "$1 permission denied. The widget stays disabled."
+  },
+  "personalize": {
+    "message": "Personalize"
+  },
+  "personalizeSubtitle": {
+    "message": "Add a greeting name and weather city now, or leave either blank for a clean start."
+  },
+  "photoOfTheDay": {
+    "message": "Photo of the Day"
+  },
+  "pomodoro": {
+    "message": "Pomodoro"
+  },
+  "presetAriaLabel": {
+    "message": "$1. $2 Includes $3."
+  },
+  "privacyAndSyncStatus": {
+    "message": "Privacy and sync status"
+  },
+  "quickLinks": {
+    "message": "Liens rapides"
+  },
+  "quote": {
+    "message": "Citation"
+  },
+  "quoteOfTheDay": {
+    "message": "Quote of the Day"
+  },
+  "rating": {
+    "message": "Rating"
+  },
+  "readMore": {
+    "message": "En savoir plus"
+  },
+  "readingPanels": {
+    "message": "Reading panels"
+  },
+  "refreshFeeds": {
+    "message": "Refresh feeds"
+  },
+  "removeEmbed": {
+    "message": "Remove embed"
+  },
+  "removeLink": {
+    "message": "Remove $ITEM$"
+  },
+  "removeThisEmbed": {
+    "message": "Remove this embed"
+  },
+  "removedNamedItem": {
+    "message": "Removed \"$1\"."
+  },
+  "riverFloodRisk": {
+    "message": "River Flood Risk"
+  },
+  "rssReadingList": {
+    "message": "RSS / Reading List"
+  },
+  "save": {
+    "message": "Enregistrer"
+  },
+  "searchAndQuickLinks": {
+    "message": "Search and quick links"
+  },
+  "searchPlaceholder": {
+    "message": "Rechercher sur le web..."
+  },
+  "searchWeb": {
+    "message": "Rechercher sur le web"
+  },
+  "set": {
+    "message": "Set"
+  },
+  "setToLocation": {
+    "message": "Set to $1"
+  },
+  "settings": {
+    "message": "Paramètres"
+  },
+  "setupStepOf": {
+    "message": "Step $1 of $2"
+  },
+  "sidePanelEmptyHint": {
+    "message": "Add an RSS / News feed in Settings -> Reading list or News."
+  },
+  "sidePanelKicker": {
+    "message": "News and reading list in one stream."
+  },
+  "sidePanelTitle": {
+    "message": "Vantage Feeds"
+  },
+  "skipSetup": {
+    "message": "Skip setup"
+  },
+  "skipToMain": {
+    "message": "Aller au contenu principal"
+  },
+  "solarRadiation": {
+    "message": "Solar Radiation"
+  },
+  "spanish": {
+    "message": "Espagnol"
+  },
+  "starredItems": {
+    "message": "Starred Items"
+  },
+  "startTime": {
+    "message": "Start time"
+  },
+  "success": {
+    "message": "Succès"
+  },
+  "theme": {
+    "message": "Thème"
+  },
+  "time": {
+    "message": "Time"
+  },
+  "title": {
+    "message": "Titre"
+  },
+  "todo": {
+    "message": "Tâches"
+  },
+  "todoList": {
+    "message": "To-Do List"
+  },
+  "toggleWidgetLabel": {
+    "message": "Toggle $1"
+  },
+  "topSites": {
+    "message": "Sites principaux"
+  },
+  "undo": {
+    "message": "Undo"
+  },
+  "unitConverter": {
+    "message": "Unit Converter"
+  },
+  "untitledEmbed": {
+    "message": "Untitled Embed"
+  },
+  "url": {
+    "message": "URL"
+  },
+  "vantageHome": {
+    "message": "Vantage home"
+  },
+  "vantageSetup": {
+    "message": "Vantage setup"
+  },
+  "version": {
+    "message": "Version $VERSION$"
+  },
+  "viewAll": {
+    "message": "Voir tout"
+  },
+  "weather": {
+    "message": "Météo"
+  },
+  "weatherLocation": {
+    "message": "Weather location"
+  },
+  "widgetGroupEmbeds": {
+    "message": "Embeds"
+  },
+  "widgetGroupHero": {
+    "message": "Hero"
+  },
+  "widgetGroupReadingPanels": {
+    "message": "Reading Panels"
+  },
+  "widgetGroupStatusBar": {
+    "message": "Status Bar"
+  },
+  "widgetGroupTimer": {
+    "message": "Timer"
+  },
+  "widgetGroupToolsContent": {
+    "message": "Tools & Content"
+  },
+  "widgetHintAqiPollen": {
+    "message": "AQI and pollen"
+  },
+  "widgetHintBrowserBookmarks": {
+    "message": "Browser bookmarks"
+  },
+  "widgetHintCuratedHeadlines": {
+    "message": "Curated headlines"
+  },
+  "widgetHintDailyReflection": {
+    "message": "Daily reflection"
+  },
+  "widgetHintFocusSessions": {
+    "message": "Focus sessions"
+  },
+  "widgetHintFocusSound": {
+    "message": "Focus sound"
+  },
+  "widgetHintFrequentVisits": {
+    "message": "Frequent visits"
+  },
+  "widgetHintIcalAgenda": {
+    "message": "iCal agenda"
+  },
+  "widgetHintImportantDates": {
+    "message": "Important dates"
+  },
+  "widgetHintLiveSkyScene": {
+    "message": "Live sky scene"
+  },
+  "widgetHintLocalConditions": {
+    "message": "Local conditions"
+  },
+  "widgetHintLocalRiverRisk": {
+    "message": "Local river risk"
+  },
+  "widgetHintMarketPrices": {
+    "message": "Market prices"
+  },
+  "widgetHintNasaApod": {
+    "message": "NASA APOD"
+  },
+  "widgetHintOptInHistory": {
+    "message": "Opt-in browser history"
+  },
+  "widgetHintPersonalFeeds": {
+    "message": "Personal feeds"
+  },
+  "widgetHintPersonalWelcome": {
+    "message": "Personal welcome"
+  },
+  "widgetHintPinnedReads": {
+    "message": "Pinned reads"
+  },
+  "widgetHintPinnedShortcuts": {
+    "message": "Pinned shortcuts"
+  },
+  "widgetHintQuickConversions": {
+    "message": "Quick conversions"
+  },
+  "widgetHintReadLaterQueue": {
+    "message": "Read-later queue"
+  },
+  "widgetHintRepositoryActivity": {
+    "message": "Repository activity"
+  },
+  "widgetHintSavedTimeZones": {
+    "message": "Saved time zones"
+  },
+  "widgetHintScratchNotes": {
+    "message": "Scratch notes"
+  },
+  "widgetHintTaskCapture": {
+    "message": "Task capture"
+  },
+  "widgetHintTimeDate": {
+    "message": "Time and date"
+  },
+  "widgetHintUvIrradiance": {
+    "message": "UV and irradiance"
+  },
+  "widgetHintVisualStickers": {
+    "message": "Visual stickers"
+  },
+  "widgetHintWavesCurrents": {
+    "message": "Waves and currents"
+  },
+  "widgetHintWeatherMap": {
+    "message": "Weather map"
+  },
+  "widgetPickerSubtitle": {
+    "message": "Toggle dashboard modules and add live embeds."
+  },
+  "widgets": {
+    "message": "Widgets"
+  },
+  "windyRadar": {
+    "message": "Windy Radar"
+  },
+  "workspaces": {
+    "message": "Workspaces"
+  },
+  "worldClocks": {
+    "message": "World Clocks"
+  },
+  "yourName": {
+    "message": "Your name"
+  },
+  "zenShelf": {
+    "message": "Zen Shelf"
   }
 }

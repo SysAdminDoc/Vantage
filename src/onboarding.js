@@ -3,13 +3,14 @@
 import { el, clear } from "./utils/dom.js";
 import { iconNode } from "./icons.js";
 import { geocodeCity, detectLocation } from "./utils/weather-source.js";
+import { i18n } from "./utils/i18n.js";
 
 const PRESETS = [
   {
     id: "minimal",
-    label: "Focused",
-    tagline: "Search, quick links, and two panels.",
-    features: ["Private search", "Quick links", "Two reading panels"],
+    label: i18n("layoutPresetFocused"),
+    tagline: i18n("layoutPresetFocusedTagline"),
+    features: [i18n("layoutPresetFocusedFeature1"), i18n("layoutPresetFocusedFeature2"), i18n("layoutPresetFocusedFeature3")],
     needsPersonalize: true,
     apply(s) {
       s.greeting.enabled   = true;
@@ -25,9 +26,15 @@ const PRESETS = [
   },
   {
     id: "standard",
-    label: "Balanced",
-    tagline: "Three panels for more context.",
-    features: ["Private search", "Greeting", "Weather", "Quick links", "Three panels"],
+    label: i18n("layoutPresetBalanced"),
+    tagline: i18n("layoutPresetBalancedTagline"),
+    features: [
+      i18n("layoutPresetBalancedFeature1"),
+      i18n("layoutPresetBalancedFeature2"),
+      i18n("layoutPresetBalancedFeature3"),
+      i18n("layoutPresetBalancedFeature4"),
+      i18n("layoutPresetBalancedFeature5")
+    ],
     needsPersonalize: true,
     apply(s) {
       s.greeting.enabled   = true;
@@ -43,9 +50,15 @@ const PRESETS = [
   },
   {
     id: "full",
-    label: "Expanded",
-    tagline: "Four panels for power users.",
-    features: ["Private search", "Weather", "Air quality", "Feeds", "Pomodoro"],
+    label: i18n("layoutPresetExpanded"),
+    tagline: i18n("layoutPresetExpandedTagline"),
+    features: [
+      i18n("layoutPresetExpandedFeature1"),
+      i18n("layoutPresetExpandedFeature2"),
+      i18n("layoutPresetExpandedFeature3"),
+      i18n("layoutPresetExpandedFeature4"),
+      i18n("layoutPresetExpandedFeature5")
+    ],
     needsPersonalize: true,
     apply(s) {
       s.greeting.enabled   = true;
@@ -78,7 +91,7 @@ export function showOnboarding(settings, onComplete) {
     class: "onboard-overlay",
     role: "dialog",
     "aria-modal": "true",
-    "aria-label": "Vantage setup"
+    "aria-label": i18n("vantageSetup")
   });
   const card = el("div", { class: "onboard-card", tabindex: "-1" });
   overlay.appendChild(card);
@@ -118,8 +131,8 @@ export function showOnboarding(settings, onComplete) {
 
     card.appendChild(
       el("div", { class: "onboard-progress" }, [
-        el("span", { class: "onboard-progress__label" }, ["First-time setup"]),
-        el("span", { class: "onboard-progress__step" }, [`Step ${step + 1} of ${names.length}`]),
+        el("span", { class: "onboard-progress__label" }, [i18n("firstTimeSetup")]),
+        el("span", { class: "onboard-progress__step" }, [i18n("setupStepOf", [step + 1, names.length])]),
         el("span", { class: "onboard-progress__rule", "aria-hidden": "true" })
       ])
     );
@@ -136,16 +149,16 @@ export function showOnboarding(settings, onComplete) {
   /* ---------- Step: layout ---------- */
   function renderLayout(content) {
     content.appendChild(el("div", { class: "onboard-header" }, [
-      el("h2", { class: "onboard-title" }, ["Choose your layout"]),
+      el("h2", { class: "onboard-title" }, [i18n("chooseYourLayout")]),
       el("p",  { class: "onboard-subtitle" }, [
-        "Start with the dashboard pace you want. Every choice stays editable later."
+        i18n("chooseLayoutSubtitle")
       ])
     ]));
 
     const grid = el("div", {
       class: "onboard-presets",
       role: "radiogroup",
-      "aria-label": "Choose a starting layout"
+      "aria-label": i18n("chooseStartingLayout")
     });
     for (const p of PRESETS) {
       const selected = p === preset;
@@ -154,7 +167,7 @@ export function showOnboarding(settings, onComplete) {
         class: `onboard-preset${selected ? " onboard-preset--selected" : ""}`,
         role: "radio",
         "aria-checked": String(selected),
-        "aria-label": `${p.label}. ${p.tagline} Includes ${p.features.slice(0, 3).join(", ")}.`,
+        "aria-label": i18n("presetAriaLabel", [p.label, p.tagline, p.features.slice(0, 3).join(", ")]),
         "data-preset": p.id,
         onClick: () => selectPreset(p),
         onKeydown: (e) => {
@@ -184,9 +197,9 @@ export function showOnboarding(settings, onComplete) {
     content.appendChild(grid);
 
     content.appendChild(el("div", { class: "onboard-footer" }, [
-      el("button", { type: "button", class: "button button--ghost", onClick: skipSetup }, ["Skip setup"]),
+      el("button", { type: "button", class: "button button--ghost", onClick: skipSetup }, [i18n("skipSetup")]),
       el("button", { type: "button", class: "button button--primary", onClick: goNext }, [
-        "Next",
+        i18n("next"),
         iconNode("arrow-right", { size: 14 })
       ])
     ]));
@@ -215,9 +228,9 @@ export function showOnboarding(settings, onComplete) {
   /* ---------- Step: personalize ---------- */
   function renderPersonalize(content) {
     content.appendChild(el("div", { class: "onboard-header" }, [
-      el("h2", { class: "onboard-title" }, ["Personalize"]),
+      el("h2", { class: "onboard-title" }, [i18n("personalize")]),
       el("p",  { class: "onboard-subtitle" }, [
-        "Add a greeting name and weather city now, or leave either blank for a clean start."
+        i18n("personalizeSubtitle")
       ])
     ]));
 
@@ -226,15 +239,15 @@ export function showOnboarding(settings, onComplete) {
     // Name field
     const nameInput = el("input", {
       type: "text",
-      placeholder: "Your name",
+      placeholder: i18n("yourName"),
       value: pendingName || settings.greeting?.name || "",
-      "aria-label": "Your name for the greeting"
+      "aria-label": i18n("greetingNameAria")
     });
     nameInput.addEventListener("input", () => { pendingName = nameInput.value.trim(); });
     fields.appendChild(el("div", { class: "onboard-field" }, [
       el("label", {}, [
-        "Name ",
-        el("span", { class: "onboard-optional" }, ["optional"])
+        `${i18n("name")} `,
+        el("span", { class: "onboard-optional" }, [i18n("optional")])
       ]),
       nameInput
     ]));
@@ -243,27 +256,27 @@ export function showOnboarding(settings, onComplete) {
     const statusEl = el("div", { class: "onboard-location-status", role: "status", "aria-live": "polite" });
     const cityInput = el("input", {
       type: "text",
-      placeholder: "City — e.g. Chicago",
+      placeholder: i18n("cityPlaceholder"),
       value: pendingLocation?.name || settings.weather?.location?.name || "",
-      "aria-label": "City for weather"
+      "aria-label": i18n("cityForWeather")
     });
     const setBtn = el("button", {
       type: "button",
       class: "button button--small",
       onClick: () => geocodeFromInput(cityInput, statusEl)
-    }, ["Set"]);
+    }, [i18n("set")]);
     const detectBtn = el("button", {
       type: "button",
       class: "button button--ghost button--small onboard-detect-btn",
       onClick: () => detectFromGeo(cityInput, statusEl)
-    }, [iconNode("globe", { size: 14 }), "Detect location"]);
+    }, [iconNode("globe", { size: 14 }), i18n("detectLocation")]);
 
     cityInput.addEventListener("keydown", e => { if (e.key === "Enter") setBtn.click(); });
 
     fields.appendChild(el("div", { class: "onboard-field" }, [
       el("label", {}, [
-        "Weather location ",
-        el("span", { class: "onboard-optional" }, ["optional"])
+        `${i18n("weatherLocation")} `,
+        el("span", { class: "onboard-optional" }, [i18n("optional")])
       ]),
       el("div", { class: "onboard-location-row" }, [cityInput, setBtn]),
       el("div", { class: "onboard-location-actions" }, [detectBtn]),
@@ -272,20 +285,20 @@ export function showOnboarding(settings, onComplete) {
 
     content.appendChild(fields);
     content.appendChild(el("div", { class: "onboard-footer" }, [
-      el("button", { type: "button", class: "button button--ghost", onClick: goBack }, ["Back"]),
-      el("button", { type: "button", class: "button button--primary", onClick: goNext }, ["Next"])
+      el("button", { type: "button", class: "button button--ghost", onClick: goBack }, [i18n("back")]),
+      el("button", { type: "button", class: "button button--primary", onClick: goNext }, [i18n("next")])
     ]));
 
     async function geocodeFromInput(input, status) {
       const q = input.value.trim();
       if (!q) return;
-      setLocationBusy(true, "Looking up...");
-      status.textContent = "Looking up\u2026";
+      setLocationBusy(true, i18n("lookingUp"));
+      status.textContent = i18n("lookingUp");
       status.className = "onboard-location-status";
       try {
         pendingLocation = await geocodeCity(q);
         input.value = pendingLocation.name;
-        status.textContent = `Set to ${pendingLocation.name}`;
+        status.textContent = i18n("setToLocation", [pendingLocation.name]);
         status.className = "onboard-location-status onboard-location-status--ok";
       } catch (err) {
         status.textContent = err.message;
@@ -296,13 +309,13 @@ export function showOnboarding(settings, onComplete) {
     }
 
     async function detectFromGeo(input, status) {
-      setLocationBusy(true, "Detecting...");
-      status.textContent = "Detecting\u2026";
+      setLocationBusy(true, i18n("detecting"));
+      status.textContent = i18n("detecting");
       status.className = "onboard-location-status";
       try {
         pendingLocation = await detectLocation();
         input.value = pendingLocation.name;
-        status.textContent = `Detected: ${pendingLocation.name}`;
+        status.textContent = i18n("detectedLocation", [pendingLocation.name]);
         status.className = "onboard-location-status onboard-location-status--ok";
       } catch (err) {
         status.textContent = err.message;
@@ -324,14 +337,14 @@ export function showOnboarding(settings, onComplete) {
   function renderDone(content) {
     content.appendChild(el("div", { class: "onboard-done" }, [
       el("div", { class: "onboard-done__check" }, [iconNode("check", { size: 28 })]),
-      el("h2", { class: "onboard-title" }, ["All set. You're ready."]),
+      el("h2", { class: "onboard-title" }, [i18n("allSetReady")]),
       el("p",  { class: "onboard-subtitle" }, [
-        "Your preferences are saved locally on this device. You can refine the setup from Settings."
+        i18n("onboardingDoneSubtitle")
       ])
     ]));
     content.appendChild(el("div", { class: "onboard-footer" }, [
       el("button", { type: "button", class: "button button--primary onboard-launch-btn", onClick: finish }, [
-        "Open dashboard",
+        i18n("openDashboard"),
         iconNode("external", { size: 14 })
       ])
     ]));

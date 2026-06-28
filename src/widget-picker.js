@@ -5,6 +5,7 @@ import { iconNode } from "./icons.js";
 import { registerOverlay } from "./utils/overlay-stack.js";
 import { normalizeWebUrl } from "./utils/url-safety.js";
 import { removeBrowserPermission, requestBrowserPermission } from "./utils/browser-permissions.js";
+import { i18n } from "./utils/i18n.js";
 
 const WIDGET_GROUPS = [
   {
@@ -64,6 +65,80 @@ const WIDGET_GROUPS = [
   },
 ];
 
+const GROUP_LABEL_KEYS = {
+  "Hero": "widgetGroupHero",
+  "Status Bar": "widgetGroupStatusBar",
+  "Timer": "widgetGroupTimer",
+  "Reading Panels": "widgetGroupReadingPanels",
+  "Tools & Content": "widgetGroupToolsContent"
+};
+
+const ITEM_LABEL_KEYS = {
+  clock: "clock",
+  greeting: "greeting",
+  quicklinks: "quickLinks",
+  topsites: "topSites",
+  worldclock: "worldClocks",
+  quote: "quoteOfTheDay",
+  weather: "weather",
+  airquality: "airQuality",
+  pomodoro: "pomodoro",
+  countdown: "countdowns",
+  news: "news",
+  rss: "rssReadingList",
+  calendar: "calendar",
+  windy: "windyRadar",
+  background: "animatedBackground",
+  marine: "marineWeather",
+  flood: "riverFloodRisk",
+  solarRadiation: "solarRadiation",
+  todo: "todoList",
+  notes: "notes",
+  zenShelf: "zenShelf",
+  bookmarks: "bookmarks",
+  starred: "starredItems",
+  inbox: "inbox",
+  ambient: "ambientSounds",
+  history: "historySearch",
+  crypto: "cryptoPrices",
+  github: "github",
+  photo: "photoOfTheDay",
+  converter: "unitConverter"
+};
+
+const ITEM_HINT_KEYS = {
+  clock: "widgetHintTimeDate",
+  greeting: "widgetHintPersonalWelcome",
+  quicklinks: "widgetHintPinnedShortcuts",
+  topsites: "widgetHintFrequentVisits",
+  worldclock: "widgetHintSavedTimeZones",
+  quote: "widgetHintDailyReflection",
+  weather: "widgetHintLocalConditions",
+  airquality: "widgetHintAqiPollen",
+  pomodoro: "widgetHintFocusSessions",
+  countdown: "widgetHintImportantDates",
+  news: "widgetHintCuratedHeadlines",
+  rss: "widgetHintPersonalFeeds",
+  calendar: "widgetHintIcalAgenda",
+  windy: "widgetHintWeatherMap",
+  background: "widgetHintLiveSkyScene",
+  marine: "widgetHintWavesCurrents",
+  flood: "widgetHintLocalRiverRisk",
+  solarRadiation: "widgetHintUvIrradiance",
+  todo: "widgetHintTaskCapture",
+  notes: "widgetHintScratchNotes",
+  zenShelf: "widgetHintVisualStickers",
+  bookmarks: "widgetHintBrowserBookmarks",
+  starred: "widgetHintPinnedReads",
+  inbox: "widgetHintReadLaterQueue",
+  ambient: "widgetHintFocusSound",
+  history: "widgetHintOptInHistory",
+  crypto: "widgetHintMarketPrices",
+  github: "widgetHintRepositoryActivity",
+  photo: "widgetHintNasaApod",
+  converter: "widgetHintQuickConversions"
+};
+
 /**
  * Wire the widget picker button to open/close the picker popover.
  * @param {HTMLElement} toggleBtn
@@ -121,20 +196,21 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
 
     const pickerHeader = el("div", { class: "widget-picker__header" }, [
       el("div", { class: "widget-picker__heading" }, [
-        el("h2", { id: "widget-picker-title", class: "widget-picker__title" }, ["Widgets"]),
-        el("p", { class: "widget-picker__subtitle" }, ["Toggle dashboard modules and add live embeds."])
+        el("h2", { id: "widget-picker-title", class: "widget-picker__title" }, [i18n("widgets")]),
+        el("p", { class: "widget-picker__subtitle" }, [i18n("widgetPickerSubtitle")])
       ]),
       el("button", {
         type: "button",
         class: "icon-button icon-button--ghost icon-button--small",
-        "aria-label": "Close widget picker",
+        "aria-label": i18n("closeWidgetPicker"),
         onClick: close
       }, [iconNode("close", { size: 14 })])
     ]);
     inner.appendChild(pickerHeader);
 
     for (const group of WIDGET_GROUPS) {
-      inner.appendChild(buildGroupLabel(group.label, `${activeCountForGroup(group, settings)}/${group.items.length} on`));
+      const label = i18n(GROUP_LABEL_KEYS[group.label] || group.label);
+      inner.appendChild(buildGroupLabel(label, `${activeCountForGroup(group, settings)}/${group.items.length} ${i18n("activeCountSuffix")}`));
       for (const item of group.items) {
         inner.appendChild(buildRow(item, settings, onSave, rebuildPicker));
       }
@@ -143,10 +219,10 @@ export function renderWidgetPicker(toggleBtn, pickerEl, getSettings, onSave, ope
     // Embeds section
     const embeds = settings.embeds || [];
     const activeEmbeds = embeds.filter(embed => embed.enabled).length;
-    inner.appendChild(buildGroupLabel("Embeds", embeds.length ? `${activeEmbeds}/${embeds.length} on` : "0 custom"));
+    inner.appendChild(buildGroupLabel(i18n("widgetGroupEmbeds"), embeds.length ? `${activeEmbeds}/${embeds.length} ${i18n("activeCountSuffix")}` : `0 ${i18n("customCountSuffix")}`));
     if (embeds.length === 0) {
       inner.appendChild(el("p", { class: "widget-picker__empty-embeds" }, [
-        "Add a trusted web page when it belongs beside your dashboard."
+        i18n("addTrustedEmbedHint")
       ]));
     }
     for (const embed of embeds) {
@@ -178,19 +254,30 @@ function getPathValue(settings, path) {
   return settings[section]?.[prop] ?? false;
 }
 
+function itemLabel(item) {
+  return i18n(ITEM_LABEL_KEYS[item.key] || item.label);
+}
+
+function itemHint(item) {
+  const key = ITEM_HINT_KEYS[item.key];
+  return key ? i18n(key) : item.hint;
+}
+
 function buildRow(item, settings, onSave, rebuildPicker) {
   const [section, prop] = item.path.split(".");
   const checked = getPathValue(settings, item.path);
+  const label = itemLabel(item);
+  const hint = itemHint(item);
 
   const tog = toggle({
     checked,
-    ariaLabel: `Toggle ${item.label}`,
+    ariaLabel: i18n("toggleWidgetLabel", [label]),
     onChange: async (val) => {
       if (item.permission) {
         if (val) {
           const result = await requestBrowserPermission(item.permission);
           if (!result.granted) {
-            toast(`${item.label} permission denied. The widget stays disabled.`, "warning");
+            toast(i18n("permissionDeniedWidgetDisabled", [label]), "warning");
             return false;
           }
         } else {
@@ -210,8 +297,8 @@ function buildRow(item, settings, onSave, rebuildPicker) {
     el("div", { class: "widget-picker__row-left" }, [
       el("span", { class: "widget-picker__row-icon" }, [iconNode(item.icon, { size: 14 })]),
       el("span", { class: "widget-picker__row-text" }, [
-        el("span", { class: "widget-picker__row-label" }, [item.label]),
-        item.hint ? el("span", { class: "widget-picker__row-hint" }, [item.hint]) : null
+        el("span", { class: "widget-picker__row-label" }, [label]),
+        hint ? el("span", { class: "widget-picker__row-hint" }, [hint]) : null
       ])
     ]),
     tog
@@ -221,7 +308,7 @@ function buildRow(item, settings, onSave, rebuildPicker) {
 function buildEmbedRow(embed, settings, onSave, rebuildPicker, openSettingsPanel) {
   const tog = toggle({
     checked: embed.enabled ?? false,
-    ariaLabel: `Toggle ${embed.title || "Embed"}`,
+    ariaLabel: i18n("toggleWidgetLabel", [embed.title || i18n("embed")]),
     onChange: (val) => {
       const next = {
         ...settings,
@@ -235,23 +322,23 @@ function buildEmbedRow(embed, settings, onSave, rebuildPicker, openSettingsPanel
   const editBtn = el("button", {
     type: "button",
     class: "icon-button icon-button--ghost icon-button--tiny",
-    title: "Configure in Settings",
-    "aria-label": "Open settings for this embed",
+    title: i18n("configureInSettings"),
+    "aria-label": i18n("openSettingsForEmbed"),
     onClick: () => openSettingsPanel?.()
   }, [iconNode("settings", { size: 12 })]);
 
   const delBtn = el("button", {
     type: "button",
     class: "icon-button icon-button--ghost icon-button--tiny",
-    title: "Remove embed",
-    "aria-label": "Remove this embed",
+    title: i18n("removeEmbed"),
+    "aria-label": i18n("removeThisEmbed"),
     onClick: () => {
       const idx = settings.embeds.findIndex(e => e.id === embed.id);
       const next = { ...settings, embeds: settings.embeds.filter(e => e.id !== embed.id) };
       onSave(next);
       rebuildPicker();
-      toast(`Removed "${embed.title || "Embed"}".`, "warning", 6500, {
-        label: "Undo",
+      toast(i18n("removedNamedItem", [embed.title || i18n("embed")]), "warning", 6500, {
+        label: i18n("undo"),
         onClick: () => {
           const restored = [...(next.embeds || [])];
           restored.splice(Math.max(0, idx), 0, embed);
@@ -266,7 +353,7 @@ function buildEmbedRow(embed, settings, onSave, rebuildPicker, openSettingsPanel
     el("div", { class: "widget-picker__row-left" }, [
       el("span", { class: "widget-picker__row-icon" }, [iconNode("plane", { size: 14 })]),
       el("span", { class: "widget-picker__row-text" }, [
-        el("span", { class: "widget-picker__row-label" }, [embed.title || "Untitled Embed"]),
+        el("span", { class: "widget-picker__row-label" }, [embed.title || i18n("untitledEmbed")]),
         el("span", { class: "widget-picker__row-hint" }, [embedHostLabel(embed.url)])
       ])
     ]),
@@ -276,9 +363,9 @@ function buildEmbedRow(embed, settings, onSave, rebuildPicker, openSettingsPanel
 
 function embedHostLabel(url) {
   try {
-    return new URL(url).hostname.replace(/^www\./, "") || "Custom web embed";
+    return new URL(url).hostname.replace(/^www\./, "") || i18n("customWebEmbed");
   } catch {
-    return "Custom web embed";
+    return i18n("customWebEmbed");
   }
 }
 
@@ -296,15 +383,15 @@ function buildAddEmbedRow(settings, onSave, rebuildPicker) {
         type: "button",
         class: "button button--ghost button--small button--block",
         onClick: () => { formOpen = true; renderForm(); }
-      }, [iconNode("plus", { size: 14 }), " Add embed"]));
+      }, [iconNode("plus", { size: 14 }), ` ${i18n("addEmbed")}`]));
       return;
     }
 
     const titleIn = el("input", {
       type: "text",
       class: "text-input",
-      placeholder: "Title (e.g. Flight Tracker)",
-      "aria-label": "Embed title",
+      placeholder: i18n("embedTitlePlaceholder"),
+      "aria-label": i18n("embedTitleAria"),
       onInput: (e) => {
         newTitle = e.target.value;
         e.target.removeAttribute("aria-invalid");
@@ -313,8 +400,8 @@ function buildAddEmbedRow(settings, onSave, rebuildPicker) {
     const urlIn = el("input", {
       type: "url",
       class: "text-input",
-      placeholder: "example.com/dashboard",
-      "aria-label": "Embed URL",
+      placeholder: i18n("embedUrlPlaceholder"),
+      "aria-label": i18n("embedUrlAria"),
       onInput: (e) => {
         newUrl = e.target.value;
         e.target.removeAttribute("aria-invalid");
@@ -327,20 +414,20 @@ function buildAddEmbedRow(settings, onSave, rebuildPicker) {
         if (!newTitle.trim()) {
           titleIn.setAttribute("aria-invalid", "true");
           titleIn.focus({ preventScroll: true });
-          toast("Enter a title for the embed.", "warning");
+          toast(i18n("enterEmbedTitle"), "warning");
           return;
         }
         if (!newUrl.trim()) {
           urlIn.setAttribute("aria-invalid", "true");
           urlIn.focus({ preventScroll: true });
-          toast("Enter the embed URL.", "warning");
+          toast(i18n("enterEmbedUrl"), "warning");
           return;
         }
         const normalizedUrl = normalizeWebUrl(newUrl, { assumeHttps: true });
         if (!normalizedUrl) {
           urlIn.setAttribute("aria-invalid", "true");
           urlIn.focus({ preventScroll: true });
-          toast("Enter a valid web URL without a username or password.", "error");
+          toast(i18n("enterValidWebUrlNoCredentials"), "error");
           return;
         }
         const newEmbed = {
@@ -353,12 +440,12 @@ function buildAddEmbedRow(settings, onSave, rebuildPicker) {
         onSave(next);
         rebuildPicker();
       }
-    }, ["Add"]);
+    }, [i18n("add")]);
     const cancelBtn = el("button", {
       type: "button",
       class: "button button--ghost button--small",
       onClick: () => { formOpen = false; renderForm(); }
-    }, ["Cancel"]);
+    }, [i18n("cancel")]);
 
     container.appendChild(el("div", { class: "widget-picker__embed-form" }, [
       titleIn, urlIn,

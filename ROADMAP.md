@@ -5,11 +5,11 @@ Blocked items live in Roadmap_Blocked.md.
 
 ## Research-Driven Additions
 
-- [ ] P1 - Finish production i18n and locale parity checks
-  Why: `_locales` are partial and `i18n()` is not used by app modules, so current localized builds still show mostly hardcoded English UI.
-  Evidence: `_locales/*/messages.json`, `src/utils/i18n.js`, `src/settings.js`, `src/widgets/*`, Chrome i18n docs, Mue locale crash reports.
-  Touches: `src/utils/i18n.js`, `src/settings.js`, `src/onboarding.js`, `src/widget-picker.js`, `src/widgets/*`, `_locales/*/messages.json`, test scripts.
-  Acceptance: User-visible strings route through message keys, locale files have equal required-key sets, missing/extra keys fail tests, and RTL smoke covers at least Arabic/Hebrew browser-language simulation.
+- [ ] P1 - Finish remaining Settings/widget i18n migration
+  Why: The static shell, side panel, onboarding, widget picker, locale parity guard, and English fallback path are now keyed, but Settings and most widget body strings still render hardcoded English.
+  Evidence: `src/settings.js`, `src/widgets/*`, `src/utils/i18n.js`, `_locales/*/messages.json`, `scripts/test-i18n.mjs`, Chrome i18n docs, Mue locale crash reports.
+  Touches: `src/settings.js`, `src/widgets/*`, `_locales/*/messages.json`, `scripts/smoke-test.mjs`, `scripts/test-i18n.mjs`.
+  Acceptance: Remaining Settings/widget user-visible strings route through message keys, locale files keep exact required-key parity, and RTL smoke covers at least Arabic/Hebrew browser-language simulation.
   Complexity: XL
 
 - [ ] P1 - Expand browser workflow smoke coverage

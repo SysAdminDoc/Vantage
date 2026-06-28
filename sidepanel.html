@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vantage feeds</title>
+  <title data-i18n="sidePanelTitle">Vantage Feeds</title>
   <link rel="icon" type="image/png" href="icons/icon48.png" />
   <link rel="stylesheet" href="src/style.css" />
   <style>
@@ -56,12 +56,12 @@
   <div class="sidepanel-shell">
     <header class="sidepanel-header">
       <div>
-        <h1>Vantage Feeds</h1>
-        <p class="sidepanel-kicker">News and reading list in one stream.</p>
+        <h1 data-i18n="sidePanelTitle">Vantage Feeds</h1>
+        <p class="sidepanel-kicker" data-i18n="sidePanelKicker">News and reading list in one stream.</p>
       </div>
       <button id="sidepanel-refresh" type="button"
               class="icon-button icon-button--ghost icon-button--small"
-              aria-label="Refresh feeds" title="Refresh"></button>
+              aria-label="Refresh feeds" title="Refresh" data-i18n-aria-label="refreshFeeds" data-i18n-title="refreshFeeds"></button>
     </header>
     <div id="sidepanel-feed-mount" class="panel" data-widget="sidepanel"></div>
     <div id="toast-host" class="toast-host" aria-live="polite" aria-atomic="false"></div>
