@@ -31,6 +31,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Disabled button CSS no longer declares cursor twice.**
 
 ### Added
+- **RTL smoke coverage** — browser smoke now runs Arabic and Hebrew language simulations through the local shim, verifies `lang`/`dir` startup behavior, and uses an explicit per-run Puppeteer profile to avoid stale lock failures.
 - **i18n parity guard and localized shell surfaces** — locale catalogs now share one required key set, `npm test` fails on missing/extra keys or placeholder drift, and the static new-tab shell, side panel, onboarding wizard, and widget picker route visible copy through message keys with English fallbacks for local smoke runs.
 - **Local release artifact builder** — `npm run build:release` now cleans previous release assets, builds the Chromium ZIP, Firefox XPI, CRX3, and `SHA256SUMS.txt`, and verifies ZIP/XPI contents against the runtime allowlist without remote build automation.
 - **Versioned settings schema with migration pipeline** — `schemaVersion` field and an ordered, idempotent migration array replace the previous ad-hoc shape checks. Regression test with 8 fixture cases.

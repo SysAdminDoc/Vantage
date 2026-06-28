@@ -16,7 +16,8 @@
 
 import { existsSync } from "node:fs";
 import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
+import { mkdtemp, rm, stat } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { dirname, extname, join, relative, resolve, sep } from "node:path";
@@ -36,9 +37,11 @@ async function run() {
   const { default: puppeteer } = await import("puppeteer");
 
   const extPath = await resolveExtensionPath();
+  const userDataDir = await mkdtemp(join(tmpdir(), "vantage-smoke-profile-"));
 
   const browser = await puppeteer.launch({
     headless: headless ? "new" : false,
+    userDataDir,
     args: [
       `--disable-extensions-except=${extPath}`,
       `--load-extension=${extPath}`,
@@ -185,9 +188,39 @@ async function run() {
     if (widgetErrorResult === "ok") ok("Widget error state — bad manifest rejected");
     else ok(`Widget error state — skipped (${widgetErrorResult})`);
 
+    // 7. RTL language simulation through the local browser shim.
+    const rtlServer = staticServer || await startStaticServer(REPO_ROOT);
+    try {
+      for (const lang of ["ar-EG", "he-IL"]) {
+        const rtlPage = await browser.newPage();
+        try {
+          await rtlPage.goto(`${rtlServer.origin}/newtab.html?qaLang=${encodeURIComponent(lang)}`, { waitUntil: "domcontentloaded" });
+          await seedOnboarding(rtlPage);
+          await rtlPage.reload({ waitUntil: "domcontentloaded" });
+          await waitForDashboardReady(rtlPage);
+          const state = await rtlPage.evaluate(() => ({
+            dir: document.documentElement.getAttribute("dir"),
+            lang: document.documentElement.getAttribute("lang"),
+            title: document.title,
+            skip: document.querySelector(".skip-to-main")?.textContent?.trim()
+          }));
+          if (state.dir === "rtl" && state.lang === lang && state.title && state.skip) {
+            ok(`RTL smoke - ${lang} sets document direction`);
+          } else {
+            fail(`RTL smoke - ${lang}`, JSON.stringify(state));
+          }
+        } finally {
+          await rtlPage.close();
+        }
+      }
+    } finally {
+      if (!staticServer) await rtlServer.close();
+    }
+
   } finally {
     await browser.close();
     if (staticServer) await staticServer.close();
+    await rm(userDataDir, { recursive: true, force: true });
   }
 
   // ── Summary ─────────────────────────────────────────────

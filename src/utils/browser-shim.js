@@ -12,6 +12,13 @@
 
   const STORAGE_KEY = "vantage:dev-chrome-storage";
   const listeners = new Set();
+  const qaLang = (() => {
+    try {
+      return new URLSearchParams(globalThis.location?.search || "").get("qaLang") || "en";
+    } catch {
+      return "en";
+    }
+  })();
 
   function readStore() {
     try {
@@ -53,6 +60,14 @@
   }
 
   globalThis.chrome = {
+    i18n: {
+      getUILanguage() {
+        return qaLang;
+      },
+      getMessage() {
+        return "";
+      }
+    },
     storage: {
       local: {
         async get(keys) {
