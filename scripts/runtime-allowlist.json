@@ -1,5 +1,5 @@
 {
-  "_comment": "Allowlist of files/dirs included in release artifacts and local unpacked builds. Both CI (release.yml) and local (build-unpacked.ps1) read this file. Anything not listed here is excluded from release packages.",
+  "_comment": "Allowlist of files/dirs included in release artifacts and local unpacked builds. Local release/unpacked builders read this file. Anything not listed here is excluded from runtime packages.",
   "items": [
     "newtab.html",
     "sidepanel.html",

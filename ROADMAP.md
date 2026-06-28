@@ -3,16 +3,7 @@
 Only incomplete work belongs here. Completed items live in git history and CHANGELOG.md.
 Blocked items live in Roadmap_Blocked.md.
 
-No actionable items remaining.
-
 ## Research-Driven Additions
-
-- [ ] P0 - Restore a local-only release pipeline
-  Why: GitHub Actions workflows were removed, but release docs and allowlist comments still describe workflow-built ZIP/XPI/CRX artifacts.
-  Evidence: `b4ac404`, `README.md`, `CLAUDE.md`, `CHANGELOG.md`, `scripts/runtime-allowlist.json`, Chrome and Mozilla distribution docs.
-  Touches: `scripts/build-unpacked.ps1`, `scripts/build-crx.py`, `scripts/verify-runtime-package.py`, `scripts/validate-release-metadata.ps1`, release docs.
-  Acceptance: A single local command cleans old artifacts, builds Chromium ZIP, Firefox XPI, CRX3, and `SHA256SUMS.txt`, verifies runtime contents, and docs contain no GitHub Actions release path.
-  Complexity: M
 
 - [ ] P0 - Clear stale GitHub Actions dependency automation
   Why: Dependabot PRs for removed workflows remain open and can recreate automation churn unless repo settings are disabled.

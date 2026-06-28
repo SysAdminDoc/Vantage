@@ -11,7 +11,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Accessibility audit no longer hangs on live network activity** — the Puppeteer audit waits for dashboard readiness instead of `networkidle2`, and supports `--no-markdown` for hygiene-constrained verification runs.
 - **Encrypted API-key vault handles corrupt payloads calmly** — malformed salt, IV, or ciphertext fields now surface the same generic vault-unlock error as a wrong passphrase instead of leaking low-level decode failures.
 - **User-supplied URLs are normalized consistently** — quick links, feeds, calendar feeds, embeds, background images, OPML/Pocket/Instapaper imports, Gist imports, and imported settings now reject non-web schemes, malformed URLs, and credentialed URLs before saving or rendering.
-- **Release packages now verify runtime contents** — CI checks Chrome ZIP and Firefox XPI entries against `scripts/runtime-allowlist.json`, catching stale or overbroad packages before signing, checksums, or release upload.
+- **Release packages now verify runtime contents** — local release builds check Chrome ZIP and Firefox XPI entries against `scripts/runtime-allowlist.json`, catching stale or overbroad packages before signing, checksums, or release upload.
 - **External widget manifests are strictly bounded** — third-party widget manifests now require parseable HTTPS `src` and `homepage` URLs, reject credentialed/malformed endpoints, cap manifest payload size, bound iframe dimensions, and never fall back to wildcard `postMessage` targets.
 - **Audit follow-up reliability fixes** — NASA APOD now caches 403/404 responses for 5 minutes, iCal `TZID` datetimes convert through `Intl`, rapid To-Do adds debounce storage writes, CoinGecko 429 copy no longer implies an invalid key, ambient audio resumes on focus only when the user left it playing, local QA no longer aborts when a dev-browser namespace or icon parse edge case is present, and browser smoke fallback now uses HTTP instead of blocked `file://` modules.
 - **Inbox tab capture saves the previous tab, not the NTP** — "Save previous tab" now uses message passing to the service worker which finds the most recently accessed non-internal tab. `tabs` permission is optional and requested on-demand. Manual URL input added as a permission-free alternative.
@@ -30,6 +30,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Disabled button CSS no longer declares cursor twice.**
 
 ### Added
+- **Local release artifact builder** — `npm run build:release` now cleans previous release assets, builds the Chromium ZIP, Firefox XPI, CRX3, and `SHA256SUMS.txt`, and verifies ZIP/XPI contents against the runtime allowlist without remote build automation.
 - **Versioned settings schema with migration pipeline** — `schemaVersion` field and an ordered, idempotent migration array replace the previous ad-hoc shape checks. Regression test with 8 fixture cases.
 - **Unified `ext.js` browser namespace wrapper** — new code can `import { ext } from "./utils/ext.js"` instead of inline `globalThis.browser || globalThis.chrome` detection.
 - **Firefox split-view and half-width dashboard adaptation** — new 640px CSS breakpoint reduces reading-panel minimum column width, tightens quick-link spacing, and hides decorative background elements at narrow widths.
@@ -39,20 +40,20 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 ### Changed
 - **Premium polish pass for first-run and customization surfaces** — onboarding layout cards now show concrete feature summaries, Settings search has clearer guidance and a stronger empty state, widget picker groups show enabled counts with per-widget hints, and shared empty/error surfaces use more consistent elevated treatment.
 - **Public docs tracked for clean-checkout safety** — CHANGELOG.md, PRIVACY.md, and public docs/ pages are whitelisted in .gitignore. Jekyll `_config.yml` added for GitHub Pages. Internal planning docs remain gitignored.
-- **Accessibility audit writes to CI artifacts** — audit output moved from `docs/` to `dist/audit/` (gitignored). Release workflow runs the audit headless and uploads the report as a GitHub Actions artifact.
+- **Accessibility audit writes to local artifacts** — audit output moved from `docs/` to `dist/audit/` (gitignored), keeping generated audit evidence out of public docs while preserving local review output.
 - **Widget error/warn messages routed to the debug log** — widget `vantage:error` and warn-level `vantage:log` messages are now recorded in the 50-entry ring buffer alongside unhandled errors, visible in Copy Debug Log.
 
 ### Changed
-- **Install and store packaging docs reflect real delivery paths** — README now points users at release workflow artifacts for installs/store submissions and reserves `build-unpacked.ps1` for source QA; local docs remove the obsolete Chromium force-install path and ad hoc ZIP command.
+- **Install and store packaging docs reflect real delivery paths** — README now points users at local release-command artifacts for installs/store submissions and reserves `build-unpacked.ps1` for source QA; local docs remove the obsolete Chromium force-install path and ad hoc ZIP command.
 - **Host permissions are scoped at runtime** — Chromium and Firefox manifests no longer request `*://*/*` at install. Fixed service endpoints stay explicit; user-entered feed, calendar, image, and embed origins move to `optional_host_permissions` and are requested from Settings/import flows with local denied-origin recovery.
 - **Privacy network inventory expanded** — README now lists GitHub Trending RSS presets, feed discovery, custom image URLs, generic embeds, Windy, and quote-author Wikipedia links as distinct outbound surfaces instead of collapsing them into broader widget rows.
 
 ### Fixed
-- **QA dependencies are reproducible** — npm audit tooling now uses valid maintained package versions, a tracked lockfile, and Dependabot coverage for npm and GitHub Actions.
+- **QA dependencies are reproducible** — npm audit tooling now uses valid maintained package versions, a tracked lockfile, and local audit coverage.
 - **Custom CSS imports are isolated** — shared links, JSON imports, and Gist restores now show custom CSS as its own default-unchecked restore section instead of bundling it with theme/appearance.
 - **GitHub widget respects API rate limits** — activity and trending requests now share a 10-minute local cache and render stale cached data with an explicit retry time when GitHub returns a rate-limit response.
 - **Release metadata preflight is clean-checkout safe** — validation now depends only on tracked release/runtime metadata and README anchors, no longer requiring ignored privacy/store markdown files. README public documentation links now resolve to tracked README sections.
-- **Update feeds reject incomplete integrity metadata** — `updates.xml` must carry a 64-hex CRX SHA-256, `firefox-updates.json` must carry `sha256:<hash>`, and CI validates regenerated feeds before committing them.
+- **Update feeds reject incomplete integrity metadata** — `updates.xml` must carry a 64-hex CRX SHA-256, `firefox-updates.json` must carry `sha256:<hash>`, and the local metadata preflight validates regenerated feeds before committing them.
 - **Manifest no longer requests redundant `tabs` permission** — Chromium and Firefox builds rely on existing host permissions for tab URL/title visibility while keeping screenshot export permission-free.
 
 ### Added
@@ -202,7 +203,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **View Transitions API** — `document.startViewTransition()` wraps workspace switches and accent color changes for smooth page transitions (graceful no-op on browsers without support).
 - **Storage quota panel** — Settings → Storage shows `navigator.storage.estimate()` usage and quota as a color-coded progress bar (yellow at 80%, red at 95%) plus a human-readable label.
 - **Firefox container → workspace mapping** — Firefox-only section in Settings. Reads `browser.contextualIdentities.query({})` to list all containers and lets you assign each to a workspace. On page load the active container is detected via `browser.tabs.getCurrent().cookieStoreId` and the mapped workspace is applied automatically.
-- **AMO update feed** — CI release workflow now generates `firefox-updates.json` (AMO-compatible format) and commits it alongside `updates.xml`. Firefox manifest's `gecko.update_url` points to the raw GitHub URL so self-hosted XPI updates are auto-detected by the browser.
+- **AMO update feed** — release packaging now generates `firefox-updates.json` (AMO-compatible format) alongside `updates.xml`. Firefox manifest's `gecko.update_url` points to the raw GitHub URL so self-hosted XPI updates are auto-detected by the browser.
 - New SVG icons: `folder`, `folder-open`, `layers2`, `star`, `filter`, `hard-drive`.
 
 ### Changed
@@ -210,12 +211,12 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - `manifest.firefox.json` — `topSites`, `contextualIdentities`, `tabs` added to permissions; `https://www.bing.com/*` added to host_permissions; `gecko.update_url` now set.
 - `src/main.js` — `mountAll()` computes `effectiveSettings` once from the active workspace before rendering all widgets; workspace bar rendered when workspaces are configured; Firefox container detection runs on init.
 - `src/storage.js` — defaults extended with `background`, `topsites`, `workspaces`, `feedFilters`, `containerMap` keys (done in prior v0.8.0 prep pass).
-- `.github/workflows/release.yml` — "Update Omaha feed" step also generates `firefox-updates.json` and commits both files.
+- Release packaging also generated `firefox-updates.json` alongside `updates.xml`.
 
 ## v0.7.2 — 2026-04-30
 
 ### Added
-- **Firefox port** — `manifest.firefox.json` ships alongside `manifest.json`. The CI release workflow now builds a `Vantage-vX.Y.Z-firefox.xpi` from the same source tree (Firefox manifest injected at package time). Requires Firefox 109+ (MV3 + service worker support).
+- **Firefox port** — `manifest.firefox.json` ships alongside `manifest.json`. Release packaging builds a `Vantage-vX.Y.Z-firefox.xpi` from the same source tree (Firefox manifest injected at package time). Requires Firefox 109+ (MV3 + service worker support).
 - Background script (`src/background.js`) detects Firefox via `typeof browser !== "undefined"` and opens a blank new tab (which Firefox routes to the overridden newtab page) instead of the Chrome-only `chrome://newtab` URL.
 - SHA256SUMS.txt in every release now includes the Firefox XPI hash.
 - Release notes updated to include Firefox install instructions (temporary via `about:debugging`, permanent via DevEdition/Nightly or enterprise policy).
@@ -442,7 +443,7 @@ Layout, feed depth, interaction polish, and a one-command Enterprise Policy inst
 
 ### Added — install path
 - **`scripts/install.ps1`** — Windows PowerShell installer. Downloads the latest release ZIP, extracts to `%LOCALAPPDATA%\Vantage\extension`, finds every Brave / Chrome / Edge / Vivaldi / Opera `.lnk` shortcut on the system (Start Menu, Desktop, Taskbar pin, system-wide and per-user), and appends `--load-extension="<that path>"` to each one's arguments. The browser then loads Vantage on every launch. Idempotent (re-runs don't double-add). Auto-elevates for system-wide shortcuts. `-Uninstall` strips the flag and deletes the extension files. `-Verify` shows which shortcuts carry the flag. One-liner: `irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex`.
-- **`scripts/build-crx.py`** — pure stdlib + openssl Python implementation of CRX3 packing (used by the release workflow).
+- **`scripts/build-crx.py`** — pure stdlib Python implementation of CRX3 packing.
 
 ### Why not Enterprise Policy?
 The original v0.3.0 build of `install.ps1` wrote `ExtensionInstallForcelist` registry values pointing at a self-hosted Omaha update feed. **Modern Chromium browsers (Chrome 137+, Brave 147+) silently filter non-CWS update URLs out of that policy** — the registry value is accepted but never reaches the extension updater. Verified empirically against Brave 147.1.89.143 with verbose extension-updater logging: even `ExtensionSettings` (the modern JSON form) is ignored for self-hosted update_urls. The launch-flag approach now used in the installer bypasses the policy machinery entirely and works on every Chromium browser.

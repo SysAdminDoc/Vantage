@@ -133,7 +133,7 @@ For visual QA, open `qa-scenes.html` from the same local server as `newtab.html`
 
 Three paths for Chromium browsers, one for Firefox. Pick the one that fits.
 
-Release artifacts are built by the GitHub Release workflow. Use the published ZIP/XPI/CRX assets for installs and store submissions; use `.\scripts\build-unpacked.ps1` only for local source testing. Do not hand-package the repo, because ignored docs, QA state, or signing files can accidentally enter an ad hoc ZIP.
+Release artifacts are built locally with `npm run build:release`, which cleans old release assets and writes the Chromium ZIP, Firefox XPI, CRX3, and `SHA256SUMS.txt` under `dist\`. Use the published ZIP/XPI/CRX assets for installs and store submissions; use `.\scripts\build-unpacked.ps1` only for local source testing. Do not hand-package the repo, because ignored docs, QA state, or signing files can accidentally enter an ad hoc ZIP.
 
 ### Option A — One-line PowerShell installer (Windows, recommended, Chromium only)
 

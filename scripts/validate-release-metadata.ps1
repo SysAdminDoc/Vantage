@@ -1,6 +1,6 @@
 # Vantage release metadata preflight.
 #
-# Validates that release-facing version sources agree before local packaging or CI.
+# Validates that release-facing version sources agree before local packaging.
 
 #Requires -Version 5.1
 [CmdletBinding()]
