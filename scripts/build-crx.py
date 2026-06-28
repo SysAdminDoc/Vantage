@@ -87,7 +87,7 @@ def build_zip_from_dir(src_dir: Path) -> bytes:
     """Build a deterministic ZIP from a directory tree, using forward slashes."""
     buf = io.BytesIO()
     excludes = {".git", ".github", "scripts", "dist", ".claude", "node_modules"}
-    exclude_files = {"CLAUDE.md", "CODEX_CHANGELOG.md", "Vantage-selfhost.pem", "ROADMAP.md"}
+    exclude_files = {"Vantage-selfhost.pem", "ROADMAP.md"}
     exclude_suffix = (".bak", ".pem", ".log", ".zip", ".crx")
 
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
