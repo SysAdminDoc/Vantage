@@ -1,91 +1,83 @@
 # Research - Vantage
 
 ## Executive Summary
-Vantage is a local-first Manifest V3 new-tab dashboard for Chromium and Firefox. Its strongest current shape is readable vanilla JavaScript, no telemetry, no account requirement, rich local widgets, explicit privacy posture, and release packaging that already favors runtime allowlists over bundler complexity. The highest-value direction is not another widget; it is making the product safer and easier to publish, then tightening the capture, localization, and evidence workflows that make daily use trustworthy. Top opportunities, in order: repair the Inbox/tab-capture workflow under the current permission model; settle whether public docs and privacy policy are tracked or folded into README anchors; harden the external widget host before promoting it; formalize settings schema migrations; generate deterministic store screenshots; make accessibility evidence non-mutating and CI-friendly; finish i18n/RTL conversion; add browser workflow smoke tests; add artifact provenance; and keep commercial-style bookmark intelligence local-first.
+Vantage is a local-first Manifest V3 new-tab dashboard for Chromium and Firefox with an unusually broad widget set, strong privacy posture, readable vanilla JavaScript, and recent hardening around URL safety, imports, widget sandboxing, migrations, debug logging, and browser smoke tests. The highest-value direction is release trust and store readiness after the GitHub Actions removal, followed by least-privilege permission prompts, full localization, and broader browser workflow evidence. Top opportunities: restore a documented local release pipeline; clear stale Dependabot/GitHub Actions surfaces; move optional browser-data permissions to runtime prompts; reconcile external-widget docs with runtime security; finish i18n/RTL parity; expand smoke/a11y coverage; generate deterministic store evidence; verify full-state export/restore; deepen local-first capture ergonomics; and keep remote marketplace ideas gated until the widget trust model is reviewer-friendly.
 
 ## Product Map
-- Core workflows: open a new tab, search with a selected engine, scan weather/feed/productivity widgets, manage quick links/bookmarks/inbox items, customize themes/backgrounds/workspaces, import/export settings, and install from GitHub release ZIP/XPI or the Windows shortcut installer.
-- User personas: privacy-conscious browser customizers, RSS/news readers, search-engine power users, users migrating from Bonjourr/TablissNG/nightTab/Renewed Tab, and operators who want a standard local dashboard without accounts.
-- Platforms and distribution: Chromium MV3 (`manifest.json`), Firefox 109+ (`manifest.firefox.json`), GitHub Releases, local unpacked builds (`scripts/build-unpacked.ps1`), Windows shortcut `--load-extension`, pending CWS/AMO/Edge/Opera/Samsung listings, and local-only docs under `docs/`.
-- Key integrations and data flows: `chrome.storage.local`, optional `history`, IndexedDB feed archive, OPFS media, Open-Meteo APIs, user RSS/Atom/JSON Feed and iCal URLs, CORS proxies, Google/DuckDuckGo favicon fallbacks, Bing, GitHub API/Gists, CoinGecko, NASA APOD, Picsum, Windy iframe, browser bookmarks/top sites/reading list, and user-provided iframe/widget URLs.
-- Mobile and multi-user scope: mobile apps, team workspaces, and account-backed collaboration are intentionally out of scope because the product is a desktop browser NTP and its trust model is local-first/no-account.
+- Core workflows: open a new tab, search through a selected engine, scan weather/feed/productivity panels, capture links into quick links/inbox/starred feeds, customize visual workspaces/backgrounds/themes, and import/export settings.
+- User personas: privacy-first browser customizers, RSS/news readers, search-engine switchers, local productivity users, and users migrating from Bonjourr, TablissNG, Anori, Mue, Renewed Tab, nightTab, or commercial dashboards.
+- Platforms and distribution: Chromium MV3, Firefox 109+ MV3, GitHub Releases ZIP/CRX/XPI, Windows shortcut installer, local unpacked builds, pending store listings, and public docs under `docs/`.
+- Key integrations and data flows: `chrome.storage.local`, `chrome.storage.session`, IndexedDB feed archive, OPFS media, optional `history`/`tabs`, browser bookmarks/top sites/reading list/side panel, Open-Meteo services, user RSS/Atom/JSON Feed/iCal URLs, CORS proxies, favicon providers, Bing, GitHub/Gists, CoinGecko, NASA APOD, Picsum, Windy, and user iframe/widget URLs.
 
 ## Competitive Landscape
-- Bonjourr: does lightweight visual polish, localization, store distribution, and user feedback loops well. Vantage should learn from its settings search, translation, and background bug reports; avoid dependence on remote visual providers that weaken privacy clarity.
-- TablissNG: proves abandoned NTP users will move to an actively maintained fork. Vantage should learn from its cache/quota and weather-location issues; avoid `storage.sync` quota traps and framework churn that conflicts with Vantage's no-build model.
-- Anori: strong at widget composition, folders, customization, and extension-oriented widgets. Vantage should learn from its folder/widget organization and translation demand; avoid losing the search-first dashboard identity.
-- Renewed Tab: strong reference for multi-instance widgets, resizable grids, RSS/weather/backgrounds, and multilingual positioning. Vantage should copy the predictable widget-placement ergonomics, not the heavier widget sprawl.
-- Linkflare, Raindrop.io, start.me, Momentum, and Workona: commercial value clusters around capture, inboxes, permanent libraries, focus workflows, sync, and workspace limits. Vantage's opportunity is local-first capture and recovery without accounts, caps, telemetry, or server-side enrichment.
-- Homepage, Dashy, Homarr, and Heimdall: adjacent dashboards show durable demand for integrations, icon catalogs, status surfaces, and user-editable layouts. Vantage should learn from registry contracts and layout tooling; avoid credential-heavy homelab integrations that do not belong in a browser NTP.
+- Bonjourr: strong visual polish, localization, store packaging, and fast issue triage. Vantage should learn from its store-channel release assets and settings-import bug reports; avoid relying on remote background providers as a core trust dependency.
+- Anori: strong widget/folder composition and recent schema-upgrade work. Vantage should learn from duplicate folders, bookmark-folder widgets, and schema-upgrade release notes; avoid letting a plugin model overtake the search-first dashboard identity.
+- TablissNG: active fork with strong extension feedback. Its open issues show demand for per-widget toggles, cache expiry, startup URL copy, location clarity, and storage quota handling; Vantage already avoids `storage.sync` but should keep volatile state local.
+- Mue: mature new-tab competitor with many locales and community translation flow. Its recent locale-shape crash, news 404 crash, favicon trim issue, and weather ambiguity point to concrete tests Vantage should add before expanding localization.
+- Renewed Tab, nightTab, and Mue-style dashboards: table-stakes features include multi-widget layouts, RSS/weather/backgrounds, search, import/export, and browser-store availability. Vantage is competitive on widgets; store availability and localization remain weaker.
+- Momentum, start.me, Raindrop.io, Workona, and Toby: commercial value clusters around capture, read-later workflows, workspace organization, sync, and onboarding. Vantage should copy local-first capture/recovery depth, not account-backed collaboration.
+- Homepage, Dashy, Homarr, Heimdall, and awesome-startpage projects: adjacent dashboards prove durable demand for registries, icon catalogs, status surfaces, and editable layouts. Vantage should borrow registry contracts and health diagnostics only where they remain no-account and browser-local.
 
 ## Security, Privacy, and Reliability
-- [Verified] `manifest.json` and `manifest.firefox.json` no longer request `tabs` or `activeTab`, while `src/widgets/inbox.js` uses `tabs.query({ active: true, currentWindow: true })` from the NTP and `src/settings.js` tab snapshots depend on URL/title visibility. This is likely to save the Vantage tab or fail to capture arbitrary pages under the least-privilege model.
-- [Verified] `docs/*.md`, `PRIVACY.md`, `CHANGELOG.md`, and most markdown remain ignored by `.gitignore`; `git ls-files docs PRIVACY.md CHANGELOG.md` returns no tracked public docs. Store-submission content exists locally, but clean-checkout/public documentation policy is still ambiguous.
-- [Verified] `scripts/runtime-allowlist.json` is shared by local builds and the release workflow; `scripts/validate-release-metadata.ps1`, `npm audit`, and `scripts/qa-scenes-smoke.mjs` pass locally. The packaging baseline is materially stronger than older roadmap notes.
-- [Verified] `.github/workflows/release.yml` pins `actions/checkout` and `actions/setup-python` to full commit SHAs and `.github/dependabot.yml` covers npm and GitHub Actions. Release provenance still stops at `SHA256SUMS.txt`; no GitHub artifact attestations are generated.
-- [Verified] `src/utils/widget-host.js` runs external widgets in sandboxed iframes, but posts host messages with `targetOrigin: "*"`, accepts messages by `event.source` only, and does not validate message schema or declared widget origin. `docs/widget-api.md` also claims a strict iframe CSP that the host cannot impose on an arbitrary remote iframe URL.
-- [Verified] `scripts/accessibility-audit.mjs` writes `docs/accessibility-report.md` and `docs/accessibility-results.json`, but the generated report path is local/ignored and not tied to release CI artifacts. It is useful, but not yet reliable store evidence.
-- [Verified] `_locales` counts are uneven (`en` 70, `es` 61, `de/fr/ja` 59 each), while many user-visible strings in widgets/settings remain hardcoded. `docs/i18n-strategy.md` is stale about counts and still lists Phase 2 as in progress.
-- [Verified] RTL foundation exists (`setupRTL()` and CSS rules), but Arabic/Hebrew locales and decorative/responsive RTL QA are not complete.
-- [Verified] `src/storage.js` has ad hoc shape migrations but no durable `schemaVersion` or migration fixture suite, despite many settings surfaces, imports, Gist transfer, workspaces, encrypted API keys, OPFS, IndexedDB, and host-permission state.
-- [Likely] CWS/AMO review friction will come from broad optional host access, external iframe/widget claims, and inconsistent public documentation unless the reviewer packet and public privacy story are made clean-checkout reproducible.
+- [Verified] `b4ac404` removed GitHub Actions workflows, but `README.md`, `CLAUDE.md`, `CHANGELOG.md`, and `scripts/runtime-allowlist.json` still reference release workflows/CI artifacts; this can mislead installers and future release agents.
+- [Verified] GitHub has open Dependabot PRs #4-#7 for removed GitHub Actions dependencies. `gh pr close` failed with HTTP 401 in this session, so repo settings still need cleanup even though `.github/workflows/` and `.github/dependabot.yml` are absent from `git ls-files`.
+- [Verified] `manifest.json` requests `bookmarks`, `topSites`, `readingList`, and `sidePanel` at install while those widgets/features are user-toggleable or browser-specific; `history` and `tabs` already use optional permission patterns, proving the repo has the right model for narrower install prompts.
+- [Verified] `src/utils/widget-host.js` now validates widget origins, bounds manifests/messages, removes `allow-same-origin`, and uses explicit `targetOrigin`; the remaining gap is docs/runtime drift: `docs/widget-api.md` says local testing can use `http://localhost`, while `fetchManifest()` requires HTTPS.
+- [Verified] `_locales` exists for English, Spanish, German, French, and Japanese, but `src/utils/i18n.js` is not used by app modules and most settings/widget strings are hardcoded. Locale files are partial seed data, not production localization.
+- [Verified] `npm audit --json` reports 0 vulnerabilities. `npm outdated --json` shows `@axe-core/puppeteer` 4.11.3 -> 4.12.1 and `puppeteer` 25.1.0 -> 25.2.1.
+- [Verified] Browser smoke tests cover onboarding skip, settings open/filter, quick-link add, settings serialization, and widget manifest validation; they do not yet cover optional-permission denial/regrant, host permission recovery, side panel behavior, Firefox paths, RTL/i18n, import section diffs, OPFS media, or IndexedDB archive round trips.
+- [Verified] Storage quota UI exists in `src/settings.js`, OPFS is used for large video backgrounds, and feed archive is IndexedDB-backed. There is still no single full-state round-trip verifier covering settings, denied origins, vault data, OPFS references, archive data, workspaces, and imports together.
 
 ## Architecture Assessment
-- Strengths: no-bundler MV3 modules, explicit widget files, local-first persistence, runtime allowlisted packages, pinned release actions, no analytics, privacy table discipline, and progressive browser API usage.
-- Main boundary improvements: tab capture needs a background/action/context-menu capture model; external widgets need an origin-aware host contract; storage needs versioned migrations; docs need a tracked/public policy.
-- Refactor candidates: `src/widgets/inbox.js`, `src/settings.js` tab snapshot flow, `src/utils/widget-host.js`, `docs/widget-api.md`, `src/storage.js`, `scripts/accessibility-audit.mjs`, and release workflow provenance.
-- Testing gaps: QA scenes verify visual presets, but there is no browser workflow smoke suite for onboarding, settings search, import/export, host permission denial, inbox capture, side panel, external widget failure, or first-run recovery.
-- Documentation gaps: store guide, privacy policy, accessibility report, widget API, i18n strategy, and RTL roadmap are present locally but not consistently tracked or validated as public release assets.
+- Strengths: small no-bundler module graph, clear widget boundaries, runtime package allowlist, local-first persistence, URL normalization, host-permission broker, widget sandboxing, migration tests, debug log, and current browser smoke harness.
+- Main boundary improvements: make browser-data permissions runtime-granted like `history`/`tabs`; separate release packaging into a local first-class script; centralize all user-facing strings behind `i18n()`; expand import/export tests to every durable store.
+- Refactor candidates: `manifest.json`, `manifest.firefox.json`, `src/widgets/bookmarks.js`, `src/widgets/topsites.js`, `src/widgets/feed-list.js`, `src/background.js`, `src/settings.js`, `src/utils/host-permissions.js`, `src/utils/widget-host.js`, `docs/widget-api.md`, `scripts/build-unpacked.ps1`, and a new local release packager.
+- Test and documentation gaps: local release command, stale workflow wording, optional-permission smoke tests, store screenshot generator, translation parity guard, Firefox side-panel/sidebar checks, full-state restore fixture, and external-widget local-dev docs.
 
 ## Rejected Ideas
-- Add more weather/environment widgets now: rejected because weather depth is already strong and trust/capture gaps are higher impact; source: Vantage `src/widgets/*`, Open-Meteo docs, Bonjourr/TablissNG comparison.
-- Add account-backed sync or team collaboration: rejected because it contradicts Vantage's no-account/no-telemetry model; source: Momentum, Workona, start.me commercial positioning.
-- Replace the vanilla no-build stack with React/WXT/Plasmo/Vite: rejected because readable authored source is a review, supply-chain, and project-philosophy advantage; source: Chrome Web Store review guidance on hard-to-review code.
-- Launch a remote widget marketplace before hardening the widget host: rejected because MV3 remote code policy permits sandboxed remote content only when behavior and data use remain reviewable; source: Chrome MV3 requirements, `src/utils/widget-host.js`.
-- Build a Safari/mobile port now: rejected because current install paths, APIs, and QA target desktop Chromium/Firefox; source: `manifest*.json`, README install section, Bonjourr Safari discontinuation signal.
-- Add credential-heavy homelab integrations: rejected because Homepage/Dashy/Homarr patterns require API credentials and server status checks that are outside a privacy-first NTP's core purpose.
-- Add remote AI features now: rejected because remote AI would introduce account/network/privacy disclosure complexity; on-device summarization can be reconsidered only after store-readiness and local capture are solid.
-- Keep historical shipped items in ROADMAP: rejected because the user explicitly requires ROADMAP to contain only incomplete work.
+- Add another weather/environment widget now: not recommended because weather depth is already high and release/permission/localization trust have higher user impact; sources: `src/widgets/*`, Open-Meteo docs, TablissNG weather issues.
+- Add account-backed sync or team collaboration: not recommended because it conflicts with Vantage's no-account/no-telemetry model; sources: Momentum, start.me, Raindrop.io, Workona.
+- Replace the vanilla module stack with React/WXT/Plasmo/Vite: not recommended because readable shipped source is a review and supply-chain advantage; sources: `CLAUDE.md`, Chrome Web Store MV3 requirements.
+- Promote arbitrary external-widget registry before store submission: not recommended until docs, review packet, and manifest trust model are tighter; sources: Chrome MV3 remote-code policy, `src/utils/widget-host.js`.
+- Build a mobile app or Safari port now: not recommended until desktop Chromium/Firefox packaging and store evidence are stable; sources: `manifest*.json`, README install paths, Mozilla/Chrome extension docs.
+- Move volatile usage state to `storage.sync`: not recommended because competitor issues show quota failures and Vantage's local-only stance is deliberate; source: TablissNG issue #149.
+- Add credential-heavy homelab integrations: not recommended because Homepage/Dashy/Homarr patterns add secrets and server status polling that do not fit a privacy-first browser NTP.
 
 ## Sources
 **Official platform and store**
-- https://developer.chrome.com/docs/webstore/review-process
+- https://developer.chrome.com/docs/webstore/program-policies/mv3-requirements
 - https://developer.chrome.com/docs/webstore/images
 - https://developer.chrome.com/docs/extensions/develop/concepts/declare-permissions
 - https://developer.chrome.com/docs/extensions/reference/api/permissions
 - https://developer.chrome.com/docs/extensions/reference/api/i18n
-- https://developer.chrome.com/docs/extensions/develop/concepts/browser-namespace
-- https://developer.chrome.com/docs/webstore/program-policies/mv3-requirements
 - https://developer.chrome.com/docs/extensions/how-to/test/puppeteer
+- https://extensionworkshop.com/documentation/develop/manifest-v3-migration-guide/
 - https://extensionworkshop.com/documentation/manage/updating-your-extension/
-- https://extensionworkshop.com/documentation/publish/self-distribution/
-- https://blog.mozilla.org/addons/2026/04/23/webextensions-api-changes-firefox-149-152/
 - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/host_permissions
 
 **Security, QA, dependencies**
 - https://cheatsheetseries.owasp.org/cheatsheets/Browser_Extension_Vulnerabilities_Cheat_Sheet.html
-- https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations
-- https://docs.github.com/en/actions/reference/security/secure-use
 - https://pptr.dev/CHANGELOG
-- https://www.npmjs.com/package/%40axe-core/puppeteer?activeTab=versions
+- https://www.npmjs.com/package/%40axe-core/puppeteer
 - https://docs.deque.com/devtools-for-web/4/en/rn-node/
 
 **Competitors and analogous products**
 - https://github.com/victrme/Bonjourr
-- https://github.com/BookCatKid/tablissNG
 - https://github.com/OlegWock/anori
+- https://github.com/BookCatKid/TablissNG
+- https://github.com/mue/mue
 - https://renewedtab.com/en/
-- https://linkflare.io/articles/best-new-tab-extensions-2026/
+- https://github.com/zombieFox/nightTab
 - https://momentumdash.com/plus
+- https://start.me/
 - https://raindrop.io/pro/buy
-- https://support.start.me/en/articles/9182794-watch-our-introduction-video
+- https://www.workona.com/
 - https://github.com/gethomepage/homepage
 - https://github.com/Lissy93/dashy
 - https://github.com/homarr-labs/homarr
 - https://github.com/jnmcfly/awesome-startpage
 
 ## Open Questions
-- Should `docs/`, `PRIVACY.md`, and `CHANGELOG.md` become tracked public release assets, or should public links collapse to README sections and release artifacts only?
-- Should Inbox/tab capture use `activeTab` plus toolbar/context-menu capture, request `tabs`, or remove "Save current tab" until a least-privilege capture model is implemented?
-- Should external widgets be supported as arbitrary user-provided remote manifests before store submission, or limited to generic embeds/curated manifests until a reviewer-friendly trust model exists?
-- Should accessibility reports be committed, generated as CI artifacts, or both?
+- Which public store should be submitted first: Chrome Web Store, AMO, Edge Add-ons, Opera, or Samsung Internet?
+- Which locales are release-blocking beyond the current English, Spanish, German, French, and Japanese seed files?
+- Should local-widget development support `http://localhost` manifests, or should docs require HTTPS-only development from the start?
