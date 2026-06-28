@@ -39,6 +39,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Browser workflow smoke tests** — Puppeteer-based tests covering onboarding skip, settings panel, keyword filter, quick-link add, JSON export, and widget manifest validation.
 
 ### Changed
+- **External widget development is HTTPS-only** — `docs/widget-api.md`, Settings copy, and widget-host regression tests now match the runtime trust boundary: manifests and widget frame URLs must be HTTPS, including local development.
 - **Browser-data permissions are runtime-gated** — Bookmarks, Top Sites, and Chromium Reading List moved out of install-time permissions. Bookmarks/Top Sites request access when enabled from Settings or the widget picker, render grant-recovery states after denial or revocation, and feed Reading List saves request access only when clicked.
 - **Premium polish pass for first-run and customization surfaces** — onboarding layout cards now show concrete feature summaries, Settings search has clearer guidance and a stronger empty state, widget picker groups show enabled counts with per-widget hints, and shared empty/error surfaces use more consistent elevated treatment.
 - **Public docs tracked for clean-checkout safety** — CHANGELOG.md, PRIVACY.md, and public docs/ pages are whitelisted in .gitignore. Jekyll `_config.yml` added for GitHub Pages. Internal planning docs remain gitignored.

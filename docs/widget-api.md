@@ -402,10 +402,12 @@ Manifest URL: `https://example.com/widgets/github-trending/manifest.json`
 ### Local Testing
 
 1. Create a widget HTML file and manifest locally
-2. Serve both via `python3 -m http.server 8000` (localhost)
-3. Update manifest `src` to `http://localhost:8000/widget.html`
-4. In Vantage settings, add external widget with manifest URL `http://localhost:8000/manifest.json`
+2. Serve both from a local HTTPS origin, such as a dev server with an `mkcert` certificate or another trusted loopback TLS setup
+3. Update manifest `src` to `https://localhost:8000/widget.html`
+4. In Vantage settings, add external widget with manifest URL `https://localhost:8000/manifest.json`
 5. Inspect iframe via DevTools (right-click iframe → Inspect → Console)
+
+Plain `http://localhost` manifests are intentionally rejected. Vantage applies the same HTTPS-only trust boundary in local development and installed builds so widget manifests, iframe origins, and `postMessage` target origins cannot drift between test and production.
 
 ### Error Handling
 

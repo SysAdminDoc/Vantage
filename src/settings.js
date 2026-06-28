@@ -3190,7 +3190,7 @@ function buildEmbedsSection(settings, onChange) {
 function buildExternalWidgetsSection(settings, onChange) {
   const sec = section("External Widgets", "layout-grid");
   sec.appendChild(el("p", { class: "settings-section__hint" }, [
-    "Add third-party widgets by pasting a widget manifest URL. Widgets run in sandboxed iframes with no access to your data."
+    "Add third-party widgets by pasting an HTTPS widget manifest URL. Widgets run in sandboxed iframes with no access to your data; manifest and widget frame origins are HTTPS-only."
   ]));
 
   if (!settings.externalWidgets) settings.externalWidgets = [];

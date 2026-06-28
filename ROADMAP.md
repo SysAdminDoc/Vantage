@@ -5,13 +5,6 @@ Blocked items live in Roadmap_Blocked.md.
 
 ## Research-Driven Additions
 
-- [ ] P0 - Reconcile external-widget docs with runtime security
-  Why: The widget host requires HTTPS manifests, but `docs/widget-api.md` tells developers to test with `http://localhost`.
-  Evidence: `src/utils/widget-host.js`, `docs/widget-api.md`, Chrome MV3 remote-code policy, OWASP extension messaging guidance.
-  Touches: `src/utils/widget-host.js`, `docs/widget-api.md`, `scripts/test-widget-host.mjs`, `src/settings.js`.
-  Acceptance: Either localhost HTTP is explicitly allowed only for loopback development with tests, or docs require HTTPS; the widget-add UI and tests match the chosen behavior.
-  Complexity: M
-
 - [ ] P1 - Finish production i18n and locale parity checks
   Why: `_locales` are partial and `i18n()` is not used by app modules, so current localized builds still show mostly hardcoded English UI.
   Evidence: `_locales/*/messages.json`, `src/utils/i18n.js`, `src/settings.js`, `src/widgets/*`, Chrome i18n docs, Mue locale crash reports.

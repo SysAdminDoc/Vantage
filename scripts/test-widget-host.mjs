@@ -2,6 +2,7 @@
 // Regression tests for the external widget manifest trust boundary.
 
 import { strict as assert } from "node:assert";
+import { readFile } from "node:fs/promises";
 import { fetchManifest, normalizeWidgetHttpsUrl, sanitizeWidgetSize, validateManifest } from "../src/utils/widget-host.js";
 
 const VALID_MANIFEST = Object.freeze({
@@ -86,6 +87,15 @@ await test("fetchManifest rejects non-HTTPS manifest URLs before fetch", async (
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+await test("docs and settings copy stay HTTPS-only", async () => {
+  const docs = await readFile(new URL("../docs/widget-api.md", import.meta.url), "utf8");
+  const settings = await readFile(new URL("../src/settings.js", import.meta.url), "utf8");
+  assert.ok(docs.includes("https://localhost:8000/manifest.json"));
+  assert.ok(!docs.includes("http://localhost:8000/manifest.json"));
+  assert.ok(settings.includes("HTTPS widget manifest URL"));
+  assert.ok(settings.includes("HTTPS-only"));
 });
 
 await test("fetchManifest parses bounded JSON responses", async () => {
