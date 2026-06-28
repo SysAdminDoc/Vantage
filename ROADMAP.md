@@ -6,10 +6,10 @@ Blocked items live in Roadmap_Blocked.md.
 ## Research-Driven Additions
 
 - [ ] P1 - Finish remaining Settings/widget i18n migration
-  Why: The static shell, side panel, onboarding, widget picker, locale parity guard, English fallback path, and RTL smoke are now covered, but Settings and most widget body strings still render hardcoded English.
+  Why: The static shell, side panel, onboarding, widget picker, Settings section/row labels, locale parity guard, English fallback path, and RTL smoke are now covered, but Settings button/body copy and most widget body strings still render hardcoded English.
   Evidence: `src/settings.js`, `src/widgets/*`, `src/utils/i18n.js`, `_locales/*/messages.json`, `scripts/test-i18n.mjs`, Chrome i18n docs, Mue locale crash reports.
   Touches: `src/settings.js`, `src/widgets/*`, `_locales/*/messages.json`, `scripts/test-i18n.mjs`.
-  Acceptance: Remaining Settings/widget user-visible strings route through message keys and locale files keep exact required-key parity.
+  Acceptance: Remaining Settings button/body copy and widget user-visible strings route through message keys and locale files keep exact required-key parity.
   Complexity: XL
 
 - [ ] P1 - Expand browser workflow smoke coverage

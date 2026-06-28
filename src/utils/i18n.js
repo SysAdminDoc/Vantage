@@ -164,8 +164,8 @@ export const FALLBACK_MESSAGES = Object.freeze({
   sidePanelEmptyHint: "Add an RSS / News feed in Settings -> Reading list or News."
 });
 
-export function i18n(messageKey, substitutions = null) {
-  const fallback = FALLBACK_MESSAGES[messageKey] || messageKey;
+export function i18n(messageKey, substitutions = null, fallbackText = "") {
+  const fallback = fallbackText || FALLBACK_MESSAGES[messageKey] || messageKey;
   try {
     const ext = globalThis.browser || globalThis.chrome;
     const value = ext?.i18n?.getMessage?.(messageKey, substitutions);

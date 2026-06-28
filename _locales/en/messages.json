@@ -579,6 +579,394 @@
     "message": "Settings",
     "description": "Settings panel title"
   },
+  "settingsAccentColorHint": {
+    "message": "Color for buttons, toggles, and highlights.",
+    "description": "Settings UI string"
+  },
+  "settingsAngleDeg": {
+    "message": "Angle (deg)",
+    "description": "Settings UI string"
+  },
+  "settingsAppearance": {
+    "message": "Appearance",
+    "description": "Settings UI string"
+  },
+  "settingsBlur": {
+    "message": "Blur",
+    "description": "Settings UI string"
+  },
+  "settingsBlurHint": {
+    "message": "Softens image and video wallpapers only.",
+    "description": "Settings UI string"
+  },
+  "settingsBodyFont": {
+    "message": "Body font",
+    "description": "Settings UI string"
+  },
+  "settingsBodyFontHint": {
+    "message": "Used for paragraph text, list items, and most UI surfaces.",
+    "description": "Settings UI string"
+  },
+  "settingsBookmarksMaxHint": {
+    "message": "Maximum number of bookmarks to display.",
+    "description": "Settings UI string"
+  },
+  "settingsBrightness": {
+    "message": "Brightness",
+    "description": "Settings UI string"
+  },
+  "settingsBrightnessHint": {
+    "message": "Tunes image and video wallpapers behind panels.",
+    "description": "Settings UI string"
+  },
+  "settingsCategory": {
+    "message": "Category",
+    "description": "Settings UI string"
+  },
+  "settingsClose": {
+    "message": "Close settings",
+    "description": "Settings UI string"
+  },
+  "settingsCoins": {
+    "message": "Coins",
+    "description": "Settings UI string"
+  },
+  "settingsCoinsHint": {
+    "message": "Comma-separated CoinGecko IDs (e.g. bitcoin, ethereum, solana, dogecoin).",
+    "description": "Settings UI string"
+  },
+  "settingsColor": {
+    "message": "Color",
+    "description": "Settings UI string"
+  },
+  "settingsContainerWorkspaces": {
+    "message": "Container Workspaces",
+    "description": "Settings UI string"
+  },
+  "settingsCurrency": {
+    "message": "Currency",
+    "description": "Settings UI string"
+  },
+  "settingsCustomCss": {
+    "message": "Custom CSS",
+    "description": "Settings UI string"
+  },
+  "settingsDaysAhead": {
+    "message": "Days ahead",
+    "description": "Settings UI string"
+  },
+  "settingsDaysAheadHint": {
+    "message": "How many days of upcoming events to show (1–30).",
+    "description": "Settings UI string"
+  },
+  "settingsDefaultCategory": {
+    "message": "Default category",
+    "description": "Settings UI string"
+  },
+  "settingsDisplayFont": {
+    "message": "Display font",
+    "description": "Settings UI string"
+  },
+  "settingsDisplayFontHint": {
+    "message": "Used for headings, the greeting hero, and large numerical displays.",
+    "description": "Settings UI string"
+  },
+  "settingsEmbeds": {
+    "message": "Embeds",
+    "description": "Settings UI string"
+  },
+  "settingsExternalWidgets": {
+    "message": "External Widgets",
+    "description": "Settings UI string"
+  },
+  "settingsFeedAlerts": {
+    "message": "Feed alerts",
+    "description": "Settings UI string"
+  },
+  "settingsFeedArchive": {
+    "message": "Feed archive",
+    "description": "Settings UI string"
+  },
+  "settingsFeedFilters": {
+    "message": "Feed Filters",
+    "description": "Settings UI string"
+  },
+  "settingsFeedPreWarming": {
+    "message": "Feed pre-warming",
+    "description": "Settings UI string"
+  },
+  "settingsFilterAria": {
+    "message": "Filter settings sections",
+    "description": "Settings UI string"
+  },
+  "settingsFilterEmpty": {
+    "message": "No settings match that filter. Try a widget name, feature, or privacy setting.",
+    "description": "Settings UI string"
+  },
+  "settingsFilterHint": {
+    "message": "Filter by widget, privacy setting, feed, or visual preference. Matching sections open automatically.",
+    "description": "Settings UI string"
+  },
+  "settingsFilterPlaceholder": {
+    "message": "Filter settings...",
+    "description": "Settings UI string"
+  },
+  "settingsFromColor": {
+    "message": "From color",
+    "description": "Settings UI string"
+  },
+  "settingsHistoryMaxResultsHint": {
+    "message": "Cap on items returned per search (5–100). chrome.history.search defaults to 100.",
+    "description": "Settings UI string"
+  },
+  "settingsInboxMaxHint": {
+    "message": "Hard cap on inbox size (50–1000). Oldest entries drop off when exceeded.",
+    "description": "Settings UI string"
+  },
+  "settingsIntervalMinutes": {
+    "message": "Interval (minutes)",
+    "description": "Settings UI string"
+  },
+  "settingsIntervalMinutesHint": {
+    "message": "Between 15 (4×/h) and 720 (twice a day).",
+    "description": "Settings UI string"
+  },
+  "settingsLayer": {
+    "message": "Layer",
+    "description": "Settings UI string"
+  },
+  "settingsMaxItems": {
+    "message": "Max items",
+    "description": "Settings UI string"
+  },
+  "settingsMaxResults": {
+    "message": "Max results",
+    "description": "Settings UI string"
+  },
+  "settingsNasaApiKey": {
+    "message": "NASA API key",
+    "description": "Settings UI string"
+  },
+  "settingsNasaApiKeyHint": {
+    "message": "Get a free key at api.nasa.gov — removes rate limits.",
+    "description": "Settings UI string"
+  },
+  "settingsNewsHint": {
+    "message": "Curated headlines and news sources.",
+    "description": "Settings UI string"
+  },
+  "settingsRadar": {
+    "message": "Radar",
+    "description": "Settings UI string"
+  },
+  "settingsRadarLayerHint": {
+    "message": "Which data layer to display on the radar.",
+    "description": "Settings UI string"
+  },
+  "settingsRadarZoomHint": {
+    "message": "Map zoom level (3 = continent, 8 = city).",
+    "description": "Settings UI string"
+  },
+  "settingsReadingList": {
+    "message": "Reading list",
+    "description": "Settings UI string"
+  },
+  "settingsReadingListHint": {
+    "message": "URLs you want to follow personally — RSS or Atom.",
+    "description": "Settings UI string"
+  },
+  "settingsRefreshMinutes": {
+    "message": "Refresh (minutes)",
+    "description": "Settings UI string"
+  },
+  "settingsRefreshMinutesHint": {
+    "message": "How often to poll for new prices.",
+    "description": "Settings UI string"
+  },
+  "settingsReset": {
+    "message": "Reset",
+    "description": "Settings UI string"
+  },
+  "settingsScenery": {
+    "message": "Scenery",
+    "description": "Settings UI string"
+  },
+  "settingsSearch": {
+    "message": "Search",
+    "description": "Settings UI string"
+  },
+  "settingsSecurity": {
+    "message": "Security",
+    "description": "Settings UI string"
+  },
+  "settingsShowBookmarksPanel": {
+    "message": "Show bookmarks panel",
+    "description": "Settings UI string"
+  },
+  "settingsShowBookmarksPanelHint": {
+    "message": "Tiles from your browser’s bookmark library.",
+    "description": "Settings UI string"
+  },
+  "settingsShowCompletedTasks": {
+    "message": "Show completed tasks",
+    "description": "Settings UI string"
+  },
+  "settingsShowCompletedTasksHint": {
+    "message": "Keep done items visible (strikethrough) rather than hiding them.",
+    "description": "Settings UI string"
+  },
+  "settingsShowConverterPanel": {
+    "message": "Show converter panel",
+    "description": "Settings UI string"
+  },
+  "settingsShowConverterPanelHint": {
+    "message": "Convert between length, weight, temperature, area, volume, speed, and data units.",
+    "description": "Settings UI string"
+  },
+  "settingsShowCountdownsPanel": {
+    "message": "Show countdowns panel",
+    "description": "Settings UI string"
+  },
+  "settingsShowCountdownsPanelHint": {
+    "message": "Count down (or up) to named dates — launches, vacations, deadlines.",
+    "description": "Settings UI string"
+  },
+  "settingsShowCryptoPanel": {
+    "message": "Show crypto panel",
+    "description": "Settings UI string"
+  },
+  "settingsShowCryptoPanelHint": {
+    "message": "Live prices from CoinGecko. A free demo API key is recommended — without one, CoinGecko rate-limits aggressively.",
+    "description": "Settings UI string"
+  },
+  "settingsShowGithubPanel": {
+    "message": "Show GitHub panel",
+    "description": "Settings UI string"
+  },
+  "settingsShowGithubPanelHint": {
+    "message": "Your public activity and trending repos from the GitHub API.",
+    "description": "Settings UI string"
+  },
+  "settingsShowNotesPanel": {
+    "message": "Show notes panel",
+    "description": "Settings UI string"
+  },
+  "settingsShowNotesPanelHint": {
+    "message": "Color-coded sticky notes stored in your browser.",
+    "description": "Settings UI string"
+  },
+  "settingsShowPhotoPanel": {
+    "message": "Show photo panel",
+    "description": "Settings UI string"
+  },
+  "settingsShowPhotoPanelHint": {
+    "message": "A daily photo panel — changes every day.",
+    "description": "Settings UI string"
+  },
+  "settingsShowQuoteBanner": {
+    "message": "Show quote banner",
+    "description": "Settings UI string"
+  },
+  "settingsShowQuoteBannerHint": {
+    "message": "A daily quote shown between the hero and the reading panels.",
+    "description": "Settings UI string"
+  },
+  "settingsShowTodoPanel": {
+    "message": "Show to-do panel",
+    "description": "Settings UI string"
+  },
+  "settingsShowTodoPanelHint": {
+    "message": "A personal task list that persists across sessions.",
+    "description": "Settings UI string"
+  },
+  "settingsShowTrending": {
+    "message": "Show trending",
+    "description": "Settings UI string"
+  },
+  "settingsShowTrendingHint": {
+    "message": "Show the Trending tab (top repos created in the last 7 days).",
+    "description": "Settings UI string"
+  },
+  "settingsShowWorldClocks": {
+    "message": "Show world clocks",
+    "description": "Settings UI string"
+  },
+  "settingsShowWorldClocksHint": {
+    "message": "A compact strip of clocks for multiple time zones, shown below the hero.",
+    "description": "Settings UI string"
+  },
+  "settingsShowZenShelf": {
+    "message": "Show Zen Shelf",
+    "description": "Settings UI string"
+  },
+  "settingsShowZenShelfHint": {
+    "message": "Free-position sticky notes on the dashboard. Drag to move, resize from the corner.",
+    "description": "Settings UI string"
+  },
+  "settingsSidePanel": {
+    "message": "Side panel",
+    "description": "Settings UI string"
+  },
+  "settingsSource": {
+    "message": "Source",
+    "description": "Settings UI string"
+  },
+  "settingsStarredMaxHint": {
+    "message": "Hard cap; oldest entries drop off when exceeded (10–500).",
+    "description": "Settings UI string"
+  },
+  "settingsStorage": {
+    "message": "Storage",
+    "description": "Settings UI string"
+  },
+  "settingsToColor": {
+    "message": "To color",
+    "description": "Settings UI string"
+  },
+  "settingsTopSitesMaxHint": {
+    "message": "4–20 sites shown.",
+    "description": "Settings UI string"
+  },
+  "settingsTrendingLanguage": {
+    "message": "Trending language",
+    "description": "Settings UI string"
+  },
+  "settingsTrendingLanguageHint": {
+    "message": "Filter trending repos to a specific programming language.",
+    "description": "Settings UI string"
+  },
+  "settingsTypography": {
+    "message": "Typography",
+    "description": "Settings UI string"
+  },
+  "settingsUploadImage": {
+    "message": "Upload image",
+    "description": "Settings UI string"
+  },
+  "settingsUploadImageHint": {
+    "message": "Stored locally in your browser; cleared images fall back to the theme gradient.",
+    "description": "Settings UI string"
+  },
+  "settingsUploadVideo": {
+    "message": "Upload video",
+    "description": "Settings UI string"
+  },
+  "settingsUsername": {
+    "message": "Username",
+    "description": "Settings UI string"
+  },
+  "settingsUsernameHint": {
+    "message": "Your GitHub handle — used for the Activity tab. Leave blank to show only Trending.",
+    "description": "Settings UI string"
+  },
+  "settingsVolume": {
+    "message": "Volume",
+    "description": "Settings UI string"
+  },
+  "settingsZoom": {
+    "message": "Zoom",
+    "description": "Settings UI string"
+  },
   "setupStepOf": {
     "message": "Step $1 of $2",
     "description": "UI string"

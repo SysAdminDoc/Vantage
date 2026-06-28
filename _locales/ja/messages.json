@@ -425,6 +425,297 @@
   "settings": {
     "message": "設定"
   },
+  "settingsAccentColorHint": {
+    "message": "Color for buttons, toggles, and highlights."
+  },
+  "settingsAngleDeg": {
+    "message": "Angle (deg)"
+  },
+  "settingsAppearance": {
+    "message": "Appearance"
+  },
+  "settingsBlur": {
+    "message": "Blur"
+  },
+  "settingsBlurHint": {
+    "message": "Softens image and video wallpapers only."
+  },
+  "settingsBodyFont": {
+    "message": "Body font"
+  },
+  "settingsBodyFontHint": {
+    "message": "Used for paragraph text, list items, and most UI surfaces."
+  },
+  "settingsBookmarksMaxHint": {
+    "message": "Maximum number of bookmarks to display."
+  },
+  "settingsBrightness": {
+    "message": "Brightness"
+  },
+  "settingsBrightnessHint": {
+    "message": "Tunes image and video wallpapers behind panels."
+  },
+  "settingsCategory": {
+    "message": "Category"
+  },
+  "settingsClose": {
+    "message": "Close settings"
+  },
+  "settingsCoins": {
+    "message": "Coins"
+  },
+  "settingsCoinsHint": {
+    "message": "Comma-separated CoinGecko IDs (e.g. bitcoin, ethereum, solana, dogecoin)."
+  },
+  "settingsColor": {
+    "message": "Color"
+  },
+  "settingsContainerWorkspaces": {
+    "message": "Container Workspaces"
+  },
+  "settingsCurrency": {
+    "message": "Currency"
+  },
+  "settingsCustomCss": {
+    "message": "Custom CSS"
+  },
+  "settingsDaysAhead": {
+    "message": "Days ahead"
+  },
+  "settingsDaysAheadHint": {
+    "message": "How many days of upcoming events to show (1–30)."
+  },
+  "settingsDefaultCategory": {
+    "message": "Default category"
+  },
+  "settingsDisplayFont": {
+    "message": "Display font"
+  },
+  "settingsDisplayFontHint": {
+    "message": "Used for headings, the greeting hero, and large numerical displays."
+  },
+  "settingsEmbeds": {
+    "message": "Embeds"
+  },
+  "settingsExternalWidgets": {
+    "message": "External Widgets"
+  },
+  "settingsFeedAlerts": {
+    "message": "Feed alerts"
+  },
+  "settingsFeedArchive": {
+    "message": "Feed archive"
+  },
+  "settingsFeedFilters": {
+    "message": "Feed Filters"
+  },
+  "settingsFeedPreWarming": {
+    "message": "Feed pre-warming"
+  },
+  "settingsFilterAria": {
+    "message": "Filter settings sections"
+  },
+  "settingsFilterEmpty": {
+    "message": "No settings match that filter. Try a widget name, feature, or privacy setting."
+  },
+  "settingsFilterHint": {
+    "message": "Filter by widget, privacy setting, feed, or visual preference. Matching sections open automatically."
+  },
+  "settingsFilterPlaceholder": {
+    "message": "Filter settings..."
+  },
+  "settingsFromColor": {
+    "message": "From color"
+  },
+  "settingsHistoryMaxResultsHint": {
+    "message": "Cap on items returned per search (5–100). chrome.history.search defaults to 100."
+  },
+  "settingsInboxMaxHint": {
+    "message": "Hard cap on inbox size (50–1000). Oldest entries drop off when exceeded."
+  },
+  "settingsIntervalMinutes": {
+    "message": "Interval (minutes)"
+  },
+  "settingsIntervalMinutesHint": {
+    "message": "Between 15 (4×/h) and 720 (twice a day)."
+  },
+  "settingsLayer": {
+    "message": "Layer"
+  },
+  "settingsMaxItems": {
+    "message": "Max items"
+  },
+  "settingsMaxResults": {
+    "message": "Max results"
+  },
+  "settingsNasaApiKey": {
+    "message": "NASA API key"
+  },
+  "settingsNasaApiKeyHint": {
+    "message": "Get a free key at api.nasa.gov — removes rate limits."
+  },
+  "settingsNewsHint": {
+    "message": "Curated headlines and news sources."
+  },
+  "settingsRadar": {
+    "message": "Radar"
+  },
+  "settingsRadarLayerHint": {
+    "message": "Which data layer to display on the radar."
+  },
+  "settingsRadarZoomHint": {
+    "message": "Map zoom level (3 = continent, 8 = city)."
+  },
+  "settingsReadingList": {
+    "message": "Reading list"
+  },
+  "settingsReadingListHint": {
+    "message": "URLs you want to follow personally — RSS or Atom."
+  },
+  "settingsRefreshMinutes": {
+    "message": "Refresh (minutes)"
+  },
+  "settingsRefreshMinutesHint": {
+    "message": "How often to poll for new prices."
+  },
+  "settingsReset": {
+    "message": "Reset"
+  },
+  "settingsScenery": {
+    "message": "Scenery"
+  },
+  "settingsSearch": {
+    "message": "Search"
+  },
+  "settingsSecurity": {
+    "message": "Security"
+  },
+  "settingsShowBookmarksPanel": {
+    "message": "Show bookmarks panel"
+  },
+  "settingsShowBookmarksPanelHint": {
+    "message": "Tiles from your browser’s bookmark library."
+  },
+  "settingsShowCompletedTasks": {
+    "message": "Show completed tasks"
+  },
+  "settingsShowCompletedTasksHint": {
+    "message": "Keep done items visible (strikethrough) rather than hiding them."
+  },
+  "settingsShowConverterPanel": {
+    "message": "Show converter panel"
+  },
+  "settingsShowConverterPanelHint": {
+    "message": "Convert between length, weight, temperature, area, volume, speed, and data units."
+  },
+  "settingsShowCountdownsPanel": {
+    "message": "Show countdowns panel"
+  },
+  "settingsShowCountdownsPanelHint": {
+    "message": "Count down (or up) to named dates — launches, vacations, deadlines."
+  },
+  "settingsShowCryptoPanel": {
+    "message": "Show crypto panel"
+  },
+  "settingsShowCryptoPanelHint": {
+    "message": "Live prices from CoinGecko. A free demo API key is recommended — without one, CoinGecko rate-limits aggressively."
+  },
+  "settingsShowGithubPanel": {
+    "message": "Show GitHub panel"
+  },
+  "settingsShowGithubPanelHint": {
+    "message": "Your public activity and trending repos from the GitHub API."
+  },
+  "settingsShowNotesPanel": {
+    "message": "Show notes panel"
+  },
+  "settingsShowNotesPanelHint": {
+    "message": "Color-coded sticky notes stored in your browser."
+  },
+  "settingsShowPhotoPanel": {
+    "message": "Show photo panel"
+  },
+  "settingsShowPhotoPanelHint": {
+    "message": "A daily photo panel — changes every day."
+  },
+  "settingsShowQuoteBanner": {
+    "message": "Show quote banner"
+  },
+  "settingsShowQuoteBannerHint": {
+    "message": "A daily quote shown between the hero and the reading panels."
+  },
+  "settingsShowTodoPanel": {
+    "message": "Show to-do panel"
+  },
+  "settingsShowTodoPanelHint": {
+    "message": "A personal task list that persists across sessions."
+  },
+  "settingsShowTrending": {
+    "message": "Show trending"
+  },
+  "settingsShowTrendingHint": {
+    "message": "Show the Trending tab (top repos created in the last 7 days)."
+  },
+  "settingsShowWorldClocks": {
+    "message": "Show world clocks"
+  },
+  "settingsShowWorldClocksHint": {
+    "message": "A compact strip of clocks for multiple time zones, shown below the hero."
+  },
+  "settingsShowZenShelf": {
+    "message": "Show Zen Shelf"
+  },
+  "settingsShowZenShelfHint": {
+    "message": "Free-position sticky notes on the dashboard. Drag to move, resize from the corner."
+  },
+  "settingsSidePanel": {
+    "message": "Side panel"
+  },
+  "settingsSource": {
+    "message": "Source"
+  },
+  "settingsStarredMaxHint": {
+    "message": "Hard cap; oldest entries drop off when exceeded (10–500)."
+  },
+  "settingsStorage": {
+    "message": "Storage"
+  },
+  "settingsToColor": {
+    "message": "To color"
+  },
+  "settingsTopSitesMaxHint": {
+    "message": "4–20 sites shown."
+  },
+  "settingsTrendingLanguage": {
+    "message": "Trending language"
+  },
+  "settingsTrendingLanguageHint": {
+    "message": "Filter trending repos to a specific programming language."
+  },
+  "settingsTypography": {
+    "message": "Typography"
+  },
+  "settingsUploadImage": {
+    "message": "Upload image"
+  },
+  "settingsUploadImageHint": {
+    "message": "Stored locally in your browser; cleared images fall back to the theme gradient."
+  },
+  "settingsUploadVideo": {
+    "message": "Upload video"
+  },
+  "settingsUsername": {
+    "message": "Username"
+  },
+  "settingsUsernameHint": {
+    "message": "Your GitHub handle — used for the Activity tab. Leave blank to show only Trending."
+  },
+  "settingsVolume": {
+    "message": "Volume"
+  },
+  "settingsZoom": {
+    "message": "Zoom"
+  },
   "setupStepOf": {
     "message": "Step $1 of $2"
   },

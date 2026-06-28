@@ -16,6 +16,7 @@ import { clearFaviconCache, getFaviconCacheStats } from "./utils/favicon-cache.j
 import { normalizeWebUrl } from "./utils/url-safety.js";
 import { normalizeWidgetHttpsUrl, validateManifest } from "./utils/widget-host.js";
 import { removeBrowserPermission, requestBrowserPermission } from "./utils/browser-permissions.js";
+import { i18n } from "./utils/i18n.js";
 import {
   collectUserUrlPermissionTargets,
   hasDeniedHostOrigin,
@@ -39,18 +40,150 @@ import {
 } from "./utils/background-preview.js";
 import { registerOverlay } from "./utils/overlay-stack.js";
 
+const SETTINGS_TEXT_KEYS = Object.freeze({
+  "Settings": "settings",
+  "Close settings": "settingsClose",
+  "Filter settings...": "settingsFilterPlaceholder",
+  "Filter settings sections": "settingsFilterAria",
+  "Filter by widget, privacy setting, feed, or visual preference. Matching sections open automatically.": "settingsFilterHint",
+  "No settings match that filter. Try a widget name, feature, or privacy setting.": "settingsFilterEmpty",
+  "Appearance": "settingsAppearance",
+  "Accent color": "accentColor",
+  "Color for buttons, toggles, and highlights.": "settingsAccentColorHint",
+  "Background": "background",
+  "Color": "settingsColor",
+  "From color": "settingsFromColor",
+  "To color": "settingsToColor",
+  "Angle (deg)": "settingsAngleDeg",
+  "Upload image": "settingsUploadImage",
+  "Stored locally in your browser; cleared images fall back to the theme gradient.": "settingsUploadImageHint",
+  "Upload video": "settingsUploadVideo",
+  "Blur": "settingsBlur",
+  "Softens image and video wallpapers only.": "settingsBlurHint",
+  "Brightness": "settingsBrightness",
+  "Tunes image and video wallpapers behind panels.": "settingsBrightnessHint",
+  "Top Sites": "topSites",
+  "Max items": "settingsMaxItems",
+  "4–20 sites shown.": "settingsTopSitesMaxHint",
+  "Feed Filters": "settingsFeedFilters",
+  "Feed alerts": "settingsFeedAlerts",
+  "Feed archive": "settingsFeedArchive",
+  "Feed pre-warming": "settingsFeedPreWarming",
+  "Interval (minutes)": "settingsIntervalMinutes",
+  "Between 15 (4×/h) and 720 (twice a day).": "settingsIntervalMinutesHint",
+  "Workspaces": "workspaces",
+  "Storage": "settingsStorage",
+  "Security": "settingsSecurity",
+  "Side panel": "settingsSidePanel",
+  "History search": "historySearch",
+  "Max results": "settingsMaxResults",
+  "Cap on items returned per search (5–100). chrome.history.search defaults to 100.": "settingsHistoryMaxResultsHint",
+  "Container Workspaces": "settingsContainerWorkspaces",
+  "Greeting": "greeting",
+  "Scenery": "settingsScenery",
+  "Search": "settingsSearch",
+  "Weather": "weather",
+  "Clock": "clock",
+  "Quick links": "quickLinks",
+  "Reading list": "settingsReadingList",
+  "URLs you want to follow personally — RSS or Atom.": "settingsReadingListHint",
+  "News": "news",
+  "Curated headlines and news sources.": "settingsNewsHint",
+  "Air quality": "airQuality",
+  "Marine weather": "marineWeather",
+  "River flood risk": "riverFloodRisk",
+  "Solar radiation": "solarRadiation",
+  "Radar": "settingsRadar",
+  "Layer": "settingsLayer",
+  "Which data layer to display on the radar.": "settingsRadarLayerHint",
+  "Zoom": "settingsZoom",
+  "Map zoom level (3 = continent, 8 = city).": "settingsRadarZoomHint",
+  "Embeds": "settingsEmbeds",
+  "External Widgets": "settingsExternalWidgets",
+  "Calendar": "calendar",
+  "Days ahead": "settingsDaysAhead",
+  "How many days of upcoming events to show (1–30).": "settingsDaysAheadHint",
+  "Pomodoro": "pomodoro",
+  "Volume": "settingsVolume",
+  "Data": "dataTab",
+  "Ambient sounds": "ambientSounds",
+  "To-Do List": "todoList",
+  "Show to-do panel": "settingsShowTodoPanel",
+  "A personal task list that persists across sessions.": "settingsShowTodoPanelHint",
+  "Show completed tasks": "settingsShowCompletedTasks",
+  "Keep done items visible (strikethrough) rather than hiding them.": "settingsShowCompletedTasksHint",
+  "Notes": "notes",
+  "Show notes panel": "settingsShowNotesPanel",
+  "Color-coded sticky notes stored in your browser.": "settingsShowNotesPanelHint",
+  "Zen Shelf": "zenShelf",
+  "Show Zen Shelf": "settingsShowZenShelf",
+  "Free-position sticky notes on the dashboard. Drag to move, resize from the corner.": "settingsShowZenShelfHint",
+  "Bookmarks": "bookmarks",
+  "Show bookmarks panel": "settingsShowBookmarksPanel",
+  "Tiles from your browser’s bookmark library.": "settingsShowBookmarksPanelHint",
+  "Maximum number of bookmarks to display.": "settingsBookmarksMaxHint",
+  "Starred items": "starredItems",
+  "Hard cap; oldest entries drop off when exceeded (10–500).": "settingsStarredMaxHint",
+  "Inbox": "inbox",
+  "Hard cap on inbox size (50–1000). Oldest entries drop off when exceeded.": "settingsInboxMaxHint",
+  "World Clocks": "worldClocks",
+  "Show world clocks": "settingsShowWorldClocks",
+  "A compact strip of clocks for multiple time zones, shown below the hero.": "settingsShowWorldClocksHint",
+  "Crypto Prices": "cryptoPrices",
+  "Show crypto panel": "settingsShowCryptoPanel",
+  "Live prices from CoinGecko. A free demo API key is recommended — without one, CoinGecko rate-limits aggressively.": "settingsShowCryptoPanelHint",
+  "Coins": "settingsCoins",
+  "Comma-separated CoinGecko IDs (e.g. bitcoin, ethereum, solana, dogecoin).": "settingsCoinsHint",
+  "Currency": "settingsCurrency",
+  "Refresh (minutes)": "settingsRefreshMinutes",
+  "How often to poll for new prices.": "settingsRefreshMinutesHint",
+  "GitHub": "github",
+  "Show GitHub panel": "settingsShowGithubPanel",
+  "Your public activity and trending repos from the GitHub API.": "settingsShowGithubPanelHint",
+  "Username": "settingsUsername",
+  "Your GitHub handle — used for the Activity tab. Leave blank to show only Trending.": "settingsUsernameHint",
+  "Show trending": "settingsShowTrending",
+  "Show the Trending tab (top repos created in the last 7 days).": "settingsShowTrendingHint",
+  "Trending language": "settingsTrendingLanguage",
+  "Filter trending repos to a specific programming language.": "settingsTrendingLanguageHint",
+  "Quote of the Day": "quoteOfTheDay",
+  "Show quote banner": "settingsShowQuoteBanner",
+  "A daily quote shown between the hero and the reading panels.": "settingsShowQuoteBannerHint",
+  "Category": "settingsCategory",
+  "Photo of the Day": "photoOfTheDay",
+  "Show photo panel": "settingsShowPhotoPanel",
+  "A daily photo panel — changes every day.": "settingsShowPhotoPanelHint",
+  "Source": "settingsSource",
+  "NASA API key": "settingsNasaApiKey",
+  "Get a free key at api.nasa.gov — removes rate limits.": "settingsNasaApiKeyHint",
+  "Countdowns": "countdowns",
+  "Show countdowns panel": "settingsShowCountdownsPanel",
+  "Count down (or up) to named dates — launches, vacations, deadlines.": "settingsShowCountdownsPanelHint",
+  "Unit Converter": "unitConverter",
+  "Show converter panel": "settingsShowConverterPanel",
+  "Convert between length, weight, temperature, area, volume, speed, and data units.": "settingsShowConverterPanelHint",
+  "Default category": "settingsDefaultCategory",
+  "Custom CSS": "settingsCustomCss",
+  "Typography": "settingsTypography",
+  "Body font": "settingsBodyFont",
+  "Used for paragraph text, list items, and most UI surfaces.": "settingsBodyFontHint",
+  "Display font": "settingsDisplayFont",
+  "Used for headings, the greeting hero, and large numerical displays.": "settingsDisplayFontHint",
+  "Reset": "settingsReset"
+});
+
 export function renderSettingsPanel(panel, settings, onChange, { showWizard } = {}) {
   clear(panel);
   delete panel.dataset.filtering;
 
   // Sticky header
   panel.appendChild(el("header", { class: "settings-panel__header" }, [
-    el("h2", { id: "settings-panel-title", class: "settings-panel__title" }, ["Settings"]),
+    el("h2", { id: "settings-panel-title", class: "settings-panel__title" }, [settingsText("Settings")]),
     el("button", {
       type: "button",
       class: "icon-button icon-button--ghost",
-      "aria-label": "Close settings",
-      title: "Close",
+      "aria-label": settingsText("Close settings"),
+      title: settingsText("Close settings"),
       onClick: () => closePanel(panel)
     }, [iconNode("close", { size: 18 })])
   ]));
@@ -64,8 +197,8 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
     type: "search",
     id: "settings-filter-input",
     class: "text-input settings-search",
-    placeholder: "Filter settings...",
-    "aria-label": "Filter settings sections",
+    placeholder: settingsText("Filter settings..."),
+    "aria-label": settingsText("Filter settings sections"),
     "aria-describedby": "settings-filter-hint",
     onInput: (e) => {
       const q = e.target.value.toLowerCase().trim();
@@ -88,7 +221,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   searchWrap.appendChild(el("p", {
     id: "settings-filter-hint",
     class: "settings-search-hint"
-  }, ["Filter by widget, privacy setting, feed, or visual preference. Matching sections open automatically."]));
+  }, [settingsText("Filter by widget, privacy setting, feed, or visual preference. Matching sections open automatically.")]));
   body.appendChild(searchWrap);
 
   const filterEmpty = el("p", {
@@ -96,7 +229,7 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
     hidden: true,
     role: "status",
     "aria-live": "polite"
-  }, ["No settings match that filter. Try a widget name, feature, or privacy setting."]);
+  }, [settingsText("No settings match that filter. Try a widget name, feature, or privacy setting.")]);
   body.appendChild(filterEmpty);
 
   body.appendChild(buildAppearance(settings, onChange));
@@ -215,7 +348,7 @@ function section(title, iconName, { defaultOpen = false } = {}) {
     }
   }, [
     iconName ? iconNode(iconName, { size: 14 }) : null,
-    el("span", { class: "settings-section__title-text" }, [title]),
+    el("span", { class: "settings-section__title-text" }, [settingsText(title)]),
     el("span", { class: "settings-section__chevron", "aria-hidden": "true" },
       [iconNode("chevron-down", { size: 14 })])
   ]);
@@ -243,11 +376,17 @@ function group() {
   return el("div", { class: "settings-section__group" });
 }
 
+function settingsText(value) {
+  if (typeof value !== "string" || value === "") return value;
+  const key = SETTINGS_TEXT_KEYS[value];
+  return key ? i18n(key, null, value) : value;
+}
+
 function row(title, hint, control) {
   return el("div", { class: "settings-row" }, [
     el("div", { class: "settings-row__label" }, [
-      el("span", { class: "settings-row__title" }, [title]),
-      hint ? el("span", { class: "settings-row__hint" }, [hint]) : null
+      el("span", { class: "settings-row__title" }, [settingsText(title)]),
+      hint ? el("span", { class: "settings-row__hint" }, [settingsText(hint)]) : null
     ]),
     el("div", { class: "settings-row__control" }, [control])
   ]);
@@ -256,8 +395,8 @@ function row(title, hint, control) {
 function rowColumn(title, control, hint) {
   return el("div", { class: "settings-row settings-row--column" }, [
     el("div", { class: "settings-row__label" }, [
-      el("span", { class: "settings-row__title" }, [title]),
-      hint ? el("span", { class: "settings-row__hint" }, [hint]) : null
+      el("span", { class: "settings-row__title" }, [settingsText(title)]),
+      hint ? el("span", { class: "settings-row__hint" }, [settingsText(hint)]) : null
     ]),
     control
   ]);

@@ -41,6 +41,12 @@ async function collectSourceKeys() {
     for (const pattern of patterns) {
       for (const match of source.matchAll(pattern)) keys.add(match[1]);
     }
+    if (file === "src/settings.js") {
+      const map = source.match(/SETTINGS_TEXT_KEYS\s*=\s*Object\.freeze\(\{([\s\S]*?)\}\);/);
+      if (map) {
+        for (const match of map[1].matchAll(/:\s*"([^"]+)"/g)) keys.add(match[1]);
+      }
+    }
   }
   return [...keys].sort();
 }
