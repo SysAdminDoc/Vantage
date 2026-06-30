@@ -4,7 +4,8 @@
 import { strict as assert } from "node:assert";
 import { normalizeImportedSettings } from "../src/settings.js";
 import { getDefaults } from "../src/storage.js";
-import { getImportSectionCoverage } from "../src/utils/partial-import.js";
+import { opfsMarker } from "../src/utils/opfs.js";
+import { buildFullStateRestorePlan, getImportSectionCoverage } from "../src/utils/partial-import.js";
 
 let passed = 0;
 
@@ -56,6 +57,86 @@ test("sensitive and device-local state remains local-only", () => {
   assert.ok(localOnlyKeys.includes("security"));
   assert.ok(localOnlyKeys.includes("hostPermissions"));
   assert.ok(localOnlyKeys.includes("onboardingComplete"));
+});
+
+test("full-state restore plan preserves local stores and flags recovery work", () => {
+  const current = getDefaults();
+  current.security = {
+    encryptKeys: true,
+    salt: "current-salt",
+    iv: "current-iv",
+    encryptedBlob: "current-ciphertext"
+  };
+  current.hostPermissions = {
+    deniedOrigins: ["https://feeds.example.com/*"],
+    lastDeniedAt: "2026-06-30T00:00:00.000Z"
+  };
+  current.onboardingComplete = true;
+  current.crypto = { ...current.crypto, enabled: true, apiKey: "live-crypto-key" };
+  current.photo = { ...current.photo, enabled: true, source: "nasa", nasaKey: "live-nasa-key" };
+
+  const imported = normalizeImportedSettings({
+    theme: "latte",
+    background: {
+      ...current.background,
+      kind: "video-upload",
+      videoData: opfsMarker("restored-video.webm")
+    },
+    feedArchive: { enabled: true, cap: 25_000 },
+    workspaces: {
+      active: "restored",
+      list: [
+        {
+          id: "restored",
+          name: "Restored workspace",
+          snapshot: {
+            background: {
+              kind: "video-upload",
+              videoData: opfsMarker("workspace-video.webm")
+            },
+            layout: { panels: ["rss", "news"] },
+            quicklinks: {
+              enabled: true,
+              items: [{ title: "Docs", url: "https://example.com/docs" }],
+              groups: []
+            },
+            enabled: { rss: true, news: true }
+          }
+        }
+      ]
+    },
+    hostPermissions: { deniedOrigins: ["https://imported.example/*"] },
+    security: { encryptKeys: false, salt: null, iv: null, encryptedBlob: null },
+    crypto: { ...current.crypto, enabled: true, apiKey: "" },
+    photo: { ...current.photo, enabled: true, source: "nasa", nasaKey: "" },
+    futureDurableStore: { enabled: true }
+  });
+
+  const plan = buildFullStateRestorePlan(current, imported, {
+    availableOpfsKeys: ["workspace-video.webm"]
+  });
+
+  assert.equal(plan.merged.theme, "latte");
+  assert.equal(plan.merged.feedArchive.enabled, true);
+  assert.equal(plan.merged.workspaces.active, "restored");
+  assert.equal(plan.merged.workspaces.list[0].snapshot.background.videoData, opfsMarker("workspace-video.webm"));
+  assert.deepEqual(plan.merged.security, current.security);
+  assert.deepEqual(plan.merged.hostPermissions, current.hostPermissions);
+  assert.equal(plan.merged.onboardingComplete, true);
+  assert.equal(plan.merged.crypto.apiKey, "live-crypto-key");
+  assert.equal(plan.merged.photo.nasaKey, "live-nasa-key");
+  assert.deepEqual(plan.unknownImportedKeys, ["futureDurableStore"]);
+  assert.ok(plan.localOnlyPreservedKeys.includes("security"));
+  assert.ok(plan.localOnlyPreservedKeys.includes("hostPermissions"));
+
+  const opfsWarning = plan.warnings.find(w => w.type === "opfs-missing" && w.key === "restored-video.webm");
+  assert.ok(opfsWarning);
+  assert.ok(opfsWarning.message.includes("re-select the file"));
+  assert.ok(!plan.warnings.some(w => w.key === "workspace-video.webm"));
+
+  const archiveWarning = plan.warnings.find(w => w.type === "indexeddb-feed-archive");
+  assert.ok(archiveWarning);
+  assert.ok(archiveWarning.message.includes("Re-open feeds"));
 });
 
 test("malformed imported external widgets are normalized before restore", () => {

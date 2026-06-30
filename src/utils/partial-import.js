@@ -21,6 +21,7 @@
 // link") used in the dialog header so users know what they're applying.
 
 import { el, clear } from "./dom.js";
+import { isOpfsMarker, opfsKeyFromMarker } from "./opfs.js";
 import { registerOverlay } from "./overlay-stack.js";
 
 // Detect and summarize nightTab backup format.
@@ -224,6 +225,24 @@ export function getImportSectionCoverage() {
   };
 }
 
+export function buildFullStateRestorePlan(current, imported, options = {}) {
+  const selectedSectionIds = new Set(options.selectedSectionIds || SECTIONS.map(section => section.id));
+  const merged = applyImportSections(current, imported, selectedSectionIds);
+  const unknownImportedKeys = Object.keys(imported || {})
+    .filter(isUnknownTopLevelKey)
+    .sort();
+  const localOnlyPreservedKeys = [...LOCAL_ONLY_KEYS]
+    .filter(key => hasOwn(current, key))
+    .sort();
+  return {
+    selectedSectionIds: [...selectedSectionIds],
+    unknownImportedKeys,
+    localOnlyPreservedKeys,
+    warnings: buildRestoreWarnings(imported, merged, options),
+    merged
+  };
+}
+
 /**
  * Render the partial-import dialog. Returns a Promise that resolves to
  * a merged settings object the caller should save, or `null` if the
@@ -320,9 +339,9 @@ export function showPartialImportDialog(current, imported, source) {
     // aren't in the imported payload (downgrade scenario). Graceful
     // no-op on Firefox / older Chrome — the section-level diff is
     // already sufficient for the normal case.
+    const restorePlan = buildFullStateRestorePlan(current, imported);
     const importedTopKeys = new Set(Object.keys(imported || {}));
-    const unknownInImport = [...importedTopKeys]
-      .filter(k => !ALL_KEYS.has(k) && !LOCAL_ONLY_KEYS.has(k) && k !== "schemaVersion");
+    const unknownInImport = restorePlan.unknownImportedKeys;
     let extraNote = null;
     if (unknownInImport.length) {
       extraNote = el("p", { class: "import-dialog__extra-note" }, [
@@ -353,6 +372,12 @@ export function showPartialImportDialog(current, imported, source) {
         }
       }
     } catch { /* getKeys not supported — no-op */ }
+
+    for (const warning of restorePlan.warnings.slice(0, 3)) {
+      if (!extraNote) extraNote = el("p", { class: "import-dialog__extra-note" });
+      if (extraNote.childNodes.length) extraNote.appendChild(el("br"));
+      extraNote.appendChild(document.createTextNode(warning.message));
+    }
 
     const list = el("div", { class: "import-dialog__sections" });
     for (const sec of SECTIONS) {
@@ -453,14 +478,22 @@ const PRESERVE_IF_IMPORTED_EMPTY = [
 ];
 
 function applySelected(current, imported, checkboxes) {
-  // Start with a clone of current so unchecked sections are preserved.
-  const merged = JSON.parse(JSON.stringify(current));
+  const selectedSectionIds = new Set();
   for (const sec of SECTIONS) {
     const cb = checkboxes.get(sec.id);
-    if (!cb || !cb.checked) continue;
+    if (cb?.checked) selectedSectionIds.add(sec.id);
+  }
+  return applyImportSections(current, imported, selectedSectionIds);
+}
+
+function applyImportSections(current, imported, selectedSectionIds) {
+  // Start with a clone of current so unchecked sections are preserved.
+  const merged = cloneValue(current || {});
+  for (const sec of SECTIONS) {
+    if (!selectedSectionIds.has(sec.id)) continue;
     for (const key of sec.keys) {
       if (key in imported) {
-        merged[key] = JSON.parse(JSON.stringify(imported[key]));
+        merged[key] = cloneValue(imported[key]);
       }
     }
   }
@@ -480,6 +513,80 @@ function applySelected(current, imported, checkboxes) {
   // are kept from current — never overwritten by import. This is intentional:
   // import shouldn't reset onboarding state.
   return merged;
+}
+
+function buildRestoreWarnings(imported, merged, options = {}) {
+  const warnings = [];
+  const opfsReferences = collectOpfsReferences(imported);
+  const availableOpfsKeys = options.availableOpfsKeys
+    ? new Set(options.availableOpfsKeys)
+    : null;
+
+  for (const ref of opfsReferences) {
+    if (availableOpfsKeys?.has(ref.key)) continue;
+    warnings.push({
+      type: availableOpfsKeys ? "opfs-missing" : "opfs-reference",
+      key: ref.key,
+      paths: ref.paths,
+      message: `Uploaded media "${ref.key}" is stored in this browser profile's OPFS, not inside settings JSON. If it is missing after restore, re-select the file in Settings > Background.`
+    });
+  }
+
+  if (merged?.feedArchive?.enabled || imported?.feedArchive?.enabled) {
+    warnings.push({
+      type: "indexeddb-feed-archive",
+      key: "feedArchive",
+      paths: ["feedArchive"],
+      message: "Feed archive search contents live in IndexedDB and are not embedded in settings JSON. Re-open feeds to rebuild the archive before wiping the old profile."
+    });
+  }
+
+  return warnings;
+}
+
+function collectOpfsReferences(value) {
+  const byKey = new Map();
+  walkSettings(value, [], (path, candidate) => {
+    if (!isOpfsMarker(candidate)) return;
+    const key = opfsKeyFromMarker(candidate);
+    if (!key) return;
+    if (!byKey.has(key)) byKey.set(key, new Set());
+    byKey.get(key).add(formatPath(path));
+  });
+  return [...byKey.entries()]
+    .map(([key, paths]) => ({ key, paths: [...paths].sort() }))
+    .sort((a, b) => a.key.localeCompare(b.key));
+}
+
+function walkSettings(value, path, visit) {
+  visit(path, value);
+  if (!value || typeof value !== "object") return;
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => walkSettings(item, [...path, index], visit));
+    return;
+  }
+  for (const [key, child] of Object.entries(value)) {
+    walkSettings(child, [...path, key], visit);
+  }
+}
+
+function formatPath(path) {
+  if (!path.length) return "(root)";
+  return path.map(part => typeof part === "number" ? `[${part}]` : part).join(".");
+}
+
+function isUnknownTopLevelKey(key) {
+  return !ALL_KEYS.has(key) && !LOCAL_ONLY_KEYS.has(key) && key !== "schemaVersion";
+}
+
+function cloneValue(value) {
+  return typeof structuredClone === "function"
+    ? structuredClone(value)
+    : JSON.parse(JSON.stringify(value));
+}
+
+function hasOwn(value, key) {
+  return !!value && Object.prototype.hasOwnProperty.call(value, key);
 }
 
 function shallowEqual(a, b) {

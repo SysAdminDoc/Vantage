@@ -5,13 +5,6 @@ Blocked items live in Roadmap_Blocked.md.
 
 ## Research-Driven Additions
 
-- [ ] P1 - Add full-state export and restore verification
-  Why: Settings import is hardened, but no verifier exercises every durable store together across settings, IndexedDB, OPFS, denied origins, workspaces, and encrypted keys.
-  Evidence: `src/storage.js`, `src/utils/partial-import.js`, `src/utils/opfs.js`, `src/utils/feed-archive.js`, `src/utils/api-key-vault.js`, Bonjourr issue #819.
-  Touches: `scripts/test-partial-import.mjs`, `src/utils/partial-import.js`, `src/utils/opfs.js`, `src/utils/feed-archive.js`, `src/utils/api-key-vault.js`.
-  Acceptance: Test fixtures round-trip representative full-state exports, preserve encrypted-key behavior, detect unknown keys, and prove OPFS/IndexedDB references degrade with actionable recovery copy.
-  Complexity: L
-
 - [ ] P2 - Add metadata enrichment for manually saved links
   Why: Competitor issue demand centers on faster link setup: title/icon autofill, custom icons, and less manual editing.
   Evidence: Anori issues #279 and #304, Mue issue #1170, `src/settings.js`, `src/widgets/inbox.js`, `src/utils/favicon-cache.js`.
