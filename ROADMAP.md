@@ -5,13 +5,6 @@ Blocked items live in Roadmap_Blocked.md.
 
 ## Research-Driven Additions
 
-- [ ] P1 - Expand browser workflow smoke coverage
-  Why: Current smoke tests cover happy-path basics but not the permission, import, side-panel, localization, and recovery flows most likely to break in stores.
-  Evidence: `scripts/smoke-test.mjs`, `scripts/accessibility-audit.mjs`, Chrome Puppeteer extension testing docs, TablissNG/Mue/Bonjourr issue patterns.
-  Touches: `scripts/smoke-test.mjs`, `scripts/accessibility-audit.mjs`, `scripts/build-unpacked.ps1`, fixtures under `scripts/`.
-  Acceptance: Headless smoke covers optional-permission grant/deny/revoke, host-permission recovery, JSON/share import sections, side panel/sidebar behavior, external-widget failure, i18n fallback, and first-run recovery.
-  Complexity: L
-
 - [ ] P1 - Generate deterministic store evidence locally
   Why: Store submission needs reproducible screenshots, permission justifications, privacy claims, and audit artifacts now that workflow artifacts are gone.
   Evidence: Chrome Web Store screenshot docs, `docs/privacy-practices-cws.md`, `PRIVACY.md`, `README.md`, `scripts/accessibility-audit.mjs`.

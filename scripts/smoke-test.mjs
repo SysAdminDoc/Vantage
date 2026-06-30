@@ -9,6 +9,13 @@
  *   4. Quick-link add
  *   5. JSON export
  *   6. Widget error state (external widget with bad manifest)
+ *   7. Optional permission grant / deny / revoke helpers
+ *   8. Host-permission deny / grant recovery
+ *   9. JSON/share import section dialog and normalization
+ *  10. Side-panel entry point
+ *  11. i18n fallback behavior
+ *  12. First-run onboarding recovery
+ *  13. RTL language simulation
  *
  * Usage:
  *   node scripts/smoke-test.mjs [--headed] [--extension-dir dist/unpacked-chromium]
@@ -188,13 +195,27 @@ async function run() {
     if (widgetErrorResult === "ok") ok("Widget error state — bad manifest rejected");
     else ok(`Widget error state — skipped (${widgetErrorResult})`);
 
-    // 7. RTL language simulation through the local browser shim.
-    const rtlServer = staticServer || await startStaticServer(REPO_ROOT);
+    // 7+. Deterministic local workflow probes through the HTTP shim.
+    const workflowServer = staticServer || await startStaticServer(REPO_ROOT);
     try {
+      const workflowPage = await openSeededHttpPage(browser, workflowServer);
+      try {
+        await smokeOptionalPermissionWorkflow(workflowPage);
+        await smokeHostPermissionRecovery(workflowPage);
+        await smokeImportShareWorkflow(workflowPage);
+        await smokeI18nFallback(workflowPage);
+      } finally {
+        await workflowPage.close();
+      }
+
+      await smokeSidePanelWorkflow(browser, workflowServer);
+      await smokeFirstRunRecovery(browser, workflowServer);
+
+      // RTL language simulation through the local browser shim.
       for (const lang of ["ar-EG", "he-IL"]) {
         const rtlPage = await browser.newPage();
         try {
-          await rtlPage.goto(`${rtlServer.origin}/newtab.html?qaLang=${encodeURIComponent(lang)}`, { waitUntil: "domcontentloaded" });
+          await rtlPage.goto(`${workflowServer.origin}/newtab.html?qaLang=${encodeURIComponent(lang)}`, { waitUntil: "domcontentloaded" });
           await seedOnboarding(rtlPage);
           await rtlPage.reload({ waitUntil: "domcontentloaded" });
           await waitForDashboardReady(rtlPage);
@@ -214,7 +235,7 @@ async function run() {
         }
       }
     } finally {
-      if (!staticServer) await rtlServer.close();
+      if (!staticServer) await workflowServer.close();
     }
 
   } finally {
@@ -261,6 +282,212 @@ async function resolveExtensionPath() {
     throw new Error("Smoke extension build did not produce a marked unpacked folder");
   }
   return SMOKE_UNPACKED_DIR;
+}
+
+async function openSeededHttpPage(browser, server, path = "/newtab.html") {
+  const page = await browser.newPage();
+  await page.goto(`${server.origin}${path}`, { waitUntil: "domcontentloaded" });
+  await seedOnboarding(page);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await waitForDashboardReady(page);
+  return page;
+}
+
+async function smokeOptionalPermissionWorkflow(page) {
+  const state = await page.evaluate(async () => {
+    const granted = new Set();
+    let allowNext = false;
+    globalThis.chrome.permissions = {
+      async contains({ permissions = [] }) {
+        return permissions.every(permission => granted.has(permission));
+      },
+      async request({ permissions = [] }) {
+        if (!allowNext) return false;
+        for (const permission of permissions) granted.add(permission);
+        return true;
+      },
+      async remove({ permissions = [] }) {
+        for (const permission of permissions) granted.delete(permission);
+        return true;
+      },
+      onRemoved: { addListener() {}, removeListener() {} }
+    };
+    globalThis.browser = globalThis.chrome;
+
+    const mod = await import(`${new URL("src/utils/browser-permissions.js", location.href).href}?smoke=${Date.now()}`);
+    const before = await mod.hasBrowserPermission("bookmarks");
+    allowNext = false;
+    const denied = await mod.requestBrowserPermission("bookmarks");
+    allowNext = true;
+    const grantedResult = await mod.requestBrowserPermission("bookmarks");
+    const afterGrant = await mod.hasBrowserPermission("bookmarks");
+    const removed = await mod.removeBrowserPermission("bookmarks");
+    const afterRemove = await mod.hasBrowserPermission("bookmarks");
+    return { before, denied, grantedResult, afterGrant, removed, afterRemove };
+  });
+
+  if (!state.before && state.denied?.granted === false && state.grantedResult?.granted === true && state.afterGrant && state.removed && !state.afterRemove) {
+    ok("Optional permissions - grant, deny, revoke");
+  } else {
+    fail("Optional permissions", JSON.stringify(state));
+  }
+}
+
+async function smokeHostPermissionRecovery(page) {
+  const state = await page.evaluate(async () => {
+    const grantedOrigins = new Set();
+    let allowNext = false;
+    globalThis.chrome.permissions = {
+      async contains({ origins = [] }) {
+        return origins.every(origin => grantedOrigins.has(origin));
+      },
+      async request({ origins = [] }) {
+        if (!allowNext) return false;
+        for (const origin of origins) grantedOrigins.add(origin);
+        return true;
+      },
+      async remove({ origins = [] }) {
+        for (const origin of origins) grantedOrigins.delete(origin);
+        return true;
+      },
+      onRemoved: { addListener() {}, removeListener() {} }
+    };
+    globalThis.browser = globalThis.chrome;
+
+    const mod = await import(`${new URL("src/utils/host-permissions.js", location.href).href}?smoke=${Date.now()}`);
+    const settings = {};
+    const denied = await mod.requestHostPermission("https://feeds.example/rss.xml", settings);
+    const deniedStored = mod.hasDeniedHostOrigin(settings, "https://feeds.example/rss.xml");
+    allowNext = true;
+    const granted = await mod.requestHostPermission("https://feeds.example/rss.xml", settings);
+    const deniedCleared = !mod.hasDeniedHostOrigin(settings, "https://feeds.example/rss.xml");
+    return { denied, deniedStored, granted, deniedCleared };
+  });
+
+  if (state.denied?.required && !state.denied.granted && state.deniedStored && state.granted?.granted && state.deniedCleared) {
+    ok("Host permissions - denial recovery");
+  } else {
+    fail("Host permissions", JSON.stringify(state));
+  }
+}
+
+async function smokeImportShareWorkflow(page) {
+  const state = await page.evaluate(async () => {
+    const [settingsMod, importMod, gistMod, storageMod] = await Promise.all([
+      import(`${new URL("src/settings.js", location.href).href}?smoke=${Date.now()}`),
+      import(`${new URL("src/utils/partial-import.js", location.href).href}?smoke=${Date.now()}`),
+      import(`${new URL("src/utils/gist-sync.js", location.href).href}?smoke=${Date.now()}`),
+      import(`${new URL("src/storage.js", location.href).href}?smoke=${Date.now()}`)
+    ]);
+
+    const current = storageMod.getDefaults();
+    const imported = settingsMod.normalizeImportedSettings({
+      vantageSettings: 1,
+      partial: {
+        quicklinks: {
+          enabled: true,
+          items: [{ title: "Smoke", url: "https://example.com/smoke" }],
+          groups: []
+        },
+        sidePanel: { openOnActionClick: true }
+      }
+    });
+
+    const coverage = importMod.getImportSectionCoverage();
+    const dialogPromise = importMod.showPartialImportDialog(current, imported, "smoke import");
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const sectionTitles = [...document.querySelectorAll(".import-dialog__section-title")]
+      .map(node => node.textContent.trim());
+    const apply = [...document.querySelectorAll(".import-dialog .button--primary")]
+      .find(button => button.textContent?.includes("Apply selected"));
+    apply?.click();
+    const merged = await dialogPromise;
+
+    const shareUrl = gistMod.generateShareUrl({ quicklinks: imported.quicklinks, schemaVersion: imported.schemaVersion });
+    const encoded = new URL(shareUrl).hash.slice("#import=".length);
+    const roundTrip = settingsMod.normalizeImportedSettings(JSON.parse(decodeURIComponent(escape(atob(encoded)))));
+
+    return {
+      hasBrowserSection: coverage.sections.some(section => section.id === "browser"),
+      sectionCount: sectionTitles.length,
+      mergedQuicklink: merged?.quicklinks?.items?.[0]?.url,
+      shareHash: new URL(shareUrl).hash.startsWith("#import="),
+      roundTripQuicklink: roundTrip.quicklinks.items[0]?.url
+    };
+  });
+
+  if (
+    state.hasBrowserSection &&
+    state.sectionCount >= 8 &&
+    state.mergedQuicklink === "https://example.com/smoke" &&
+    state.shareHash &&
+    state.roundTripQuicklink === "https://example.com/smoke"
+  ) {
+    ok("JSON/share import - sections and round-trip");
+  } else {
+    fail("JSON/share import", JSON.stringify(state));
+  }
+}
+
+async function smokeI18nFallback(page) {
+  const state = await page.evaluate(async () => {
+    const mod = await import(`${new URL("src/utils/i18n.js", location.href).href}?smoke=${Date.now()}`);
+    const original = globalThis.chrome.i18n.getMessage;
+    globalThis.chrome.i18n.getMessage = () => "";
+    const setup = mod.i18n("setupStepOf", [2, 3]);
+    const host = mod.i18n("settingsHostAccessPrompt", ["example.com", "feed"], "Vantage will ask your browser for scoped access to $1 for $2.");
+    globalThis.chrome.i18n.getMessage = original;
+    return { setup, host };
+  });
+
+  if (state.setup === "Step 2 of 3" && state.host.includes("example.com") && state.host.includes("feed")) {
+    ok("i18n fallback - substitutions resolve");
+  } else {
+    fail("i18n fallback", JSON.stringify(state));
+  }
+}
+
+async function smokeSidePanelWorkflow(browser, server) {
+  const page = await browser.newPage();
+  try {
+    await page.goto(`${server.origin}/sidepanel.html`, { waitUntil: "domcontentloaded" });
+    await seedOnboarding(page);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForSelector("#sidepanel-feed-mount .panel-empty, #sidepanel-feed-mount .feed-list", { timeout: 5000 });
+    const state = await page.evaluate(() => ({
+      title: document.querySelector(".sidepanel-header h1")?.textContent?.trim(),
+      hasRefreshLabel: document.getElementById("sidepanel-refresh")?.getAttribute("aria-label"),
+      hasFeedMount: !!document.querySelector("#sidepanel-feed-mount")
+    }));
+    if (state.title === "Vantage Feeds" && state.hasRefreshLabel && state.hasFeedMount) {
+      ok("Side panel - renders feed shell");
+    } else {
+      fail("Side panel", JSON.stringify(state));
+    }
+  } finally {
+    await page.close();
+  }
+}
+
+async function smokeFirstRunRecovery(browser, server) {
+  const page = await browser.newPage();
+  try {
+    await page.goto(`${server.origin}/newtab.html?firstRunSmoke=${Date.now()}`, { waitUntil: "domcontentloaded" });
+    await page.evaluate(() => localStorage.removeItem("vantage:dev-chrome-storage"));
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForSelector(".onboard-overlay .onboard-card", { timeout: 5000 });
+    const state = await page.evaluate(() => ({
+      title: document.querySelector(".onboard-title")?.textContent?.trim(),
+      presetCount: document.querySelectorAll(".onboard-preset").length
+    }));
+    if (state.title && state.presetCount >= 3) {
+      ok("First-run recovery - onboarding renders");
+    } else {
+      fail("First-run recovery", JSON.stringify(state));
+    }
+  } finally {
+    await page.close();
+  }
 }
 
 function argValue(name) {
