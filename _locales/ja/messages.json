@@ -218,6 +218,10 @@
   "cancel": {
     "message": "キャンセル"
   },
+  "celsius": {
+    "message": "Celsius",
+    "description": "Widget UI string"
+  },
   "checkLinks": {
     "message": "Check links",
     "description": "Widget UI string"
@@ -325,6 +329,18 @@
   "comment": {
     "message": "Comment"
   },
+  "confidenceHigh": {
+    "message": "high",
+    "description": "Widget UI string"
+  },
+  "confidenceLow": {
+    "message": "low",
+    "description": "Widget UI string"
+  },
+  "confidenceModerate": {
+    "message": "moderate",
+    "description": "Widget UI string"
+  },
   "configureInSettings": {
     "message": "Configure in Settings"
   },
@@ -402,6 +418,10 @@
   "cryptoPrices": {
     "message": "Crypto Prices"
   },
+  "currentLocation": {
+    "message": "Current location",
+    "description": "Widget UI string"
+  },
   "customCountSuffix": {
     "message": "custom"
   },
@@ -423,6 +443,10 @@
   },
   "date": {
     "message": "Date"
+  },
+  "daysAgoShort": {
+    "message": "$1d ago",
+    "description": "Widget UI string"
   },
   "delete": {
     "message": "削除"
@@ -526,6 +550,10 @@
   },
   "export": {
     "message": "エクスポート"
+  },
+  "fahrenheit": {
+    "message": "Fahrenheit",
+    "description": "Widget UI string"
   },
   "failedToFetchUrl": {
     "message": "Failed to fetch $1",
@@ -697,6 +725,22 @@
     "message": "GitHub view",
     "description": "Widget UI string"
   },
+  "goodAfternoon": {
+    "message": "Good afternoon",
+    "description": "Widget UI string"
+  },
+  "goodEvening": {
+    "message": "Good evening",
+    "description": "Widget UI string"
+  },
+  "goodMorning": {
+    "message": "Good morning",
+    "description": "Widget UI string"
+  },
+  "goodNight": {
+    "message": "Good night",
+    "description": "Widget UI string"
+  },
   "greeting": {
     "message": "Greeting"
   },
@@ -736,6 +780,10 @@
   },
   "hostAccessNotGranted": {
     "message": "Host access not granted",
+    "description": "Widget UI string"
+  },
+  "hoursAgoShort": {
+    "message": "$1h ago",
     "description": "Widget UI string"
   },
   "image": {
@@ -871,6 +919,10 @@
   "japanese": {
     "message": "日本語"
   },
+  "justNow": {
+    "message": "just now",
+    "description": "Widget UI string"
+  },
   "label": {
     "message": "ラベル"
   },
@@ -994,6 +1046,10 @@
   },
   "markIncomplete": {
     "message": "Mark incomplete",
+    "description": "Widget UI string"
+  },
+  "minutesAgoShort": {
+    "message": "$1m ago",
     "description": "Widget UI string"
   },
   "name": {
@@ -1376,6 +1432,10 @@
   },
   "searchWeb": {
     "message": "ウェブを検索"
+  },
+  "secondsAgoShort": {
+    "message": "$1s ago",
+    "description": "Widget UI string"
   },
   "set": {
     "message": "Set"
@@ -1891,6 +1951,10 @@
   "url": {
     "message": "URL"
   },
+  "uvShort": {
+    "message": "UV",
+    "description": "Widget UI string"
+  },
   "vantageHome": {
     "message": "Vantage home"
   },
@@ -1922,8 +1986,136 @@
   "weather": {
     "message": "天気"
   },
+  "weatherCapeCompact": {
+    "message": "CAPE $1 J/kg",
+    "description": "Widget UI string"
+  },
+  "weatherCodeClear": {
+    "message": "Clear",
+    "description": "Widget UI string"
+  },
+  "weatherCodeDrizzle": {
+    "message": "Drizzle",
+    "description": "Widget UI string"
+  },
+  "weatherCodeFog": {
+    "message": "Fog",
+    "description": "Widget UI string"
+  },
+  "weatherCodeHeavyDrizzle": {
+    "message": "Heavy drizzle",
+    "description": "Widget UI string"
+  },
+  "weatherCodeHeavyRain": {
+    "message": "Heavy rain",
+    "description": "Widget UI string"
+  },
+  "weatherCodeHeavyShowers": {
+    "message": "Heavy showers",
+    "description": "Widget UI string"
+  },
+  "weatherCodeHeavySnow": {
+    "message": "Heavy snow",
+    "description": "Widget UI string"
+  },
+  "weatherCodeHeavySnowShowers": {
+    "message": "Heavy snow showers",
+    "description": "Widget UI string"
+  },
+  "weatherCodeLightDrizzle": {
+    "message": "Light drizzle",
+    "description": "Widget UI string"
+  },
+  "weatherCodeLightRain": {
+    "message": "Light rain",
+    "description": "Widget UI string"
+  },
+  "weatherCodeLightSnow": {
+    "message": "Light snow",
+    "description": "Widget UI string"
+  },
+  "weatherCodeMostlyClear": {
+    "message": "Mostly clear",
+    "description": "Widget UI string"
+  },
+  "weatherCodeOvercast": {
+    "message": "Overcast",
+    "description": "Widget UI string"
+  },
+  "weatherCodePartlyCloudy": {
+    "message": "Partly cloudy",
+    "description": "Widget UI string"
+  },
+  "weatherCodeRain": {
+    "message": "Rain",
+    "description": "Widget UI string"
+  },
+  "weatherCodeRainShowers": {
+    "message": "Rain showers",
+    "description": "Widget UI string"
+  },
+  "weatherCodeRimeFog": {
+    "message": "Rime fog",
+    "description": "Widget UI string"
+  },
+  "weatherCodeSevereThunderstorm": {
+    "message": "Severe thunderstorm",
+    "description": "Widget UI string"
+  },
+  "weatherCodeSnow": {
+    "message": "Snow",
+    "description": "Widget UI string"
+  },
+  "weatherCodeSnowGrains": {
+    "message": "Snow grains",
+    "description": "Widget UI string"
+  },
+  "weatherCodeSnowShowers": {
+    "message": "Snow showers",
+    "description": "Widget UI string"
+  },
+  "weatherCodeThunderstorm": {
+    "message": "Thunderstorm",
+    "description": "Widget UI string"
+  },
+  "weatherCodeThunderstormHail": {
+    "message": "Thunderstorm w/ hail",
+    "description": "Widget UI string"
+  },
+  "weatherCodeUnknown": {
+    "message": "Unknown",
+    "description": "Widget UI string"
+  },
+  "weatherCodeViolentShowers": {
+    "message": "Violent showers",
+    "description": "Widget UI string"
+  },
   "weatherDataUnavailable": {
     "message": "Weather data unavailable",
+    "description": "Widget UI string"
+  },
+  "weatherDewCompact": {
+    "message": "dew $1$2",
+    "description": "Widget UI string"
+  },
+  "weatherFeelsChip": {
+    "message": "feels $1$2",
+    "description": "Widget UI string"
+  },
+  "weatherFeelsLikeAria": {
+    "message": "feels like $1 degrees",
+    "description": "Widget UI string"
+  },
+  "weatherFeelsLikeCompact": {
+    "message": "feels like $1$2",
+    "description": "Widget UI string"
+  },
+  "weatherForecastConfidence": {
+    "message": "forecast confidence $1 (+/-$2$3)",
+    "description": "Widget UI string"
+  },
+  "weatherHumidityCompact": {
+    "message": "humidity $1%",
     "description": "Widget UI string"
   },
   "weatherLoadErrorTitle": {
@@ -1933,8 +2125,32 @@
   "weatherLocation": {
     "message": "Weather location"
   },
+  "weatherPrecipAria": {
+    "message": "$1% chance of precipitation",
+    "description": "Widget UI string"
+  },
+  "weatherPrecipCompact": {
+    "message": "precip $1%",
+    "description": "Widget UI string"
+  },
+  "weatherPressureCompact": {
+    "message": "pressure $1",
+    "description": "Widget UI string"
+  },
   "weatherSetCityTitle": {
     "message": "Set a city in Settings -> Weather to enable",
+    "description": "Widget UI string"
+  },
+  "weatherSoilMoistureCompact": {
+    "message": "soil $1 $2%",
+    "description": "Widget UI string"
+  },
+  "weatherSoilTempCompact": {
+    "message": "soil-T $1 $2$3",
+    "description": "Widget UI string"
+  },
+  "weatherTemperatureAria": {
+    "message": "$1 degrees $2",
     "description": "Widget UI string"
   },
   "weatherUnavailable": {
@@ -1943,6 +2159,18 @@
   },
   "weatherUnavailableSetCity": {
     "message": "Weather unavailable - set a city in settings",
+    "description": "Widget UI string"
+  },
+  "weatherUvIndexCompact": {
+    "message": "UV index $1",
+    "description": "Widget UI string"
+  },
+  "weatherVisibilityCompact": {
+    "message": "visibility $1",
+    "description": "Widget UI string"
+  },
+  "weatherVpdCompact": {
+    "message": "VPD $1 kPa",
     "description": "Widget UI string"
   },
   "widget": {

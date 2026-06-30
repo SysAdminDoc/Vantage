@@ -11,33 +11,7 @@
 import { el, clear } from "../utils/dom.js";
 import { getDailyForecast, detectLocation } from "../utils/weather-source.js";
 import { i18n } from "../utils/i18n.js";
-
-const WMO_CODES = {
-  0:  { label: "Clear",                 icon: "☀️"  },
-  1:  { label: "Mostly clear",          icon: "🌤️" },
-  2:  { label: "Partly cloudy",         icon: "⛅"  },
-  3:  { label: "Overcast",              icon: "☁️"  },
-  45: { label: "Fog",                   icon: "🌫️" },
-  48: { label: "Rime fog",              icon: "🌫️" },
-  51: { label: "Light drizzle",         icon: "🌦️" },
-  53: { label: "Drizzle",               icon: "🌦️" },
-  55: { label: "Heavy drizzle",         icon: "🌧️" },
-  61: { label: "Light rain",            icon: "🌧️" },
-  63: { label: "Rain",                  icon: "🌧️" },
-  65: { label: "Heavy rain",            icon: "🌧️" },
-  71: { label: "Light snow",            icon: "🌨️" },
-  73: { label: "Snow",                  icon: "❄️"  },
-  75: { label: "Heavy snow",            icon: "❄️"  },
-  77: { label: "Snow grains",           icon: "❄️"  },
-  80: { label: "Rain showers",          icon: "🌦️" },
-  81: { label: "Heavy showers",         icon: "🌧️" },
-  82: { label: "Violent showers",       icon: "⛈️"  },
-  85: { label: "Snow showers",          icon: "🌨️" },
-  86: { label: "Heavy snow showers",    icon: "❄️"  },
-  95: { label: "Thunderstorm",          icon: "⛈️"  },
-  96: { label: "Thunderstorm w/ hail",  icon: "⛈️"  },
-  99: { label: "Severe thunderstorm",   icon: "⛈️"  }
-};
+import { weatherCodeMeta } from "../utils/weather-labels.js";
 
 export async function renderWeatherForecast(mount, settings) {
   clear(mount);
@@ -83,11 +57,11 @@ export async function renderWeatherForecast(mount, settings) {
     for (let i = 0; i < Math.min(5, times.length); i++) {
       const dateStr = times[i];
       const date = new Date(dateStr + "T00:00:00");
-      const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
-      const dateLabel = date.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit" });
+      const dayName = date.toLocaleDateString(undefined, { weekday: "short" });
+      const dateLabel = date.toLocaleDateString(undefined, { month: "2-digit", day: "2-digit" });
 
       const code = codes[i];
-      const meta = WMO_CODES[code] || { label: "Unknown", icon: "❓" };
+      const meta = weatherCodeMeta(code);
 
       const maxTemp = Math.round(maxTemps[i] || 0);
       const minTemp = Math.round(minTemps[i] || 0);
@@ -122,7 +96,7 @@ export async function renderWeatherForecast(mount, settings) {
         ]),
         el("div", { class: "weather-forecast__details", title: i18n("forecastDetailsTitle", [precipAmount.toFixed(1), precipChance, uv.toFixed(1), windLabel], "Precip: $1 mm / $2% - UV: $3 - Wind: $4") }, [
           el("span", { class: "weather-forecast__detail-item" }, [`🌧️ ${precipChance}%`]),
-          el("span", { class: "weather-forecast__detail-item" }, [`☀️ UV ${uv.toFixed(1)}`]),
+          el("span", { class: "weather-forecast__detail-item" }, [`☀️ ${i18n("uvShort", null, "UV")} ${uv.toFixed(1)}`]),
           el("span", { class: "weather-forecast__detail-item" }, [`💨 ${windLabel}`])
         ])
       ]);

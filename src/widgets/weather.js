@@ -5,35 +5,9 @@
 import { el, clear } from "../utils/dom.js";
 import { getWeatherData, getEnsembleSpread, detectLocation, geocodeCity } from "../utils/weather-source.js";
 import { i18n } from "../utils/i18n.js";
+import { weatherCodeMeta } from "../utils/weather-labels.js";
 
 export { geocodeCity }; // re-export so settings panel can keep its existing import path
-
-const WMO_CODES = {
-  0:  { label: "Clear",                 icon: "☀️"  },
-  1:  { label: "Mostly clear",          icon: "🌤️" },
-  2:  { label: "Partly cloudy",         icon: "⛅"  },
-  3:  { label: "Overcast",              icon: "☁️"  },
-  45: { label: "Fog",                   icon: "🌫️" },
-  48: { label: "Rime fog",              icon: "🌫️" },
-  51: { label: "Light drizzle",         icon: "🌦️" },
-  53: { label: "Drizzle",               icon: "🌦️" },
-  55: { label: "Heavy drizzle",         icon: "🌧️" },
-  61: { label: "Light rain",            icon: "🌧️" },
-  63: { label: "Rain",                  icon: "🌧️" },
-  65: { label: "Heavy rain",            icon: "🌧️" },
-  71: { label: "Light snow",            icon: "🌨️" },
-  73: { label: "Snow",                  icon: "❄️"  },
-  75: { label: "Heavy snow",            icon: "❄️"  },
-  77: { label: "Snow grains",           icon: "❄️"  },
-  80: { label: "Rain showers",          icon: "🌦️" },
-  81: { label: "Heavy showers",         icon: "🌧️" },
-  82: { label: "Violent showers",       icon: "⛈️"  },
-  85: { label: "Snow showers",          icon: "🌨️" },
-  86: { label: "Heavy snow showers",    icon: "❄️"  },
-  95: { label: "Thunderstorm",          icon: "⛈️"  },
-  96: { label: "Thunderstorm w/ hail",  icon: "⛈️"  },
-  99: { label: "Severe thunderstorm",   icon: "⛈️"  }
-};
 
 // Precipitation chip kicks in past 30%. Below that the chip just adds noise.
 const PRECIP_CHIP_THRESHOLD = 30;
@@ -94,10 +68,10 @@ export async function renderWeather(mount, settings, saveSettings) {
     clear(mount);
     const cur = data.current || {};
     const code = cur.weather_code;
-    const meta = WMO_CODES[code] || { label: "Unknown", icon: "❓" };
+    const meta = weatherCodeMeta(code);
     const unit = settings.weather.units === "celsius" ? "°C" : "°F";
-    const unitLabel = settings.weather.units === "celsius" ? "Celsius" : "Fahrenheit";
-    const locName = location.name || "Current location";
+    const unitLabel = settings.weather.units === "celsius" ? i18n("celsius", null, "Celsius") : i18n("fahrenheit", null, "Fahrenheit");
+    const locName = location.name || i18n("currentLocation", null, "Current location");
     if (cur.temperature_2m == null) {
       mount.appendChild(el("div", { class: "weather-chip", "aria-label": i18n("weatherDataUnavailable", null, "Weather data unavailable") }, ["-"]));
       return;
@@ -119,13 +93,13 @@ export async function renderWeather(mount, settings, saveSettings) {
     // Build the title (hover) and aria-label (spoken). Title is dense, aria
     // stays terse to avoid SR fatigue.
     const titleParts = [`${meta.label}`];
-    if (feelsLike != null) titleParts.push(`feels like ${feelsLike}${unit}`);
-    if (showPrecip) titleParts.push(`precip ${precipProb}%`);
-    if (dewPoint != null) titleParts.push(`dew ${Math.round(dewPoint)}${unit}`);
-    if (humidity != null) titleParts.push(`humidity ${Math.round(humidity)}%`);
-    if (visibility) titleParts.push(`visibility ${visibility}`);
-    if (uvIndex != null) titleParts.push(`UV index ${Math.round(uvIndex * 10) / 10}`);
-    if (pressure) titleParts.push(`pressure ${pressure}`);
+    if (feelsLike != null) titleParts.push(i18n("weatherFeelsLikeCompact", [feelsLike, unit], "feels like $1$2"));
+    if (showPrecip) titleParts.push(i18n("weatherPrecipCompact", [precipProb], "precip $1%"));
+    if (dewPoint != null) titleParts.push(i18n("weatherDewCompact", [Math.round(dewPoint), unit], "dew $1$2"));
+    if (humidity != null) titleParts.push(i18n("weatherHumidityCompact", [Math.round(humidity)], "humidity $1%"));
+    if (visibility) titleParts.push(i18n("weatherVisibilityCompact", [visibility], "visibility $1"));
+    if (uvIndex != null) titleParts.push(i18n("weatherUvIndexCompact", [Math.round(uvIndex * 10) / 10], "UV index $1"));
+    if (pressure) titleParts.push(i18n("weatherPressureCompact", [pressure], "pressure $1"));
 
     // Ensemble forecast-confidence chip — narrow spread = high
     // confidence, wide spread = uncertain. Computed lazily so users
@@ -141,9 +115,13 @@ export async function renderWeather(mount, settings, saveSettings) {
           const isCelsius = settings.weather.units === "celsius";
           const lowCutoff = isCelsius ? 2 : 4;
           const highCutoff = isCelsius ? 4 : 8;
-          const conf = spread < lowCutoff ? "high" : spread < highCutoff ? "moderate" : "low";
+          const conf = spread < lowCutoff
+            ? i18n("confidenceHigh", null, "high")
+            : spread < highCutoff
+              ? i18n("confidenceModerate", null, "moderate")
+              : i18n("confidenceLow", null, "low");
           const unitTxt = isCelsius ? "°C" : "°F";
-          titleParts.push(`forecast confidence ${conf} (±${spread.toFixed(1)}${unitTxt})`);
+          titleParts.push(i18n("weatherForecastConfidence", [conf, spread.toFixed(1), unitTxt], "forecast confidence $1 (+/-$2$3)"));
         }
       } catch { /* Ensemble fetch is non-fatal — continue without the chip. */ }
     }
@@ -154,33 +132,33 @@ export async function renderWeather(mount, settings, saveSettings) {
     // about thunderstorm potential can read the headline number
     // without launching a separate app.
     if (settings.weather.showAgricultural) {
-      if (cur.cape != null) titleParts.push(`CAPE ${Math.round(cur.cape)} J/kg`);
-      if (cur.vapour_pressure_deficit != null) titleParts.push(`VPD ${cur.vapour_pressure_deficit.toFixed(2)} kPa`);
+      if (cur.cape != null) titleParts.push(i18n("weatherCapeCompact", [Math.round(cur.cape)], "CAPE $1 J/kg"));
+      if (cur.vapour_pressure_deficit != null) titleParts.push(i18n("weatherVpdCompact", [cur.vapour_pressure_deficit.toFixed(2)], "VPD $1 kPa"));
       // Soil moisture is m³/m³ (volumetric water content); show as %.
       if (cur.soil_moisture_0_to_1cm != null) {
-        titleParts.push(`soil 0-1cm ${Math.round(cur.soil_moisture_0_to_1cm * 100)}%`);
+        titleParts.push(i18n("weatherSoilMoistureCompact", ["0-1cm", Math.round(cur.soil_moisture_0_to_1cm * 100)], "soil $1 $2%"));
       }
       if (cur.soil_moisture_3_to_9cm != null) {
-        titleParts.push(`soil 3-9cm ${Math.round(cur.soil_moisture_3_to_9cm * 100)}%`);
+        titleParts.push(i18n("weatherSoilMoistureCompact", ["3-9cm", Math.round(cur.soil_moisture_3_to_9cm * 100)], "soil $1 $2%"));
       }
       if (cur.soil_moisture_27_to_81cm != null) {
-        titleParts.push(`soil 27-81cm ${Math.round(cur.soil_moisture_27_to_81cm * 100)}%`);
+        titleParts.push(i18n("weatherSoilMoistureCompact", ["27-81cm", Math.round(cur.soil_moisture_27_to_81cm * 100)], "soil $1 $2%"));
       }
       if (cur.soil_temperature_0cm != null) {
-        titleParts.push(`soil-T 0cm ${Math.round(cur.soil_temperature_0cm)}${unit}`);
+        titleParts.push(i18n("weatherSoilTempCompact", ["0cm", Math.round(cur.soil_temperature_0cm), unit], "soil-T $1 $2$3"));
       }
       if (cur.soil_temperature_18cm != null) {
-        titleParts.push(`soil-T 18cm ${Math.round(cur.soil_temperature_18cm)}${unit}`);
+        titleParts.push(i18n("weatherSoilTempCompact", ["18cm", Math.round(cur.soil_temperature_18cm), unit], "soil-T $1 $2$3"));
       }
       if (cur.soil_temperature_54cm != null) {
-        titleParts.push(`soil-T 54cm ${Math.round(cur.soil_temperature_54cm)}${unit}`);
+        titleParts.push(i18n("weatherSoilTempCompact", ["54cm", Math.round(cur.soil_temperature_54cm), unit], "soil-T $1 $2$3"));
       }
     }
-    const title = titleParts.join(" · ");
+    const title = titleParts.join(" - ");
 
-    const ariaParts = [`${temp} degrees ${unitLabel}`, meta.label, locName];
-    if (showFeelsLike) ariaParts.push(`feels like ${feelsLike} degrees`);
-    if (showPrecip) ariaParts.push(`${precipProb}% chance of precipitation`);
+    const ariaParts = [i18n("weatherTemperatureAria", [temp, unitLabel], "$1 degrees $2"), meta.label, locName];
+    if (showFeelsLike) ariaParts.push(i18n("weatherFeelsLikeAria", [feelsLike], "feels like $1 degrees"));
+    if (showPrecip) ariaParts.push(i18n("weatherPrecipAria", [precipProb], "$1% chance of precipitation"));
     const ariaLabel = ariaParts.join(", ");
 
     // Dual-units rendering: when enabled, append the converted other-
@@ -205,7 +183,7 @@ export async function renderWeather(mount, settings, saveSettings) {
       children.push(el("span", {
         class: "weather__chip weather__chip--feels",
         "aria-hidden": "true"
-      }, [`feels ${feelsLike}${unit}`]));
+      }, [i18n("weatherFeelsChip", [feelsLike, unit], "feels $1$2")]));
     }
     if (showPrecip) {
       children.push(el("span", {

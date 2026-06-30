@@ -6,11 +6,11 @@ Blocked items live in Roadmap_Blocked.md.
 ## Research-Driven Additions
 
 - [ ] P1 - Finish remaining Settings/widget i18n migration
-  Why: Static shell, side panel, onboarding, widget picker, Settings section/row labels, feed/browser-data widget states, most standalone widget chrome, locale parity guard, English fallback path, and RTL smoke are now covered. Settings button/body copy plus shared greeting/weather taxonomy strings still render hardcoded English.
-  Evidence: `src/settings.js`, `src/widgets/weather.js`, `src/widgets/weather-forecast.js`, `src/utils/dom.js`, `src/utils/i18n.js`, `_locales/*/messages.json`, `scripts/test-i18n.mjs`, Chrome i18n docs, Mue locale crash reports.
-  Touches: `src/settings.js`, `src/widgets/weather.js`, `src/widgets/weather-forecast.js`, `src/utils/dom.js`, `_locales/*/messages.json`, `scripts/test-i18n.mjs`.
-  Acceptance: Remaining Settings button/body copy, greeting defaults, and weather condition/tooltip taxonomy route through message keys; locale files keep exact required-key parity.
-  Complexity: L
+  Why: Static shell, side panel, onboarding, widget picker, Settings section/row labels, feed/browser-data widget states, standalone widget chrome, shared greeting/time labels, weather taxonomy, locale parity guard, English fallback path, and RTL smoke are now covered. Settings button/body copy still renders hardcoded English in many controls, placeholders, status rows, and dialogs.
+  Evidence: `src/settings.js`, `src/utils/i18n.js`, `_locales/*/messages.json`, `scripts/test-i18n.mjs`, Chrome i18n docs, Mue locale crash reports.
+  Touches: `src/settings.js`, `_locales/*/messages.json`, `scripts/test-i18n.mjs`.
+  Acceptance: Remaining Settings button/body copy routes through message keys and locale files keep exact required-key parity.
+  Complexity: M
 
 - [ ] P1 - Expand browser workflow smoke coverage
   Why: Current smoke tests cover happy-path basics but not the permission, import, side-panel, localization, and recovery flows most likely to break in stores.

@@ -1,6 +1,7 @@
 // Vantage v0.2.0 — DOM helpers + UI primitives (toggle, segmented, toast)
 
 import { iconNode } from "../icons.js";
+import { i18n } from "./i18n.js";
 
 export function el(tag, props = {}, children = []) {
   const node = document.createElement(tag);
@@ -118,24 +119,24 @@ export function toast(message, kind = "info", timeoutMs = 3400, action = null) {
 export function relativeTime(date) {
   if (!date) return "";
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 30) return "just now";
-  if (seconds < 60) return `${seconds}s ago`;
+  if (seconds < 30) return i18n("justNow", null, "just now");
+  if (seconds < 60) return i18n("secondsAgoShort", [seconds], "$1s ago");
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return i18n("minutesAgoShort", [minutes], "$1m ago");
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return i18n("hoursAgoShort", [hours], "$1h ago");
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
+  if (days < 7) return i18n("daysAgoShort", [days], "$1d ago");
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 /** Time-of-day greeting. */
 export function timeOfDayGreeting(hour = new Date().getHours()) {
-  if (hour < 5) return "Good night";
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  if (hour < 22) return "Good evening";
-  return "Good night";
+  if (hour < 5) return i18n("goodNight", null, "Good night");
+  if (hour < 12) return i18n("goodMorning", null, "Good morning");
+  if (hour < 17) return i18n("goodAfternoon", null, "Good afternoon");
+  if (hour < 22) return i18n("goodEvening", null, "Good evening");
+  return i18n("goodNight", null, "Good night");
 }
 
 /** Slot key matching `settings.greeting.custom.<slot>` overrides.

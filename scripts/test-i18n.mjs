@@ -32,6 +32,8 @@ async function collectSourceKeys() {
     "src/main.js",
     "src/sidepanel.js",
     "src/settings.js",
+    "src/utils/dom.js",
+    "src/utils/weather-labels.js",
     "src/onboarding.js",
     "src/widget-picker.js",
     ...widgetFiles
@@ -46,7 +48,7 @@ async function collectSourceKeys() {
     for (const pattern of patterns) {
       for (const match of source.matchAll(pattern)) keys.add(match[1]);
     }
-    if (file.startsWith("src/widgets/")) {
+    if (file.startsWith("src/widgets/") || file === "src/utils/weather-labels.js") {
       for (const match of source.matchAll(/\bkey:\s*"([^"]+)"/g)) keys.add(match[1]);
     }
     if (file === "src/settings.js") {
