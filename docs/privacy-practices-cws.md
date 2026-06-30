@@ -37,7 +37,7 @@ This document contains all privacy-related content for Chrome Web Store submissi
 **Why**: Firefox-only integration that maps container tabs to Vantage workspaces locally. Chrome Web Store builds do not request this permission.
 
 ### `host_permissions`
-**Why**: Fetch user-configured RSS/Atom/JSON feeds, iCal URLs, feed-discovery URLs, custom wallpaper/image URLs, favicon fallbacks, generic iframe embeds, and optional widget endpoints. Vantage does not inject content scripts or scrape arbitrary pages in the background. Fixed service hosts are declared explicitly (`api.open-meteo.com`, `geocoding-api.open-meteo.com`, `air-quality-api.open-meteo.com`, `marine-api.open-meteo.com`, `flood-api.open-meteo.com`, `ensemble-api.open-meteo.com`, `api.allorigins.win`, `corsproxy.io`, `www.bing.com`, `www.google.com`, `api.github.com`, `gist.githubusercontent.com`, `api.coingecko.com`, `api.nasa.gov`, `picsum.photos`). User-entered feed/calendar/image/embed URLs use runtime `optional_host_permissions`, not `*://*/*` install-time host access.
+**Why**: Fetch user-configured RSS/Atom/JSON feeds, iCal URLs, feed-discovery URLs, custom wallpaper/image URLs, favicon fallbacks, generic iframe embeds, and optional widget endpoints. Vantage does not inject content scripts or scrape arbitrary pages in the background. Fixed service hosts are declared explicitly (`api.open-meteo.com`, `geocoding-api.open-meteo.com`, `air-quality-api.open-meteo.com`, `marine-api.open-meteo.com`, `flood-api.open-meteo.com`, `ensemble-api.open-meteo.com`, `api.allorigins.win`, `corsproxy.io`, `www.bing.com`, `www.google.com`, `icons.duckduckgo.com`, `api.github.com`, `gist.githubusercontent.com`, `api.coingecko.com`, `api.nasa.gov`, `picsum.photos`). User-entered feed/calendar/image/embed URLs use runtime `optional_host_permissions`, not `*://*/*` install-time host access.
 
 ---
 
@@ -93,7 +93,7 @@ Vantage is a privacy-first new tab page extension. All settings, preferences, an
 - **Feed discovery**: Optional scan of a URL the user enters to find RSS / Atom / JSON Feed links
 - **Calendar**: User-configured `.ics` URLs
 - **CORS proxy** (if needed): allorigins.win, corsproxy.io, or a self-hosted proxy selected by the user
-- **Images**: Bing Daily, Picsum, NASA APOD, user-entered image URLs, and Google s2/favicon/page favicon fallbacks as standard HTTP GETs
+- **Images**: Bing Daily, Picsum, NASA APOD, user-entered image URLs, Google s2/favicon, DuckDuckGo favicon fallback, and page favicon fallbacks as standard HTTP GETs
 - **GitHub / CoinGecko**: Optional GitHub widget/Gist transfer and CoinGecko crypto prices
 - **Embeds**: Optional Windy radar and user-entered iframe embeds
 - **Settings transfer**: Optional GitHub Gist import/export. Creating a Gist requires a one-shot token; users can choose token-free JSON export or share-link copy instead.
@@ -161,6 +161,10 @@ host_permissions (*://...): Fetch user-configured RSS/news feeds, iCal URLs, fee
 - Screenshot 3: Widget showcase (weather, news, todos side-by-side)
 - Screenshot 4: Settings panel (customization options)
 - Screenshot 5: Workspace switching (optional, shows multi-profile feature)
+
+### Local evidence command
+
+Run `npm run store:evidence` before a store submission. It writes deterministic 1280x800 screenshots, accessibility JSON/markdown, permission/network evidence, and a submission checklist under `dist/store-evidence/`.
 
 ---
 

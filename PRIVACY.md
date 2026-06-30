@@ -1,6 +1,6 @@
 # Vantage Privacy Policy
 
-**Last updated**: June 16, 2026
+**Last updated**: June 30, 2026
 
 ## Overview
 
@@ -63,7 +63,7 @@ Vantage includes optional integrations with third-party services. **You choose w
 | **GitHub Trending RSS mirror** | Selected preset URL/language | Fetch optional GitHub Trending preset feeds from `mshibanami.github.io/GitHubTrendingRSS` | [GitHub Privacy](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement) | Remove the preset feed |
 | **Calendar .ics URLs** | .ics URL you provide | Parse calendar events | Per .ics provider | Remove calendar |
 | **CORS Proxy** (allorigins.win / corsproxy.io / user-hosted) | Feed/calendar URLs + returned content | Bypass browser CORS on cross-origin feeds/calendars | Per proxy operator | Use same-origin feeds only |
-| **Favicons** (www.google.com/s2/favicons + page fallback) | Page hostnames / favicon URL lookups | Fetch site icons for quick links, Top Sites, Bookmarks, feeds, and history rows | [Google Privacy](https://www.google.com/intl/en/policies/privacy/) or per site | Disable affected widgets / clear favicon cache |
+| **Favicons** (www.google.com/s2/favicons + icons.duckduckgo.com + page fallback) | Page hostnames / favicon URL lookups | Fetch site icons for quick links, Top Sites, Bookmarks, feeds, and history rows | [Google Privacy](https://www.google.com/intl/en/policies/privacy/), DuckDuckGo favicon service, or per site | Disable affected widgets / clear favicon cache |
 | **Bing Daily Image** | Geographic region (optional) | Fetch daily background image | [Microsoft Privacy](https://privacy.microsoft.com) | Switch to different background |
 | **User image URLs** | Direct image URL you enter | Load a custom wallpaper image | Per image host | Switch background |
 | **Picsum Photos** | Date-derived image seed | Fetch the default daily photo | [Picsum](https://picsum.photos/) | Disable photo widget or switch source |
@@ -107,7 +107,7 @@ Enable the History Search panel only after you opt in from Settings. Disabling t
 Map Firefox containers to Vantage workspaces locally. Chromium builds do not request this permission.
 
 ### Host Permissions
-Fetch fixed service endpoints for Open-Meteo, CORS proxy fallback, Bing wallpaper, Google favicons, GitHub/Gist transfer, CoinGecko, NASA APOD, and Picsum through explicit manifest host entries. User-configured RSS feeds, iCal URLs, feed-discovery URLs, custom image URLs, and generic embeds use runtime `optional_host_permissions` instead of `*://*/*` install-time access. If you deny an origin, Vantage stores that denied origin locally so Settings can show a `Grant access` recovery button.
+Fetch fixed service endpoints for Open-Meteo, CORS proxy fallback, Bing wallpaper, Google and DuckDuckGo favicons, GitHub/Gist transfer, CoinGecko, NASA APOD, and Picsum through explicit manifest host entries. User-configured RSS feeds, iCal URLs, feed-discovery URLs, custom image URLs, and generic embeds use runtime `optional_host_permissions` instead of `*://*/*` install-time access. If you deny an origin, Vantage stores that denied origin locally so Settings can show a `Grant access` recovery button.
 
 ---
 

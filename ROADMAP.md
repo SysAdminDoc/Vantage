@@ -5,13 +5,6 @@ Blocked items live in Roadmap_Blocked.md.
 
 ## Research-Driven Additions
 
-- [ ] P1 - Generate deterministic store evidence locally
-  Why: Store submission needs reproducible screenshots, permission justifications, privacy claims, and audit artifacts now that workflow artifacts are gone.
-  Evidence: Chrome Web Store screenshot docs, `docs/privacy-practices-cws.md`, `PRIVACY.md`, `README.md`, `scripts/accessibility-audit.mjs`.
-  Touches: `scripts/`, `qa-scenes.html`, `docs/privacy-practices-cws.md`, `PRIVACY.md`, `README.md`.
-  Acceptance: A local command outputs 1280x800 screenshots, a permission/network diff, accessibility JSON/HTML or markdown report, and a store-ready artifact checklist under `dist/`.
-  Complexity: M
-
 - [ ] P1 - Add full-state export and restore verification
   Why: Settings import is hardened, but no verifier exercises every durable store together across settings, IndexedDB, OPFS, denied origins, workspaces, and encrypted keys.
   Evidence: `src/storage.js`, `src/utils/partial-import.js`, `src/utils/opfs.js`, `src/utils/feed-archive.js`, `src/utils/api-key-vault.js`, Bonjourr issue #819.

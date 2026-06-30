@@ -31,6 +31,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Disabled button CSS no longer declares cursor twice.**
 
 ### Added
+- **Deterministic store evidence command** - `npm run store:evidence` now generates five 1280x800 screenshots, axe accessibility JSON/markdown, permission/network coverage reports, and a store-ready artifact checklist under `dist/store-evidence/`. Privacy docs now explicitly list the DuckDuckGo favicon fallback host declared in the manifests.
 - **Browser workflow smoke coverage expansion** - The local smoke suite now exercises optional permission grant/deny/revoke behavior, host-permission denial recovery, JSON/share import sections, i18n fallback substitutions, side-panel rendering, first-run onboarding recovery, external-widget rejection, and RTL startup checks in deterministic headless runs.
 - **Settings runtime copy i18n migration** - Settings now localizes generated body text, placeholders, titles, ARIA labels, static/dynamic toasts, prompts, confirmation copy, status counters, and permission/import dialog messages through locale keys with English fallbacks. The i18n parity guard now scans Settings wrapper literals and generated Settings literal keys while avoiding user-provided row content.
 - **Shared weather and greeting i18n labels** — current weather and forecast widgets now share localized WMO condition labels, localized weather tooltip/ARIA fragments, locale-aware forecast dates, localized greeting defaults, and localized relative-time strings.

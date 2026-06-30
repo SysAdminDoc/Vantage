@@ -133,7 +133,7 @@ For visual QA, open `qa-scenes.html` from the same local server as `newtab.html`
 
 Three paths for Chromium browsers, one for Firefox. Pick the one that fits.
 
-Release artifacts are built locally with `npm run build:release`, which cleans old release assets and writes the Chromium ZIP, Firefox XPI, CRX3, and `SHA256SUMS.txt` under `dist\`. Use the published ZIP/XPI/CRX assets for installs and store submissions; use `.\scripts\build-unpacked.ps1` only for local source testing. Do not hand-package the repo, because ignored docs, QA state, or signing files can accidentally enter an ad hoc ZIP.
+Release artifacts are built locally with `npm run build:release`, which cleans old release assets and writes the Chromium ZIP, Firefox XPI, CRX3, and `SHA256SUMS.txt` under `dist\`. Store evidence is generated locally with `npm run store:evidence`, which writes 1280x800 screenshots, accessibility evidence, permission/network reports, and a submission checklist under `dist\store-evidence\`. Use the published ZIP/XPI/CRX assets for installs and store submissions; use `.\scripts\build-unpacked.ps1` only for local source testing. Do not hand-package the repo, because ignored docs, QA state, or signing files can accidentally enter an ad hoc ZIP.
 
 ### Option A — One-line PowerShell installer (Windows, recommended, Chromium only)
 
@@ -287,6 +287,7 @@ Vantage/
 | `api.allorigins.win` | RSS / News / Calendar (fallback) | Used **only** when direct fetch is blocked by CORS |
 | `corsproxy.io` | RSS / News / Calendar (second fallback) | Tried after allorigins fails |
 | `www.google.com/s2/favicons` | Quick Links / Top Sites / Bookmarks / Feeds | 32-64px favicon images |
+| `icons.duckduckgo.com` | Quick Links / Top Sites / Bookmarks / Feeds | Secondary favicon fallback when Google s2 is unavailable |
 | `api.coingecko.com` | Crypto widget | Current prices for selected coins |
 | `api.github.com` | GitHub widget | Public user activity and repository search for trending repos |
 | `api.github.com/gists` | Settings → Data → Gist transfer | Import public settings Gists; create a public Gist only when you provide a one-shot GitHub token |
