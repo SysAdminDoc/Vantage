@@ -14,6 +14,7 @@ import { createSettingsGist, loadSettingsFromGist, generateShareUrl } from "./ut
 import { THEME_OPTIONS, applyThemePreference } from "./utils/theme.js";
 import { clearFaviconCache, getFaviconCacheStats } from "./utils/favicon-cache.js";
 import { enrichLinkMetadata } from "./utils/link-metadata.js";
+import { createWorkspaceId, duplicateQuickLinkGroup, duplicateWorkspace } from "./utils/workspace.js";
 import { normalizeWebUrl } from "./utils/url-safety.js";
 import { normalizeWidgetHttpsUrl, validateManifest } from "./utils/widget-host.js";
 import { removeBrowserPermission, requestBrowserPermission } from "./utils/browser-permissions.js";
@@ -1750,6 +1751,26 @@ function buildWorkspacesSection(settings, onChange) {
           }
         }
       }, [iconNode("share", { size: 14 })]);
+      const duplicateBtn = el("button", {
+        type: "button", class: "icon-button icon-button--ghost icon-button--small",
+        "aria-label": `Duplicate workspace ${ws.name}`,
+        title: "Duplicate workspace",
+        onClick: () => {
+          const copy = duplicateWorkspace(ws, settings.workspaces.list);
+          settings.workspaces.list.splice(idx + 1, 0, copy);
+          onChange(settings);
+          refreshWorkspaceList();
+          settingsToast(i18n("settingsNamedAdded", [copy.name], "$1 added."), "success", 6500, {
+            label: "Undo",
+            onClick: () => {
+              const copyIdx = settings.workspaces.list.findIndex(item => item.id === copy.id);
+              if (copyIdx >= 0) settings.workspaces.list.splice(copyIdx, 1);
+              onChange(settings);
+              refreshWorkspaceList();
+            }
+          });
+        }
+      }, [iconNode("plus", { size: 14 })]);
       const del = el("button", {
         type: "button", class: "icon-button icon-button--ghost icon-button--small",
         "aria-label": "Remove workspace", title: "Remove",
@@ -1808,7 +1829,7 @@ function buildWorkspacesSection(settings, onChange) {
       renderPresets();
 
       listEl.appendChild(el("div", { class: "workspace-item" }, [
-        el("div", { class: "workspace-item__header" }, [nameIn, captureBtn, sceneTimeIn, exportBtn, del]),
+        el("div", { class: "workspace-item__header" }, [nameIn, captureBtn, sceneTimeIn, exportBtn, duplicateBtn, del]),
         presetList
       ]));
     });
@@ -1820,7 +1841,7 @@ function buildWorkspacesSection(settings, onChange) {
     type: "button", class: "button button--ghost",
     onClick: () => {
       if (!settings.workspaces) settings.workspaces = { active: null, list: [] };
-      settings.workspaces.list.push({ id: String(Date.now()), name: "Workspace", snapshot: null });
+      settings.workspaces.list.push({ id: createWorkspaceId(settings.workspaces.list), name: "Workspace", snapshot: null });
       onChange(settings);
       refreshWorkspaceList();
     }
@@ -1843,12 +1864,8 @@ function buildWorkspacesSection(settings, onChange) {
         if (!ws || typeof ws !== "object" || !ws.snapshot) {
           throw new Error("doesn't look like a Vantage workspace export");
         }
-        const fresh = {
-          id: String(Date.now()),
-          name: ws.name ? `${ws.name} (imported)` : "Imported workspace",
-          snapshot: cloneValue(ws.snapshot)
-        };
         if (!settings.workspaces) settings.workspaces = { active: null, list: [] };
+        const fresh = duplicateWorkspace(ws, settings.workspaces.list, { nameSuffix: "imported" });
         settings.workspaces.list.push(fresh);
         onChange(settings);
         refreshWorkspaceList();
@@ -1901,7 +1918,7 @@ function buildWorkspacesSection(settings, onChange) {
         if (!settings.workspaces) settings.workspaces = { active: null, list: [] };
         const baseSnapshot = (window._vantageWorkspaceHelpers?.captureSnapshot?.() || {});
         const fresh = {
-          id: String(Date.now()),
+          id: createWorkspaceId(settings.workspaces.list),
           name: `Tabs ${new Date().toLocaleDateString()}`,
           snapshot: {
             ...baseSnapshot,
@@ -2723,6 +2740,9 @@ function buildLinksSection(settings, onChange) {
   ));
   sec.appendChild(g);
 
+  if (!Array.isArray(settings.quicklinks.items)) settings.quicklinks.items = [];
+  if (!Array.isArray(settings.quicklinks.groups)) settings.quicklinks.groups = [];
+
   const list = el("ul", { class: "item-list" });
   const refreshList = () => {
     clear(list);
@@ -2770,6 +2790,72 @@ function buildLinksSection(settings, onChange) {
   };
   refreshList();
   sec.appendChild(list);
+
+  const groupList = el("ul", { class: "item-list" });
+  const refreshGroupList = () => {
+    clear(groupList);
+    if (!settings.quicklinks.groups.length) {
+      groupList.appendChild(el("li", { class: "item-list__empty" }, ["No link groups yet."]));
+      return;
+    }
+    settings.quicklinks.groups.forEach((group, idx) => {
+      const label = group.name || group.title || `Group ${idx + 1}`;
+      const itemCount = Array.isArray(group.items) ? group.items.length : 0;
+      const duplicateBtn = el("button", {
+        type: "button",
+        class: "icon-button icon-button--ghost icon-button--small",
+        "aria-label": `Duplicate group ${label}`,
+        title: "Duplicate group",
+        onClick: () => {
+          const copy = duplicateQuickLinkGroup(group, settings.quicklinks.groups);
+          settings.quicklinks.groups.splice(idx + 1, 0, copy);
+          onChange(settings);
+          refreshGroupList();
+          settingsToast(i18n("settingsNamedAdded", [copy.name], "$1 added."), "success", 6500, {
+            label: "Undo",
+            onClick: () => {
+              const copyIdx = settings.quicklinks.groups.findIndex(item => item.id === copy.id);
+              if (copyIdx >= 0) settings.quicklinks.groups.splice(copyIdx, 1);
+              onChange(settings);
+              refreshGroupList();
+            }
+          });
+        }
+      }, [iconNode("plus", { size: 14 })]);
+      const removeBtn = el("button", {
+        type: "button",
+        class: "icon-button icon-button--ghost icon-button--small",
+        "aria-label": i18n("settingsRemoveNamedAria", [label], "Remove $1"),
+        title: i18n("settingsRemoveNamedAria", [label], "Remove $1"),
+        onClick: () => {
+          const removed = cloneValue(group);
+          settings.quicklinks.groups.splice(idx, 1);
+          onChange(settings);
+          refreshGroupList();
+          toastUndo(i18n("settingsRemovedNamed", [label], "Removed \"$1\"."), () => {
+            insertAt(settings.quicklinks.groups, idx, removed);
+            onChange(settings);
+            refreshGroupList();
+          });
+        }
+      }, [iconNode("trash", { size: 14 })]);
+      groupList.appendChild(el("li", { class: "item-list__row" }, [
+        el("div", { class: "item-list__row-content" }, [
+          el("span", { class: "item-list__title" }, [label]),
+          el("span", { class: "item-list__hint" }, [`${itemCount} link${itemCount === 1 ? "" : "s"}`])
+        ]),
+        duplicateBtn,
+        removeBtn
+      ]));
+    });
+  };
+  refreshGroupList();
+
+  const groupsDiv = el("div", { class: "tab-groups-section" }, [
+    el("h3", { class: "section-title" }, ["Link groups"]),
+    groupList
+  ]);
+  sec.appendChild(groupsDiv);
 
   const titleInput = el("input", { type: "text", class: "text-input", placeholder: "Label, e.g. GitHub" });
   const urlInput = el("input", { type: "text", class: "text-input", placeholder: "https://github.com" });

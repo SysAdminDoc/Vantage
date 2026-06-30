@@ -1568,6 +1568,22 @@
     "message": "Loading…",
     "description": "Settings UI string"
   },
+  "settingsLiteral_10jlnyv": {
+    "message": "Duplicate workspace",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1pqn1sd": {
+    "message": "Duplicate group",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1q8bc32": {
+    "message": "No link groups yet.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_3ihg4p": {
+    "message": "Link groups",
+    "description": "Settings UI string"
+  },
   "settingsLiteral_10mrjas": {
     "message": "iCal URL is required.",
     "description": "Settings UI string"

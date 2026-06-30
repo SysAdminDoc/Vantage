@@ -77,3 +77,61 @@ export function captureSnapshot(settings) {
     enabled
   };
 }
+
+export function duplicateWorkspace(workspace, existingWorkspaces = [], { nameSuffix = "copy" } = {}) {
+  const source = workspace && typeof workspace === "object" ? workspace : {};
+  const clone = cloneValue(source);
+  clone.id = createWorkspaceId(existingWorkspaces);
+  clone.name = uniqueName(source.name || "Workspace", existingWorkspaces.map(ws => ws?.name), nameSuffix);
+  clone.snapshot = source.snapshot == null ? null : cloneValue(source.snapshot);
+  if (Array.isArray(source.presets)) clone.presets = cloneValue(source.presets);
+  if (source.activePreset != null) clone.activePreset = source.activePreset;
+  return clone;
+}
+
+export function createWorkspaceId(existingWorkspaces = []) {
+  return uniqueId("ws", existingWorkspaces.map(ws => ws?.id));
+}
+
+export function duplicateQuickLinkGroup(group, existingGroups = [], { nameSuffix = "copy" } = {}) {
+  const source = group && typeof group === "object" ? group : {};
+  const clone = cloneValue(source);
+  const baseName = source.name || source.title || "Group";
+  clone.id = uniqueId("group", existingGroups.map(item => item?.id));
+  clone.name = uniqueName(baseName, existingGroups.map(item => item?.name || item?.title), nameSuffix);
+  clone.items = Array.isArray(source.items) ? cloneValue(source.items) : [];
+  delete clone.title;
+  return clone;
+}
+
+function uniqueName(baseName, existingNames, suffix) {
+  const base = String(baseName || "Item").trim() || "Item";
+  const taken = new Set((existingNames || []).filter(Boolean).map(name => String(name).trim().toLowerCase()));
+  let candidate = `${base} (${suffix})`;
+  let counter = 2;
+  while (taken.has(candidate.toLowerCase())) {
+    candidate = `${base} (${suffix} ${counter})`;
+    counter++;
+  }
+  return candidate;
+}
+
+function uniqueId(prefix, existingIds) {
+  const taken = new Set((existingIds || []).filter(Boolean).map(String));
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const id = `${prefix}-${randomId()}`;
+    if (!taken.has(id)) return id;
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function randomId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function cloneValue(value) {
+  return typeof structuredClone === "function"
+    ? structuredClone(value)
+    : JSON.parse(JSON.stringify(value));
+}

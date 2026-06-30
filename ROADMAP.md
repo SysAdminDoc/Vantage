@@ -5,13 +5,6 @@ Blocked items live in Roadmap_Blocked.md.
 
 ## Research-Driven Additions
 
-- [ ] P2 - Add duplicate workspace/group actions
-  Why: Heavy dashboard users want to branch layouts and folders without rebuilding them by hand.
-  Evidence: Anori issues #289 and #269, `src/utils/workspace.js`, `src/settings.js`, Vantage quick-link groups and workspace snapshots.
-  Touches: `src/settings.js`, `src/utils/workspace.js`, `src/widgets/quicklinks.js`, `src/storage.js`.
-  Acceptance: Users can duplicate a workspace or quick-link group with contents, generated IDs never collide, and imports preserve source data without overwriting existing names.
-  Complexity: M
-
 - [ ] P2 - Add integration health diagnostics
   Why: Vantage depends on many optional external services, and failures should be diagnosable without opening DevTools.
   Evidence: `src/utils/error-log.js`, `src/utils/weather-source.js`, `src/utils/rss-parser.js`, `src/widgets/github.js`, `src/widgets/crypto.js`, Mue/TablissNG API/cache issue reports.
