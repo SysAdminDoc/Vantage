@@ -22,6 +22,22 @@ function placeholders(message) {
     .sort();
 }
 
+function settingsLiteralKey(value) {
+  let hash = 5381;
+  for (let i = 0; i < value.length; i++) {
+    hash = ((hash << 5) + hash) ^ value.charCodeAt(i);
+  }
+  return `settingsLiteral_${(hash >>> 0).toString(36)}`;
+}
+
+function shouldCollectSettingsLiteral(value) {
+  if (!value || !/[A-Za-z]/.test(value)) return false;
+  if (value.length > 240) return false;
+  if (/^https?:\/\//.test(value)) return false;
+  if (/^[a-z0-9_.-]+$/i.test(value) && !/\s/.test(value)) return false;
+  return true;
+}
+
 async function collectSourceKeys() {
   const widgetFiles = (await readdir(join(ROOT, "src", "widgets")))
     .filter(file => file.endsWith(".js"))
@@ -53,8 +69,29 @@ async function collectSourceKeys() {
     }
     if (file === "src/settings.js") {
       const map = source.match(/SETTINGS_TEXT_KEYS\s*=\s*Object\.freeze\(\{([\s\S]*?)\}\);/);
+      const mappedTexts = new Set();
       if (map) {
-        for (const match of map[1].matchAll(/:\s*"([^"]+)"/g)) keys.add(match[1]);
+        for (const match of map[1].matchAll(/"([^"]+)"\s*:\s*"([^"]+)"/g)) {
+          mappedTexts.add(match[1]);
+          keys.add(match[2]);
+        }
+      }
+      const literalPatterns = [
+        /(?:placeholder|title):\s*"([^"]+)"/g,
+        /"aria-label":\s*"([^"]+)"/g,
+        /\[\s*"([^"]+)"\s*\]/g,
+        /\btextContent\s*=\s*"([^"]+)"/g,
+        /\b(?:settingsToast|toast)\(\s*"([^"]+)"/g,
+        /\b(?:settingsPrompt|prompt)\(\s*"([^"]+)"/g,
+        /\b(?:settingsConfirm|confirm)\(\s*"([^"]+)"/g,
+        /\blabel:\s*"([^"]+)"/g
+      ];
+      for (const pattern of literalPatterns) {
+        for (const match of source.matchAll(pattern)) {
+          const value = match[1];
+          if (mappedTexts.has(value) || !shouldCollectSettingsLiteral(value)) continue;
+          keys.add(settingsLiteralKey(value));
+        }
       }
     }
   }

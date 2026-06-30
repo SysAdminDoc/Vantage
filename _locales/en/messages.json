@@ -1787,6 +1787,942 @@
     "message": "Layer",
     "description": "Settings UI string"
   },
+  "settingsLiteral_10dwptx": {
+    "message": "Loading…",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_10mrjas": {
+    "message": "iCal URL is required.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_10vtqts": {
+    "message": "Chrome extension storage (chrome.storage.local)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_114ewns": {
+    "message": "github_pat_... or ghp_...",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_11vvexl": {
+    "message": "No clocks yet.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_126k6fn": {
+    "message": "Vault passphrase",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_12ury4h": {
+    "message": "This is what a Vantage feed alert looks like.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_134sn5a": {
+    "message": "GitHub Trending — JavaScript",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_13ffb72": {
+    "message": "Image set.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_13z5wdq": {
+    "message": "No links found in file.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1402jxf": {
+    "message": "Feed keyword alerts",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_146lbkg": {
+    "message": "Column (0-indexed)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_14b7tmx": {
+    "message": "Create public Gist",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_14bbh0": {
+    "message": "Match field",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_14gk80j": {
+    "message": "Custom alarm cleared.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1658iwg": {
+    "message": "<style>",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_165gl8p": {
+    "message": "Search archived feed items",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_16d6dzv": {
+    "message": "GitHub token",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_16rwj16": {
+    "message": "Reddit — All",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_16t069q": {
+    "message": "Bing Daily",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_16vkbzp": {
+    "message": "That doesn't look like a valid image URL.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_16w6llp": {
+    "message": "GitHub Trending — Rust",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_16z7rcq": {
+    "message": "Pin Tab Groups (Chrome/Edge)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_177s464": {
+    "message": "bitcoin, ethereum, solana",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_17o2i9c": {
+    "message": "Body font family",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_182dynl": {
+    "message": "Passphrases don't match.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_188rd6x": {
+    "message": "Image URL",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_18h50va": {
+    "message": "Debug log cleared.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_18kl47i": {
+    "message": "missing manifest",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_18p4ovv": {
+    "message": "Reload manifest",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_18wtvpu": {
+    "message": "Settings exported (secrets stripped).",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1933ugc": {
+    "message": "Row (0-indexed)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_19dkj2h": {
+    "message": "GitHub Trending — Python",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_19j1osi": {
+    "message": "NASA APOD",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_19su7nb": {
+    "message": "No Tab Groups found. Create one in Chrome/Edge to pin it here.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_19ypul9": {
+    "message": "Custom alarm must be 200 KB or smaller.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1a81f23": {
+    "message": "Auto-detected on first load. Override below.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1anosud": {
+    "message": "Filter trending by language",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1ap51d3": {
+    "message": "Paste a workspace JSON (from another device or backup):",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1b11s52": {
+    "message": "Scene time for this preset",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1b2tlhh": {
+    "message": "City name",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1bflnru": {
+    "message": "e.g. typescript (leave blank for all)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1c81r6w": {
+    "message": "Label, e.g. GitHub",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1cfa1l7": {
+    "message": "Clock label",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1cia7lf": {
+    "message": "Your name",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1cwq3bl": {
+    "message": "Gradient end color",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1d0m03p": {
+    "message": "Embed URL",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1dauunu": {
+    "message": "Refresh interval minutes",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1dphy3w": {
+    "message": "No auth",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1dqcbj2": {
+    "message": "No saveable tabs in the current window.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1dwh46j": {
+    "message": "Remove clock",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1dxyf7s": {
+    "message": "Remove embed",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1dz362u": {
+    "message": "Live sky follows time, local weather, season, moon phase, and the Scenery setting.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1egdncf": {
+    "message": "No entries found in CSV.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1ez96vw": {
+    "message": "One keyword per line\\nExamples:\\nNVIDIA\\nlayoffs\\nHacker News",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1f0yk7r": {
+    "message": "Click Confirm reset to erase feeds, links, location, and custom settings.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1fm2hir": {
+    "message": "No feeds yet.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1g89f1c": {
+    "message": "Lock this workspace to a specific time of day for the animated background (leave blank for real time)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1gpyizm": {
+    "message": "Max top sites",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1gvkixu": {
+    "message": "Radar layer",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1h98b49": {
+    "message": "Leave blank and use Copy JSON or Copy share link for a token-free transfer.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1hc5cgl": {
+    "message": "API keys encrypted. Re-prompt on next browser session.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1hepoce": {
+    "message": "Alarm volume",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1hq5wjc": {
+    "message": "History permission denied. The panel stays disabled.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1hqeajv": {
+    "message": "Maximum items",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1idf70j": {
+    "message": "Label and URL are both required.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1j7itni": {
+    "message": "Display name in greeting",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1k26pe8": {
+    "message": "Add third-party widgets by pasting an HTTPS widget manifest URL. Widgets run in sandboxed iframes with no access to your data; manifest and widget frame origins are HTTPS-only.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1kbv6z8": {
+    "message": "Bing daily image will refresh.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1kxjodx": {
+    "message": "Maximum history results",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1l099at": {
+    "message": "CG-XXXX… (optional but strongly recommended)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1l1ix5a": {
+    "message": "Label, e.g. BBC",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1ldvmmi": {
+    "message": "Not available in this browser.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1lmt9gv": {
+    "message": "Grant host access",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1lv8bf1": {
+    "message": "Hacker News — Show HN",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1m1k7vc": {
+    "message": "No feeds found on this website. Try entering a feed URL directly.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1m4wudq": {
+    "message": "(none)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1mphbhy": {
+    "message": "Enter your vault passphrase to decrypt and disable encryption:",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1nbwqzx": {
+    "message": "Filter pattern",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1nkfx0p": {
+    "message": "IANA timezone",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1nndrtk": {
+    "message": "Copy JSON",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1o011sc": {
+    "message": "Couldn't read that audio file.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1oakg3v": {
+    "message": "Countdown events",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1onna2r": {
+    "message": "(default — same as body)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1pft987": {
+    "message": "Background preview cleared.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1plwebc": {
+    "message": "Map zoom level",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1pm3d29": {
+    "message": "Some imported origins were not granted. Grant buttons will appear beside affected URLs.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1pqc2hm": {
+    "message": "Hacker News — Front page",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1q4usrf": {
+    "message": "Confirm passphrase",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1q501ot": {
+    "message": "Searching…",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1qbyqz1": {
+    "message": "Copy share link",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1qe1qja": {
+    "message": "No embeds configured yet.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1qemtpe": {
+    "message": "Choose a passphrase (≥8 chars)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1qmwlp": {
+    "message": "Birthday must be in MM-DD format (e.g. 04-15).",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1qxl039": {
+    "message": "Birthday in MM-DD format",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1r1ku7z": {
+    "message": "Host access granted for imported URLs.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1s0o7z6": {
+    "message": "Clipboard access denied. Tip: open the dev console and paste from settings storage.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1s83g3f": {
+    "message": "Position cleared; link will flow normally.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1s97rtq": {
+    "message": "Imported URLs saved without host access. Grant access later from Settings if a widget cannot load directly.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1sv1syj": {
+    "message": "Days ahead to show",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1t5myvk": {
+    "message": "Max starred items",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1tg6q8c": {
+    "message": "No workspaces configured. Add workspaces above first.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1tlizsf": {
+    "message": "Reddit — Science",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1tp972q": {
+    "message": "That doesn't look like a valid URL.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1tupsml": {
+    "message": "Maximum archived items",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1tvde0g": {
+    "message": "e.g. America/Chicago",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1tvgzu0": {
+    "message": "Hacker News — Best",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1vn6x1i": {
+    "message": "Calendar feeds",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1voa66v": {
+    "message": "Hacker News — Ask HN",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1vph92i": {
+    "message": "GitHub Trending — TypeScript",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1vt861x": {
+    "message": "Filter fonts",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1vtzh7b": {
+    "message": "Basic auth",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1vuh9z7": {
+    "message": "No calendars yet.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1w41yjx": {
+    "message": "Settings imported from Gist.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1w8vrkd": {
+    "message": "Remove rule",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1wxprtr": {
+    "message": "Alert history cleared.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1yntyvh": {
+    "message": "Search title or source…",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1ypycac": {
+    "message": "Host access was not granted, so Vantage could not inspect that site for feeds.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1yxntbr": {
+    "message": "Pick at least one widget to export.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_2a00zx": {
+    "message": "Auto-detect feeds on this website",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_2kegx0": {
+    "message": "Gist import undone.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_2lq38n": {
+    "message": "Discover feeds",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_2ut0ae": {
+    "message": "Reddit — World News",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_2wwlvx": {
+    "message": "Video set (legacy storage). Loops automatically. Pauses when tab is hidden.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_2ya566": {
+    "message": "Export workspace as JSON",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_2yrexa": {
+    "message": "Default search engine",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_3742e6": {
+    "message": "Set position",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_3bew25": {
+    "message": "Import undone.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_3hhwz": {
+    "message": "°F",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_3hhx2": {
+    "message": "°C",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_3q7qij": {
+    "message": "News feeds",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_45y8ii": {
+    "message": "Scene time override",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_5nwv4k": {
+    "message": "No Firefox containers found. Create containers in Firefox settings.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_66tvr1": {
+    "message": "Bearer token",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_6ughuo": {
+    "message": "Error loading Tab Groups",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_6va8je": {
+    "message": "GitHub token with Gists write access",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_7381of": {
+    "message": "Estimate unavailable.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_7vsghu": {
+    "message": "Gradient angle",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_7wl1mi": {
+    "message": "Display font family",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_88hf29": {
+    "message": "Alert keywords",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_9m6j86": {
+    "message": "Toggle all",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_adgt9i": {
+    "message": "OPFS unavailable; stored as base64 instead.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_am7t4r": {
+    "message": "Storage used",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_amctq0": {
+    "message": "Settings reset to defaults.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_atya0h": {
+    "message": "(default — system sans)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_axehot": {
+    "message": "Widget manifest URL",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_bfcw9i": {
+    "message": "Background color",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_bl1c2d": {
+    "message": "GitHub Trending — Go",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_bsmkc5": {
+    "message": "Bookmarks permission denied. The panel stays disabled.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_c6wxeu": {
+    "message": "Remove workspace",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_dco3v5": {
+    "message": "Import canceled.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_dhidop": {
+    "message": "Discovering feeds...",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_dq96i9": {
+    "message": "New clock",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_drjh52": {
+    "message": "Set grid position",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_dsecr0": {
+    "message": "Paste Gist URL or ID:\\n\\nExamples:\\nhttps://gist.github.com/abc123\\nabc123",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_dyw89r": {
+    "message": "No filter rules yet.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_dyz5c7": {
+    "message": "CoinGecko demo API key",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_eeigyy": {
+    "message": "No community themes available yet.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_eir5yd": {
+    "message": "Favicon cache cleared.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_fa4l48": {
+    "message": "Highlight color",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_fbjafv": {
+    "message": "Save current visual profile and layout to this workspace",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_fp9qnf": {
+    "message": "Side panel requires Chrome 114+ or Firefox 109+. The feed reader sidebar will appear here when you switch to a supporting browser.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_fyuom6": {
+    "message": "Max bookmarks",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_g944r8": {
+    "message": "No workspaces yet.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_gn4bog": {
+    "message": "No external widgets added yet.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_h8pscz": {
+    "message": "Feeds exported as OPML.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_hxabds": {
+    "message": "Get a Web Notification when a News or Reading list headline contains one of your keywords. Strict opt-in: requires browser notification permission. Each item is notified only once.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_ibz29b": {
+    "message": "Feed import undone.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_iek3b9": {
+    "message": "Max inbox items",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_ivot52": {
+    "message": "MM-DD (e.g. 04-15)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_jahx9f": {
+    "message": "Creating Gist...",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_jq481s": {
+    "message": "/* e.g. .hero { gap: 2rem; } */",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_jzja6v": {
+    "message": "Passphrase must be at least 8 characters.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_k1jpoa": {
+    "message": "Feed filter rules",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_kh45u4": {
+    "message": "Loading Gist…",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_kix5j2": {
+    "message": "Reddit — Popular",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_kjf1tv": {
+    "message": "Pre-warm interval in minutes",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_kvqix9": {
+    "message": "Crypto watchlist",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_kw60az": {
+    "message": "Preset scene time",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_l33uti": {
+    "message": "Remove preset",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_m5ca8e": {
+    "message": "Capturing screenshot…",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_mb5rb0": {
+    "message": "Pre-warm cache cleared.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_md72f9": {
+    "message": "Precip accumulation",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_me5qcd": {
+    "message": "Reddit — Technology",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_mq0mi8": {
+    "message": "DEMO_KEY or your NASA API key",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_mrrhe7": {
+    "message": "No matches.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_msqhoc": {
+    "message": "World clocks",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_mygjtp": {
+    "message": "e.g. Phoenix, AZ",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_nmjp7i": {
+    "message": "Gradient start color",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_nmnb5l": {
+    "message": "That doesn't look like a valid embed URL.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_nvdts5": {
+    "message": "Map Firefox container tabs to workspaces. When you open a new tab in the selected container, that workspace will activate automatically.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_odg7hj": {
+    "message": "Preset name",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_olknal": {
+    "message": "Tab access is unavailable in this browser.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_om5zzk": {
+    "message": "Override the built-in greeting for any time slot. Use [name] to drop your display name into the phrase. Leave blank to keep the default.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_oomkjr": {
+    "message": "Named profiles — each can override theme, accent, scenery, background, layout, quick links, and per-widget toggles.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_oqzhqx": {
+    "message": "Mute or highlight feed items by title or URL regex. Applied to both RSS and News panels.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_osdwip": {
+    "message": "Pattern (regex)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_oxwotq": {
+    "message": "Reset to auto-detect",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_p20kbq": {
+    "message": "Capturing dashboard…",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_p5zsks": {
+    "message": "Test notification fired.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_p6ez35": {
+    "message": "API keys decrypted and stored as plaintext. You can re-encrypt anytime.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_p8zvss": {
+    "message": "Token or password",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_pjol3o": {
+    "message": "GitHub requires a token with Gists: write to create a Gist. Vantage uses it once for this request and never stores it.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_powcq9": {
+    "message": "Feed URL is required.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_pp7r0b": {
+    "message": "Permanent IndexedDB-backed archive of every feed item your dashboard renders. Searchable below. Strict opt-in: storage grows over time and is bounded only by the cap. Stays in your browser — never uploaded.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_q2btcf": {
+    "message": "Remove widget",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_q3opra": {
+    "message": "Reading list (RSS)",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_qbe975": {
+    "message": "No links yet.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_qekvmq": {
+    "message": "Reddit — Programming",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_qr20wl": {
+    "message": "Top Sites permission denied. The row stays disabled.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_qx9889": {
+    "message": "Skip for now",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_r4nqm4": {
+    "message": "GitHub Trending — All",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_rdyew4": {
+    "message": "Clipboard access denied.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_rpgyyg": {
+    "message": "Gist import canceled.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_rtwfc8": {
+    "message": "Clear override",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_ryxk0b": {
+    "message": "Share link copied (secrets stripped).",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_s335no": {
+    "message": "Export settings",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_szhqmk": {
+    "message": "Windy radar",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_t450e9": {
+    "message": "Optional permissions API not available — history search can't be enabled in this browser.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_tkxjgw": {
+    "message": "Add a valid embed URL before enabling this panel.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_uhclim": {
+    "message": "Gist JSON copied.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_uzo7ta": {
+    "message": "Fonts reset to default.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_vw5vu0": {
+    "message": "Website URL is required.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_w3zrrt": {
+    "message": "Calendar added.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_wciwgx": {
+    "message": "Couldn't generate share link.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_ws8iri": {
+    "message": "CoinGecko coin IDs",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_x4kjhw": {
+    "message": "Community Themes",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_xsndw6": {
+    "message": "GitHub username",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_y83imo": {
+    "message": "Will auto-detect on next load.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_yhcavb": {
+    "message": "Workspace name",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_z74257": {
+    "message": "Filter action",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_zh7qil": {
+    "message": "Authentication type",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_zlo4a4": {
+    "message": "Label, e.g. Work",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_zveowe": {
+    "message": "Embed title",
+    "description": "Settings UI string"
+  },
   "settingsMaxItems": {
     "message": "Max items",
     "description": "Settings UI string"
@@ -2692,5 +3628,314 @@
   "zenShelf": {
     "message": "Zen Shelf",
     "description": "UI string"
+  },
+  "settingsAccentAria": {
+    "message": "Accent: $1"
+  },
+  "settingsThemesLoadError": {
+    "message": "Couldn't load themes - $1."
+  },
+  "settingsResolvedThemeLabel": {
+    "message": "$1 ($2)"
+  },
+  "settingsBackgroundPresetApplied": {
+    "message": "Applied $1 background preset."
+  },
+  "settingsPreviewAria": {
+    "message": "$1 preview"
+  },
+  "settingsVideoSizeLimit": {
+    "message": "Video must be under $1 MB."
+  },
+  "settingsVideoStoredOpfs": {
+    "message": "Video stored in OPFS ($1 MB). Loops automatically."
+  },
+  "settingsOpfsWriteFailed": {
+    "message": "OPFS write failed ($1). File too large for fallback storage."
+  },
+  "settingsBingDailyCacheHint": {
+    "message": "Cached from $1. Uses the cached image if today's fetch fails."
+  },
+  "settingsNotificationPermissionEnable": {
+    "message": "Notification permission $1. Enable it in your browser's site settings to receive alerts."
+  },
+  "settingsAlreadyNotifiedCount": {
+    "message": "$1 item(s) marked as notified. Reset to re-fire on next match."
+  },
+  "settingsNotificationPermission": {
+    "message": "Notification permission $1."
+  },
+  "settingsArchiveItemCount": {
+    "message": "$1 item(s)"
+  },
+  "settingsArchiveClearedCount": {
+    "message": "Cleared $1 archived item(s)."
+  },
+  "settingsArchiveClearFailed": {
+    "message": "Couldn't clear archive."
+  },
+  "settingsArchiveSearchError": {
+    "message": "Couldn't search archive - $1."
+  },
+  "settingsWorkspaceSnapshotSaved": {
+    "message": "Snapshot saved for \"$1\"."
+  },
+  "settingsWorkspaceExportAria": {
+    "message": "Export workspace \"$1\" as JSON"
+  },
+  "settingsWorkspaceCopied": {
+    "message": "Workspace \"$1\" copied to clipboard ($2 KB)."
+  },
+  "settingsCopyFailed": {
+    "message": "Couldn't copy - $1."
+  },
+  "settingsWorkspaceRemoved": {
+    "message": "Removed workspace \"$1\"."
+  },
+  "settingsWorkspaceImported": {
+    "message": "Imported \"$1\"."
+  },
+  "settingsWorkspaceImportFailed": {
+    "message": "Couldn't import workspace - $1."
+  },
+  "settingsTabsSavedAsWorkspace": {
+    "message": "Saved $1 tab(s) as \"$2\"."
+  },
+  "settingsTabsReadFailed": {
+    "message": "Couldn't read tabs - $1."
+  },
+  "settingsStorageUsedValue": {
+    "message": "$1 of $2 ($3%)"
+  },
+  "settingsEncryptFailed": {
+    "message": "Couldn't encrypt - $1."
+  },
+  "settingsDecryptionFailed": {
+    "message": "Decryption failed."
+  },
+  "settingsSidePanelUpdateFailed": {
+    "message": "Couldn't update side panel behavior - $1."
+  },
+  "settingsPermissionRequestFailed": {
+    "message": "Permission request failed - $1."
+  },
+  "settingsContainerWorkspaceAria": {
+    "message": "Workspace for $1"
+  },
+  "settingsGreetingOverrideAria": {
+    "message": "$1 greeting override"
+  },
+  "settingsGreetingSlotTitle": {
+    "message": "$1 greeting"
+  },
+  "settingsLocationSet": {
+    "message": "Location set to $1."
+  },
+  "settingsLocationNotFound": {
+    "message": "Couldn't find \"$1\"."
+  },
+  "settingsSetGridPositionAria": {
+    "message": "Set grid position for $1"
+  },
+  "settingsRemoveNamedAria": {
+    "message": "Remove $1"
+  },
+  "settingsRemovedNamed": {
+    "message": "Removed \"$1\"."
+  },
+  "settingsNamedAdded": {
+    "message": "$1 added."
+  },
+  "settingsTabGroupTabCount": {
+    "message": "$1 tabs"
+  },
+  "settingsUnpinNamedAria": {
+    "message": "Unpin $1"
+  },
+  "settingsPinNamedAria": {
+    "message": "Pin $1"
+  },
+  "settingsUnpinnedNamed": {
+    "message": "Unpinned \"$1\"."
+  },
+  "settingsPinnedNamed": {
+    "message": "Pinned \"$1\"."
+  },
+  "settingsShowNamedAria": {
+    "message": "Show $1"
+  },
+  "settingsNamedFeedLabel": {
+    "message": "$1 feed"
+  },
+  "settingsDiscoveringFeeds": {
+    "message": "Discovering feeds..."
+  },
+  "settingsFeedDiscoveryHostDenied": {
+    "message": "Host access was not granted, so Vantage could not inspect that site for feeds."
+  },
+  "settingsFeedDiscoveryNone": {
+    "message": "No feeds found on this website. Try entering a feed URL directly."
+  },
+  "settingsFeedDiscoveryCount": {
+    "message": "Found $1 feed(s):"
+  },
+  "settingsSubscribeToFeedAria": {
+    "message": "Subscribe to $1"
+  },
+  "settingsNamedAddedQuoted": {
+    "message": "\"$1\" added."
+  },
+  "settingsFeedDiscoveryError": {
+    "message": "Error: $1"
+  },
+  "settingsEnableNamedAria": {
+    "message": "Enable $1"
+  },
+  "settingsInvalidManifest": {
+    "message": "Invalid manifest: $1"
+  },
+  "settingsLoadedNamed": {
+    "message": "Loaded \"$1\"."
+  },
+  "settingsManifestLoadFailed": {
+    "message": "Couldn't load manifest - $1."
+  },
+  "settingsAddedNamedQuoted": {
+    "message": "Added \"$1\"."
+  },
+  "settingsLoadFailed": {
+    "message": "Couldn't load - $1."
+  },
+  "settingsCustomAlarmSet": {
+    "message": "Custom alarm set ($1 KB)."
+  },
+  "settingsImportedFromFile": {
+    "message": "Settings imported from $1."
+  },
+  "settingsInvalidJsonFile": {
+    "message": "Invalid JSON file."
+  },
+  "settingsNoNewFeedsInFile": {
+    "message": "No new feeds found in $1."
+  },
+  "settingsOpmlImportSource": {
+    "message": "$1 OPML import"
+  },
+  "settingsFeedsImportedCount": {
+    "message": "Imported $1 new feed(s) from $2."
+  },
+  "settingsInvalidOpmlFile": {
+    "message": "Invalid OPML file."
+  },
+  "settingsYoutubeTakeoutRecipe": {
+    "message": "1. Go to Google Takeout (link will open in a new tab)\n2. Deselect all, then scroll down and select only \"YouTube and YouTube Music\"\n3. Click \"Next step\" and \"Create export\"\n4. Wait for the export to complete, then download the ZIP\n5. Extract the ZIP → YouTube → subscriptions.xml\n6. Come back here and click \"Import OPML\" to import subscriptions.xml\n\nThis will add all your YouTube channels as RSS feeds (when available)."
+  },
+  "settingsPocketImportCount": {
+    "message": "Imported $1 link(s) from Pocket ($2 duplicates skipped)."
+  },
+  "settingsPocketImportFailed": {
+    "message": "Pocket import failed - $1."
+  },
+  "settingsInstapaperImportCount": {
+    "message": "Imported $1 link(s) from Instapaper."
+  },
+  "settingsInstapaperImportFailed": {
+    "message": "Instapaper import failed - $1."
+  },
+  "settingsGistJsonCopied": {
+    "message": "Gist JSON copied ($1 KB). Paste it into a new GitHub Gist."
+  },
+  "settingsGistCreatedAndCopied": {
+    "message": "Gist created and URL copied: $1"
+  },
+  "settingsGistCreated": {
+    "message": "Gist created: $1"
+  },
+  "settingsGistExportFailed": {
+    "message": "Failed to export Gist."
+  },
+  "settingsGistLoadFailed": {
+    "message": "Failed to load Gist."
+  },
+  "settingsScreenshotSaved": {
+    "message": "Screenshot saved: $1"
+  },
+  "settingsScreenshotCaptureFailed": {
+    "message": "Failed to capture screenshot."
+  },
+  "settingsWidgetConfigsCopied": {
+    "message": "Copied $1 widget config(s) ($2 KB)."
+  },
+  "settingsFileSaved": {
+    "message": "Saved $1 ($2 KB)."
+  },
+  "settingsDashboardCaptureFailed": {
+    "message": "Couldn't capture screenshot."
+  },
+  "settingsDebugLogCopied": {
+    "message": "Debug log copied ($1 chars)."
+  },
+  "settingsFaviconCacheStats": {
+    "message": "$1 icons, $2 KB"
+  },
+  "settingsGistPayloadSize": {
+    "message": "Secrets are stripped. Payload size: $1 KB. Public Gist imports do not need a token."
+  },
+  "settingsHostAccessPrompt": {
+    "message": "Vantage will ask your browser for scoped access to $1 for $2."
+  },
+  "settingsHostAccessGranted": {
+    "message": "Host access granted for $1."
+  },
+  "settingsHostAccessDenied": {
+    "message": "Host access was not granted for $1. You can grant it later from Settings."
+  },
+  "settingsAdditionalOriginsRequested": {
+    "message": "$1 additional origin(s) will be requested in the same browser prompt."
+  },
+  "settingsHostAccessSourceHint": {
+    "message": "$1 includes user URLs that need scoped browser host access for direct feed, calendar, image, or embed loading."
+  },
+  "settingsStarredItemCount": {
+    "message": "$1 item(s) starred."
+  },
+  "settingsStarredClearedCount": {
+    "message": "Cleared $1 starred item(s)."
+  },
+  "settingsInboxArchivedCount": {
+    "message": "$1 item(s) archived."
+  },
+  "settingsInboxArchivedClearedCount": {
+    "message": "Cleared $1 archived item(s)."
+  },
+  "settingsLocalFontsReadFailed": {
+    "message": "Couldn't read local fonts - $1."
+  },
+  "settingsThemeApplied": {
+    "message": "Applied \"$1\"."
+  },
+  "settingsThemeByAuthor": {
+    "message": "by $1"
+  },
+  "settingsFilterFontsPlaceholder": {
+    "message": "Filter $1 fonts..."
+  },
+  "settingsFontPickerLimitHint": {
+    "message": "Showing first $1; refine the filter to narrow results."
+  },
+  "settingsCellPlacementTitle": {
+    "message": "Set grid position for \"$1\""
+  },
+  "settingsColumnMaxLabel": {
+    "message": "Column (0-indexed, max $1)"
+  },
+  "settingsPositionSet": {
+    "message": "Position set to row $1, col $2."
+  },
+  "settingsLiteral_z3mnmx": {
+    "message": "Feed added."
+  },
+  "settingsLiteral_3xs5es": {
+    "message": "Wipe the entire feed archive? This cannot be undone."
   }
 }

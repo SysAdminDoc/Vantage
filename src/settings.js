@@ -1,7 +1,7 @@
 // Vantage v1.1.0 — settings panel built with primitives (toggle, segmented, icon-button).
 // Sections render as grouped rows with hints and icons. Sticky header with close button.
 
-import { el, clear, toggle, segmented, toast, hostnameLabel } from "./utils/dom.js";
+import { el, clear, toggle, segmented, toast as showToast, hostnameLabel } from "./utils/dom.js";
 import { playAlarm as playAlarmTone } from "./utils/alarm-audio.js";
 import { showPartialImportDialog } from "./utils/partial-import.js";
 import { captureScreenshot } from "./utils/screenshot.js";
@@ -283,6 +283,9 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   body.appendChild(buildHistorySearchSection(settings, onChange));
   body.appendChild(buildDataSection(settings, onChange, showWizard));
   body.appendChild(buildResetSection(onChange));
+
+  localizeSettingsTree(panel);
+  observeSettingsLocalization(panel);
 }
 
 let _panelFocusTimer = null;
@@ -378,8 +381,83 @@ function group() {
 
 function settingsText(value) {
   if (typeof value !== "string" || value === "") return value;
-  const key = SETTINGS_TEXT_KEYS[value];
+  const key = SETTINGS_TEXT_KEYS[value] || settingsLiteralKey(value);
   return key ? i18n(key, null, value) : value;
+}
+
+function settingsLiteralKey(value) {
+  let hash = 5381;
+  for (let i = 0; i < value.length; i++) {
+    hash = ((hash << 5) + hash) ^ value.charCodeAt(i);
+  }
+  return `settingsLiteral_${(hash >>> 0).toString(36)}`;
+}
+
+function localizeSettingsTree(root) {
+  if (!root?.querySelectorAll) return;
+  localizeSettingsAttributes(root);
+  root.querySelectorAll("[aria-label], [title], [placeholder]").forEach(localizeSettingsAttributes);
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.nodeValue?.trim()) return NodeFilter.FILTER_REJECT;
+      const parent = node.parentElement;
+      if (!parent || parent.closest("code, pre, script, style, textarea")) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(localizeSettingsTextNode);
+}
+
+function localizeSettingsAttributes(node) {
+  for (const attr of ["aria-label", "title", "placeholder"]) {
+    const value = node.getAttribute?.(attr);
+    if (!value?.trim()) continue;
+    const next = settingsText(value);
+    if (next !== value) node.setAttribute(attr, next);
+  }
+}
+
+function localizeSettingsTextNode(node) {
+  const value = node.nodeValue;
+  const trimmed = value.trim();
+  if (!trimmed) return;
+  const parent = node.parentElement;
+  if (parent?.closest(".item-list__title, .item-list__hint, .feed-archive-row__title, .feed-archive-row__meta, .font-picker-row, .theme-preview")) {
+    return;
+  }
+  const leading = value.match(/^\s*/)?.[0] || "";
+  const trailing = value.match(/\s*$/)?.[0] || "";
+  const next = settingsText(trimmed);
+  if (next !== trimmed) node.nodeValue = `${leading}${next}${trailing}`;
+}
+
+function observeSettingsLocalization(panel) {
+  panel._settingsLocalizationObserver?.disconnect();
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.type === "childList") {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.TEXT_NODE) localizeSettingsTextNode(node);
+          else if (node.nodeType === Node.ELEMENT_NODE) localizeSettingsTree(node);
+        });
+      } else if (mutation.type === "characterData") {
+        localizeSettingsTextNode(mutation.target);
+      } else if (mutation.type === "attributes") {
+        localizeSettingsAttributes(mutation.target);
+      }
+    }
+  });
+  observer.observe(panel, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["aria-label", "title", "placeholder"]
+  });
+  panel._settingsLocalizationObserver = observer;
 }
 
 function row(title, hint, control) {
@@ -430,8 +508,21 @@ function insertAt(list, index, item) {
   list.splice(Math.max(0, Math.min(index, list.length)), 0, item);
 }
 
+function settingsToast(message, type, duration, action) {
+  const label = action?.label ? settingsText(action.label) : action?.label;
+  showToast(settingsText(message), type, duration, action ? { ...action, label } : action);
+}
+
+function settingsPrompt(message, defaultValue = "") {
+  return globalThis.prompt?.(settingsText(message), defaultValue);
+}
+
+function settingsConfirm(message) {
+  return globalThis.confirm?.(settingsText(message));
+}
+
 function toastUndo(message, onUndo) {
-  toast(message, "warning", 6500, { label: "Undo", onClick: onUndo });
+  settingsToast(message, "warning", 6500, { label: "Undo", onClick: onUndo });
 }
 
 /* ---- Appearance -------------------------------------------------------- */
@@ -473,7 +564,7 @@ function buildAppearance(settings, onChange) {
       type: "button",
       class: `accent-swatch accent-swatch--${ac.value}${currentAccent === ac.value ? " accent-swatch--active" : ""}`,
       title: ac.label,
-      "aria-label": `Accent: ${ac.label}`,
+      "aria-label": i18n("settingsAccentAria", [ac.label], "Accent: $1"),
       "aria-pressed": String(currentAccent === ac.value),
       onClick: () => {
         settings.accent = ac.value;
@@ -496,10 +587,10 @@ function buildAppearance(settings, onChange) {
         try {
           const { fetchThemeManifest, applyThemeBundle, validateThemeBundle } = await import("../utils/theme-marketplace.js");
           const themes = await fetchThemeManifest();
-          if (!themes.length) { toast("No community themes available yet.", "info"); return; }
+          if (!themes.length) { settingsToast("No community themes available yet.", "info"); return; }
           showThemeBrowser(themes, settings, onChange, applyThemeBundle, validateThemeBundle);
         } catch (err) {
-          toast(`Couldn't load themes — ${err?.message || "fetch failed"}.`, "error");
+          settingsToast(i18n("settingsThemesLoadError", [err?.message || "fetch failed"], "Couldn't load themes - $1."), "error");
         }
       }
     }, [iconNode("download", { size: 14 }), " Browse themes"])
@@ -623,7 +714,7 @@ function themeLabel(settings) {
   const requested = settings.theme || "mocha";
   const base = THEME_OPTIONS.find((item) => item.value === requested)?.label || titleCaseToken(requested);
   return requested === "system"
-    ? `${base} (${titleCaseToken(resolvedThemeId(settings))})`
+    ? i18n("settingsResolvedThemeLabel", [base, titleCaseToken(resolvedThemeId(settings))], "$1 ($2)")
     : base;
 }
 
@@ -653,7 +744,7 @@ function buildBackgroundPresets(settings, onChange, rerender) {
         applyBackgroundPreset(settings, preset);
         onChange(settings);
         rerender();
-        toast(`Applied ${preset.title} background preset.`, "success");
+        settingsToast(i18n("settingsBackgroundPresetApplied", [preset.title], "Applied $1 background preset."), "success");
       }
     }, [
       el("strong", {}, [preset.title]),
@@ -693,7 +784,7 @@ function previewSegment(label, key, options, preview, rerender) {
   return el("div", { class: "preview-control" }, [
     el("span", { class: "preview-control__label" }, [label]),
     segmented({
-      ariaLabel: `${label} preview`,
+      ariaLabel: i18n("settingsPreviewAria", [label], "$1 preview"),
       value: preview[key] || "",
       options,
       onChange: (v) => {
@@ -713,7 +804,7 @@ function buildScenePreviewControls(rerender) {
     onClick: () => {
       clearBackgroundPreview();
       rerender();
-      toast("Background preview cleared.", "info");
+      settingsToast("Background preview cleared.", "info");
     }
   }, [iconNode("refresh", { size: 14 }), " Reset preview"]);
 
@@ -925,7 +1016,7 @@ function buildBackground(settings, onChange) {
           const value = e.target.value.trim();
           const url = value ? normalizeWebUrl(value) : "";
           if (value && !url) {
-            toast("That doesn't look like a valid image URL.", "error");
+            settingsToast("That doesn't look like a valid image URL.", "error");
             e.target.value = settings.background.imageUrl || "";
             return;
           }
@@ -955,7 +1046,7 @@ function buildBackground(settings, onChange) {
           reader.onload = (ev) => {
             settings.background.imageData = ev.target.result;
             onChange(settings);
-            toast("Image set.", "success");
+            settingsToast("Image set.", "success");
           };
           reader.readAsDataURL(file);
         }
@@ -994,7 +1085,7 @@ function buildBackground(settings, onChange) {
           const useOpfs = isOpfsAvailable();
           const cap = useOpfs ? 50 * 1024 * 1024 : 8 * 1024 * 1024;
           if (file.size > cap) {
-            toast(`Video must be under ${useOpfs ? "50" : "8"} MB.`, "error");
+            settingsToast(i18n("settingsVideoSizeLimit", [useOpfs ? "50" : "8"], "Video must be under $1 MB."), "error");
             return;
           }
           try {
@@ -1002,13 +1093,13 @@ function buildBackground(settings, onChange) {
               await putBlob("background-video", file);
               settings.background.videoData = opfsMarker("background-video");
               onChange(settings);
-              toast(`Video stored in OPFS (${(file.size / 1024 / 1024).toFixed(1)} MB). Loops automatically.`, "success");
+              settingsToast(i18n("settingsVideoStoredOpfs", [(file.size / 1024 / 1024).toFixed(1)], "Video stored in OPFS ($1 MB). Loops automatically."), "success");
             } else {
               const reader = new FileReader();
               reader.onload = (ev) => {
                 settings.background.videoData = ev.target.result;
                 onChange(settings);
-                toast("Video set (legacy storage). Loops automatically. Pauses when tab is hidden.", "success");
+                settingsToast("Video set (legacy storage). Loops automatically. Pauses when tab is hidden.", "success");
               };
               reader.readAsDataURL(file);
             }
@@ -1020,11 +1111,11 @@ function buildBackground(settings, onChange) {
               reader.onload = (ev) => {
                 settings.background.videoData = ev.target.result;
                 onChange(settings);
-                toast("OPFS unavailable; stored as base64 instead.", "warning");
+                settingsToast("OPFS unavailable; stored as base64 instead.", "warning");
               };
               reader.readAsDataURL(file);
             } else {
-              toast(`OPFS write failed (${err?.message?.toLowerCase() || "unknown error"}). File too large for fallback storage.`, "error");
+              settingsToast(i18n("settingsOpfsWriteFailed", [err?.message?.toLowerCase() || "unknown error"], "OPFS write failed ($1). File too large for fallback storage."), "error");
             }
           }
         }
@@ -1081,7 +1172,7 @@ function buildBackground(settings, onChange) {
     if (kind === "bing-daily") {
       const cache = settings.background.bingDailyCache;
       const hint = cache?.date
-        ? `Cached from ${cache.date}. Uses the cached image if today's fetch fails.`
+        ? i18n("settingsBingDailyCacheHint", [cache.date], "Cached from $1. Uses the cached image if today's fetch fails.")
         : "Fetches from Bing on first load; falls back to the theme gradient if the network is unavailable.";
       kindHost.appendChild(el("p", { class: "settings-section__hint" }, [hint]));
       const refreshBtn = el("button", {
@@ -1091,7 +1182,7 @@ function buildBackground(settings, onChange) {
           settings.background.bingDailyCache = null;
           onChange(settings);
           renderKindRows();
-          toast("Bing daily image will refresh.", "info");
+          settingsToast("Bing daily image will refresh.", "info");
         }
       }, [iconNode("refresh", { size: 14 }), " Refresh image"]);
       kindHost.appendChild(row("", null, refreshBtn));
@@ -1118,7 +1209,7 @@ function buildTopSitesSection(settings, onChange) {
         if (v) {
           const result = await requestBrowserPermission("topSites");
           if (!result.granted) {
-            toast("Top Sites permission denied. The row stays disabled.", "warning");
+            settingsToast("Top Sites permission denied. The row stays disabled.", "warning");
             return false;
           }
         } else {
@@ -1257,7 +1348,7 @@ function buildFeedAlertsSection(settings, onChange) {
           const { requestNotificationPermission } = await import("./utils/feed-alerts.js");
           const result = await requestNotificationPermission();
           if (result !== "granted") {
-            toast(`Notification permission ${result}. Enable it in your browser's site settings to receive alerts.`, "warning", 6000);
+            settingsToast(i18n("settingsNotificationPermissionEnable", [result], "Notification permission $1. Enable it in your browser's site settings to receive alerts."), "warning", 6000);
             return;
           }
         }
@@ -1305,7 +1396,7 @@ function buildFeedAlertsSection(settings, onChange) {
   const notifiedCount = (cfg.notifiedUrls || []).length;
   g.appendChild(row(
     "Already notified",
-    `${notifiedCount} item${notifiedCount === 1 ? "" : "s"} marked as notified. Reset to re-fire on next match.`,
+    i18n("settingsAlreadyNotifiedCount", [notifiedCount], "$1 item(s) marked as notified. Reset to re-fire on next match."),
     el("div", { class: "compose__row" }, [
       el("button", {
         type: "button", class: "button button--ghost",
@@ -1313,14 +1404,14 @@ function buildFeedAlertsSection(settings, onChange) {
           const { fireAlerts, requestNotificationPermission } = await import("./utils/feed-alerts.js");
           const perm = await requestNotificationPermission();
           if (perm !== "granted") {
-            toast(`Notification permission ${perm}.`, "warning");
+            settingsToast(i18n("settingsNotificationPermission", [perm], "Notification permission $1."), "warning");
             return;
           }
           fireAlerts([{
             keyword: "demo",
             item: { title: "This is what a Vantage feed alert looks like.", link: "https://example.com" }
           }]);
-          toast("Test notification fired.", "success");
+          settingsToast("Test notification fired.", "success");
         }
       }, [iconNode("alert", { size: 14 }), " Send test"]),
       el("button", {
@@ -1329,7 +1420,7 @@ function buildFeedAlertsSection(settings, onChange) {
         onClick: () => {
           settings.feedAlerts = { ...cfg, notifiedUrls: [] };
           onChange(settings);
-          toast("Alert history cleared.", "success");
+          settingsToast("Alert history cleared.", "success");
         }
       }, [iconNode("trash", { size: 14 }), " Reset history"])
     ])
@@ -1388,7 +1479,7 @@ function buildFeedArchiveSection(settings, onChange) {
     try {
       const { archiveSize } = await import("./utils/feed-archive.js");
       const n = await archiveSize();
-      sizeChip.replaceChildren(`${n.toLocaleString()} item${n === 1 ? "" : "s"}`);
+      sizeChip.replaceChildren(i18n("settingsArchiveItemCount", [n.toLocaleString()], "$1 item(s)"));
     } catch {
       sizeChip.replaceChildren("Unavailable");
     }
@@ -1403,14 +1494,14 @@ function buildFeedArchiveSection(settings, onChange) {
       el("button", {
         type: "button", class: "button button--ghost",
         onClick: async () => {
-          if (!confirm("Wipe the entire feed archive? This cannot be undone.")) return;
+          if (!settingsConfirm("Wipe the entire feed archive? This cannot be undone.")) return;
           try {
             const { clearArchive } = await import("./utils/feed-archive.js");
             const n = await clearArchive();
             await refreshSize();
-            toast(`Cleared ${n.toLocaleString()} archived item${n === 1 ? "" : "s"}.`, "success");
+            settingsToast(i18n("settingsArchiveClearedCount", [n.toLocaleString()], "Cleared $1 archived item(s)."), "success");
           } catch (err) {
-            toast(err.message || "Couldn't clear archive.", "error");
+            settingsToast(err.message || i18n("settingsArchiveClearFailed", null, "Couldn't clear archive."), "error");
           }
         }
       }, [iconNode("trash", { size: 14 }), " Clear archive"])
@@ -1466,7 +1557,7 @@ function buildFeedArchiveSection(settings, onChange) {
       if (token !== lastQueryToken) return;
       clear(resultsHost);
       resultsHost.appendChild(el("p", { class: "panel-error" }, [
-        `Couldn't search archive — ${err?.message?.toLowerCase() || "unknown error"}.`
+        i18n("settingsArchiveSearchError", [err?.message?.toLowerCase() || "unknown error"], "Couldn't search archive - $1.")
       ]));
     }
   };
@@ -1533,7 +1624,7 @@ function buildFeedPreWarmSection(settings, onChange) {
       onClick: async () => {
         const { clearPrewarmCache } = await import("./utils/feed-prewarm.js");
         await clearPrewarmCache();
-        toast("Pre-warm cache cleared.", "success");
+        settingsToast("Pre-warm cache cleared.", "success");
       }
     }, [iconNode("trash", { size: 14 }), " Clear pre-warm cache"])
   ));
@@ -1615,7 +1706,7 @@ function buildWorkspacesSection(settings, onChange) {
           if (captureSnapshot) {
             ws.snapshot = captureSnapshot(settings);
             onChange(settings);
-            toast(`Snapshot saved for "${ws.name}".`, "success");
+            settingsToast(i18n("settingsWorkspaceSnapshotSaved", [ws.name], "Snapshot saved for \"$1\"."), "success");
           }
         }
       }, [iconNode("download", { size: 12 }), " Capture"]);
@@ -1641,7 +1732,7 @@ function buildWorkspacesSection(settings, onChange) {
       // workspace tabs don't have a dedicated context menu.
       const exportBtn = el("button", {
         type: "button", class: "icon-button icon-button--ghost icon-button--small",
-        "aria-label": `Export workspace "${ws.name}" as JSON`,
+        "aria-label": i18n("settingsWorkspaceExportAria", [ws.name], "Export workspace \"$1\" as JSON"),
         title: "Export workspace as JSON",
         onClick: async () => {
           try {
@@ -1652,9 +1743,9 @@ function buildWorkspacesSection(settings, onChange) {
             };
             const json = JSON.stringify(payload, null, 2);
             await navigator.clipboard.writeText(json);
-            toast(`Workspace "${ws.name}" copied to clipboard (${(json.length / 1024).toFixed(1)} KB).`, "success");
+            settingsToast(i18n("settingsWorkspaceCopied", [ws.name, (json.length / 1024).toFixed(1)], "Workspace \"$1\" copied to clipboard ($2 KB)."), "success");
           } catch (err) {
-            toast(`Couldn't copy — ${err?.message?.toLowerCase() || "clipboard denied"}.`, "error");
+            settingsToast(i18n("settingsCopyFailed", [err?.message?.toLowerCase() || "clipboard denied"], "Couldn't copy - $1."), "error");
           }
         }
       }, [iconNode("share", { size: 14 })]);
@@ -1668,7 +1759,7 @@ function buildWorkspacesSection(settings, onChange) {
           if (settings.workspaces.active === ws.id) settings.workspaces.active = null;
           onChange(settings);
           refreshWorkspaceList();
-          toastUndo(`Removed workspace "${removed.name}".`, () => {
+          toastUndo(i18n("settingsWorkspaceRemoved", [removed.name], "Removed workspace \"$1\"."), () => {
             insertAt(settings.workspaces.list, idx, removed);
             if (activeBefore === removed.id) settings.workspaces.active = removed.id;
             onChange(settings);
@@ -1743,7 +1834,7 @@ function buildWorkspacesSection(settings, onChange) {
     onClick: async () => {
       let raw = "";
       try { raw = await navigator.clipboard.readText(); } catch {}
-      const pasted = prompt("Paste a workspace JSON (from another device or backup):", raw && raw.trim().startsWith("{") ? raw : "");
+      const pasted = settingsPrompt("Paste a workspace JSON (from another device or backup):", raw && raw.trim().startsWith("{") ? raw : "");
       if (!pasted?.trim()) return;
       try {
         const parsed = JSON.parse(pasted);
@@ -1760,7 +1851,7 @@ function buildWorkspacesSection(settings, onChange) {
         settings.workspaces.list.push(fresh);
         onChange(settings);
         refreshWorkspaceList();
-        toast(`Imported "${fresh.name}".`, "success", 6500, {
+        settingsToast(i18n("settingsWorkspaceImported", [fresh.name], "Imported \"$1\"."), "success", 6500, {
           label: "Undo",
           onClick: () => {
             const idx = settings.workspaces.list.findIndex(w => w.id === fresh.id);
@@ -1770,7 +1861,7 @@ function buildWorkspacesSection(settings, onChange) {
           }
         });
       } catch (err) {
-        toast(`Couldn't import workspace — ${err?.message?.toLowerCase() || "invalid JSON"}.`, "error");
+        settingsToast(i18n("settingsWorkspaceImportFailed", [err?.message?.toLowerCase() || "invalid JSON"], "Couldn't import workspace - $1."), "error");
       }
     }
   }, [iconNode("upload", { size: 14 }), " Import workspace"]);
@@ -1785,7 +1876,7 @@ function buildWorkspacesSection(settings, onChange) {
     onClick: async () => {
       const ext = globalThis.chrome || globalThis.browser;
       if (!ext?.tabs?.query) {
-        toast("Tab access is unavailable in this browser.", "error");
+        settingsToast("Tab access is unavailable in this browser.", "error");
         return;
       }
       try {
@@ -1803,7 +1894,7 @@ function buildWorkspacesSection(settings, onChange) {
           items.push({ title, url: t.url });
         }
         if (!items.length) {
-          toast("No saveable tabs in the current window.", "warning");
+          settingsToast("No saveable tabs in the current window.", "warning");
           return;
         }
         if (!settings.workspaces) settings.workspaces = { active: null, list: [] };
@@ -1823,7 +1914,7 @@ function buildWorkspacesSection(settings, onChange) {
         settings.workspaces.list.push(fresh);
         onChange(settings);
         refreshWorkspaceList();
-        toast(`Saved ${items.length} tab${items.length === 1 ? "" : "s"} as "${fresh.name}".`, "success", 6500, {
+        settingsToast(i18n("settingsTabsSavedAsWorkspace", [items.length, fresh.name], "Saved $1 tab(s) as \"$2\"."), "success", 6500, {
           label: "Undo",
           onClick: () => {
             const idx = settings.workspaces.list.findIndex(w => w.id === fresh.id);
@@ -1833,7 +1924,7 @@ function buildWorkspacesSection(settings, onChange) {
           }
         });
       } catch (err) {
-        toast(`Couldn't read tabs — ${err?.message?.toLowerCase() || "unknown error"}.`, "error");
+        settingsToast(i18n("settingsTabsReadFailed", [err?.message?.toLowerCase() || "unknown error"], "Couldn't read tabs - $1."), "error");
       }
     }
   }, [iconNode("layout-grid", { size: 14 }), " Save tabs as workspace"]);
@@ -1869,7 +1960,7 @@ function buildStorageQuotaSection(settings) {
       bar.setAttribute("aria-valuenow", String(pct));
       bar.classList.toggle("quota-bar--warn", pct > 80);
       const fmt = (b) => b > 1e6 ? `${(b / 1e6).toFixed(1)} MB` : `${(b / 1024).toFixed(0)} KB`;
-      label.textContent = `${fmt(usage)} of ${fmt(quota)} (${pct}%)`;
+      label.textContent = i18n("settingsStorageUsedValue", [fmt(usage), fmt(quota), pct], "$1 of $2 ($3%)");
     }).catch(() => { label.textContent = "Estimate unavailable."; });
   } else {
     label.textContent = "Not available in this browser.";
@@ -1901,8 +1992,8 @@ function buildSecuritySection(settings, onChange) {
       onClick: async () => {
         const pp1 = ppInput.value;
         const pp2 = ppConfirm.value;
-        if (!pp1 || pp1.length < 8) { toast("Passphrase must be at least 8 characters.", "error"); return; }
-        if (pp1 !== pp2) { toast("Passphrases don't match.", "error"); return; }
+        if (!pp1 || pp1.length < 8) { settingsToast("Passphrase must be at least 8 characters.", "error"); return; }
+        if (pp1 !== pp2) { settingsToast("Passphrases don't match.", "error"); return; }
         try {
           const { encryptKeys, cacheDecrypted } = await import("./utils/api-key-vault.js");
           // Capture the ORIGINAL plaintext BEFORE we zero the storage
@@ -1922,9 +2013,9 @@ function buildSecuritySection(settings, onChange) {
           // point the user gets the unlock prompt).
           await cacheDecrypted({ crypto: originalCrypto, nasa: originalNasa });
           onChange(settings);
-          toast("API keys encrypted. Re-prompt on next browser session.", "success", 6000);
+          settingsToast("API keys encrypted. Re-prompt on next browser session.", "success", 6000);
         } catch (err) {
-          toast(`Couldn't encrypt — ${err?.message?.toLowerCase() || "unknown error"}.`, "error");
+          settingsToast(i18n("settingsEncryptFailed", [err?.message?.toLowerCase() || "unknown error"], "Couldn't encrypt - $1."), "error");
         }
       }
     }, [iconNode("alert", { size: 14 }), " Encrypt API keys"]);
@@ -1947,7 +2038,7 @@ function buildSecuritySection(settings, onChange) {
     const disableBtn = el("button", {
       type: "button", class: "button button--ghost",
       onClick: async () => {
-        const pp = prompt("Enter your vault passphrase to decrypt and disable encryption:");
+        const pp = settingsPrompt("Enter your vault passphrase to decrypt and disable encryption:");
         if (!pp) return;
         try {
           const { decryptKeys, clearCached } = await import("./utils/api-key-vault.js");
@@ -1957,9 +2048,9 @@ function buildSecuritySection(settings, onChange) {
           settings.security = { encryptKeys: false, salt: null, iv: null, encryptedBlob: null };
           await clearCached();
           onChange(settings);
-          toast("API keys decrypted and stored as plaintext. You can re-encrypt anytime.", "success", 6000);
+          settingsToast("API keys decrypted and stored as plaintext. You can re-encrypt anytime.", "success", 6000);
         } catch (err) {
-          toast(err?.message || "Decryption failed.", "error");
+          settingsToast(err?.message || i18n("settingsDecryptionFailed", null, "Decryption failed."), "error");
         }
       }
     }, [iconNode("trash", { size: 14 }), " Disable encryption"]);
@@ -2009,7 +2100,7 @@ function buildSidePanelSection(settings, onChange) {
           try {
             await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: v });
           } catch (err) {
-            toast(`Couldn't update side panel behavior — ${err?.message?.toLowerCase() || "API missing"}.`, "error");
+            settingsToast(i18n("settingsSidePanelUpdateFailed", [err?.message?.toLowerCase() || "API missing"], "Couldn't update side panel behavior - $1."), "error");
           }
         }
       }
@@ -2053,11 +2144,11 @@ function buildHistorySearchSection(settings, onChange) {
           try {
             granted = await ext.permissions.request({ permissions: ["history"] });
           } catch (err) {
-            toast(`Permission request failed — ${err?.message?.toLowerCase() || "unknown error"}.`, "error");
+            settingsToast(i18n("settingsPermissionRequestFailed", [err?.message?.toLowerCase() || "unknown error"], "Permission request failed - $1."), "error");
             return false;
           }
           if (!granted) {
-            toast("History permission denied. The panel stays disabled.", "warning");
+            settingsToast("History permission denied. The panel stays disabled.", "warning");
             return false;
           }
           settings.historySearch = { ...cfg, enabled: true };
@@ -2139,7 +2230,7 @@ function buildContainerMapSection(settings, onChange) {
       return;
     }
     for (const c of containers) {
-      const sel = el("select", { class: "text-input", "aria-label": `Workspace for ${c.name}` }, [
+      const sel = el("select", { class: "text-input", "aria-label": i18n("settingsContainerWorkspaceAria", [c.name], "Workspace for $1") }, [
         el("option", { value: "", selected: !mapEl[c.cookieStoreId] }, ["(none)"]),
         ...workspaces.map(ws =>
           el("option", { value: ws.id, selected: mapEl[c.cookieStoreId] === ws.id }, [ws.name])
@@ -2216,7 +2307,7 @@ function buildGreeting(settings, onChange) {
     onChange: (e) => {
       const v = e.target.value.trim();
       if (v && !/^\d{2}-\d{2}$/.test(v)) {
-        toast("Birthday must be in MM-DD format (e.g. 04-15).", "error");
+        settingsToast("Birthday must be in MM-DD format (e.g. 04-15).", "error");
         e.target.value = settings.greeting.birthday || "";
         return;
       }
@@ -2256,7 +2347,7 @@ function buildGreeting(settings, onChange) {
       maxlength: "120",
       value: settings.greeting.custom[slot] || "",
       placeholder,
-      "aria-label": `${title} greeting override`,
+      "aria-label": i18n("settingsGreetingOverrideAria", [title], "$1 greeting override"),
       onChange: (e) => {
         settings.greeting.custom = {
           ...settings.greeting.custom,
@@ -2265,7 +2356,7 @@ function buildGreeting(settings, onChange) {
         onChange(settings);
       }
     });
-    customGroup.appendChild(rowColumn(`${title} greeting`, input, hint));
+    customGroup.appendChild(rowColumn(i18n("settingsGreetingSlotTitle", [title], "$1 greeting"), input, hint));
   }
   sec.appendChild(customGroup);
   return sec;
@@ -2340,7 +2431,7 @@ function buildSearchSection(settings, onChange) {
       const next = e.target.value;
       const v = validateCustomSearchUrl(next);
       if (!v.ok) {
-        toast(v.reason, "error");
+        settingsToast(v.reason, "error");
         e.target.value = settings.search.customUrl || "";
         return;
       }
@@ -2460,7 +2551,7 @@ function buildWeatherSection(settings, onChange) {
           settings.weather.location = null;
           onChange(settings);
           refreshChip();
-          toast("Will auto-detect on next load.", "success");
+          settingsToast("Will auto-detect on next load.", "success");
         }
       }, [iconNode("close", { size: 12 })]);
       chip.appendChild(close);
@@ -2497,9 +2588,9 @@ function buildWeatherSection(settings, onChange) {
         onChange(settings);
         cityInput.value = "";
         refreshChip();
-        toast(`Location set to ${loc.name}.`, "success");
+        settingsToast(i18n("settingsLocationSet", [loc.name], "Location set to $1."), "success");
       } catch (err) {
-        toast(`Couldn't find "${q}".`, "error");
+        settingsToast(i18n("settingsLocationNotFound", [q], "Couldn't find \"$1\"."), "error");
       } finally {
         cityBtn.disabled = false;
       }
@@ -2649,7 +2740,7 @@ function buildLinksSection(settings, onChange) {
           el("button", {
             type: "button",
             class: "icon-button icon-button--ghost icon-button--small",
-            "aria-label": `Set grid position for ${item.title}`,
+            "aria-label": i18n("settingsSetGridPositionAria", [item.title], "Set grid position for $1"),
             title: "Set grid position",
             onClick: () => {
               openCellPlacementDialog(item, idx, settings, onChange, refreshList);
@@ -2659,14 +2750,14 @@ function buildLinksSection(settings, onChange) {
         el("button", {
           type: "button",
           class: "icon-button icon-button--ghost icon-button--small",
-          "aria-label": `Remove ${item.title}`,
-          title: `Remove ${item.title}`,
+          "aria-label": i18n("settingsRemoveNamedAria", [item.title], "Remove $1"),
+          title: i18n("settingsRemoveNamedAria", [item.title], "Remove $1"),
           onClick: () => {
             const removed = cloneValue(item);
             settings.quicklinks.items.splice(idx, 1);
             onChange(settings);
             refreshList();
-            toastUndo(`Removed "${removed.title}".`, () => {
+            toastUndo(i18n("settingsRemovedNamed", [removed.title], "Removed \"$1\"."), () => {
               insertAt(settings.quicklinks.items, idx, removed);
               onChange(settings);
               refreshList();
@@ -2688,12 +2779,12 @@ function buildLinksSection(settings, onChange) {
       const t = titleInput.value.trim();
       const u = urlInput.value.trim();
       if (!t || !u) {
-        toast("Label and URL are both required.", "error");
+        settingsToast("Label and URL are both required.", "error");
         return;
       }
       const url = normalizeWebUrl(u);
       if (!url) {
-        toast("That doesn't look like a valid URL.", "error");
+        settingsToast("That doesn't look like a valid URL.", "error");
         return;
       }
       settings.quicklinks.items.push({ title: t, url });
@@ -2701,7 +2792,7 @@ function buildLinksSection(settings, onChange) {
       titleInput.value = "";
       urlInput.value = "";
       refreshList();
-      toast(`${t} added.`, "success");
+      settingsToast(i18n("settingsNamedAdded", [t], "$1 added."), "success");
     }
   }, [iconNode("plus", { size: 14 }), " Add link"]);
 
@@ -2731,12 +2822,14 @@ function buildLinksSection(settings, onChange) {
           tabGroupsList.appendChild(el("li", { class: "item-list__row" }, [
             el("div", { class: "item-list__row-content" }, [
               el("span", { class: "item-list__title" }, [group.title]),
-              el("span", { class: "item-list__hint" }, [`${group.title.length} tabs`])
+              el("span", { class: "item-list__hint" }, [i18n("settingsTabGroupTabCount", [group.title.length], "$1 tabs")])
             ]),
             el("button", {
               type: "button",
               class: "icon-button icon-button--ghost icon-button--small",
-              "aria-label": isPinned ? `Unpin ${group.title}` : `Pin ${group.title}`,
+              "aria-label": isPinned
+                ? i18n("settingsUnpinNamedAria", [group.title], "Unpin $1")
+                : i18n("settingsPinNamedAria", [group.title], "Pin $1"),
               title: isPinned ? "Pinned" : "Pin to quick-links",
               onClick: () => {
                 if (isPinned) {
@@ -2746,7 +2839,7 @@ function buildLinksSection(settings, onChange) {
                     settings.quicklinks.items.splice(idx, 1);
                     onChange(settings);
                     refreshTabGroupsList();
-                    toastUndo(`Unpinned "${removed.title}".`, () => {
+                    toastUndo(i18n("settingsUnpinnedNamed", [removed.title], "Unpinned \"$1\"."), () => {
                       insertAt(settings.quicklinks.items, idx, removed);
                       onChange(settings);
                       refreshTabGroupsList();
@@ -2760,7 +2853,7 @@ function buildLinksSection(settings, onChange) {
                   });
                   onChange(settings);
                   refreshTabGroupsList();
-                  toast(`Pinned "${group.title}".`, "success");
+                  settingsToast(i18n("settingsPinnedNamed", [group.title], "Pinned \"$1\"."), "success");
                 }
               }
             }, [iconNode(isPinned ? "star-fill" : "star", { size: 14 })])
@@ -2796,7 +2889,7 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
     hint,
     toggle({
       checked: cfg.enabled,
-      ariaLabel: `Show ${title}`,
+      ariaLabel: i18n("settingsShowNamedAria", [title], "Show $1"),
       onChange: (v) => { cfg.enabled = v; onChange(settings); }
     })
   ));
@@ -2827,7 +2920,7 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
       return;
     }
     cfg.feeds.forEach((feed, idx) => {
-      const grant = hostPermissionAction(settings, onChange, feed.url, `${title} feed`, refreshList);
+      const grant = hostPermissionAction(settings, onChange, feed.url, i18n("settingsNamedFeedLabel", [title], "$1 feed"), refreshList);
       list.appendChild(el("li", { class: "item-list__row" }, [
         el("div", { class: "item-list__row-content" }, [
           el("span", { class: "item-list__title" }, [feed.title || feed.url]),
@@ -2837,14 +2930,14 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
         el("button", {
           type: "button",
           class: "icon-button icon-button--ghost icon-button--small",
-          "aria-label": `Remove ${feed.title || feed.url}`,
+          "aria-label": i18n("settingsRemoveNamedAria", [feed.title || feed.url], "Remove $1"),
           title: "Remove",
           onClick: () => {
             const removed = cloneValue(feed);
             cfg.feeds.splice(idx, 1);
             onChange(settings);
             refreshList();
-            toastUndo(`Removed "${removed.title || hostnameLabel(removed.url)}".`, () => {
+            toastUndo(i18n("settingsRemovedNamed", [removed.title || hostnameLabel(removed.url)], "Removed \"$1\"."), () => {
               insertAt(cfg.feeds, idx, removed);
               onChange(settings);
               refreshList();
@@ -2872,25 +2965,25 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
     onClick: async () => {
       const u = urlInput.value.trim();
       if (!u) {
-        toast("Website URL is required.", "error");
+        settingsToast("Website URL is required.", "error");
         return;
       }
       const normalizedUrl = normalizeWebUrl(u, { assumeHttps: true });
       if (!normalizedUrl) {
-        toast("That doesn't look like a valid URL.", "error");
+        settingsToast("That doesn't look like a valid URL.", "error");
         return;
       }
       const url = new URL(normalizedUrl);
       
       discoverBtn.disabled = true;
       discoveryStatus.style.display = "block";
-      discoveryStatus.textContent = "Discovering feeds...";
+      discoveryStatus.textContent = i18n("settingsDiscoveringFeeds", null, "Discovering feeds...");
       
       try {
         const permission = await requestAndRecordHostAccess(settings, url.href, "feed discovery");
         if (permission.required && !permission.granted) {
           onChange(settings);
-          discoveryStatus.textContent = "Host access was not granted, so Vantage could not inspect that site for feeds.";
+          discoveryStatus.textContent = i18n("settingsFeedDiscoveryHostDenied", null, "Host access was not granted, so Vantage could not inspect that site for feeds.");
           return;
         }
         const { discoverFeeds } = await import("./utils/feed-discovery.js");
@@ -2901,11 +2994,11 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
         
         clear(discoveredList);
         if (!discoveredFeeds.length) {
-          discoveryStatus.textContent = "No feeds found on this website. Try entering a feed URL directly.";
+          discoveryStatus.textContent = i18n("settingsFeedDiscoveryNone", null, "No feeds found on this website. Try entering a feed URL directly.");
           return;
         }
         
-        discoveryStatus.textContent = `Found ${discoveredFeeds.length} feed(s):`;
+        discoveryStatus.textContent = i18n("settingsFeedDiscoveryCount", [discoveredFeeds.length], "Found $1 feed(s):");
         
         discoveredFeeds.forEach((feed) => {
           const li = el("li", { class: "item-list__row" }, [
@@ -2916,7 +3009,7 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
             el("button", {
               type: "button",
               class: "icon-button icon-button--primary icon-button--small",
-              "aria-label": `Subscribe to ${feed.title}`,
+              "aria-label": i18n("settingsSubscribeToFeedAria", [feed.title], "Subscribe to $1"),
               title: "Subscribe",
               onClick: async () => {
                 await requestAndRecordHostAccess(settings, feed.url, "feed loading");
@@ -2927,7 +3020,7 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
                 urlInput.value = "";
                 titleInput.value = "";
                 refreshList();
-                toast(`"${feed.title}" added.`, "success");
+                settingsToast(i18n("settingsNamedAddedQuoted", [feed.title], "\"$1\" added."), "success");
               }
             }, [iconNode("plus", { size: 14 })])
           ]);
@@ -2935,7 +3028,7 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
         });
       } catch (e) {
         console.error("Feed discovery error:", e);
-        discoveryStatus.textContent = `Error: ${e.message}`;
+        discoveryStatus.textContent = i18n("settingsFeedDiscoveryError", [e.message], "Error: $1");
       } finally {
         discoverBtn.disabled = false;
       }
@@ -2949,12 +3042,12 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
       const t = titleInput.value.trim();
       const u = urlInput.value.trim();
       if (!u) {
-        toast("Feed URL is required.", "error");
+        settingsToast("Feed URL is required.", "error");
         return;
       }
       const url = normalizeWebUrl(u);
       if (!url) {
-        toast("That doesn't look like a valid URL.", "error");
+        settingsToast("That doesn't look like a valid URL.", "error");
         return;
       }
       await requestAndRecordHostAccess(settings, url, "feed loading");
@@ -2965,7 +3058,7 @@ function buildFeedsSection(settings, onChange, key, title, iconName, hint) {
       clear(discoveredList);
       discoveryStatus.style.display = "none";
       refreshList();
-      toast(`Feed added.`, "success");
+      settingsToast("Feed added.", "success");
     }
   }, [iconNode("plus", { size: 14 }), " Add feed"]);
 
@@ -3037,7 +3130,7 @@ function buildPresetGroup(label, presets, cfg, onChange, refreshList, settings) 
         cfg.feeds.push({ title: p.title, url: p.url });
         onChange(settings);
         refreshList();
-        toast(`${p.title} added.`, "success");
+        settingsToast(i18n("settingsNamedAdded", [p.title], "$1 added."), "success");
       }
     }, [already ? iconNode("check", { size: 12 }) : iconNode("plus", { size: 12 }), ` ${p.title}`]);
     wrap.appendChild(btn);
@@ -3234,7 +3327,7 @@ function buildEmbedsSection(settings, onChange) {
           const value = e.target.value.trim();
           const url = value ? normalizeWebUrl(value) : "";
           if (value && !url) {
-            toast("That doesn't look like a valid embed URL.", "error");
+            settingsToast("That doesn't look like a valid embed URL.", "error");
             e.target.value = embed.url || "";
             return;
           }
@@ -3251,7 +3344,7 @@ function buildEmbedsSection(settings, onChange) {
           if (v && embed.url) {
             const url = normalizeWebUrl(embed.url);
             if (!url) {
-              toast("Add a valid embed URL before enabling this panel.", "error");
+              settingsToast("Add a valid embed URL before enabling this panel.", "error");
               embed.enabled = false;
               onChange(settings);
               refreshList();
@@ -3274,7 +3367,7 @@ function buildEmbedsSection(settings, onChange) {
           settings.embeds = settings.embeds.filter(e => e.id !== embed.id);
           onChange(settings);
           refreshList();
-          toastUndo(`Removed "${removed.title || "Embed"}".`, () => {
+          toastUndo(i18n("settingsRemovedNamed", [removed.title || "Embed"], "Removed \"$1\"."), () => {
             if (!settings.embeds) settings.embeds = [];
             insertAt(settings.embeds, idx, removed);
             onChange(settings);
@@ -3355,7 +3448,7 @@ function buildExternalWidgetsSection(settings, onChange) {
           : "Not loaded";
       const tog = toggle({
         checked: widget.enabled ?? false,
-        ariaLabel: `Enable ${name}`,
+        ariaLabel: i18n("settingsEnableNamedAria", [name], "Enable $1"),
         onChange: (v) => { widget.enabled = v; onChange(settings); }
       });
       const del = el("button", {
@@ -3365,7 +3458,7 @@ function buildExternalWidgetsSection(settings, onChange) {
           settings.externalWidgets.splice(idx, 1);
           onChange(settings);
           refreshList();
-          toast(`Removed "${name}".`, "info");
+          settingsToast(i18n("settingsRemovedNamed", [name], "Removed \"$1\"."), "info");
         }
       }, [iconNode("trash", { size: 14 })]);
       const reload = el("button", {
@@ -3378,17 +3471,17 @@ function buildExternalWidgetsSection(settings, onChange) {
             const { fetchManifest, validateManifest } = await import("../utils/widget-host.js");
             const manifest = await fetchManifest(widget.manifestUrl);
             const errs = validateManifest(manifest);
-            if (errs.length) { toast(`Invalid manifest: ${errs.join(", ")}`, "error"); return; }
+            if (errs.length) { settingsToast(i18n("settingsInvalidManifest", [errs.join(", ")], "Invalid manifest: $1"), "error"); return; }
             widget.manifest = manifest;
             widget.error = "";
             onChange(settings);
             refreshList();
-            toast(`Loaded "${manifest.name}".`, "success");
+            settingsToast(i18n("settingsLoadedNamed", [manifest.name], "Loaded \"$1\"."), "success");
           } catch (err) {
             widget.error = err?.message || "fetch failed";
             onChange(settings);
             refreshList();
-            toast(`Couldn't load manifest — ${widget.error}.`, "error");
+            settingsToast(i18n("settingsManifestLoadFailed", [widget.error], "Couldn't load manifest - $1."), "error");
           } finally {
             reload.disabled = false;
           }
@@ -3421,7 +3514,7 @@ function buildExternalWidgetsSection(settings, onChange) {
         const { fetchManifest, validateManifest } = await import("../utils/widget-host.js");
         const manifest = await fetchManifest(url);
         const errs = validateManifest(manifest);
-        if (errs.length) { toast(`Invalid manifest: ${errs.join(", ")}`, "error"); return; }
+        if (errs.length) { settingsToast(i18n("settingsInvalidManifest", [errs.join(", ")], "Invalid manifest: $1"), "error"); return; }
         const normalizedManifestUrl = normalizeWidgetHttpsUrl(url);
         settings.externalWidgets.push({
           id: manifest.id || String(Date.now()),
@@ -3433,9 +3526,9 @@ function buildExternalWidgetsSection(settings, onChange) {
         onChange(settings);
         refreshList();
         urlIn.value = "";
-        toast(`Added "${manifest.name}".`, "success");
+        settingsToast(i18n("settingsAddedNamedQuoted", [manifest.name], "Added \"$1\"."), "success");
       } catch (err) {
-        toast(`Couldn't load — ${err?.message || "fetch failed"}.`, "error");
+        settingsToast(i18n("settingsLoadFailed", [err?.message || "fetch failed"], "Couldn't load - $1."), "error");
       } finally {
         addBtn.disabled = false;
       }
@@ -3494,13 +3587,13 @@ function buildCalendarSection(settings, onChange) {
         grant,
         el("button", {
           type: "button", class: "icon-button icon-button--ghost icon-button--small",
-          "aria-label": `Remove ${feed.title || feed.url}`, title: "Remove",
+          "aria-label": i18n("settingsRemoveNamedAria", [feed.title || feed.url], "Remove $1"), title: "Remove",
           onClick: () => {
             const removed = cloneValue(feed);
             settings.calendar.feeds.splice(idx, 1);
             onChange(settings);
             refreshList();
-            toastUndo(`Removed "${removed.title || hostnameLabel(removed.url)}".`, () => {
+            toastUndo(i18n("settingsRemovedNamed", [removed.title || hostnameLabel(removed.url)], "Removed \"$1\"."), () => {
               insertAt(settings.calendar.feeds, idx, removed);
               onChange(settings);
               refreshList();
@@ -3534,9 +3627,9 @@ function buildCalendarSection(settings, onChange) {
     type: "button", class: "button button--primary",
     onClick: async () => {
       const t = titleInput.value.trim(), u = urlInput.value.trim();
-      if (!u) { toast("iCal URL is required.", "error"); return; }
+      if (!u) { settingsToast("iCal URL is required.", "error"); return; }
       const url = normalizeWebUrl(u);
-      if (!url) { toast("That doesn't look like a valid URL.", "error"); return; }
+      if (!url) { settingsToast("That doesn't look like a valid URL.", "error"); return; }
       await requestAndRecordHostAccess(settings, url, "calendar loading");
       if (!settings.calendar) settings.calendar = { enabled: false, feeds: [], maxItems: 10, daysAhead: 7 };
       const feed = { title: t || hostnameLabel(url), url };
@@ -3550,7 +3643,7 @@ function buildCalendarSection(settings, onChange) {
       titleInput.value = ""; urlInput.value = ""; tokenInput.value = ""; usernameInput.value = "";
       authSelect.value = ""; tokenInput.hidden = true; usernameInput.hidden = true;
       refreshList();
-      toast("Calendar added.", "success");
+      settingsToast("Calendar added.", "success");
     }
   }, [iconNode("plus", { size: 14 }), " Add calendar"]);
 
@@ -3667,7 +3760,7 @@ function buildPomodoroSection(settings, onChange) {
       // 200 KB cap — keeps chrome.storage usage bounded; longer alarms
       // are excessive for "session-end ding" purposes anyway.
       if (file.size > 200 * 1024) {
-        toast("Custom alarm must be 200 KB or smaller.", "error");
+        settingsToast("Custom alarm must be 200 KB or smaller.", "error");
         e.target.value = "";
         return;
       }
@@ -3684,9 +3777,9 @@ function buildPomodoroSection(settings, onChange) {
           customAudio: dataUri
         };
         onChange(settings);
-        toast(`Custom alarm set (${(file.size / 1024).toFixed(1)} KB).`, "success");
+        settingsToast(i18n("settingsCustomAlarmSet", [(file.size / 1024).toFixed(1)], "Custom alarm set ($1 KB)."), "success");
       } catch (err) {
-        toast("Couldn't read that audio file.", "error");
+        settingsToast("Couldn't read that audio file.", "error");
       }
       e.target.value = "";
     }
@@ -3711,7 +3804,7 @@ function buildPomodoroSection(settings, onChange) {
                 customAudio: ""
               };
               onChange(settings);
-              toast("Custom alarm cleared.", "success");
+              settingsToast("Custom alarm cleared.", "success");
             }
           }, [iconNode("trash", { size: 14 }), " Clear"])
         : null
@@ -3751,7 +3844,7 @@ function buildDataSection(settings, onChange, showWizard) {
         const safe = stripSecrets(settings);
         const json = JSON.stringify(safe, null, 2);
         triggerDownload(json, `vantage-settings-${isoDate()}.json`, "application/json");
-        toast("Settings exported (secrets stripped).", "success");
+        settingsToast("Settings exported (secrets stripped).", "success");
       }
     }, [iconNode("download", { size: 14 }), " Export JSON"])
   ));
@@ -3772,23 +3865,23 @@ function buildDataSection(settings, onChange, showWizard) {
         const imported = normalizeImportedSettings(JSON.parse(text));
         const merged = await showPartialImportDialog(settings, imported, file.name);
         if (!merged) {
-          toast("Import canceled.", "info");
+          settingsToast("Import canceled.", "info");
           jsonImportInput.value = "";
           return;
         }
         const mergedWithPermissions = await reviewHostPermissionsForSettings(merged, file.name);
         await saveSettings(mergedWithPermissions);
         onChange(mergedWithPermissions);
-        toast(`Settings imported from ${file.name}.`, "success", 8000, {
+        settingsToast(i18n("settingsImportedFromFile", [file.name], "Settings imported from $1."), "success", 8000, {
           label: "Undo",
           onClick: async () => {
             await saveSettings(previous);
             onChange(previous);
-            toast("Import undone.", "success");
+            settingsToast("Import undone.", "success");
           }
         });
       } catch (err) {
-        toast(err.message || "Invalid JSON file.", "error");
+        settingsToast(err.message || i18n("settingsInvalidJsonFile", null, "Invalid JSON file."), "error");
       }
       jsonImportInput.value = "";
     }
@@ -3812,7 +3905,7 @@ function buildDataSection(settings, onChange, showWizard) {
       onClick: () => {
         const opml = exportOPML(settings);
         triggerDownload(opml, `vantage-feeds-${isoDate()}.opml`, "text/x-opml");
-        toast("Feeds exported as OPML.", "success");
+        settingsToast("Feeds exported as OPML.", "success");
       }
     }, [iconNode("download", { size: 14 }), " Export OPML"])
   ));
@@ -3846,21 +3939,21 @@ function buildDataSection(settings, onChange, showWizard) {
         settings.news.feeds = newsMerge.feeds;
         const addedCount = rssMerge.added.length + newsMerge.added.length;
         if (!addedCount) {
-          toast(`No new feeds found in ${file.name}.`, "info");
+          settingsToast(i18n("settingsNoNewFeedsInFile", [file.name], "No new feeds found in $1."), "info");
           return;
         }
-        await reviewHostPermissionsForSettings(settings, `${file.name} OPML import`);
+        await reviewHostPermissionsForSettings(settings, i18n("settingsOpmlImportSource", [file.name], "$1 OPML import"));
         await saveSettings(settings);
         onChange(settings);
-        toast(`Imported ${addedCount} new feed${addedCount === 1 ? "" : "s"} from ${file.name}.`, "success", 8000, {
+        settingsToast(i18n("settingsFeedsImportedCount", [addedCount, file.name], "Imported $1 new feed(s) from $2."), "success", 8000, {
           label: "Undo",
           onClick: async () => {
             await saveSettings(previous);
             onChange(previous);
-            toast("Feed import undone.", "success");
+            settingsToast("Feed import undone.", "success");
           }
         });
-      } catch (err) { toast(err.message || "Invalid OPML file.", "error"); }
+      } catch (err) { settingsToast(err.message || i18n("settingsInvalidOpmlFile", null, "Invalid OPML file."), "error"); }
       opmlImportInput.value = "";
     }
   });
@@ -3891,7 +3984,7 @@ function buildDataSection(settings, onChange, showWizard) {
 
 This will add all your YouTube channels as RSS feeds (when available).`;
         window.open(takeoutUrl, "takeout");
-        toast(recipeText, "info", 12000);
+        settingsToast(i18n("settingsYoutubeTakeoutRecipe", null, recipeText), "info", 12000);
       }
     }, [iconNode("external", { size: 14 }), " Import YouTube"])
   ));
@@ -3905,7 +3998,7 @@ This will add all your YouTube channels as RSS feeds (when available).`;
       const html = await file.text();
       const doc = new DOMParser().parseFromString(html, "text/html");
       const links = [...doc.querySelectorAll("a[href]")];
-      if (!links.length) { toast("No links found in file.", "error"); return; }
+      if (!links.length) { settingsToast("No links found in file.", "error"); return; }
       const items = links.map(a => {
         const url = normalizeWebUrl(a.href);
         return url ? {
@@ -3925,9 +4018,9 @@ This will add all your YouTube channels as RSS feeds (when available).`;
         }
       }
       onChange(settings);
-      toast(`Imported ${added} link${added !== 1 ? "s" : ""} from Pocket (${items.length - added} duplicates skipped).`, "success");
+      settingsToast(i18n("settingsPocketImportCount", [added, items.length - added], "Imported $1 link(s) from Pocket ($2 duplicates skipped)."), "success");
     } catch (err) {
-      toast(`Pocket import failed — ${err?.message || "invalid file"}.`, "error");
+      settingsToast(i18n("settingsPocketImportFailed", [err?.message || "invalid file"], "Pocket import failed - $1."), "error");
     }
     pocketInput.value = "";
   });
@@ -3948,7 +4041,7 @@ This will add all your YouTube channels as RSS feeds (when available).`;
     try {
       const text = await file.text();
       const lines = text.split("\n").slice(1).filter(l => l.trim());
-      if (!lines.length) { toast("No entries found in CSV.", "error"); return; }
+      if (!lines.length) { settingsToast("No entries found in CSV.", "error"); return; }
       if (!settings.quicklinks) settings.quicklinks = { items: [] };
       if (!settings.quicklinks.items) settings.quicklinks.items = [];
       let added = 0;
@@ -3964,9 +4057,9 @@ This will add all your YouTube channels as RSS feeds (when available).`;
         added++;
       }
       onChange(settings);
-      toast(`Imported ${added} link${added !== 1 ? "s" : ""} from Instapaper.`, "success");
+      settingsToast(i18n("settingsInstapaperImportCount", [added], "Imported $1 link(s) from Instapaper."), "success");
     } catch (err) {
-      toast(`Instapaper import failed — ${err?.message || "invalid file"}.`, "error");
+      settingsToast(i18n("settingsInstapaperImportFailed", [err?.message || "invalid file"], "Instapaper import failed - $1."), "error");
     }
     instaInput.value = "";
   });
@@ -3992,9 +4085,9 @@ This will add all your YouTube channels as RSS feeds (when available).`;
           const url = new URL(location.href);
           url.hash = `import=${encoded}`;
           navigator.clipboard.writeText(url.href).then(() => {
-            toast("Share link copied (secrets stripped).", "success");
-          }).catch(() => { toast("Clipboard access denied.", "error"); });
-        } catch { toast("Couldn't generate share link.", "error"); }
+            settingsToast("Share link copied (secrets stripped).", "success");
+          }).catch(() => { settingsToast("Clipboard access denied.", "error"); });
+        } catch { settingsToast("Couldn't generate share link.", "error"); }
       }
     }, [iconNode("share", { size: 14 }), " Copy share link"])
   ));
@@ -4014,31 +4107,31 @@ This will add all your YouTube channels as RSS feeds (when available).`;
             if (!action) return;
             if (action.type === "json") {
               await copyText(json);
-              toast(`Gist JSON copied (${(json.length / 1024).toFixed(1)} KB). Paste it into a new GitHub Gist.`, "success", 8000);
+              settingsToast(i18n("settingsGistJsonCopied", [(json.length / 1024).toFixed(1)], "Gist JSON copied ($1 KB). Paste it into a new GitHub Gist."), "success", 8000);
               return;
             }
             if (action.type === "share") {
               await copyText(generateShareUrl(safe));
-              toast("Share link copied (secrets stripped).", "success");
+              settingsToast("Share link copied (secrets stripped).", "success");
               return;
             }
-            toast("Creating Gist...", "info");
+            settingsToast("Creating Gist...", "info");
             const { gistUrl } = await createSettingsGist(safe, action.token);
             try {
               await copyText(gistUrl);
-              toast(`Gist created and URL copied: ${gistUrl}`, "success", 8000);
+              settingsToast(i18n("settingsGistCreatedAndCopied", [gistUrl], "Gist created and URL copied: $1"), "success", 8000);
             } catch {
-              toast(`Gist created: ${gistUrl}`, "success", 8000);
+              settingsToast(i18n("settingsGistCreated", [gistUrl], "Gist created: $1"), "success", 8000);
             }
           } catch (err) {
-            toast(err.message || "Failed to export Gist.", "error", 10000, {
+            settingsToast(err.message || i18n("settingsGistExportFailed", null, "Failed to export Gist."), "error", 10000, {
               label: "Copy JSON",
               onClick: async () => {
                 try {
                   await copyText(json);
-                  toast("Gist JSON copied.", "success");
+                  settingsToast("Gist JSON copied.", "success");
                 } catch {
-                  toast("Clipboard access denied.", "error");
+                  settingsToast("Clipboard access denied.", "error");
                 }
               }
             });
@@ -4048,30 +4141,30 @@ This will add all your YouTube channels as RSS feeds (when available).`;
       el("button", {
         type: "button", class: "button button--ghost",
         onClick: async () => {
-          const gistUrl = prompt("Paste Gist URL or ID:\n\nExamples:\nhttps://gist.github.com/abc123\nabc123");
+          const gistUrl = settingsPrompt("Paste Gist URL or ID:\n\nExamples:\nhttps://gist.github.com/abc123\nabc123");
           if (!gistUrl?.trim()) return;
           try {
-            toast("Loading Gist…", "info");
+            settingsToast("Loading Gist…", "info");
             const previous = cloneValue(settings);
             const imported = normalizeImportedSettings(await loadSettingsFromGist(gistUrl));
             const merged = await showPartialImportDialog(settings, imported, "GitHub Gist");
             if (!merged) {
-              toast("Gist import canceled.", "info");
+              settingsToast("Gist import canceled.", "info");
               return;
             }
             const mergedWithPermissions = await reviewHostPermissionsForSettings(merged, "GitHub Gist");
             await saveSettings(mergedWithPermissions);
             onChange(mergedWithPermissions);
-            toast("Settings imported from Gist.", "success", 8000, {
+            settingsToast("Settings imported from Gist.", "success", 8000, {
               label: "Undo",
               onClick: async () => {
                 await saveSettings(previous);
                 onChange(previous);
-                toast("Gist import undone.", "success");
+                settingsToast("Gist import undone.", "success");
               }
             });
           } catch (err) {
-            toast(err.message || "Failed to load Gist.", "error");
+            settingsToast(err.message || i18n("settingsGistLoadFailed", null, "Failed to load Gist."), "error");
           }
         }
       }, [iconNode("download", { size: 14 }), " Import from Gist"])
@@ -4086,13 +4179,13 @@ This will add all your YouTube channels as RSS feeds (when available).`;
       type: "button", class: "button button--ghost",
       onClick: async () => {
         try {
-          toast("Capturing screenshot…", "info");
+          settingsToast("Capturing screenshot…", "info");
           const { success, filename } = await captureScreenshot();
           if (success) {
-            toast(`Screenshot saved: ${filename}`, "success");
+            settingsToast(i18n("settingsScreenshotSaved", [filename], "Screenshot saved: $1"), "success");
           }
         } catch (err) {
-          toast(err.message || "Failed to capture screenshot.", "error");
+          settingsToast(err.message || i18n("settingsScreenshotCaptureFailed", null, "Failed to capture screenshot."), "error");
         }
       }
     }, [iconNode("image", { size: 14 }), " Take screenshot"])
@@ -4149,7 +4242,7 @@ This will add all your YouTube channels as RSS feeds (when available).`;
           onClick: async () => {
             const checked = [...widgetCheckHost.querySelectorAll('input[type="checkbox"]:checked')];
             if (!checked.length) {
-              toast("Pick at least one widget to export.", "warning");
+              settingsToast("Pick at least one widget to export.", "warning");
               return;
             }
             const safe = stripSecrets(settings);
@@ -4162,9 +4255,9 @@ This will add all your YouTube channels as RSS feeds (when available).`;
             const json = JSON.stringify(payload, null, 2);
             try {
               await navigator.clipboard.writeText(json);
-              toast(`Copied ${checked.length} widget config${checked.length === 1 ? "" : "s"} (${(json.length / 1024).toFixed(1)} KB).`, "success");
+              settingsToast(i18n("settingsWidgetConfigsCopied", [checked.length, (json.length / 1024).toFixed(1)], "Copied $1 widget config(s) ($2 KB)."), "success");
             } catch (err) {
-              toast(`Couldn't copy — ${err?.message?.toLowerCase() || "clipboard denied"}.`, "error");
+              settingsToast(i18n("settingsCopyFailed", [err?.message?.toLowerCase() || "clipboard denied"], "Couldn't copy - $1."), "error");
             }
           }
         }, [iconNode("share", { size: 14 }), " Copy selected"])
@@ -4185,13 +4278,13 @@ This will add all your YouTube channels as RSS feeds (when available).`;
         const btn = ev.currentTarget;
         const wasDisabled = btn.disabled;
         btn.disabled = true;
-        toast("Capturing dashboard…", "info");
+        settingsToast("Capturing dashboard…", "info");
         try {
           const { filename, bytes } = await captureScreenshot();
           const kb = (bytes / 1024).toFixed(1);
-          toast(`Saved ${filename} (${kb} KB).`, "success");
+          settingsToast(i18n("settingsFileSaved", [filename, kb], "Saved $1 ($2 KB)."), "success");
         } catch (err) {
-          toast(err.message || "Couldn't capture screenshot.", "error");
+          settingsToast(err.message || i18n("settingsDashboardCaptureFailed", null, "Couldn't capture screenshot."), "error");
         } finally {
           btn.disabled = wasDisabled;
         }
@@ -4212,9 +4305,9 @@ This will add all your YouTube channels as RSS feeds (when available).`;
           const text = await formatErrorLog();
           try {
             await navigator.clipboard.writeText(text);
-            toast(`Debug log copied (${text.length} chars).`, "success");
+            settingsToast(i18n("settingsDebugLogCopied", [text.length], "Debug log copied ($1 chars)."), "success");
           } catch {
-            toast("Clipboard access denied. Tip: open the dev console and paste from settings storage.", "error");
+            settingsToast("Clipboard access denied. Tip: open the dev console and paste from settings storage.", "error");
           }
         }
       }, [iconNode("download", { size: 14 }), " Copy debug log"]),
@@ -4223,7 +4316,7 @@ This will add all your YouTube channels as RSS feeds (when available).`;
         onClick: async () => {
           const { clearErrorLog } = await import("./utils/error-log.js");
           await clearErrorLog();
-          toast("Debug log cleared.", "success");
+          settingsToast("Debug log cleared.", "success");
         }
       }, [iconNode("trash", { size: 14 }), " Clear log"])
     ])
@@ -4240,14 +4333,14 @@ This will add all your YouTube channels as RSS feeds (when available).`;
       }, [
         (() => {
           const stats = getFaviconCacheStats();
-          return `${stats.count} icons, ${(stats.size / 1024).toFixed(1)} KB`;
+          return i18n("settingsFaviconCacheStats", [stats.count, (stats.size / 1024).toFixed(1)], "$1 icons, $2 KB");
         })()
       ]),
       el("button", {
         type: "button", class: "button button--ghost",
         onClick: () => {
           clearFaviconCache();
-          toast("Favicon cache cleared.", "success");
+          settingsToast("Favicon cache cleared.", "success");
         }
       }, [iconNode("trash", { size: 14 }), " Clear cache"])
     ])
@@ -4324,7 +4417,7 @@ function showGistExportDialog(safeSettings) {
       ])
     ]));
     dialog.appendChild(el("p", { class: "import-dialog__extra-note" }, [
-      `Secrets are stripped. Payload size: ${(json.length / 1024).toFixed(1)} KB. Public Gist imports do not need a token.`
+      i18n("settingsGistPayloadSize", [(json.length / 1024).toFixed(1)], "Secrets are stripped. Payload size: $1 KB. Public Gist imports do not need a token.")
     ]));
     dialog.appendChild(el("footer", { class: "import-dialog__actions" }, [
       el("button", {
@@ -4376,12 +4469,12 @@ function triggerDownload(content, filename, mimeType) {
 async function requestAndRecordHostAccess(settings, rawUrl, label = "this URL") {
   const origin = hostPermissionOrigin(rawUrl);
   if (!origin) return { required: false, granted: true };
-  toast(`Vantage will ask your browser for scoped access to ${hostPermissionLabel(rawUrl)} for ${label}.`, "info", 5000);
+  settingsToast(i18n("settingsHostAccessPrompt", [hostPermissionLabel(rawUrl), label], "Vantage will ask your browser for scoped access to $1 for $2."), "info", 5000);
   const result = await requestHostPermission(origin, settings);
   if (result.granted) {
-    toast(`Host access granted for ${hostPermissionLabel(rawUrl)}.`, "success");
+    settingsToast(i18n("settingsHostAccessGranted", [hostPermissionLabel(rawUrl)], "Host access granted for $1."), "success");
   } else {
-    toast(`Host access was not granted for ${hostPermissionLabel(rawUrl)}. You can grant it later from Settings.`, "warning", 9000);
+    settingsToast(i18n("settingsHostAccessDenied", [hostPermissionLabel(rawUrl)], "Host access was not granted for $1. You can grant it later from Settings."), "warning", 9000);
   }
   return result;
 }
@@ -4441,14 +4534,14 @@ export async function reviewHostPermissionsForSettings(settings, source = "impor
     }
     if (targets.length > 12) {
       list.appendChild(el("p", { class: "import-dialog__extra-note" }, [
-        `${targets.length - 12} additional origin${targets.length - 12 === 1 ? "" : "s"} will be requested in the same browser prompt.`
+        i18n("settingsAdditionalOriginsRequested", [targets.length - 12], "$1 additional origin(s) will be requested in the same browser prompt.")
       ]));
     }
 
     dialog.appendChild(el("header", { class: "import-dialog__header" }, [
       el("h2", { id: "host-permission-title" }, ["Grant host access"]),
       el("p", {}, [
-        `${source} includes user URLs that need scoped browser host access for direct feed, calendar, image, or embed loading.`
+        i18n("settingsHostAccessSourceHint", [source], "$1 includes user URLs that need scoped browser host access for direct feed, calendar, image, or embed loading.")
       ])
     ]));
     dialog.appendChild(list);
@@ -4458,7 +4551,7 @@ export async function reviewHostPermissionsForSettings(settings, source = "impor
         class: "button button--ghost",
         onClick: () => {
           markHostPermissionsDenied(settings, targets.map(t => t.origin));
-          toast("Imported URLs saved without host access. Grant access later from Settings if a widget cannot load directly.", "warning", 9000);
+          settingsToast("Imported URLs saved without host access. Grant access later from Settings if a widget cannot load directly.", "warning", 9000);
           close(settings);
         }
       }, ["Skip for now"]),
@@ -4469,9 +4562,9 @@ export async function reviewHostPermissionsForSettings(settings, source = "impor
         onClick: async () => {
           const result = await requestHostPermissions(targets.map(t => t.origin), settings);
           if (result.granted) {
-            toast("Host access granted for imported URLs.", "success");
+            settingsToast("Host access granted for imported URLs.", "success");
           } else {
-            toast("Some imported origins were not granted. Grant buttons will appear beside affected URLs.", "warning", 9000);
+            settingsToast("Some imported origins were not granted. Grant buttons will appear beside affected URLs.", "warning", 9000);
           }
           close(settings);
         }
@@ -4761,7 +4854,7 @@ function buildBookmarksSection(settings, onChange) {
         if (v) {
           const result = await requestBrowserPermission("bookmarks");
           if (!result.granted) {
-            toast("Bookmarks permission denied. The panel stays disabled.", "warning");
+            settingsToast("Bookmarks permission denied. The panel stays disabled.", "warning");
             return false;
           }
         } else {
@@ -4814,7 +4907,7 @@ function buildStarredSection(settings, onChange) {
   const count = (cfg.items || []).length;
   g.appendChild(row(
     "Stored",
-    `${count} item${count === 1 ? "" : "s"} starred.`,
+    i18n("settingsStarredItemCount", [count], "$1 item(s) starred."),
     el("button", {
       type: "button", class: "button button--ghost",
       disabled: count === 0,
@@ -4823,7 +4916,7 @@ function buildStarredSection(settings, onChange) {
         const removed = cfg.items.slice();
         settings.starred = { ...cfg, items: [] };
         onChange(settings);
-        toastUndo(`Cleared ${removed.length} starred item${removed.length === 1 ? "" : "s"}.`, () => {
+        toastUndo(i18n("settingsStarredClearedCount", [removed.length], "Cleared $1 starred item(s)."), () => {
           settings.starred = { ...cfg, items: removed };
           onChange(settings);
         });
@@ -4863,7 +4956,7 @@ function buildInboxSection(settings, onChange) {
   const archivedCount = (cfg.archived || []).length;
   g.appendChild(row(
     "Archived",
-    `${archivedCount} item${archivedCount === 1 ? "" : "s"} archived.`,
+    i18n("settingsInboxArchivedCount", [archivedCount], "$1 item(s) archived."),
     el("button", {
       type: "button", class: "button button--ghost",
       disabled: archivedCount === 0,
@@ -4872,7 +4965,7 @@ function buildInboxSection(settings, onChange) {
         const removed = cfg.archived.slice();
         settings.inbox = { ...cfg, archived: [] };
         onChange(settings);
-        toastUndo(`Cleared ${removed.length} archived item${removed.length === 1 ? "" : "s"}.`, () => {
+        toastUndo(i18n("settingsInboxArchivedClearedCount", [removed.length], "Cleared $1 archived item(s)."), () => {
           settings.inbox = { ...cfg, archived: removed };
           onChange(settings);
         });
@@ -4922,7 +5015,7 @@ function buildWorldClockSection(settings, onChange) {
           settings.worldclock = { ...cfg, clocks };
           onChange(settings);
           refreshClockList();
-          toastUndo(`Removed "${removed.label || "Clock"}".`, () => {
+          toastUndo(i18n("settingsRemovedNamed", [removed.label || "Clock"], "Removed \"$1\"."), () => {
             insertAt(clocks, idx, removed);
             settings.worldclock = { ...cfg, clocks };
             onChange(settings);
@@ -5252,7 +5345,7 @@ function buildTypographySection(settings, onChange) {
             bodyInput.dispatchEvent(new Event("change"));
           });
         } catch (err) {
-          toast(`Couldn't read local fonts — ${err?.message?.toLowerCase() || "permission denied"}.`, "error");
+          settingsToast(i18n("settingsLocalFontsReadFailed", [err?.message?.toLowerCase() || "permission denied"], "Couldn't read local fonts - $1."), "error");
         }
       }
     }, [iconNode("layout-grid", { size: 14 }), " Pick body font…"]);
@@ -5268,7 +5361,7 @@ function buildTypographySection(settings, onChange) {
             displayInput.dispatchEvent(new Event("change"));
           });
         } catch (err) {
-          toast(`Couldn't read local fonts — ${err?.message?.toLowerCase() || "permission denied"}.`, "error");
+          settingsToast(i18n("settingsLocalFontsReadFailed", [err?.message?.toLowerCase() || "permission denied"], "Couldn't read local fonts - $1."), "error");
         }
       }
     }, [iconNode("layout-grid", { size: 14 }), " Pick display font…"]);
@@ -5299,7 +5392,7 @@ function buildTypographySection(settings, onChange) {
         displayInput.value = "";
         applyFontPreference(settings.appearance.font);
         onChange(settings);
-        toast("Fonts reset to default.", "success");
+        settingsToast("Fonts reset to default.", "success");
       }
     }, [iconNode("trash", { size: 14 }), " Reset"])
   ));
@@ -5342,12 +5435,12 @@ function showThemeBrowser(themes, settings, onChange, applyThemeBundle, validate
       onClick: () => {
         applyThemeBundle(settings, theme);
         onChange(settings);
-        toast(`Applied "${theme.name}".`, "success");
+        settingsToast(i18n("settingsThemeApplied", [theme.name], "Applied \"$1\"."), "success");
         close();
       }
     }, [
       el("strong", {}, [theme.name]),
-      theme.author ? el("span", { style: "margin-left: 8px; opacity: 0.6; font-size: 12px;" }, [`by ${theme.author}`]) : null,
+      theme.author ? el("span", { style: "margin-left: 8px; opacity: 0.6; font-size: 12px;" }, [i18n("settingsThemeByAuthor", [theme.author], "by $1")]) : null,
       theme.description ? el("p", { style: "margin: 4px 0 0; font-size: 12px; opacity: 0.8;" }, [theme.description]) : null
     ].filter(Boolean));
     list.appendChild(preview);
@@ -5389,7 +5482,7 @@ function pickFontDialog(fonts, title, onPick) {
     ]);
     const filter = el("input", {
       type: "search", class: "text-input",
-      placeholder: `Filter ${fonts.length.toLocaleString()} fonts…`,
+      placeholder: i18n("settingsFilterFontsPlaceholder", [fonts.length.toLocaleString()], "Filter $1 fonts..."),
       "aria-label": "Filter fonts",
       style: { margin: "var(--s-3) var(--s-5)" }
     });
@@ -5417,7 +5510,7 @@ function pickFontDialog(fonts, title, onPick) {
       }
       if (matches.length > cap) {
         listHost.appendChild(el("p", { class: "settings-section__hint", style: { padding: "var(--s-2) var(--s-3)" } }, [
-          `Showing first ${cap}; refine the filter to narrow results.`
+          i18n("settingsFontPickerLimitHint", [cap], "Showing first $1; refine the filter to narrow results.")
         ]));
       }
       if (!matches.length) {
@@ -5467,7 +5560,7 @@ function buildResetSection(onChange) {
           clear(btn);
           btn.append(iconNode("trash", { size: 14 }), " Reset everything");
         }, 6000);
-        toast("Click Confirm reset to erase feeds, links, location, and custom settings.", "warning", 6000);
+        settingsToast("Click Confirm reset to erase feeds, links, location, and custom settings.", "warning", 6000);
         return;
       }
       clearTimeout(confirmTimer);
@@ -5477,7 +5570,7 @@ function buildResetSection(onChange) {
       document.getElementById("settings-toggle")?.setAttribute("aria-expanded", "false");
       const settingsPanel = document.getElementById("settings-panel");
       if (settingsPanel) closePanel(settingsPanel);
-      toast("Settings reset to defaults.", "success");
+      settingsToast("Settings reset to defaults.", "success");
     }
   }, [iconNode("trash", { size: 14 }), " Reset everything"]);
   sec.appendChild(btn);
@@ -5513,7 +5606,7 @@ function openCellPlacementDialog(item, idx, settings, onChange, refreshList) {
     dialog.addEventListener("click", (e) => { if (e.target === dialog) close(); });
 
     const header = el("header", { class: "import-dialog__header" }, [
-      el("h2", { id: "cell-placement-title" }, [`Set grid position for "${item.title}"`])
+      el("h2", { id: "cell-placement-title" }, [i18n("settingsCellPlacementTitle", [item.title], "Set grid position for \"$1\"")])
     ]);
 
     const currentOverride = item.cellOverride || { row: 0, col: 0 };
@@ -5541,7 +5634,7 @@ function openCellPlacementDialog(item, idx, settings, onChange, refreshList) {
         rowInput
       ]),
       el("label", {}, [
-        el("span", { style: { display: "block", marginBottom: "0.5rem" } }, [`Column (0-indexed, max ${maxCols - 1})`]),
+        el("span", { style: { display: "block", marginBottom: "0.5rem" } }, [i18n("settingsColumnMaxLabel", [maxCols - 1], "Column (0-indexed, max $1)")]),
         colInput
       ]),
       el("div", { class: "compose__row", style: { gap: "0.5rem", marginTop: "var(--s-3)" } }, [
@@ -5554,7 +5647,7 @@ function openCellPlacementDialog(item, idx, settings, onChange, refreshList) {
             item.cellOverride = { row, col };
             onChange(settings);
             refreshList();
-            toast(`Position set to row ${row}, col ${col}.`, "success");
+            settingsToast(i18n("settingsPositionSet", [row, col], "Position set to row $1, col $2."), "success");
             close();
           }
         }, ["Set position"]),
@@ -5565,7 +5658,7 @@ function openCellPlacementDialog(item, idx, settings, onChange, refreshList) {
             delete item.cellOverride;
             onChange(settings);
             refreshList();
-            toast("Position cleared; link will flow normally.", "success");
+            settingsToast("Position cleared; link will flow normally.", "success");
             close();
           }
         }, ["Clear override"])

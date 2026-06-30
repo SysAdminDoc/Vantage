@@ -31,6 +31,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Disabled button CSS no longer declares cursor twice.**
 
 ### Added
+- **Settings runtime copy i18n migration** - Settings now localizes generated body text, placeholders, titles, ARIA labels, static/dynamic toasts, prompts, confirmation copy, status counters, and permission/import dialog messages through locale keys with English fallbacks. The i18n parity guard now scans Settings wrapper literals and generated Settings literal keys while avoiding user-provided row content.
 - **Shared weather and greeting i18n labels** — current weather and forecast widgets now share localized WMO condition labels, localized weather tooltip/ARIA fragments, locale-aware forecast dates, localized greeting defaults, and localized relative-time strings.
 - **Standalone widget i18n migration** — Ambient, Calendar, Countdown, Converter, Crypto, GitHub, Inbox, Notes, Photo, Pomodoro, Quick Links, Quote, Starred, To-Do, Weather status, Windy, Zen Shelf, embeds, and utility pills now route visible control labels, empty/error states, toasts, and accessibility labels through locale keys. The i18n parity guard also scans table-driven widget metadata keys.
 - **Feed and browser-data widget i18n keys** — RSS/News feed controls, Reading List save feedback, Bookmarks, Top Sites, and History Search visible empty/error/recovery states now route through locale keys, and the i18n test scans widget modules.
