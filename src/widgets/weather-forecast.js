@@ -10,6 +10,7 @@
 
 import { el, clear } from "../utils/dom.js";
 import { getDailyForecast, detectLocation } from "../utils/weather-source.js";
+import { i18n } from "../utils/i18n.js";
 
 const WMO_CODES = {
   0:  { label: "Clear",                 icon: "☀️"  },
@@ -47,7 +48,7 @@ export async function renderWeatherForecast(mount, settings) {
   mount.style.display = "";
 
   // Loading skeleton
-  const skeleton = el("div", { class: "weather-forecast weather-forecast--skeleton", "aria-label": "Loading forecast" });
+  const skeleton = el("div", { class: "weather-forecast weather-forecast--skeleton", "aria-label": i18n("loadingForecast", null, "Loading forecast") });
   mount.appendChild(skeleton);
 
   try {
@@ -56,7 +57,7 @@ export async function renderWeatherForecast(mount, settings) {
       location = await detectLocation();
     }
     if (!location) {
-      throw new Error("No location");
+      throw new Error(i18n("noLocation", null, "No location"));
     }
 
     const data = await getDailyForecast(location, settings.weather?.units);
@@ -66,7 +67,7 @@ export async function renderWeatherForecast(mount, settings) {
 
     clear(mount);
     const container = el("div", { class: "weather-forecast" });
-    
+
     // Build a 5-day forecast grid.
     // daily.time[0] is today, [1] is tomorrow, etc.
     const times = daily.time || [];
@@ -84,10 +85,10 @@ export async function renderWeatherForecast(mount, settings) {
       const date = new Date(dateStr + "T00:00:00");
       const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
       const dateLabel = date.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit" });
-      
+
       const code = codes[i];
       const meta = WMO_CODES[code] || { label: "Unknown", icon: "❓" };
-      
+
       const maxTemp = Math.round(maxTemps[i] || 0);
       const minTemp = Math.round(minTemps[i] || 0);
       const precipAmount = precip[i] || 0;
@@ -119,7 +120,7 @@ export async function renderWeatherForecast(mount, settings) {
           el("span", { class: "weather-forecast__separator" }, [" / "]),
           el("span", { class: "weather-forecast__low" }, [`${minTemp}${unit}`])
         ]),
-        el("div", { class: "weather-forecast__details", title: `Precip: ${precipAmount.toFixed(1)} mm / ${precipChance}% · UV: ${uv.toFixed(1)} · Wind: ${windLabel}` }, [
+        el("div", { class: "weather-forecast__details", title: i18n("forecastDetailsTitle", [precipAmount.toFixed(1), precipChance, uv.toFixed(1), windLabel], "Precip: $1 mm / $2% - UV: $3 - Wind: $4") }, [
           el("span", { class: "weather-forecast__detail-item" }, [`🌧️ ${precipChance}%`]),
           el("span", { class: "weather-forecast__detail-item" }, [`☀️ UV ${uv.toFixed(1)}`]),
           el("span", { class: "weather-forecast__detail-item" }, [`💨 ${windLabel}`])
@@ -133,7 +134,7 @@ export async function renderWeatherForecast(mount, settings) {
     clear(mount);
     mount.appendChild(el("div", {
       class: "weather-forecast weather-forecast--error",
-      "aria-label": "Forecast unavailable"
-    }, [`Forecast unavailable`]));
+      "aria-label": i18n("forecastUnavailable", null, "Forecast unavailable")
+    }, [i18n("forecastUnavailable", null, "Forecast unavailable")]));
   }
 }

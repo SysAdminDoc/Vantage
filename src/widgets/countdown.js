@@ -2,11 +2,34 @@
 
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
+import { i18n } from "../utils/i18n.js";
 
 let _uid = Date.now();
 function uid() { return String(++_uid); }
 
 const EVENT_COLORS = ["blue", "green", "yellow", "red", "mauve", "peach"];
+
+function colorLabel(color) {
+  if (color === "blue") return i18n("colorBlue", null, "Blue");
+  if (color === "green") return i18n("colorGreen", null, "Green");
+  if (color === "yellow") return i18n("colorYellow", null, "Yellow");
+  if (color === "red") return i18n("colorRed", null, "Red");
+  if (color === "mauve") return i18n("colorMauve", null, "Mauve");
+  if (color === "peach") return i18n("colorPeach", null, "Peach");
+  return color.charAt(0).toUpperCase() + color.slice(1);
+}
+
+function formatCountdownTime(diff) {
+  const past = diff < 0;
+  const absDiff = Math.abs(diff);
+  const days = Math.floor(absDiff / 86400000);
+  const hours = Math.floor((absDiff % 86400000) / 3600000);
+  const mins = Math.floor((absDiff % 3600000) / 60000);
+  const remaining = days > 0
+    ? `${days}d ${hours}h ${mins}m`
+    : `${hours}h ${mins}m`;
+  return past ? i18n("countdownTimeAgo", [remaining], "$1 ago") : remaining;
+}
 
 export function renderCountdown(mount, settings, { onChange, onAttachDragHandle } = {}) {
   clear(mount);
@@ -32,14 +55,14 @@ export function renderCountdown(mount, settings, { onChange, onAttachDragHandle 
   const addBtn = el("button", {
     type: "button",
     class: "icon-button icon-button--ghost icon-button--small",
-    title: "Add countdown", "aria-label": "Add countdown event",
+    title: i18n("addCountdown", null, "Add countdown"), "aria-label": i18n("addCountdownEvent", null, "Add countdown event"),
     onClick: () => { showForm = !showForm; rerender(); }
   }, [iconNode(showForm ? "close" : "plus", { size: 14 })]);
 
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
       el("span", { class: "panel-header__drag", "aria-hidden": "true", innerHTML: iconString("grip", 14) }),
-      el("h2", { class: "panel-header__title" }, [iconNode("hourglass", { size: 14 }), " Countdowns"])
+      el("h2", { class: "panel-header__title" }, [iconNode("hourglass", { size: 14 }), ` ${i18n("countdowns")}`])
     ]),
     el("div", { class: "panel-header__right" }, [addBtn])
   ]);
@@ -55,8 +78,8 @@ export function renderCountdown(mount, settings, { onChange, onAttachDragHandle 
     const labelInput = el("input", {
       type: "text",
       class: "text-input",
-      placeholder: "Event name",
-      "aria-label": "Event name",
+      placeholder: i18n("eventName", null, "Event name"),
+      "aria-label": i18n("eventName", null, "Event name"),
       onInput: (e) => { newLabel = e.target.value; }
     });
 
@@ -64,7 +87,7 @@ export function renderCountdown(mount, settings, { onChange, onAttachDragHandle 
       type: "date",
       class: "text-input",
       value: newDate,
-      "aria-label": "Target date",
+      "aria-label": i18n("targetDate", null, "Target date"),
       onChange: (e) => { newDate = e.target.value; }
     });
 
@@ -73,7 +96,7 @@ export function renderCountdown(mount, settings, { onChange, onAttachDragHandle 
       colorPicker.appendChild(el("button", {
         type: "button",
         class: `note-color-btn note-color-btn--${color}${newColor === color ? " note-color-btn--active" : ""}`,
-        "aria-label": color.charAt(0).toUpperCase() + color.slice(1),
+        "aria-label": colorLabel(color),
         onClick: () => {
           newColor = color;
           colorPicker.querySelectorAll(".note-color-btn").forEach((b, i) => {
@@ -93,7 +116,7 @@ export function renderCountdown(mount, settings, { onChange, onAttachDragHandle 
         showForm = false;
         rerender();
       }
-    }, ["Add"]);
+    }, [i18n("add", null, "Add")]);
 
     body.appendChild(el("div", { class: "countdown-form" }, [
       labelInput, dateInput, colorPicker,
@@ -102,7 +125,7 @@ export function renderCountdown(mount, settings, { onChange, onAttachDragHandle 
   }
 
   if (events.length === 0 && !showForm) {
-    body.appendChild(el("p", { class: "panel-empty" }, ["No countdowns yet — click + to add one."]));
+    body.appendChild(el("p", { class: "panel-empty" }, [i18n("countdownsEmpty", null, "No countdowns yet - click + to add one.")]));
   }
 
   const now = Date.now();
@@ -110,21 +133,12 @@ export function renderCountdown(mount, settings, { onChange, onAttachDragHandle 
     const target  = new Date(ev.date + "T00:00:00").getTime();
     const diff    = target - now;
     const past    = diff < 0;
-    const absDiff = Math.abs(diff);
-    const days    = Math.floor(absDiff / 86400000);
-    const hours   = Math.floor((absDiff % 86400000) / 3600000);
-    const mins    = Math.floor((absDiff % 3600000) / 60000);
-
-    const timeStr = past
-      ? `${days}d ${hours}h ago`
-      : days > 0
-        ? `${days}d ${hours}h ${mins}m`
-        : `${hours}h ${mins}m`;
+    const timeStr = formatCountdownTime(diff);
 
     const delBtn = el("button", {
       type: "button",
       class: "icon-button icon-button--ghost icon-button--tiny",
-      "aria-label": "Remove countdown",
+      "aria-label": i18n("removeCountdown", null, "Remove countdown"),
       onClick: () => {
         const idx = events.indexOf(ev);
         if (idx > -1) events.splice(idx, 1);
@@ -157,13 +171,7 @@ export function renderCountdown(mount, settings, { onChange, onAttachDragHandle 
       const target  = new Date(ev.date + "T00:00:00").getTime();
       const diff    = target - Date.now();
       const past    = diff < 0;
-      const absDiff = Math.abs(diff);
-      const days    = Math.floor(absDiff / 86400000);
-      const hours   = Math.floor((absDiff % 86400000) / 3600000);
-      const mins    = Math.floor((absDiff % 3600000) / 60000);
-      el.textContent = past
-        ? `${days}d ${hours}h ago`
-        : days > 0 ? `${days}d ${hours}h ${mins}m` : `${hours}h ${mins}m`;
+      el.textContent = formatCountdownTime(diff);
     });
   }, 60000);
 

@@ -9,13 +9,14 @@ import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { saveSettings } from "../storage.js";
 import { playAmbient, stopAmbient, setVolume, isPlaying } from "../utils/ambient-audio.js";
+import { i18n } from "../utils/i18n.js";
 
 const SOUNDS = [
-  { value: "rain",  label: "Rain"        },
-  { value: "white", label: "White noise" },
-  { value: "pink",  label: "Pink noise"  },
-  { value: "brown", label: "Brown noise" },
-  { value: "cafe",  label: "Café murmur" }
+  { value: "rain",  label: "Rain",        key: "ambientSoundRain" },
+  { value: "white", label: "White noise", key: "ambientSoundWhiteNoise" },
+  { value: "pink",  label: "Pink noise",  key: "ambientSoundPinkNoise" },
+  { value: "brown", label: "Brown noise", key: "ambientSoundBrownNoise" },
+  { value: "cafe",  label: "Cafe murmur", key: "ambientSoundCafeMurmur" }
 ];
 
 let blurHandlerInstalled = false;
@@ -57,7 +58,7 @@ export function renderAmbient(mount, settings, { onAttachDragHandle, onChange } 
         await playAmbient(ambientSettingsRef.sound, ambientSettingsRef.volume);
         resumeUiCallback?.();
       } catch (err) {
-        toast(`Couldn't resume audio — ${err?.message?.toLowerCase() || "unknown error"}.`, "error");
+        toast(i18n("ambientResumeError", [err?.message?.toLowerCase() || i18n("unknownError", null, "unknown error")], "Couldn't resume audio - $1."), "error");
       }
     });
   }
@@ -66,7 +67,7 @@ export function renderAmbient(mount, settings, { onAttachDragHandle, onChange } 
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
       dragSpan,
-      el("h2", { class: "panel-header__title" }, [iconNode("play", { size: 14 }), " Ambient"])
+      el("h2", { class: "panel-header__title" }, [iconNode("play", { size: 14 }), ` ${i18n("ambientSounds")}`])
     ]),
     el("div", { class: "panel-header__right" })
   ]);
@@ -82,12 +83,12 @@ export function renderAmbient(mount, settings, { onAttachDragHandle, onChange } 
     playBtn.setAttribute("aria-pressed", String(nextPlaying));
     playBtn.replaceChildren(
       iconNode(nextPlaying ? "pause" : "play", { size: 14 }),
-      document.createTextNode(nextPlaying ? " Stop" : " Play")
+      document.createTextNode(` ${nextPlaying ? i18n("stop", null, "Stop") : i18n("play", null, "Play")}`)
     );
   };
 
-  const select = el("select", { class: "text-input ambient-sound-select", "aria-label": "Ambient sound" },
-    SOUNDS.map(s => el("option", { value: s.value, selected: cfg.sound === s.value }, [s.label]))
+  const select = el("select", { class: "text-input ambient-sound-select", "aria-label": i18n("ambientSoundAria", null, "Ambient sound") },
+    SOUNDS.map(s => el("option", { value: s.value, selected: cfg.sound === s.value }, [i18n(s.key, null, s.label)]))
   );
   select.addEventListener("change", async () => {
     cfg.sound = select.value;
@@ -102,7 +103,7 @@ export function renderAmbient(mount, settings, { onAttachDragHandle, onChange } 
     type: "range", min: "0", max: "100", step: "1",
     value: String(cfg.volume ?? 50),
     class: "ambient-volume-slider",
-    "aria-label": "Volume",
+    "aria-label": i18n("volume", null, "Volume"),
     onInput: (e) => {
       cfg.volume = parseInt(e.target.value, 10);
       setVolume(cfg.volume);
@@ -124,19 +125,19 @@ export function renderAmbient(mount, settings, { onAttachDragHandle, onChange } 
           await playAmbient(cfg.sound, cfg.volume);
           setButtonPlaying(true);
         } catch (err) {
-          toast(`Couldn't start audio — ${err?.message?.toLowerCase() || "unknown error"}.`, "error");
+          toast(i18n("ambientStartError", [err?.message?.toLowerCase() || i18n("unknownError", null, "unknown error")], "Couldn't start audio - $1."), "error");
         }
       }
     }
   }, [
     iconNode(playing ? "pause" : "play", { size: 14 }),
-    document.createTextNode(playing ? " Stop" : " Play")
+    document.createTextNode(` ${playing ? i18n("stop", null, "Stop") : i18n("play", null, "Play")}`)
   ]);
   resumeUiCallback = () => setButtonPlaying(true);
 
   body.appendChild(el("div", { class: "ambient-controls" }, [select, playBtn]));
   body.appendChild(el("div", { class: "ambient-volume-row" }, [
-    el("span", { class: "ambient-volume-label", "aria-hidden": "true" }, ["Vol"]),
+    el("span", { class: "ambient-volume-label", "aria-hidden": "true" }, [i18n("volumeShort", null, "Vol")]),
     volSlider
   ]));
 }

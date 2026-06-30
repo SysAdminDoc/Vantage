@@ -2,15 +2,16 @@
 
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
+import { i18n } from "../utils/i18n.js";
 
 const CATEGORIES = {
-  length:      { label: "Length",      units: ["mm","cm","m","km","in","ft","yd","mi"], base: "m", factors: { mm:0.001,cm:0.01,m:1,km:1000,in:0.0254,ft:0.3048,yd:0.9144,mi:1609.344 } },
-  weight:      { label: "Weight",      units: ["mg","g","kg","t","oz","lb"], base: "g", factors: { mg:0.001,g:1,kg:1000,t:1e6,oz:28.3495,lb:453.592 } },
-  temperature: { label: "Temperature", units: ["°C","°F","K"], base: null, factors: null },
-  area:        { label: "Area",        units: ["mm²","cm²","m²","km²","in²","ft²","ac","ha"], base: "m²", factors: { "mm²":1e-6,"cm²":0.0001,"m²":1,"km²":1e6,"in²":0.00064516,"ft²":0.092903,"ac":4046.86,"ha":10000 } },
-  volume:      { label: "Volume",      units: ["ml","L","m³","tsp","tbsp","fl oz","cup","pt","qt","gal"], base: "L", factors: { ml:0.001,L:1,"m³":1000,tsp:0.00492892,tbsp:0.0147868,"fl oz":0.0295735,cup:0.236588,pt:0.473176,qt:0.946353,gal:3.78541 } },
-  speed:       { label: "Speed",       units: ["m/s","km/h","mph","knot"], base: "m/s", factors: { "m/s":1,"km/h":1/3.6,"mph":0.44704,"knot":0.514444 } },
-  data:        { label: "Data",        units: ["B","KB","MB","GB","TB","PB"], base: "B", factors: { B:1,KB:1024,MB:1048576,GB:1073741824,TB:1099511627776,PB:1125899906842624 } },
+  length:      { label: "Length",      key: "converterCategoryLength", units: ["mm","cm","m","km","in","ft","yd","mi"], base: "m", factors: { mm:0.001,cm:0.01,m:1,km:1000,in:0.0254,ft:0.3048,yd:0.9144,mi:1609.344 } },
+  weight:      { label: "Weight",      key: "converterCategoryWeight", units: ["mg","g","kg","t","oz","lb"], base: "g", factors: { mg:0.001,g:1,kg:1000,t:1e6,oz:28.3495,lb:453.592 } },
+  temperature: { label: "Temperature", key: "converterCategoryTemperature", units: ["°C","°F","K"], base: null, factors: null },
+  area:        { label: "Area",        key: "converterCategoryArea", units: ["mm²","cm²","m²","km²","in²","ft²","ac","ha"], base: "m²", factors: { "mm²":1e-6,"cm²":0.0001,"m²":1,"km²":1e6,"in²":0.00064516,"ft²":0.092903,"ac":4046.86,"ha":10000 } },
+  volume:      { label: "Volume",      key: "converterCategoryVolume", units: ["ml","L","m³","tsp","tbsp","fl oz","cup","pt","qt","gal"], base: "L", factors: { ml:0.001,L:1,"m³":1000,tsp:0.00492892,tbsp:0.0147868,"fl oz":0.0295735,cup:0.236588,pt:0.473176,qt:0.946353,gal:3.78541 } },
+  speed:       { label: "Speed",       key: "converterCategorySpeed", units: ["m/s","km/h","mph","knot"], base: "m/s", factors: { "m/s":1,"km/h":1/3.6,"mph":0.44704,"knot":0.514444 } },
+  data:        { label: "Data",        key: "converterCategoryData", units: ["B","KB","MB","GB","TB","PB"], base: "B", factors: { B:1,KB:1024,MB:1048576,GB:1073741824,TB:1099511627776,PB:1125899906842624 } },
 };
 
 function convert(cat, value, fromUnit, toUnit) {
@@ -48,7 +49,7 @@ export function renderConverter(mount, settings, { onAttachDragHandle } = {}) {
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
       el("span", { class: "panel-header__drag", "aria-hidden": "true", innerHTML: iconString("grip", 14) }),
-      el("h2", { class: "panel-header__title" }, [iconNode("calculator", { size: 14 }), " Converter"])
+      el("h2", { class: "panel-header__title" }, [iconNode("calculator", { size: 14 }), ` ${i18n("unitConverter")}`])
     ]),
     el("div", { class: "panel-header__right" })
   ]);
@@ -65,7 +66,7 @@ export function renderConverter(mount, settings, { onAttachDragHandle } = {}) {
         rebuildInputs();
         updateActive();
       }
-    }, [meta.label]));
+    }, [i18n(meta.key, null, meta.label)]));
   }
 
   function updateActive() {
@@ -77,7 +78,7 @@ export function renderConverter(mount, settings, { onAttachDragHandle } = {}) {
   const inputArea = el("div", { class: "converter-inputs" });
 
   function buildUnitSelect(current, onChange) {
-    const sel = el("select", { class: "text-input converter-unit-sel", "aria-label": "Unit", onChange: (e) => onChange(e.target.value) });
+    const sel = el("select", { class: "text-input converter-unit-sel", "aria-label": i18n("unit", null, "Unit"), onChange: (e) => onChange(e.target.value) });
     for (const u of CATEGORIES[activeCat].units) {
       const opt = el("option", { value: u }, [u]);
       if (u === current) opt.selected = true;
@@ -98,7 +99,7 @@ export function renderConverter(mount, settings, { onAttachDragHandle } = {}) {
       type: "number",
       class: "text-input converter-val",
       value: fromVal,
-      "aria-label": "From value",
+      "aria-label": i18n("converterFromValue", null, "From value"),
       onInput: (e) => { fromVal = e.target.value; updateResult(); }
     });
 
@@ -106,7 +107,7 @@ export function renderConverter(mount, settings, { onAttachDragHandle } = {}) {
       type: "text",
       class: "text-input converter-val converter-val--result",
       readonly: "true",
-      "aria-label": "Result",
+      "aria-label": i18n("result", null, "Result"),
       "aria-readonly": "true"
     });
     toInput.value = convert(activeCat, parseFloat(fromVal), fromUnit, toUnit);
@@ -114,7 +115,7 @@ export function renderConverter(mount, settings, { onAttachDragHandle } = {}) {
     const swapBtn = el("button", {
       type: "button",
       class: "icon-button icon-button--ghost converter-swap",
-      "aria-label": "Swap units",
+      "aria-label": i18n("swapUnits", null, "Swap units"),
       onClick: () => {
         [fromUnit, toUnit] = [toUnit, fromUnit];
         fromVal = toInput.value;

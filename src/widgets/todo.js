@@ -2,6 +2,7 @@
 
 import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
+import { i18n } from "../utils/i18n.js";
 
 const TODO_PERSIST_DEBOUNCE_MS = 300;
 
@@ -39,8 +40,8 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
   const clearBtn = el("button", {
     type: "button",
     class: "icon-button icon-button--ghost icon-button--small",
-    title: "Clear completed",
-    "aria-label": "Clear completed tasks",
+    title: i18n("clearCompleted", null, "Clear completed"),
+    "aria-label": i18n("clearCompletedTasks", null, "Clear completed tasks"),
     disabled: completedCount === 0,
     onClick: () => {
       const removed = items
@@ -50,8 +51,8 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
       items = items.filter(i => !i.done);
       persist();
       renderTodo(mount, nextSettings(), { onChange, onAttachDragHandle });
-      toast(`Cleared ${removed.length} completed task${removed.length === 1 ? "" : "s"}.`, "warning", 6500, {
-        label: "Undo",
+      toast(i18n("todoClearedCompleted", [removed.length], "Cleared $1 completed task(s)."), "warning", 6500, {
+        label: i18n("undo", null, "Undo"),
         onClick: () => {
           const restored = [...items];
           for (const { item, index } of removed) {
@@ -70,7 +71,7 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
       el("span", { class: "panel-header__drag", "aria-hidden": "true", innerHTML: iconString("grip", 14) }),
       el("h2", { class: "panel-header__title" }, [
         iconNode("check-square", { size: 14 }),
-        " To-Do",
+        ` ${i18n("todoList")}`,
         ...(badge ? [" ", badge] : [])
       ])
     ]),
@@ -82,8 +83,8 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
   const input = el("input", {
     type: "text",
     class: "todo-input",
-    placeholder: "Add a task…",
-    "aria-label": "New task",
+    placeholder: i18n("todoAddPlaceholder", null, "Add a task..."),
+    "aria-label": i18n("newTask", null, "New task"),
     maxlength: "200",
     onInput: (e) => { inputVal = e.target.value; },
     onKeydown: (e) => {
@@ -105,7 +106,7 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
     el("button", {
       type: "button",
       class: "icon-button icon-button--accent icon-button--small",
-      "aria-label": "Add task",
+      "aria-label": i18n("addTask", null, "Add task"),
       onClick: addTask
     }, [iconNode("plus", { size: 14 })])
   ]);
@@ -121,7 +122,7 @@ export function renderTodo(mount, settings, { onChange, onAttachDragHandle } = {
   }
 
   if (visible.length === 0) {
-    listEl.appendChild(el("li", { class: "panel-empty" }, ["No tasks yet — add one above."]));
+    listEl.appendChild(el("li", { class: "panel-empty" }, [i18n("todoEmpty", null, "No tasks yet - add one above.")]));
   }
 
   const body = el("div", { class: "panel-body todo-body" }, [addRow, listEl]);
@@ -140,7 +141,7 @@ function buildTaskRow(item, items, cfg, settings, onChange, onAttachDragHandle, 
     type: "button",
     class: `todo-check${item.done ? " todo-check--done" : ""}`,
     "aria-pressed": String(item.done),
-    "aria-label": item.done ? "Mark incomplete" : "Mark complete",
+    "aria-label": item.done ? i18n("markIncomplete", null, "Mark incomplete") : i18n("markComplete", null, "Mark complete"),
     innerHTML: iconString(item.done ? "check-square" : "square", 16),
     onClick: () => {
       item.done = !item.done;
@@ -155,15 +156,15 @@ function buildTaskRow(item, items, cfg, settings, onChange, onAttachDragHandle, 
   const del = el("button", {
     type: "button",
     class: "icon-button icon-button--ghost icon-button--tiny todo-delete",
-    "aria-label": "Delete task",
+    "aria-label": i18n("deleteTask", null, "Delete task"),
     onClick: () => {
       const idx = items.indexOf(item);
       if (idx > -1) items.splice(idx, 1);
       const next = { ...settings, todo: { ...cfg, items } };
       commitTodoChange(mount, next, onChange);
       renderTodo(mount, next, { onChange, onAttachDragHandle });
-      toast("Task deleted.", "warning", 6500, {
-        label: "Undo",
+      toast(i18n("taskDeleted", null, "Task deleted."), "warning", 6500, {
+        label: i18n("undo", null, "Undo"),
         onClick: () => {
           const restored = [...items];
           restored.splice(Math.max(0, idx), 0, item);

@@ -2,6 +2,7 @@
 
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
+import { i18n } from "../utils/i18n.js";
 
 export const WINDY_OVERLAYS = [
   { value: "wind",             label: "Wind" },
@@ -43,13 +44,13 @@ export function renderWindy(mount, settings, { onAttachDragHandle } = {}) {
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
       el("span", { class: "panel-header__drag", "aria-hidden": "true", innerHTML: iconString("grip", 14) }),
-      el("h2", { class: "panel-header__title" }, [iconNode("wind", { size: 14 }), " Radar"])
+      el("h2", { class: "panel-header__title" }, [iconNode("wind", { size: 14 }), ` ${i18n("settingsRadar", null, "Radar")}`])
     ]),
     el("div", { class: "panel-header__right" }, [
       el("button", {
         type: "button",
         class: "icon-button icon-button--ghost icon-button--small",
-        "aria-label": "Reload radar", title: "Reload",
+        "aria-label": i18n("reloadRadar", null, "Reload radar"), title: i18n("reload", null, "Reload"),
         onClick: () => renderWindy(mount, settings, { onAttachDragHandle })
       }, [iconNode("refresh", { size: 14 })])
     ])
@@ -59,14 +60,14 @@ export function renderWindy(mount, settings, { onAttachDragHandle } = {}) {
 
   if (!location) {
     body.appendChild(el("p", { class: "panel-empty" }, [
-      "Set a city in Settings \u2192 Weather to center the radar."
+      i18n("radarNoLocationHint", null, "Set a city in Settings -> Weather to center the radar.")
     ]));
   } else {
     const iframe = el("iframe", {
       src: buildSrc(cfg, location),
       class: "map-iframe",
       allowfullscreen: "true",
-      "aria-label": "Windy weather radar"
+      "aria-label": i18n("windyWeatherRadar", null, "Windy weather radar")
     });
     iframe.setAttribute("loading", "lazy");
     body.appendChild(iframe);

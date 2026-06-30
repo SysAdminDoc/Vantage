@@ -5,6 +5,7 @@ import { el, clear } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
 import { SEARCH_ENGINES, buildSearchUrl } from "../search-engines.js";
 import { registerOverlay } from "../utils/overlay-stack.js";
+import { i18n } from "../utils/i18n.js";
 
 // The stock customUrl shipped in storage.js DEFAULTS — using it as a real
 // destination is almost certainly accidental. Treat it as "not configured".
@@ -17,17 +18,17 @@ const CUSTOM_URL_SENTINEL = "https://example.com/search?q=%s";
 function placeholderFor(engineKey, customUrl) {
   if (engineKey === "custom") {
     if (!customUrl || customUrl === CUSTOM_URL_SENTINEL || !customUrl.includes("%s")) {
-      return "Set a custom search URL in settings";
+      return i18n("setCustomSearchUrlPlaceholder", null, "Set a custom search URL in settings");
     }
     try {
       const host = new URL(customUrl).hostname.replace(/^www\./, "");
-      if (host && host !== "example.com") return `Search ${host}`;
+      if (host && host !== "example.com") return i18n("searchNamed", [host], "Search $1");
     } catch { /* malformed customUrl — fall through */ }
-    return "Search the web";
+    return i18n("searchTheWeb", null, "Search the web");
   }
   const engine = SEARCH_ENGINES[engineKey];
-  if (!engine) return "Search the web";
-  return `Search ${engine.name}`;
+  if (!engine) return i18n("searchTheWeb", null, "Search the web");
+  return i18n("searchNamed", [engine.name], "Search $1");
 }
 
 export function renderSearch(mount, settings, onChange) {
@@ -38,7 +39,7 @@ export function renderSearch(mount, settings, onChange) {
     type: "search",
     name: "q",
     placeholder: placeholderFor(settings.search.engine, settings.search.customUrl),
-    "aria-label": "Search query",
+    "aria-label": i18n("searchQuery", null, "Search query"),
     autocomplete: "off",
     autocapitalize: "none",
     autocorrect: "off",
@@ -48,7 +49,7 @@ export function renderSearch(mount, settings, onChange) {
   const submit = el("button", {
     type: "submit",
     class: "search-submit",
-    "aria-label": "Run search"
+    "aria-label": i18n("runSearch", null, "Run search")
   }, [iconNode("arrow-right", { size: 18 })]);
 
   const kbd = el("kbd", { class: "search-kbd", "aria-hidden": "true" }, ["/"]);
@@ -115,10 +116,10 @@ function openQuickPick(form, query, settings) {
   const popover = el("div", {
     class: "quickpick",
     role: "dialog",
-    "aria-label": "Search this query with"
+    "aria-label": i18n("searchThisQueryWith", null, "Search this query with")
   });
 
-  popover.appendChild(el("div", { class: "quickpick__title" }, [`Search "${query}" with…`]));
+  popover.appendChild(el("div", { class: "quickpick__title" }, [i18n("searchQueryWith", [query], "Search \"$1\" with...")]));
 
   const list = el("div", { class: "quickpick__list", role: "listbox" });
   const items = [];
@@ -156,7 +157,7 @@ function openQuickPick(form, query, settings) {
     list.appendChild(btn);
   }
   popover.appendChild(list);
-  popover.appendChild(el("div", { class: "quickpick__hint" }, ["Esc to cancel · default engine unchanged"]));
+  popover.appendChild(el("div", { class: "quickpick__hint" }, [i18n("quickpickHint", null, "Cancel to keep the default engine unchanged")]));
 
   form.appendChild(popover);
 
@@ -194,7 +195,7 @@ function buildEnginePicker(settings, onChange, refocusInput, onEngineChange) {
     class: "engine-picker__trigger",
     "aria-haspopup": "listbox",
     "aria-expanded": "false",
-    "aria-label": "Choose search engine"
+    "aria-label": i18n("chooseSearchEngine", null, "Choose search engine")
   });
 
   const popover = el("div", {

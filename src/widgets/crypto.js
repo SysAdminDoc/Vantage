@@ -6,6 +6,7 @@
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { relativeTime } from "../utils/dom.js";
+import { i18n } from "../utils/i18n.js";
 
 const COIN_META = {
   bitcoin:   { symbol: "BTC", name: "Bitcoin" },
@@ -42,7 +43,7 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
       el("span", { class: "panel-header__drag", "aria-hidden": "true", innerHTML: iconString("grip", 14) }),
-      el("h2", { class: "panel-header__title" }, [iconNode("trending-up", { size: 14 }), " Crypto"])
+      el("h2", { class: "panel-header__title" }, [iconNode("trending-up", { size: 14 }), ` ${i18n("cryptoPrices")}`])
     ]),
     el("div", { class: "panel-header__right" })
   ]);
@@ -74,7 +75,7 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
     } catch (err) {
       body.innerHTML = "";
       body.appendChild(el("div", { class: "panel-error" }, [
-        `Couldn't load prices — ${err.message.toLowerCase()}.`
+        i18n("cryptoLoadError", [err.message.toLowerCase()], "Couldn't load prices - $1.")
       ]));
     }
   }
@@ -83,23 +84,23 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
     body.innerHTML = "";
     const isAuthError = status === 401;
     const reason = isAuthError
-      ? "CoinGecko rejected the request — your API key may be invalid or missing."
-      : "CoinGecko rate-limited this request — try again later.";
+      ? i18n("coingeckoRejected", null, "CoinGecko rejected the request - your API key may be invalid or missing.")
+      : i18n("coingeckoRateLimited", null, "CoinGecko rate-limited this request - try again later.");
     const hint = isAuthError
       ? [
-          "Set up a free CoinGecko demo API key (no credit card) at ",
+          i18n("coingeckoSetupKeyPrefix", null, "Set up a free CoinGecko demo API key (no credit card) at "),
           el("a", {
             href: COINGECKO_DASHBOARD,
             target: "_blank",
             rel: "noopener noreferrer",
             class: "crypto-empty__link"
           }, ["coingecko.com/en/api"]),
-          ", then paste it into Settings → Crypto."
+          i18n("coingeckoSetupKeySuffix", null, ", then paste it into Settings -> Crypto.")
         ]
       : apiKey
-        ? ["Your configured API key hit a rate limit. Wait a few minutes, then refresh the panel."]
+        ? [i18n("coingeckoConfiguredKeyRateLimit", null, "Your configured API key hit a rate limit. Wait a few minutes, then refresh the panel.")]
         : [
-            "Keyless requests are rate-limited aggressively. Wait a few minutes, or add a free demo API key in Settings → Crypto for more quota."
+            i18n("coingeckoKeylessRateLimit", null, "Keyless requests are rate-limited aggressively. Wait a few minutes, or add a free demo API key in Settings -> Crypto for more quota.")
           ];
     body.appendChild(el("div", { class: "panel-empty crypto-empty--keyprompt" }, [
       el("div", { class: "crypto-empty__inner" }, [
@@ -143,11 +144,11 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
     if (rendered === 0) {
       body.appendChild(el("div", { class: "panel-empty" }, [
         el("div", { class: "crypto-empty__inner" }, [
-          el("p", { class: "crypto-empty__lead" }, ["No prices returned for the configured coins."]),
+          el("p", { class: "crypto-empty__lead" }, [i18n("cryptoNoPrices", null, "No prices returned for the configured coins.")]),
           el("p", { class: "crypto-empty__hint" }, [
-            "Check the coin IDs in Settings → Crypto. CoinGecko expects lowercase IDs (e.g. ",
+            i18n("cryptoNoPricesHintPrefix", null, "Check the coin IDs in Settings -> Crypto. CoinGecko expects lowercase IDs (e.g. "),
             el("code", {}, ["bitcoin"]), ", ", el("code", {}, ["ethereum"]),
-            "), and some IDs change when projects rebrand."
+            i18n("cryptoNoPricesHintSuffix", null, "), and some IDs change when projects rebrand.")
           ])
         ])
       ]));
@@ -155,11 +156,11 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
     }
 
     const footer = el("div", { class: "crypto-footer" }, [
-      el("span", { class: "crypto-updated" }, [`Updated ${relativeTime(lastFetch)}`]),
+      el("span", { class: "crypto-updated" }, [i18n("updatedRelative", [relativeTime(lastFetch)], "Updated $1")]),
       el("button", {
         type: "button",
         class: "icon-button icon-button--ghost icon-button--tiny",
-        "aria-label": "Refresh",
+        "aria-label": i18n("refresh", null, "Refresh"),
         onClick: load
       }, [iconNode("refresh", { size: 12 })])
     ]);

@@ -3,6 +3,7 @@
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { normalizeWebUrl } from "../utils/url-safety.js";
+import { i18n } from "../utils/i18n.js";
 
 /**
  * @param {HTMLElement} mount
@@ -17,7 +18,7 @@ export function renderEmbed(mount, embedCfg, { onAttachDragHandle } = {}) {
   }
   mount.style.display = "";
 
-  const title = embedCfg.title || "Embed";
+  const title = embedCfg.title || i18n("embed", null, "Embed");
   const url   = normalizeWebUrl(embedCfg.url);
 
   const header = el("div", { class: "panel-header" }, [
@@ -30,7 +31,7 @@ export function renderEmbed(mount, embedCfg, { onAttachDragHandle } = {}) {
         ? el("a", {
             href: url, target: "_blank", rel: "noopener noreferrer",
             class: "icon-button icon-button--ghost icon-button--small",
-            "aria-label": `Open ${title} in new tab`, title: "Open in new tab"
+            "aria-label": i18n("openInNewTabAria", [title], "Open $1 in new tab"), title: i18n("openInNewTab", null, "Open in new tab")
           }, [iconNode("external", { size: 14 })])
         : null
     ].filter(Boolean))
@@ -40,7 +41,7 @@ export function renderEmbed(mount, embedCfg, { onAttachDragHandle } = {}) {
 
   if (!url) {
     body.appendChild(el("p", { class: "panel-empty" }, [
-      "Add a valid web URL in Settings \u2192 Embeds."
+      i18n("embedEmptyHint", null, "Add a valid web URL in Settings -> Embeds.")
     ]));
   } else {
     const sandbox = embedCfg.sandbox !== false
@@ -61,11 +62,11 @@ export function renderEmbed(mount, embedCfg, { onAttachDragHandle } = {}) {
     iframe.addEventListener("error", () => {
       body.innerHTML = "";
       body.appendChild(el("div", { class: "panel-empty embed-blocked" }, [
-        el("p", {}, ["This site blocked embedding."]),
+        el("p", {}, [i18n("embedBlocked", null, "This site blocked embedding.")]),
         el("a", {
           href: url, target: "_blank", rel: "noopener noreferrer",
           class: "button button--ghost"
-        }, [iconNode("external", { size: 14 }), " Open in new tab"])
+        }, [iconNode("external", { size: 14 }), ` ${i18n("openInNewTab", null, "Open in new tab")}`])
       ]));
     });
     body.appendChild(iframe);

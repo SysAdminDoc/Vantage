@@ -53,9 +53,9 @@ export async function renderBookmarks(mount, settings, { onAttachDragHandle } = 
       }, [
         el("img", { src: "", class: "bookmark-favicon", width: "16", height: "16", "aria-hidden": "true",
           onError: (e) => { e.target.style.display = "none"; } }),
-        el("span", { class: "bookmark-title" }, [bm.title || "Untitled"])
+        el("span", { class: "bookmark-title" }, [bm.title || i18n("untitled", null, "Untitled")])
       ]);
-      
+
       // Populate favicon asynchronously using cache
       const imgEl = item.querySelector("img");
       getFaviconUrl(bm.url).then(dataUrl => {
@@ -67,7 +67,7 @@ export async function renderBookmarks(mount, settings, { onAttachDragHandle } = 
       }).catch(() => {
         imgEl.style.display = "none";
       });
-      
+
       grid.appendChild(item);
     }
     body.appendChild(grid);

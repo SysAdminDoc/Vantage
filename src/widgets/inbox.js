@@ -11,9 +11,10 @@ import { saveSettings } from "../storage.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
 import { ext } from "../utils/ext.js";
 import { findDuplicateUrls, findForgotten, checkBrokenLinks } from "../utils/inbox-hygiene.js";
+import { i18n } from "../utils/i18n.js";
 
 const toastUndo = (message, onUndo) =>
-  toast(message, "warning", 6500, { label: "Undo", onClick: onUndo });
+  toast(message, "warning", 6500, { label: i18n("undo", null, "Undo"), onClick: onUndo });
 
 export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = {}) {
   clear(mount);
@@ -49,7 +50,7 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
 
     const addItem = async (url, title) => {
       if ((cfg.items || []).some(i => i.url === url)) {
-        toast("Already in your inbox.", "info");
+        toast(i18n("inboxAlreadySaved", null, "Already in your inbox."), "info");
         return;
       }
       if (!cfg.items) cfg.items = [];
@@ -63,19 +64,19 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
       if (cfg.items.length > maxItems) cfg.items = cfg.items.slice(0, maxItems);
       await persist();
       draw();
-      toast("Saved to inbox.", "success");
+      toast(i18n("inboxSaved", null, "Saved to inbox."), "success");
     };
 
     const saveTabBtn = el("button", {
       type: "button",
       class: "icon-button icon-button--ghost icon-button--small",
-      "aria-label": "Save previous tab",
-      title: "Save the tab you were viewing",
+      "aria-label": i18n("inboxSavePreviousTab", null, "Save previous tab"),
+      title: i18n("inboxSavePreviousTabTitle", null, "Save the tab you were viewing"),
       onClick: async () => {
         saveTabBtn.disabled = true;
         try {
           if (!ext?.runtime?.sendMessage) {
-            toast("Tab capture is unavailable.", "error");
+            toast(i18n("inboxTabCaptureUnavailable", null, "Tab capture is unavailable."), "error");
             return;
           }
           // Ensure we have the tabs permission so the service worker
@@ -85,19 +86,19 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
             if (!has) {
               const granted = await ext.permissions.request({ permissions: ["tabs"] }).catch(() => false);
               if (!granted) {
-                toast("Tab permission denied — use Add URL instead.", "warning");
+                toast(i18n("inboxTabPermissionDenied", null, "Tab permission denied - use Add URL instead."), "warning");
                 return;
               }
             }
           }
           const resp = await ext.runtime.sendMessage({ type: "vantage:get-capture-tab" });
           if (!resp?.tab?.url) {
-            toast("No saveable tab found in this window.", "warning");
+            toast(i18n("inboxNoSaveableTab", null, "No saveable tab found in this window."), "warning");
             return;
           }
           await addItem(resp.tab.url, resp.tab.title);
         } catch (err) {
-          toast("Couldn't save tab.", "error");
+          toast(i18n("inboxSaveTabError", null, "Couldn't save tab."), "error");
         } finally {
           saveTabBtn.disabled = false;
         }
@@ -107,16 +108,16 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
     const addUrlBtn = el("button", {
       type: "button",
       class: "icon-button icon-button--ghost icon-button--small",
-      "aria-label": "Add URL to inbox",
-      title: "Add a URL manually",
+      "aria-label": i18n("inboxAddUrlAria", null, "Add URL to inbox"),
+      title: i18n("inboxAddUrlTitle", null, "Add a URL manually"),
       onClick: () => {
         const existing = mount.querySelector(".inbox-url-form");
         if (existing) { existing.remove(); return; }
         const urlInput = el("input", {
           type: "url",
           class: "text-input inbox-url-input",
-          placeholder: "https://example.com/article",
-          "aria-label": "URL to save"
+          placeholder: i18n("inboxUrlPlaceholder", null, "https://example.com/article"),
+          "aria-label": i18n("inboxUrlToSave", null, "URL to save")
         });
         const submitBtn = el("button", {
           type: "submit",
@@ -126,12 +127,12 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
             const raw = urlInput.value.trim();
             if (!raw) return;
             try { new URL(raw); } catch {
-              toast("Enter a valid URL.", "warning");
+              toast(i18n("enterValidUrl", null, "Enter a valid URL."), "warning");
               return;
             }
             await addItem(raw, "");
           }
-        }, ["Save"]);
+        }, [i18n("save", null, "Save")]);
         const form = el("div", { class: "inbox-url-form" }, [urlInput, submitBtn]);
         body.insertBefore(form, body.firstChild);
         urlInput.focus();
@@ -141,8 +142,8 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
     const hygieneBtn = el("button", {
       type: "button",
       class: "icon-button icon-button--ghost icon-button--small",
-      "aria-label": "Inbox hygiene tools",
-      title: "Find duplicates, forgotten items, or broken links",
+      "aria-label": i18n("inboxHygieneTools", null, "Inbox hygiene tools"),
+      title: i18n("inboxHygieneToolsTitle", null, "Find duplicates, forgotten items, or broken links"),
       onClick: () => {
         const existing = mount.querySelector(".inbox-hygiene-menu");
         if (existing) { existing.remove(); return; }
@@ -154,9 +155,9 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
               menu.remove();
               const items = cfg.items || [];
               const dupes = findDuplicateUrls(items);
-              if (!dupes.length) { toast("No duplicate URLs found.", "success"); return; }
+              if (!dupes.length) { toast(i18n("inboxNoDuplicateUrls", null, "No duplicate URLs found."), "success"); return; }
               const total = dupes.reduce((s, g) => s + g.length - 1, 0);
-              toast(`${total} duplicate${total === 1 ? "" : "s"} across ${dupes.length} URL${dupes.length === 1 ? "" : "s"}. Keeping newest, removing older copies.`, "info");
+              toast(i18n("inboxDuplicatesRemoved", [total, dupes.length], "$1 duplicate(s) across $2 URL(s). Keeping newest, removing older copies."), "info");
               const keep = new Set();
               for (const group of dupes) {
                 group.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
@@ -168,14 +169,14 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
               });
               persist().then(draw);
             }
-          }, ["Find duplicates"]),
+          }, [i18n("findDuplicates", null, "Find duplicates")]),
           el("button", {
             type: "button", class: "button button--ghost button--small",
             onClick: () => {
               menu.remove();
               const forgotten = findForgotten(cfg.items || [], 30);
-              if (!forgotten.length) { toast("No items older than 30 days.", "success"); return; }
-              toast(`${forgotten.length} item${forgotten.length === 1 ? "" : "s"} saved more than 30 days ago.`, "info");
+              if (!forgotten.length) { toast(i18n("inboxNoOldItems", null, "No items older than 30 days."), "success"); return; }
+              toast(i18n("inboxForgottenCount", [forgotten.length], "$1 item(s) saved more than 30 days ago."), "info");
               searchQuery = "";
               const host = mount.querySelector(".inbox-list-host");
               if (host) {
@@ -194,26 +195,26 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
                 host.appendChild(list);
               }
             }
-          }, ["Forgotten (30d+)"]),
+          }, [i18n("forgotten30d", null, "Forgotten (30d+)")]),
           el("button", {
             type: "button", class: "button button--ghost button--small",
             onClick: async () => {
               menu.remove();
               const urls = (cfg.items || []).map(i => i.url).filter(Boolean);
-              if (!urls.length) { toast("No items to check.", "info"); return; }
-              toast(`Checking ${urls.length} link${urls.length === 1 ? "" : "s"} — this sends HEAD requests to each URL.`, "info");
+              if (!urls.length) { toast(i18n("inboxNoItemsToCheck", null, "No items to check."), "info"); return; }
+              toast(i18n("inboxCheckingLinks", [urls.length], "Checking $1 link(s) - this sends HEAD requests to each URL."), "info");
               const ctrl = new AbortController();
               const results = await checkBrokenLinks(urls, {
                 signal: ctrl.signal,
                 onProgress: (done, total) => {
-                  if (done === total) toast(`Link check complete.`, "success");
+                  if (done === total) toast(i18n("inboxLinkCheckComplete", null, "Link check complete."), "success");
                 }
               });
               const broken = results.filter(r => !r.ok);
-              if (!broken.length) { toast("All links are reachable.", "success"); return; }
-              toast(`${broken.length} link${broken.length === 1 ? "" : "s"} may be broken.`, "warning");
+              if (!broken.length) { toast(i18n("inboxAllLinksReachable", null, "All links are reachable."), "success"); return; }
+              toast(i18n("inboxBrokenLinks", [broken.length], "$1 link(s) may be broken."), "warning");
             }
-          }, ["Check links"])
+          }, [i18n("checkLinks", null, "Check links")])
         ]);
         body.insertBefore(menu, body.firstChild);
       }
@@ -222,15 +223,15 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
     const clearBtn = el("button", {
       type: "button",
       class: "icon-button icon-button--ghost icon-button--small",
-      "aria-label": "Clear all inbox items",
-      title: "Clear all",
+      "aria-label": i18n("clearAllInboxItems", null, "Clear all inbox items"),
+      title: i18n("clearAll", null, "Clear all"),
       onClick: async () => {
         if (!cfg.items?.length) return;
         const removed = cfg.items.slice();
         cfg.items = [];
         await persist();
         draw();
-        toastUndo(`Cleared ${removed.length} inbox item${removed.length === 1 ? "" : "s"}.`, async () => {
+        toastUndo(i18n("inboxClearedItems", [removed.length], "Cleared $1 inbox item(s)."), async () => {
           cfg.items = removed;
           await persist();
           draw();
@@ -243,7 +244,7 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
         dragSpan,
         el("h2", { class: "panel-header__title" }, [
           iconNode("bookmark", { size: 14 }),
-          " Inbox",
+          ` ${i18n("inbox")}`,
           ...(badge ? [" ", badge] : [])
         ])
       ]),
@@ -260,8 +261,8 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
     const searchInput = el("input", {
       type: "search",
       class: "text-input inbox-search",
-      placeholder: "Filter inbox…",
-      "aria-label": "Filter inbox items",
+      placeholder: i18n("filterInboxPlaceholder", null, "Filter inbox..."),
+      "aria-label": i18n("filterInboxItems", null, "Filter inbox items"),
       value: searchQuery,
       onInput: (e) => {
         clearTimeout(searchTimer);
@@ -290,8 +291,8 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
       if (!filtered.length) {
         listHost.appendChild(el("p", { class: "panel-empty" }, [
           items.length === 0
-            ? "Your inbox is empty. Save tabs here for later."
-            : "No items match your filter."
+            ? i18n("inboxEmpty", null, "Your inbox is empty. Save tabs here for later.")
+            : i18n("inboxNoFilterMatches", null, "No items match your filter.")
         ]));
         return;
       }
@@ -332,8 +333,8 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
         const archiveBtn = el("button", {
           type: "button",
           class: "feed-item__action inbox-action inbox-action--archive",
-          "aria-label": "Archive",
-          title: "Archive",
+          "aria-label": i18n("archive", null, "Archive"),
+          title: i18n("archive", null, "Archive"),
           onClick: async (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -344,7 +345,7 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
             cfg.archived.unshift(entry);
             await persist();
             draw();
-            toastUndo(`Archived "${(entry.title || hostnameLabel(entry.url)).slice(0, 60)}".`, async () => {
+            toastUndo(i18n("inboxArchivedItem", [(entry.title || hostnameLabel(entry.url)).slice(0, 60)], "Archived \"$1\"."), async () => {
               const ai = cfg.archived.indexOf(entry);
               if (ai > -1) cfg.archived.splice(ai, 1);
               if (!cfg.items) cfg.items = [];
@@ -359,8 +360,8 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
         const deleteBtn = el("button", {
           type: "button",
           class: "feed-item__action inbox-action inbox-action--delete",
-          "aria-label": "Delete",
-          title: "Delete",
+          "aria-label": i18n("delete", null, "Delete"),
+          title: i18n("delete", null, "Delete"),
           onClick: async (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -369,7 +370,7 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
             if (idx > -1) cfg.items.splice(idx, 1);
             await persist();
             draw();
-            toastUndo(`Deleted "${(entry.title || hostnameLabel(entry.url)).slice(0, 60)}".`, async () => {
+            toastUndo(i18n("inboxDeletedItem", [(entry.title || hostnameLabel(entry.url)).slice(0, 60)], "Deleted \"$1\"."), async () => {
               if (!cfg.items) cfg.items = [];
               cfg.items.splice(Math.max(0, idx), 0, entry);
               await persist();

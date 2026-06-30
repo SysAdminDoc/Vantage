@@ -8,6 +8,7 @@ import { getFaviconUrl } from "../utils/favicon-cache.js";
 import { SUPPORTS_TAB_GROUPS, activateTabGroup, getColorClass } from "../utils/tab-groups.js";
 import { registerOverlay } from "../utils/overlay-stack.js";
 import { normalizeWebUrl } from "../utils/url-safety.js";
+import { i18n } from "../utils/i18n.js";
 
 export function renderQuickLinks(mount, settings, { onChange } = {}) {
   clear(mount);
@@ -51,8 +52,8 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
       const btn = el("button", {
         type: "button",
         class: `quicklink quicklink--tab-group ${getColorClass(item.groupColor)}`,
-        title: `Activate: ${item.title}\nDrag to reorder`,
-        "aria-label": `Tab Group: ${item.title}`,
+        title: i18n("activateDragToReorder", [item.title], "Activate: $1\nDrag to reorder"),
+        "aria-label": i18n("tabGroupAria", [item.title], "Tab Group: $1"),
         onClick: (e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -64,7 +65,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
         ]),
         el("span", { class: "quicklink__label" }, [item.title])
       ]);
-      
+
       if (item.cellOverride && typeof cols === "number") {
         const { row, col } = item.cellOverride;
         if (typeof row === "number" && typeof col === "number") {
@@ -72,7 +73,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
           btn.style.gridColumn = String(col + 1);
         }
       }
-      
+
       btn.addEventListener("dragstart", () => btn.classList.add("quicklink--dragging-self"));
       renderedItems.push({ sourceIndex, node: btn });
       pills.push(btn);
@@ -82,7 +83,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
     const safeUrl = normalizeWebUrl(item.url);
     if (!safeUrl) return;
     const title = item.title || item.label || hostnameLabel(safeUrl);
-    
+
     // Regular URL item
     const fallbackGlyph = (title || "?").trim().slice(0, 1).toUpperCase() || "?";
     const fallbackIcon = el("span", {
@@ -93,8 +94,8 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
     const link = el("a", {
       class: "quicklink",
       href: safeUrl,
-      title: `${title} — ${hostnameLabel(safeUrl)}\nDrag to reorder`,
-      "aria-label": `${title} (${hostnameLabel(safeUrl)})`
+      title: i18n("quicklinkTitleWithHost", [title, hostnameLabel(safeUrl)], "$1 - $2\nDrag to reorder"),
+      "aria-label": i18n("quicklinkAriaWithHost", [title, hostnameLabel(safeUrl)], "$1 ($2)")
     }, [
       el("img", {
         class: "quicklink__favicon",
@@ -111,7 +112,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
       fallbackIcon,
       el("span", { class: "quicklink__label" }, [title])
     ]);
-    
+
     // Manual cell placement override (v1.1.0+): if cellOverride is set,
     // use explicit grid positioning (row/col) instead of flex-wrap.
     // Requires itemsPerRow to be a number (not "auto").
@@ -123,7 +124,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
         link.style.gridColumn = String(col + 1);
       }
     }
-    
+
     // Populate favicon asynchronously (cache hit = instant, miss = fallback)
     const imgEl = link.querySelector("img");
     getFaviconUrl(safeUrl).then(dataUrl => {
@@ -140,7 +141,7 @@ export function renderQuickLinks(mount, settings, { onChange } = {}) {
       imgEl.hidden = true;
       fallbackIcon.hidden = false;
     });
-    
+
     link.addEventListener("dragstart", () => link.classList.add("quicklink--dragging-self"));
     renderedItems.push({ sourceIndex, node: link });
     pills.push(link);
@@ -227,7 +228,7 @@ function buildGroupButton(group, mount) {
       class: "ql-group-popover",
       role: "menu",
       tabindex: "-1",
-      "aria-label": `${group.name} links`
+      "aria-label": i18n("groupLinksAria", [group.name], "$1 links")
     });
 
     const safeItems = (group.items || [])
@@ -252,7 +253,7 @@ function buildGroupButton(group, mount) {
         }),
         el("span", {}, [item.title])
       ]);
-      
+
       // Populate favicon asynchronously
       const imgEl = a.querySelector("img");
       getFaviconUrl(item.url).then(dataUrl => {
@@ -264,14 +265,14 @@ function buildGroupButton(group, mount) {
       }).catch(() => {
         imgEl.style.display = "none";
       });
-      
+
       a.addEventListener("click", () => closePopover());
       a.addEventListener("keydown", onMenuKeydown);
       popover.appendChild(a);
     }
 
     if (!safeItems.length) {
-      popover.appendChild(el("p", { class: "ql-group-empty" }, ["No links in this group."]));
+      popover.appendChild(el("p", { class: "ql-group-empty" }, [i18n("quicklinkGroupEmpty", null, "No links in this group.")]));
     }
 
     wrap.appendChild(popover);
@@ -356,7 +357,7 @@ function buildAddLinkButton({ empty = false } = {}) {
     }))
   }, [
     iconNode("plus", { size: 14 }),
-    empty ? "Add your first link" : "Add link"
+    empty ? i18n("addFirstLink", null, "Add your first link") : i18n("addLink", null, "Add link")
   ]);
 }
 

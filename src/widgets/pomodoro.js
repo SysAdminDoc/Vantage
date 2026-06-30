@@ -12,8 +12,15 @@
 import { el, clear, toast } from "../utils/dom.js";
 import { iconNode, iconString } from "../icons.js";
 import { playAlarm } from "../utils/alarm-audio.js";
+import { i18n } from "../utils/i18n.js";
 
 const STORAGE_KEY = "vantagePomodoro";
+const POMODORO_BUTTON_LABELS = {
+  Start: "start",
+  Pause: "pause",
+  Skip: "skip",
+  Reset: "reset"
+};
 
 // ---- State helpers -------------------------------------------------------
 
@@ -48,7 +55,12 @@ function freshState(cfg) {
 }
 
 function phaseLabel(phase) {
-  return { idle: "Ready", work: "Focus", break: "Break", "long-break": "Long Break" }[phase] || phase;
+  return {
+    idle: i18n("ready", null, "Ready"),
+    work: i18n("focus", null, "Focus"),
+    break: i18n("break", null, "Break"),
+    "long-break": i18n("longBreak", null, "Long Break")
+  }[phase] || phase;
 }
 
 function phaseDuration(phase, s) {
@@ -92,17 +104,17 @@ export function renderPomodoro(mount, settings) {
   if (!cfg?.enabled) return;
 
   // DOM
-  const phaseEl    = el("span", { class: "pom-phase" }, ["Ready"]);
+  const phaseEl    = el("span", { class: "pom-phase" }, [i18n("ready", null, "Ready")]);
   const timerEl    = el("span", { class: "pom-time"  }, ["25:00"]);
   const dotsEl     = el("div",  { class: "pom-dots"  });
-  const startBtn   = el("button", { type: "button", class: "pom-btn pom-btn--primary", "aria-label": "Start"  }, [iconNode("play",         { size: 16 })]);
-  const pauseBtn   = el("button", { type: "button", class: "pom-btn pom-btn--ghost",   "aria-label": "Pause"  }, [iconNode("pause",        { size: 16 })]);
-  const skipBtn    = el("button", { type: "button", class: "pom-btn pom-btn--ghost",   "aria-label": "Skip"   }, [iconNode("skip-forward", { size: 16 })]);
-  const resetBtn   = el("button", { type: "button", class: "pom-btn pom-btn--ghost",   "aria-label": "Reset"  }, [iconNode("refresh",      { size: 16 })]);
+  const startBtn   = el("button", { type: "button", class: "pom-btn pom-btn--primary", "aria-label": i18n("start", null, "Start") }, [iconNode("play",         { size: 16 })]);
+  const pauseBtn   = el("button", { type: "button", class: "pom-btn pom-btn--ghost",   "aria-label": i18n("pause", null, "Pause") }, [iconNode("pause",        { size: 16 })]);
+  const skipBtn    = el("button", { type: "button", class: "pom-btn pom-btn--ghost",   "aria-label": i18n("skip", null, "Skip") }, [iconNode("skip-forward", { size: 16 })]);
+  const resetBtn   = el("button", { type: "button", class: "pom-btn pom-btn--ghost",   "aria-label": i18n("reset", null, "Reset") }, [iconNode("refresh",      { size: 16 })]);
 
   const hasPip = "documentPictureInPicture" in globalThis;
   const pipBtn = hasPip
-    ? el("button", { type: "button", class: "pom-btn pom-btn--ghost", "aria-label": "Pop out timer", title: "Picture-in-Picture" }, [iconNode("picture-in-picture", { size: 16 })])
+    ? el("button", { type: "button", class: "pom-btn pom-btn--ghost", "aria-label": i18n("popOutTimer", null, "Pop out timer"), title: i18n("pictureInPicture", null, "Picture-in-Picture") }, [iconNode("picture-in-picture", { size: 16 })])
     : null;
 
   const controlBtns = [startBtn, pauseBtn, skipBtn, resetBtn];
@@ -124,11 +136,11 @@ export function renderPomodoro(mount, settings) {
   function renderState(state) {
     localState = state;
     if (!state || state.phase === "idle") {
-      phaseEl.textContent = "Ready";
+      phaseEl.textContent = i18n("ready", null, "Ready");
       timerEl.textContent = formatMs(phaseDuration("work", state?.settings || cfg) || (cfg.workMinutes * 60_000));
       startBtn.hidden = false; pauseBtn.hidden = true;
       updateDots(state?.sessionCount || 0, state?.settings?.sessionsBeforeLongBreak || cfg.sessionsBeforeLongBreak);
-      document.title = "New Tab";
+      document.title = i18n("newTabTitle", null, "New Tab");
       return;
     }
 
@@ -196,12 +208,12 @@ export function renderPomodoro(mount, settings) {
         // attention-grabbing signals consistent (bell → toast → OS notif).
         playAlarm(cfg.alarm).catch(() => {});
         notify(
-          next === "work" ? "Time to focus!" : "Break time!",
+          next === "work" ? i18n("timeToFocus", null, "Time to focus!") : i18n("breakTime", null, "Break time!"),
           next === "work"
-            ? `${state.settings.workMinutes} min focus session starting.`
-            : `Take a ${next === "long-break" ? state.settings.longBreakMinutes : state.settings.breakMinutes} min break.`
+            ? i18n("focusSessionStarting", [state.settings.workMinutes], "$1 min focus session starting.")
+            : i18n("takeBreakMinutes", [next === "long-break" ? state.settings.longBreakMinutes : state.settings.breakMinutes], "Take a $1 min break.")
         );
-        toast(`${phaseLabel(next)} session started.`, "info");
+        toast(i18n("pomodoroSessionStarted", [phaseLabel(next)], "$1 session started."), "info");
       }
     );
   }
@@ -230,7 +242,7 @@ export function renderPomodoro(mount, settings) {
     await writeState(newState);
     renderState(newState);
     stopTick();
-    document.title = "New Tab";
+    document.title = i18n("newTabTitle", null, "New Tab");
   });
 
   skipBtn.addEventListener("click", async () => {
@@ -257,7 +269,7 @@ export function renderPomodoro(mount, settings) {
     const blank = freshState(cfg);
     await writeState(blank);
     renderState(blank);
-    document.title = "New Tab";
+    document.title = i18n("newTabTitle", null, "New Tab");
   });
 
   // ---- Document Picture-in-Picture ----------------------------------------
@@ -283,7 +295,7 @@ export function renderPomodoro(mount, settings) {
     pipWindow = win;
 
     const doc = win.document;
-    doc.title = "Pomodoro";
+    doc.title = i18n("pomodoro", null, "Pomodoro");
 
     const style = doc.createElement("style");
     style.textContent = PIP_CSS;
@@ -299,7 +311,7 @@ export function renderPomodoro(mount, settings) {
     const mkBtn = (label, cls) => {
       const b = doc.createElement("button");
       b.className = `pip-btn ${cls}`;
-      b.setAttribute("aria-label", label);
+      b.setAttribute("aria-label", i18n(POMODORO_BUTTON_LABELS[label], null, label));
       b.innerHTML = iconString(label === "Start" ? "play" : label === "Pause" ? "pause" : label === "Skip" ? "skip-forward" : "refresh", 14);
       return b;
     };
@@ -322,7 +334,7 @@ export function renderPomodoro(mount, settings) {
     function renderPip(state) {
       pipState = state;
       if (!state || state.phase === "idle") {
-        pipPhase.textContent = "Ready";
+        pipPhase.textContent = i18n("ready", null, "Ready");
         pipTime.textContent = formatMs(phaseDuration("work", state?.settings || cfg) || (cfg.workMinutes * 60_000));
         pStart.hidden = false; pPause.hidden = true;
         renderPipDots(pipDots, doc, state?.sessionCount || 0, state?.settings?.sessionsBeforeLongBreak || cfg.sessionsBeforeLongBreak);
@@ -458,7 +470,7 @@ export function renderPomodoro(mount, settings) {
     closePip();
     document.removeEventListener("visibilitychange", onVisibility);
     storageUnlisten?.();
-    document.title = "New Tab";
+    document.title = i18n("newTabTitle", null, "New Tab");
   };
 }
 

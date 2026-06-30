@@ -3,6 +3,7 @@
 import { el, clear, toast } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
 import { normalizeWebUrl } from "../utils/url-safety.js";
+import { i18n } from "../utils/i18n.js";
 
 const STICKER_COLORS = [
   "#fef3c7",
@@ -40,8 +41,8 @@ export function renderZenShelf(mount, settings, { onSave } = {}) {
   const addBtn = el("button", {
     type: "button",
     class: "zen-shelf__add",
-    title: "Add sticker",
-    "aria-label": "Add sticker",
+    title: i18n("addSticker", null, "Add sticker"),
+    "aria-label": i18n("addSticker", null, "Add sticker"),
     onClick: () => {
       const colorIdx = stickers.length % STICKER_COLORS.length;
       const s = {
@@ -80,7 +81,7 @@ function buildSticker(sticker, stickers, persist, mount, settings, cfg, onSave) 
   const closeBtn = el("button", {
     type: "button",
     class: "zen-sticker__close",
-    "aria-label": "Delete sticker",
+    "aria-label": i18n("deleteSticker", null, "Delete sticker"),
     onClick: () => {
       const idx = stickers.indexOf(sticker);
       if (idx > -1) stickers.splice(idx, 1);
@@ -90,7 +91,7 @@ function buildSticker(sticker, stickers, persist, mount, settings, cfg, onSave) 
   }, ["×"]);
 
   const bar = el("div", { class: "zen-sticker__bar" }, [
-    el("span", {}, [sticker.type === "image" ? "Image" : "Note"]),
+    el("span", {}, [sticker.type === "image" ? i18n("image", null, "Image") : i18n("note", null, "Note")]),
     closeBtn
   ]);
 
@@ -125,17 +126,17 @@ function buildSticker(sticker, stickers, persist, mount, settings, cfg, onSave) 
     body = el("div", { class: "zen-sticker__body" }, imageUrl
       ? [el("img", {
           src: imageUrl,
-          alt: "Sticker image",
+          alt: i18n("stickerImage", null, "Sticker image"),
           draggable: "false",
           style: { maxWidth: "100%", height: "auto" }
         })]
-      : ["Double-click to add an image URL."]);
+      : [i18n("stickerImageEmpty", null, "Double-click to add an image URL.")]);
     body.addEventListener("dblclick", () => {
-      const url = prompt("Image URL:", sticker.content || "");
+      const url = prompt(i18n("imageUrlPrompt", null, "Image URL:"), sticker.content || "");
       if (url !== null) {
         const nextUrl = normalizeWebUrl(url);
         if (url.trim() && !nextUrl) {
-          toast("Add a valid image URL.", "error");
+          toast(i18n("addValidImageUrl", null, "Add a valid image URL."), "error");
           return;
         }
         sticker.content = nextUrl;

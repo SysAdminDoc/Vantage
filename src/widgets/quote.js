@@ -2,6 +2,7 @@
 
 import { el, clear } from "../utils/dom.js";
 import { iconNode } from "../icons.js";
+import { i18n } from "../utils/i18n.js";
 
 const QUOTES = [
   { content: "The best way to predict the future is to invent it.", author: "Alan Kay", categories: ["technology", "inspirational"] },
@@ -44,8 +45,8 @@ export async function renderQuote(mount, settings, { onSave } = {}) {
   const refreshBtn = el("button", {
     type: "button",
     class: "icon-button icon-button--ghost icon-button--tiny quote-refresh",
-    "aria-label": "New quote",
-    title: "Refresh quote",
+    "aria-label": i18n("newQuote", null, "New quote"),
+    title: i18n("refreshQuote", null, "Refresh quote"),
     onClick: async () => {
       const fresh = pickQuote(cfg.category || "random");
       const next  = { ...settings, quote: { ...cfg, cached: { ...fresh, date: today } } };
@@ -68,11 +69,11 @@ export async function renderQuote(mount, settings, { onSave } = {}) {
         href: authorHref,
         target: "_blank",
         rel: "noopener noreferrer",
-        title: `Look up ${quote.author} on Wikipedia`
+        title: i18n("lookupAuthorWikipedia", [quote.author], "Look up $1 on Wikipedia")
       }, ["\u2014 ", quote.author])
     : el("cite", { class: "quote-author" }, ["\u2014 ", quote.author]);
 
-  mount.appendChild(el("div", { class: "quote-banner", role: "complementary", "aria-label": "Quote of the day" }, [
+  mount.appendChild(el("div", { class: "quote-banner", role: "complementary", "aria-label": i18n("quoteOfTheDay") }, [
     el("div", { class: "quote-content" }, [
       el("q", { class: "quote-text" }, [quote.content]),
       authorEl

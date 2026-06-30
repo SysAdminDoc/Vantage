@@ -48,7 +48,7 @@ export async function renderFeedList(mount, options) {
     onToggleStar,         // (item) => Promise<boolean> | boolean — returns new starred state
     starredSet,           // Set<canonicalUrl> — pre-computed by caller for O(1) lookup
     onItemsLoaded,        // (mergedItems) => void — called after dedupe + sort, before render
-    emptyHint = "Add a feed in settings to get started.",
+    emptyHint = i18n("feedDefaultEmptyHint", null, "Add a feed in settings to get started."),
     initiator
   } = options;
 
@@ -68,8 +68,8 @@ export async function renderFeedList(mount, options) {
   const dragHandle = el("button", {
     type: "button",
     class: "icon-button icon-button--ghost icon-button--small panel__drag",
-    "aria-label": `Reorder ${title}`,
-    title: "Drag to reorder",
+    "aria-label": i18n("reorderNamed", [title], "Reorder $1"),
+    title: i18n("dragToReorder", null, "Drag to reorder"),
     tabindex: "-1"
   }, [iconNode("grip", { size: 14 })]);
   dragHandle.addEventListener("click", (e) => e.preventDefault());
@@ -165,7 +165,7 @@ export async function renderFeedList(mount, options) {
         ? i18n("feedsLoadErrorTitle", null, "Couldn't load feeds")
         : i18n("feedsNothingTitle", null, "Nothing to show yet"),
       errors.length
-        ? `Failed: ${errors.join(", ")}. Check your connection or these feed URLs.`
+        ? i18n("feedsFailedDetail", [errors.join(", ")], "Failed: $1. Check your connection or these feed URLs.")
         : emptyHint
     ));
     updatedNode.textContent = "";
@@ -244,9 +244,9 @@ export async function renderFeedList(mount, options) {
       const starBtn = el("button", {
         type: "button",
         class: `feed-item__action feed-item__action--star${startsStarred ? " feed-item__action--starred" : ""}`,
-        "aria-label": startsStarred ? "Unstar this item" : "Star this item",
+        "aria-label": startsStarred ? i18n("unstarThisItem", null, "Unstar this item") : i18n("starThisItem", null, "Star this item"),
         "aria-pressed": String(startsStarred),
-        title: startsStarred ? "Starred — click to remove" : "Star this item",
+        title: startsStarred ? i18n("starredClickToRemove", null, "Starred - click to remove") : i18n("starThisItem", null, "Star this item"),
         onClick: async (e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -255,9 +255,9 @@ export async function renderFeedList(mount, options) {
             const nowStarred = await onToggleStar(item);
             starBtn.classList.toggle("feed-item__action--starred", nowStarred);
             starBtn.setAttribute("aria-pressed", String(nowStarred));
-            starBtn.setAttribute("aria-label", nowStarred ? "Unstar this item" : "Star this item");
-            starBtn.title = nowStarred ? "Starred — click to remove" : "Star this item";
-            toast(nowStarred ? "Starred." : "Unstarred.", "success", 2000);
+            starBtn.setAttribute("aria-label", nowStarred ? i18n("unstarThisItem", null, "Unstar this item") : i18n("starThisItem", null, "Star this item"));
+            starBtn.title = nowStarred ? i18n("starredClickToRemove", null, "Starred - click to remove") : i18n("starThisItem", null, "Star this item");
+            toast(nowStarred ? i18n("starredToast", null, "Starred.") : i18n("unstarredToast", null, "Unstarred."), "success", 2000);
           } catch (err) {
             toast(err?.message || i18n("feedStarError", null, "Couldn't star item."), "error");
           } finally {
@@ -500,7 +500,7 @@ function buildVideoCard(video, item) {
       el("img", {
         class: "feed-video__thumb",
         src: `https://img.youtube.com/vi/${video.id}/mqdefault.jpg`,
-        alt: item.title || "Video thumbnail",
+        alt: item.title || i18n("videoThumbnail", null, "Video thumbnail"),
         loading: "lazy",
         referrerpolicy: "no-referrer",
         onError: (e) => { e.target.parentElement.remove(); }

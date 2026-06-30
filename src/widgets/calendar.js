@@ -6,6 +6,7 @@ import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { parseICal } from "../utils/ical-parser.js";
 import { hasHostPermission } from "../utils/host-permissions.js";
+import { i18n } from "../utils/i18n.js";
 
 const PROXIES = [
   (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -23,7 +24,7 @@ async function fetchICal(url, auth) {
   const hasAuth = !!headers["Authorization"];
 
   try {
-    if (!(await hasHostPermission(url))) throw new Error("Host access not granted");
+    if (!(await hasHostPermission(url))) throw new Error(i18n("hostAccessNotGranted", null, "Host access not granted"));
     const r = await fetch(url, { cache: "no-store", headers });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return r.text();
@@ -36,7 +37,7 @@ async function fetchICal(url, auth) {
         return r.text();
       } catch { /* try next */ }
     }
-    throw new Error(`Failed to fetch ${url}`);
+    throw new Error(i18n("failedToFetchUrl", [url], "Failed to fetch $1"));
   }
 }
 
@@ -47,16 +48,16 @@ function isSameDay(a, b) {
 }
 
 function dayLabel(date, today) {
-  if (isSameDay(date, today)) return "Today";
+  if (isSameDay(date, today)) return i18n("today", null, "Today");
   const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-  if (isSameDay(date, tomorrow)) return "Tomorrow";
+  if (isSameDay(date, tomorrow)) return i18n("tomorrow", null, "Tomorrow");
   return date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 }
 
 function timeLabel(event) {
   // DATE-only events have midnight time and no end — show "All day"
   const s = event.start;
-  if (s.getHours() === 0 && s.getMinutes() === 0 && !event.end) return "All day";
+  if (s.getHours() === 0 && s.getMinutes() === 0 && !event.end) return i18n("allDay", null, "All day");
   return s.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
@@ -73,12 +74,12 @@ export function renderCalendar(mount, settings, { onAttachDragHandle } = {}) {
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
       el("span", { class: "panel-header__drag", "aria-hidden": "true", innerHTML: iconString("grip", 14) }),
-      el("h2",  { class: "panel-header__title" }, [iconNode("calendar", { size: 14 }), " Calendar"])
+      el("h2",  { class: "panel-header__title" }, [iconNode("calendar", { size: 14 }), ` ${i18n("calendar")}`])
     ]),
     el("div", { class: "panel-header__right" }, [
       el("button", {
         type: "button", class: "icon-button icon-button--ghost icon-button--small",
-        "aria-label": "Refresh calendar", title: "Refresh",
+        "aria-label": i18n("refreshCalendar", null, "Refresh calendar"), title: i18n("refresh", null, "Refresh"),
         onClick: () => { renderCalendar(mount, settings, { onAttachDragHandle }); }
       }, [iconNode("refresh", { size: 14 })])
     ])
@@ -93,7 +94,7 @@ export function renderCalendar(mount, settings, { onAttachDragHandle } = {}) {
   }
 
   if (!cfg.feeds?.length) {
-    body.appendChild(el("p", { class: "panel-empty" }, ["Add an iCal URL in Settings → Calendar."]));
+    body.appendChild(el("p", { class: "panel-empty" }, [i18n("calendarEmptyHint", null, "Add an iCal URL in Settings -> Calendar.")]));
     return;
   }
 
@@ -125,7 +126,7 @@ export function renderCalendar(mount, settings, { onAttachDragHandle } = {}) {
       clear(body);
 
       if (!events.length) {
-        body.appendChild(el("p", { class: "panel-empty" }, [`No events in the next ${cfg.daysAhead ?? 7} days.`]));
+        body.appendChild(el("p", { class: "panel-empty" }, [i18n("calendarNoEvents", [cfg.daysAhead ?? 7], "No events in the next $1 days.")]));
         return;
       }
 
@@ -148,7 +149,7 @@ export function renderCalendar(mount, settings, { onAttachDragHandle } = {}) {
       }
     } catch (err) {
       clear(body);
-      body.appendChild(el("p", { class: "panel-error" }, [`Couldn't load calendar — ${err.message.toLowerCase()}.`]));
+      body.appendChild(el("p", { class: "panel-error" }, [i18n("calendarLoadError", [err.message.toLowerCase()], "Couldn't load calendar - $1.")]));
     }
   })();
 }

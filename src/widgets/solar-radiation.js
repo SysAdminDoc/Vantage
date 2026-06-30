@@ -14,6 +14,7 @@
 import { el, clear } from "../utils/dom.js";
 import { iconString } from "../icons.js";
 import { detectLocation } from "../utils/weather-source.js";
+import { i18n } from "../utils/i18n.js";
 
 const RADIATION_BASE = "https://api.open-meteo.com/v1/forecast";
 const TTL_MS = 10 * 60 * 1000;
@@ -67,13 +68,13 @@ export function renderSolarRadiation(mount, settings) {
   if (!settings.solarRadiation?.enabled) return;
 
   // Skeleton placeholder
-  mount.innerHTML = `<div class="aq-pill aq-pill--skeleton" aria-label="Solar radiation loading"></div>`;
+  mount.appendChild(el("div", { class: "aq-pill aq-pill--skeleton", "aria-label": i18n("solarRadiationLoading", null, "Solar radiation loading") }));
 
   (async () => {
     try {
       let loc = settings.weather?.location || null;
       if (!loc) loc = await detectLocation();
-      if (!loc) throw new Error("No location");
+      if (!loc) throw new Error(i18n("noLocation", null, "No location"));
 
       const data = await fetchRadiation(loc.latitude, loc.longitude);
       const cur = data.current || {};
@@ -96,10 +97,10 @@ export function renderSolarRadiation(mount, settings) {
           tooltipParts.push(`${LABELS[v]} ${Math.round(cur[v])} ${u}`);
         }
       }
-      const tooltipText = tooltipParts.join(" · ") || "Solar radiation data unavailable";
+      const tooltipText = tooltipParts.join(" - ") || i18n("solarRadiationUnavailable", null, "Solar radiation data unavailable");
 
-      const headline = ghi != null ? `${Math.round(ghi)}` : "—";
-      const label = ghi != null ? unit : "Solar";
+      const headline = ghi != null ? `${Math.round(ghi)}` : "-";
+      const label = ghi != null ? unit : i18n("solar", null, "Solar");
 
       clear(mount);
       const pill = el("div", {

@@ -31,6 +31,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Disabled button CSS no longer declares cursor twice.**
 
 ### Added
+- **Standalone widget i18n migration** — Ambient, Calendar, Countdown, Converter, Crypto, GitHub, Inbox, Notes, Photo, Pomodoro, Quick Links, Quote, Starred, To-Do, Weather status, Windy, Zen Shelf, embeds, and utility pills now route visible control labels, empty/error states, toasts, and accessibility labels through locale keys. The i18n parity guard also scans table-driven widget metadata keys.
 - **Feed and browser-data widget i18n keys** — RSS/News feed controls, Reading List save feedback, Bookmarks, Top Sites, and History Search visible empty/error/recovery states now route through locale keys, and the i18n test scans widget modules.
 - **Settings label i18n map** — Settings section titles plus shared row labels and hints now resolve through locale keys via the Settings helper layer, and `scripts/test-i18n.mjs` reads that dynamic map so missing catalog entries fail locally.
 - **RTL smoke coverage** — browser smoke now defaults to headless mode, runs Arabic and Hebrew language simulations through the local shim, verifies `lang`/`dir` startup behavior, and uses an explicit per-run Puppeteer profile to avoid stale lock failures.
@@ -400,7 +401,7 @@ The animated background is production-ready. v0.5.0 rolls up the v0.4.7–v0.4.1
 ## v0.4.5 — 2026-04-29
 
 ### Fixed
-- **Trunk banding rings poked out past the trunk silhouette near the base.** Codex's v0.4.4 trunk path widens significantly at the base (root flare from x≈78 to x≈143 at y=320, narrowing to x≈111-137 at y≈305) — but the banding paths kept the same x-range across the height, so the lowest three bands extended up to 24px past the trunk on the left, showing as horizontal dashes coming off the trunk. Re-derived each band's x-range against the actual trunk width at its y-level: now every ring sits with a 1-2px inset on both sides.
+- **Trunk banding rings poked out past the trunk silhouette near the base.** The v0.4.4 trunk path widens significantly at the base (root flare from x≈78 to x≈143 at y=320, narrowing to x≈111-137 at y≈305) — but the banding paths kept the same x-range across the height, so the lowest three bands extended up to 24px past the trunk on the left, showing as horizontal dashes coming off the trunk. Re-derived each band's x-range against the actual trunk width at its y-level: now every ring sits with a 1-2px inset on both sides.
 
 ## v0.4.4 — 2026-04-29
 

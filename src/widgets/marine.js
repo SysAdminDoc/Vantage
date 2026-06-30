@@ -13,6 +13,7 @@
 import { el, clear } from "../utils/dom.js";
 import { iconString } from "../icons.js";
 import { detectLocation } from "../utils/weather-source.js";
+import { i18n } from "../utils/i18n.js";
 
 const MARINE_BASE = "https://marine-api.open-meteo.com/v1/marine";
 const TTL_MS = 10 * 60 * 1000;
@@ -64,13 +65,13 @@ export function renderMarine(mount, settings) {
   if (!settings.marine?.enabled) return;
 
   // Skeleton placeholder
-  mount.innerHTML = `<div class="aq-pill aq-pill--skeleton" aria-label="Marine loading"></div>`;
+  mount.appendChild(el("div", { class: "aq-pill aq-pill--skeleton", "aria-label": i18n("marineLoading", null, "Marine loading") }));
 
   (async () => {
     try {
       let loc = settings.weather?.location || null;
       if (!loc) loc = await detectLocation();
-      if (!loc) throw new Error("No location");
+      if (!loc) throw new Error(i18n("noLocation", null, "No location"));
 
       const data = await fetchMarine(loc.latitude, loc.longitude, settings.weather?.units);
       const cur = data.current || {};
@@ -93,11 +94,11 @@ export function renderMarine(mount, settings) {
       const currDir = cardinal(cur.ocean_current_direction);
 
       const summaryParts = [];
-      if (waveH) summaryParts.push(`Wave ${waveH}${waveDir ? ` ${waveDir}` : ""}`);
+      if (waveH) summaryParts.push(i18n("marineWaveSummary", [waveH, waveDir ? ` ${waveDir}` : ""], "Wave $1$2"));
       if (wavePer) summaryParts.push(wavePer);
       if (sstText) summaryParts.push(sstText);
-      if (currVel) summaryParts.push(`Current ${currVel}${currDir ? ` ${currDir}` : ""}`);
-      const tooltipText = summaryParts.join(" · ") || "Marine data unavailable";
+      if (currVel) summaryParts.push(i18n("marineCurrentSummary", [currVel, currDir ? ` ${currDir}` : ""], "Current $1$2"));
+      const tooltipText = summaryParts.join(" - ") || i18n("marineDataUnavailable", null, "Marine data unavailable");
 
       clear(mount);
       const pill = el("div", {
@@ -107,8 +108,8 @@ export function renderMarine(mount, settings) {
         style: { "--aq-color": "var(--blue, var(--accent))" }
       }, [
         el("span", { class: "aq-pill__icon", innerHTML: iconString("wind", 13) }),
-        el("span", { class: "aq-pill__aqi" }, [waveH || "—"]),
-        el("span", { class: "aq-pill__label" }, [waveDir || "Marine"])
+        el("span", { class: "aq-pill__aqi" }, [waveH || "-"]),
+        el("span", { class: "aq-pill__label" }, [waveDir || i18n("marine", null, "Marine")])
       ]);
       mount.appendChild(pill);
     } catch (err) {

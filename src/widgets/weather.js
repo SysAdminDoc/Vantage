@@ -4,6 +4,7 @@
 
 import { el, clear } from "../utils/dom.js";
 import { getWeatherData, getEnsembleSpread, detectLocation, geocodeCity } from "../utils/weather-source.js";
+import { i18n } from "../utils/i18n.js";
 
 export { geocodeCity }; // re-export so settings panel can keep its existing import path
 
@@ -66,7 +67,7 @@ export async function renderWeather(mount, settings, saveSettings) {
   }
   mount.style.display = "";
 
-  const skeleton = el("div", { class: "weather weather--skeleton", "aria-label": "Loading weather" });
+  const skeleton = el("div", { class: "weather weather--skeleton", "aria-label": i18n("loadingWeather", null, "Loading weather") });
   mount.appendChild(skeleton);
 
   let location = settings.weather.location;
@@ -79,9 +80,9 @@ export async function renderWeather(mount, settings, saveSettings) {
       clear(mount);
       mount.appendChild(el("div", {
         class: "weather weather--error",
-        title: "Set a city in Settings → Weather to enable",
-        "aria-label": "Weather unavailable — set a city in settings"
-      }, ["Weather unavailable"]));
+        title: i18n("weatherSetCityTitle", null, "Set a city in Settings -> Weather to enable"),
+        "aria-label": i18n("weatherUnavailableSetCity", null, "Weather unavailable - set a city in settings")
+      }, [i18n("weatherUnavailable", null, "Weather unavailable")]));
       return;
     }
   }
@@ -98,7 +99,7 @@ export async function renderWeather(mount, settings, saveSettings) {
     const unitLabel = settings.weather.units === "celsius" ? "Celsius" : "Fahrenheit";
     const locName = location.name || "Current location";
     if (cur.temperature_2m == null) {
-      mount.appendChild(el("div", { class: "weather-chip", "aria-label": "Weather data unavailable" }, ["—"]));
+      mount.appendChild(el("div", { class: "weather-chip", "aria-label": i18n("weatherDataUnavailable", null, "Weather data unavailable") }, ["-"]));
       return;
     }
     const temp = Math.round(cur.temperature_2m);
@@ -223,8 +224,8 @@ export async function renderWeather(mount, settings, saveSettings) {
     clear(mount);
     mount.appendChild(el("div", {
       class: "weather weather--error",
-      title: err.message || "Couldn't load weather",
-      "aria-label": "Weather unavailable"
-    }, ["Weather unavailable"]));
+      title: err.message || i18n("weatherLoadErrorTitle", null, "Couldn't load weather"),
+      "aria-label": i18n("weatherUnavailable", null, "Weather unavailable")
+    }, [i18n("weatherUnavailable", null, "Weather unavailable")]));
   }
 }

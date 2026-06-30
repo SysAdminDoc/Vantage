@@ -3,6 +3,7 @@
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { relativeTime } from "../utils/dom.js";
+import { i18n } from "../utils/i18n.js";
 
 const GITHUB_CACHE_KEY = "vantageGithubCache";
 const GITHUB_CACHE_TTL_MS = 10 * 60 * 1000;
@@ -10,15 +11,15 @@ const GITHUB_CACHE_MAX_ENTRIES = 20;
 const githubInflight = new Map();
 
 const EVENT_LABELS = {
-  PushEvent:              (e) => `Pushed to ${shortRepo(e.repo.name)}`,
-  CreateEvent:            (e) => `Created ${e.payload?.ref_type || "branch"} in ${shortRepo(e.repo.name)}`,
-  WatchEvent:             (e) => `Starred ${shortRepo(e.repo.name)}`,
-  ForkEvent:              (e) => `Forked ${shortRepo(e.repo.name)}`,
-  IssuesEvent:            (e) => `${cap(e.payload?.action || "")} issue in ${shortRepo(e.repo.name)}`,
-  PullRequestEvent:       (e) => `${cap(e.payload?.action || "")} PR in ${shortRepo(e.repo.name)}`,
-  IssueCommentEvent:      (e) => `Commented in ${shortRepo(e.repo.name)}`,
-  ReleaseEvent:           (e) => `Released in ${shortRepo(e.repo.name)}`,
-  DeleteEvent:            (e) => `Deleted ${e.payload?.ref_type || "ref"} in ${shortRepo(e.repo.name)}`,
+  PushEvent:              (e) => i18n("githubEventPushed", [shortRepo(e.repo.name)], "Pushed to $1"),
+  CreateEvent:            (e) => i18n("githubEventCreated", [e.payload?.ref_type || i18n("branch", null, "branch"), shortRepo(e.repo.name)], "Created $1 in $2"),
+  WatchEvent:             (e) => i18n("githubEventStarred", [shortRepo(e.repo.name)], "Starred $1"),
+  ForkEvent:              (e) => i18n("githubEventForked", [shortRepo(e.repo.name)], "Forked $1"),
+  IssuesEvent:            (e) => i18n("githubEventIssue", [cap(e.payload?.action || ""), shortRepo(e.repo.name)], "$1 issue in $2"),
+  PullRequestEvent:       (e) => i18n("githubEventPr", [cap(e.payload?.action || ""), shortRepo(e.repo.name)], "$1 PR in $2"),
+  IssueCommentEvent:      (e) => i18n("githubEventCommented", [shortRepo(e.repo.name)], "Commented in $1"),
+  ReleaseEvent:           (e) => i18n("githubEventReleased", [shortRepo(e.repo.name)], "Released in $1"),
+  DeleteEvent:            (e) => i18n("githubEventDeleted", [e.payload?.ref_type || i18n("ref", null, "ref"), shortRepo(e.repo.name)], "Deleted $1 in $2"),
 };
 function cap(s) { return s ? s[0].toUpperCase() + s.slice(1) : s; }
 function shortRepo(name) { return name?.split("/")[1] || name; }
@@ -40,7 +41,7 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
     "aria-selected": activeTab === "activity" ? "true" : "false",
     class: `panel-tab${activeTab === "activity" ? " panel-tab--active" : ""}`,
     onClick: () => switchTab("activity")
-  }, ["Activity"]);
+  }, [i18n("activity", null, "Activity")]);
 
   const trendingBtn = el("button", {
     type: "button",
@@ -48,14 +49,14 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
     "aria-selected": activeTab === "trending" ? "true" : "false",
     class: `panel-tab${activeTab === "trending" ? " panel-tab--active" : ""}`,
     onClick: () => switchTab("trending")
-  }, ["Trending"]);
+  }, [i18n("trending", null, "Trending")]);
 
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
       el("span", { class: "panel-header__drag", "aria-hidden": "true", innerHTML: iconString("grip", 14) }),
-      el("h2", { class: "panel-header__title" }, [iconNode("github", { size: 14 }), " GitHub"])
+      el("h2", { class: "panel-header__title" }, [iconNode("github", { size: 14 }), ` ${i18n("github")}`])
     ]),
-    el("div", { class: "panel-header__right panel-tabs", role: "tablist", "aria-label": "GitHub view" }, [activityBtn, trendingBtn])
+    el("div", { class: "panel-header__right panel-tabs", role: "tablist", "aria-label": i18n("githubView", null, "GitHub view") }, [activityBtn, trendingBtn])
   ]);
 
   const body = el("div", { class: "panel-body github-body", role: "tabpanel" });
@@ -84,7 +85,7 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
       }
     } catch (err) {
       body.innerHTML = "";
-      body.appendChild(el("p", { class: "panel-error" }, [`Couldn't load GitHub data — ${err.message.toLowerCase()}.`]));
+      body.appendChild(el("p", { class: "panel-error" }, [i18n("githubLoadError", [err.message.toLowerCase()], "Couldn't load GitHub data - $1.")]));
     }
   }
 
@@ -92,7 +93,7 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
     if (!cfg.username) {
       body.innerHTML = "";
       body.appendChild(el("p", { class: "panel-empty" }, [
-        "Set your GitHub username in Settings → GitHub to see your activity."
+        i18n("githubSetUsernameHint", null, "Set your GitHub username in Settings -> GitHub to see your activity.")
       ]));
       return;
     }
@@ -100,12 +101,12 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
     const result = await fetchGithubJson(
       `activity:${username.toLowerCase()}`,
       `https://api.github.com/users/${encodeURIComponent(username)}/events/public?per_page=15`,
-      { notFoundMessage: "User not found" }
+      { notFoundMessage: i18n("githubUserNotFound", null, "User not found") }
     );
     const events = result.data;
     body.innerHTML = "";
     if (!events.length) {
-      body.appendChild(el("p", { class: "panel-empty" }, ["No recent public activity."]));
+      body.appendChild(el("p", { class: "panel-empty" }, [i18n("githubNoRecentActivity", null, "No recent public activity.")]));
       return;
     }
     const list = el("ul", { class: "github-list" });
@@ -132,7 +133,7 @@ export function renderGithub(mount, settings, { onAttachDragHandle } = {}) {
     const { items } = result.data;
     body.innerHTML = "";
     if (!items?.length) {
-      body.appendChild(el("p", { class: "panel-empty" }, ["No trending repos found."]));
+      body.appendChild(el("p", { class: "panel-empty" }, [i18n("githubNoTrendingRepos", null, "No trending repos found.")]));
       return;
     }
     const list = el("ul", { class: "github-list" });
@@ -243,13 +244,13 @@ function githubRateLimitedUntil(resp) {
 }
 
 function githubRateLimitMessage(untilMs) {
-  return `GitHub API rate-limited this request — try again after ${formatRetryAt(untilMs)}`;
+  return i18n("githubRateLimited", [formatRetryAt(untilMs)], "GitHub API rate-limited this request - try again after $1");
 }
 
 function appendCacheNotice(body, result) {
   if (!result?.stale || !result.rateLimitedUntil) return;
   body.appendChild(el("p", { class: "panel-empty" }, [
-    `Showing cached GitHub data — API rate-limited until ${formatRetryAt(result.rateLimitedUntil)}.`
+    i18n("githubShowingCached", [formatRetryAt(result.rateLimitedUntil)], "Showing cached GitHub data - API rate-limited until $1.")
   ]));
 }
 

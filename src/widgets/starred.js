@@ -12,9 +12,10 @@ import { iconString, iconNode } from "../icons.js";
 import { saveSettings } from "../storage.js";
 import { unstarByUrl, clearStarred } from "../utils/starred-feed.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
+import { i18n } from "../utils/i18n.js";
 
 const toastUndo = (message, onUndo) =>
-  toast(message, "warning", 6500, { label: "Undo", onClick: onUndo });
+  toast(message, "warning", 6500, { label: i18n("undo", null, "Undo"), onClick: onUndo });
 
 export function renderStarred(mount, settings, { onAttachDragHandle, onChange } = {}) {
   clear(mount);
@@ -42,14 +43,14 @@ export function renderStarred(mount, settings, { onAttachDragHandle, onChange } 
     const clearBtn = el("button", {
       type: "button",
       class: "icon-button icon-button--ghost icon-button--small",
-      "aria-label": "Clear all starred",
-      title: "Clear all starred",
+      "aria-label": i18n("clearAllStarred", null, "Clear all starred"),
+      title: i18n("clearAllStarred", null, "Clear all starred"),
       onClick: async () => {
         if (!cfg.items?.length) return;
         const removed = clearStarred(settings);
         await persist();
         draw();
-        toastUndo(`Cleared ${removed.length} starred item${removed.length === 1 ? "" : "s"}.`, async () => {
+        toastUndo(i18n("starredClearedItems", [removed.length], "Cleared $1 starred item(s)."), async () => {
           settings.starred.items = removed;
           await persist();
           draw();
@@ -60,7 +61,7 @@ export function renderStarred(mount, settings, { onAttachDragHandle, onChange } 
     const header = el("div", { class: "panel-header" }, [
       el("div", { class: "panel-header__left" }, [
         dragSpan,
-        el("h2", { class: "panel-header__title" }, [iconNode("star", { size: 14 }), " Starred"])
+        el("h2", { class: "panel-header__title" }, [iconNode("star", { size: 14 }), ` ${i18n("starredItems")}`])
       ]),
       el("div", { class: "panel-header__right" }, [clearBtn])
     ]);
@@ -73,7 +74,7 @@ export function renderStarred(mount, settings, { onAttachDragHandle, onChange } 
     const items = (cfg.items || []);
     if (!items.length) {
       body.appendChild(el("p", { class: "panel-empty" }, [
-        "No starred items yet — tap the star icon on any feed headline to pin it here."
+        i18n("starredEmpty", null, "No starred items yet - tap the star icon on any feed headline to pin it here.")
       ]));
       return;
     }
@@ -113,8 +114,8 @@ export function renderStarred(mount, settings, { onAttachDragHandle, onChange } 
       const unstarBtn = el("button", {
         type: "button",
         class: "feed-item__action feed-item__action--star feed-item__action--starred",
-        "aria-label": "Remove from starred",
-        title: "Remove from starred",
+        "aria-label": i18n("removeFromStarred", null, "Remove from starred"),
+        title: i18n("removeFromStarred", null, "Remove from starred"),
         onClick: async (e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -123,7 +124,7 @@ export function renderStarred(mount, settings, { onAttachDragHandle, onChange } 
           await persist();
           draw();
           if (removed) {
-            toastUndo(`Removed “${(removed.title || hostnameLabel(removed.url)).slice(0, 60)}”.`, async () => {
+            toastUndo(i18n("starredRemovedItem", [(removed.title || hostnameLabel(removed.url)).slice(0, 60)], "Removed \"$1\"."), async () => {
               if (!settings.starred.items) settings.starred.items = [];
               settings.starred.items.unshift(removed);
               await persist();

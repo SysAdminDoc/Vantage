@@ -2,6 +2,7 @@
 
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
+import { i18n } from "../utils/i18n.js";
 
 const APOD_RATE_LIMIT_TTL_MS = 60 * 60 * 1000;
 const APOD_SHORT_ERROR_TTL_MS = 5 * 60 * 1000;
@@ -19,7 +20,7 @@ export function renderPhoto(mount, settings, { onAttachDragHandle, onSave } = {}
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
       el("span", { class: "panel-header__drag", "aria-hidden": "true", innerHTML: iconString("grip", 14) }),
-      el("h2", { class: "panel-header__title" }, [iconNode("image", { size: 14 }), " Photo of the Day"])
+      el("h2", { class: "panel-header__title" }, [iconNode("image", { size: 14 }), ` ${i18n("photoOfTheDay")}`])
     ]),
     el("div", { class: "panel-header__right" })
   ]);
@@ -44,13 +45,13 @@ function loadPicsum(body, dateStr) {
   const img  = el("img", {
     src: `https://picsum.photos/seed/${seed}/800/420`,
     class: "photo-img",
-    alt: "Daily photo",
+    alt: i18n("dailyPhoto", null, "Daily photo"),
     loading: "lazy"
   });
   img.addEventListener("load", () => { img.dataset.loaded = "true"; });
   img.addEventListener("error", () => {
     body.innerHTML = "";
-    body.appendChild(el("p", { class: "panel-error" }, ["Couldn't load photo."]));
+    body.appendChild(el("p", { class: "panel-error" }, [i18n("photoLoadError", null, "Couldn't load photo.")]));
   });
   const credit = el("div", { class: "photo-credit" }, [
     "Photo via ",
@@ -103,7 +104,7 @@ async function loadNasa(body, settings, dateStr, { onSave } = {}) {
     }, onSave);
     renderNasaData(body, data);
   } catch (err) {
-    renderNasaError(body, `Couldn't load NASA APOD — ${err.message.toLowerCase()}.`);
+    renderNasaError(body, i18n("nasaApodLoadError", [err.message.toLowerCase()], "Couldn't load NASA APOD - $1."));
   }
 }
 
@@ -119,13 +120,13 @@ function renderNasaData(body, data) {
       target: "_blank",
       rel: "noopener noreferrer",
       class: "photo-video-fallback",
-      "aria-label": `Watch ${data.title || "today's APOD video"}`
+      "aria-label": i18n("watchApodVideo", [data.title || i18n("todaysApodVideo", null, "today's APOD video")], "Watch $1")
     });
     if (data.thumbnail_url) {
       const thumb = el("img", {
         src: data.thumbnail_url,
         class: "photo-img",
-        alt: data.title || "NASA APOD video thumbnail",
+        alt: data.title || i18n("nasaApodVideoThumbnail", null, "NASA APOD video thumbnail"),
         loading: "lazy"
       });
       thumb.addEventListener("load", () => { thumb.dataset.loaded = "true"; });
@@ -139,12 +140,12 @@ function renderNasaData(body, data) {
         iconNode("play", { size: 28 })
       ]));
       wrap.appendChild(el("span", { class: "photo-video-fallback__label" }, [
-        "Today\u2019s APOD is a video — open in a new tab"
+        i18n("apodVideoOpenHint", null, "Today's APOD is a video - open in a new tab")
       ]));
     }
     const credit = el("div", { class: "photo-credit" }, [
-      el("strong", {}, [data.title || "Astronomy Picture of the Day"]),
-      " — NASA APOD video",
+      el("strong", {}, [data.title || i18n("astronomyPictureOfTheDay", null, "Astronomy Picture of the Day")]),
+      " - NASA APOD video",
       data.copyright ? ` © ${data.copyright.trim()}` : ""
     ]);
     body.appendChild(wrap);
@@ -155,13 +156,13 @@ function renderNasaData(body, data) {
   const img = el("img", {
     src: data.hdurl || data.url,
     class: "photo-img",
-    alt: data.title || "NASA APOD",
+    alt: data.title || i18n("nasaApod", null, "NASA APOD"),
     loading: "lazy"
   });
   img.addEventListener("load", () => { img.dataset.loaded = "true"; });
   const credit = el("div", { class: "photo-credit" }, [
-    el("strong", {}, [data.title || "Astronomy Picture of the Day"]),
-    " — NASA APOD",
+    el("strong", {}, [data.title || i18n("astronomyPictureOfTheDay", null, "Astronomy Picture of the Day")]),
+    " - NASA APOD",
     data.copyright ? ` © ${data.copyright.trim()}` : ""
   ]);
   body.appendChild(img);
@@ -199,13 +200,13 @@ function apodErrorMessage(status, retryAtMs) {
     ? new Date(retryAtMs).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     : "later";
   if (status === 429) {
-    return `NASA APOD is rate limited — add a free API key in Settings -> Photo, or try again after ${retry}.`;
+    return i18n("nasaApodRateLimited", [retry], "NASA APOD is rate limited - add a free API key in Settings -> Photo, or try again after $1.");
   }
   if (status === 404) {
-    return `NASA APOD is not available for today's date yet — trying again after ${retry}.`;
+    return i18n("nasaApodNotAvailable", [retry], "NASA APOD is not available for today's date yet - trying again after $1.");
   }
   if (status === 403) {
-    return `NASA APOD rejected this request — check the API key in Settings -> Photo, or try again after ${retry}.`;
+    return i18n("nasaApodRejected", [retry], "NASA APOD rejected this request - check the API key in Settings -> Photo, or try again after $1.");
   }
-  return `NASA APOD is rate limited — add a free API key in Settings -> Photo, or try again after ${retry}.`;
+  return i18n("nasaApodRateLimited", [retry], "NASA APOD is rate limited - add a free API key in Settings -> Photo, or try again after $1.");
 }

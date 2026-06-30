@@ -3,6 +3,7 @@
 import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { validateManifest, fetchManifest, createWidgetFrame, buildThemePayload } from "../utils/widget-host.js";
+import { i18n } from "../utils/i18n.js";
 
 const activeFrames = new Map();
 
@@ -20,17 +21,17 @@ export function renderExternalWidget(mount, widgetCfg, settings, { onAttachDragH
 
   const manifest = widgetCfg.manifest;
   if (!manifest?.src) {
-    mount.appendChild(el("div", { class: "panel-empty" }, ["Widget manifest not loaded yet."]));
+    mount.appendChild(el("div", { class: "panel-empty" }, [i18n("widgetManifestNotLoaded", null, "Widget manifest not loaded yet.")]));
     return;
   }
 
   const errors = validateManifest(manifest);
   if (errors.length) {
-    mount.appendChild(el("div", { class: "panel-empty" }, [`Invalid widget: ${errors.join(", ")}`]));
+    mount.appendChild(el("div", { class: "panel-empty" }, [i18n("invalidWidget", [errors.join(", ")], "Invalid widget: $1")]));
     return;
   }
 
-  const title = manifest.name || "Widget";
+  const title = manifest.name || i18n("widget", null, "Widget");
 
   const header = el("div", { class: "panel-header" }, [
     el("div", { class: "panel-header__left" }, [
@@ -42,7 +43,7 @@ export function renderExternalWidget(mount, widgetCfg, settings, { onAttachDragH
         ? el("a", {
             href: manifest.homepage, target: "_blank", rel: "noopener noreferrer",
             class: "icon-button icon-button--ghost icon-button--small",
-            "aria-label": `${title} homepage`, title: "Widget homepage"
+            "aria-label": i18n("widgetHomepageAria", [title], "$1 homepage"), title: i18n("widgetHomepage", null, "Widget homepage")
           }, [iconNode("external", { size: 14 })])
         : null
     ].filter(Boolean))
@@ -59,12 +60,12 @@ export function renderExternalWidget(mount, widgetCfg, settings, { onAttachDragH
     if (!ok) {
       body.innerHTML = "";
       body.appendChild(el("div", { class: "panel-empty" }, [
-        el("p", {}, ["Widget failed to load."]),
+        el("p", {}, [i18n("widgetFailedToLoad", null, "Widget failed to load.")]),
         manifest.src
           ? el("a", {
               href: manifest.src, target: "_blank", rel: "noopener noreferrer",
               class: "button button--ghost"
-            }, [iconNode("external", { size: 14 }), " Open directly"])
+            }, [iconNode("external", { size: 14 }), ` ${i18n("openDirectly", null, "Open directly")}`])
           : null
       ].filter(Boolean)));
     }

@@ -1,6 +1,7 @@
 // Vantage — World Clock widget (compact strip, not a reading panel).
 
 import { el, clear } from "../utils/dom.js";
+import { i18n } from "../utils/i18n.js";
 
 export function renderWorldClock(mount, settings) {
   clear(mount);
@@ -13,7 +14,7 @@ export function renderWorldClock(mount, settings) {
 
   const use24 = settings.clock?.format24 ?? false;
 
-  const strip = el("div", { class: "worldclock-strip", role: "list", "aria-label": "World clocks" });
+  const strip = el("div", { class: "worldclock-strip", role: "list", "aria-label": i18n("worldClocks") });
 
   function tick() {
     const now = Date.now();

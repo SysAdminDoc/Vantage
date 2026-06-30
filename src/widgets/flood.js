@@ -12,6 +12,7 @@
 import { el, clear } from "../utils/dom.js";
 import { iconString } from "../icons.js";
 import { detectLocation } from "../utils/weather-source.js";
+import { i18n } from "../utils/i18n.js";
 
 const FLOOD_BASE = "https://flood-api.open-meteo.com/v1/flood";
 const TTL_MS = 30 * 60 * 1000; // 30 min — flood data updates much slower than weather
@@ -40,13 +41,13 @@ async function fetchFlood(lat, lon) {
  *  discharge vs. the 7-day max sets the risk hint.
  */
 function riskLabel(today, periodMax) {
-  if (today == null || periodMax == null) return { label: "—", level: "none" };
-  if (periodMax === 0) return { label: "No river nearby", level: "none" };
+  if (today == null || periodMax == null) return { label: "-", level: "none" };
+  if (periodMax === 0) return { label: i18n("noRiverNearby", null, "No river nearby"), level: "none" };
   const pct = today / periodMax;
-  if (pct >= 0.95) return { label: "High",    level: "high"   };
-  if (pct >= 0.75) return { label: "Elevated", level: "elevated" };
-  if (pct >= 0.50) return { label: "Moderate", level: "moderate" };
-  return                  { label: "Low",     level: "low"    };
+  if (pct >= 0.95) return { label: i18n("riskHigh", null, "High"), level: "high" };
+  if (pct >= 0.75) return { label: i18n("riskElevated", null, "Elevated"), level: "elevated" };
+  if (pct >= 0.50) return { label: i18n("riskModerate", null, "Moderate"), level: "moderate" };
+  return { label: i18n("riskLow", null, "Low"), level: "low" };
 }
 
 const RISK_COLOR = {
@@ -60,13 +61,13 @@ const RISK_COLOR = {
 export function renderFlood(mount, settings) {
   clear(mount);
   if (!settings.flood?.enabled) return;
-  mount.innerHTML = `<div class="aq-pill aq-pill--skeleton" aria-label="Flood loading"></div>`;
+  mount.appendChild(el("div", { class: "aq-pill aq-pill--skeleton", "aria-label": i18n("floodLoading", null, "Flood loading") }));
 
   (async () => {
     try {
       let loc = settings.weather?.location || null;
       if (!loc) loc = await detectLocation();
-      if (!loc) throw new Error("No location");
+      if (!loc) throw new Error(i18n("noLocation", null, "No location"));
 
       const data = await fetchFlood(loc.latitude, loc.longitude);
       const daily = data.daily || {};
@@ -82,7 +83,7 @@ export function renderFlood(mount, settings) {
       }
 
       const risk = riskLabel(todays, max7);
-      const tooltip = `River discharge ${todays.toFixed(1)} m³/s · 7-day max ${max7.toFixed(1)} m³/s · ${risk.label} risk`;
+      const tooltip = i18n("floodTooltip", [todays.toFixed(1), max7.toFixed(1), risk.label], "River discharge $1 m3/s - 7-day max $2 m3/s - $3 risk");
 
       clear(mount);
       const pill = el("div", {

@@ -5,41 +5,161 @@
   "accentColor": {
     "message": "Color de énfasis"
   },
+  "activateDragToReorder": {
+    "message": "Activate: $1\nDrag to reorder",
+    "description": "Widget UI string"
+  },
   "activeCountSuffix": {
     "message": "on"
+  },
+  "activity": {
+    "message": "Activity",
+    "description": "Widget UI string"
   },
   "add": {
     "message": "Añadir"
   },
+  "addCountdown": {
+    "message": "Add countdown",
+    "description": "Widget UI string"
+  },
+  "addCountdownEvent": {
+    "message": "Add countdown event",
+    "description": "Widget UI string"
+  },
   "addEmbed": {
     "message": "Add embed"
+  },
+  "addFirstLink": {
+    "message": "Add your first link",
+    "description": "Widget UI string"
   },
   "addLink": {
     "message": "Añadir enlace"
   },
+  "addNote": {
+    "message": "Add note",
+    "description": "Widget UI string"
+  },
+  "addSticker": {
+    "message": "Add sticker",
+    "description": "Widget UI string"
+  },
+  "addTask": {
+    "message": "Add task",
+    "description": "Widget UI string"
+  },
   "addTrustedEmbedHint": {
     "message": "Add a trusted web page when it belongs beside your dashboard."
+  },
+  "addValidImageUrl": {
+    "message": "Add a valid image URL.",
+    "description": "Widget UI string"
   },
   "airQuality": {
     "message": "Air Quality"
   },
+  "airQualityLoading": {
+    "message": "Air quality loading",
+    "description": "Widget UI string"
+  },
+  "allDay": {
+    "message": "All day",
+    "description": "Widget UI string"
+  },
   "allSetReady": {
     "message": "All set. You're ready."
+  },
+  "ambientResumeError": {
+    "message": "Couldn't resume audio - $1.",
+    "description": "Widget UI string"
+  },
+  "ambientSoundAria": {
+    "message": "Ambient sound",
+    "description": "Widget UI string"
+  },
+  "ambientSoundBrownNoise": {
+    "message": "Brown noise",
+    "description": "Widget UI string"
+  },
+  "ambientSoundCafeMurmur": {
+    "message": "Cafe murmur",
+    "description": "Widget UI string"
+  },
+  "ambientSoundPinkNoise": {
+    "message": "Pink noise",
+    "description": "Widget UI string"
+  },
+  "ambientSoundRain": {
+    "message": "Rain",
+    "description": "Widget UI string"
   },
   "ambientSounds": {
     "message": "Ambient Sounds"
   },
+  "ambientSoundWhiteNoise": {
+    "message": "White noise",
+    "description": "Widget UI string"
+  },
+  "ambientStartError": {
+    "message": "Couldn't start audio - $1.",
+    "description": "Widget UI string"
+  },
   "animatedBackground": {
     "message": "Animated Background"
+  },
+  "apodVideoOpenHint": {
+    "message": "Today's APOD is a video - open in a new tab",
+    "description": "Widget UI string"
   },
   "appDesc": {
     "message": "Nueva página de pestañas — NTP personalizable y de alto rendimiento con clima, feeds, marcadores, criptomonedas y más."
   },
+  "appearanceTab": {
+    "message": "Apariencia"
+  },
   "appName": {
     "message": "Vantage"
   },
-  "appearanceTab": {
-    "message": "Apariencia"
+  "aqiGood": {
+    "message": "Good",
+    "description": "Widget UI string"
+  },
+  "aqiHazardous": {
+    "message": "Hazardous",
+    "description": "Widget UI string"
+  },
+  "aqiModerate": {
+    "message": "Moderate",
+    "description": "Widget UI string"
+  },
+  "aqiSensitiveGroups": {
+    "message": "Sensitive groups",
+    "description": "Widget UI string"
+  },
+  "aqiUnhealthy": {
+    "message": "Unhealthy",
+    "description": "Widget UI string"
+  },
+  "aqiVeryUnhealthy": {
+    "message": "Very unhealthy",
+    "description": "Widget UI string"
+  },
+  "archive": {
+    "message": "Archive",
+    "description": "Widget UI string"
+  },
+  "astronomyPictureOfTheDay": {
+    "message": "Astronomy Picture of the Day",
+    "description": "Widget UI string"
+  },
+  "autoScroll": {
+    "message": "Auto-scroll",
+    "description": "Widget UI string"
+  },
+  "autoScrollSpeed": {
+    "message": "Auto-scroll speed",
+    "description": "Widget UI string"
   },
   "back": {
     "message": "Back"
@@ -68,14 +188,46 @@
   "bookmarksPermissionPrompt": {
     "message": "Bookmarks permission not granted. Vantage only reads bookmarks after you allow access."
   },
+  "branch": {
+    "message": "branch",
+    "description": "Widget UI string"
+  },
+  "break": {
+    "message": "Break",
+    "description": "Widget UI string"
+  },
+  "breakTime": {
+    "message": "Break time!",
+    "description": "Widget UI string"
+  },
   "calendar": {
     "message": "Calendario"
+  },
+  "calendarEmptyHint": {
+    "message": "Add an iCal URL in Settings -> Calendar.",
+    "description": "Widget UI string"
+  },
+  "calendarLoadError": {
+    "message": "Couldn't load calendar - $1.",
+    "description": "Widget UI string"
+  },
+  "calendarNoEvents": {
+    "message": "No events in the next $1 days.",
+    "description": "Widget UI string"
   },
   "cancel": {
     "message": "Cancelar"
   },
+  "checkLinks": {
+    "message": "Check links",
+    "description": "Widget UI string"
+  },
   "chooseLayoutSubtitle": {
     "message": "Start with the dashboard pace you want. Every choice stays editable later."
+  },
+  "chooseSearchEngine": {
+    "message": "Choose search engine",
+    "description": "Widget UI string"
   },
   "chooseStartingLayout": {
     "message": "Choose a starting layout"
@@ -89,14 +241,86 @@
   "cityPlaceholder": {
     "message": "City - e.g. Chicago"
   },
+  "clearAll": {
+    "message": "Clear all",
+    "description": "Widget UI string"
+  },
+  "clearAllInboxItems": {
+    "message": "Clear all inbox items",
+    "description": "Widget UI string"
+  },
+  "clearAllStarred": {
+    "message": "Clear all starred",
+    "description": "Widget UI string"
+  },
+  "clearCompleted": {
+    "message": "Clear completed",
+    "description": "Widget UI string"
+  },
+  "clearCompletedTasks": {
+    "message": "Clear completed tasks",
+    "description": "Widget UI string"
+  },
   "clock": {
     "message": "Reloj"
   },
   "close": {
     "message": "Cerrar"
   },
+  "closeFocusMode": {
+    "message": "Close focus mode",
+    "description": "Widget UI string"
+  },
   "closeWidgetPicker": {
     "message": "Close widget picker"
+  },
+  "coingeckoConfiguredKeyRateLimit": {
+    "message": "Your configured API key hit a rate limit. Wait a few minutes, then refresh the panel.",
+    "description": "Widget UI string"
+  },
+  "coingeckoKeylessRateLimit": {
+    "message": "Keyless requests are rate-limited aggressively. Wait a few minutes, or add a free demo API key in Settings -> Crypto for more quota.",
+    "description": "Widget UI string"
+  },
+  "coingeckoRateLimited": {
+    "message": "CoinGecko rate-limited this request - try again later.",
+    "description": "Widget UI string"
+  },
+  "coingeckoRejected": {
+    "message": "CoinGecko rejected the request - your API key may be invalid or missing.",
+    "description": "Widget UI string"
+  },
+  "coingeckoSetupKeyPrefix": {
+    "message": "Set up a free CoinGecko demo API key (no credit card) at ",
+    "description": "Widget UI string"
+  },
+  "coingeckoSetupKeySuffix": {
+    "message": ", then paste it into Settings -> Crypto.",
+    "description": "Widget UI string"
+  },
+  "colorBlue": {
+    "message": "Blue",
+    "description": "Widget UI string"
+  },
+  "colorGreen": {
+    "message": "Green",
+    "description": "Widget UI string"
+  },
+  "colorMauve": {
+    "message": "Mauve",
+    "description": "Widget UI string"
+  },
+  "colorPeach": {
+    "message": "Peach",
+    "description": "Widget UI string"
+  },
+  "colorRed": {
+    "message": "Red",
+    "description": "Widget UI string"
+  },
+  "colorYellow": {
+    "message": "Yellow",
+    "description": "Widget UI string"
   },
   "comment": {
     "message": "Comment"
@@ -110,14 +334,70 @@
   "contentTab": {
     "message": "Contenido"
   },
+  "converterCategoryArea": {
+    "message": "Area",
+    "description": "Widget UI string"
+  },
+  "converterCategoryData": {
+    "message": "Data",
+    "description": "Widget UI string"
+  },
+  "converterCategoryLength": {
+    "message": "Length",
+    "description": "Widget UI string"
+  },
+  "converterCategorySpeed": {
+    "message": "Speed",
+    "description": "Widget UI string"
+  },
+  "converterCategoryTemperature": {
+    "message": "Temperature",
+    "description": "Widget UI string"
+  },
+  "converterCategoryVolume": {
+    "message": "Volume",
+    "description": "Widget UI string"
+  },
+  "converterCategoryWeight": {
+    "message": "Weight",
+    "description": "Widget UI string"
+  },
+  "converterFromValue": {
+    "message": "From value",
+    "description": "Widget UI string"
+  },
   "copied": {
     "message": "Copiado"
   },
   "countdowns": {
     "message": "Countdowns"
   },
+  "countdownsEmpty": {
+    "message": "No countdowns yet - click + to add one.",
+    "description": "Widget UI string"
+  },
+  "countdownTimeAgo": {
+    "message": "$1 ago",
+    "description": "Widget UI string"
+  },
   "crypto": {
     "message": "Cripto"
+  },
+  "cryptoLoadError": {
+    "message": "Couldn't load prices - $1.",
+    "description": "Widget UI string"
+  },
+  "cryptoNoPrices": {
+    "message": "No prices returned for the configured coins.",
+    "description": "Widget UI string"
+  },
+  "cryptoNoPricesHintPrefix": {
+    "message": "Check the coin IDs in Settings -> Crypto. CoinGecko expects lowercase IDs (e.g. ",
+    "description": "Widget UI string"
+  },
+  "cryptoNoPricesHintSuffix": {
+    "message": "), and some IDs change when projects rebrand.",
+    "description": "Widget UI string"
   },
   "cryptoPrices": {
     "message": "Crypto Prices"
@@ -125,11 +405,15 @@
   "customCountSuffix": {
     "message": "custom"
   },
+  "customizeWidgets": {
+    "message": "Personalizar widgets"
+  },
   "customWebEmbed": {
     "message": "Custom web embed"
   },
-  "customizeWidgets": {
-    "message": "Personalizar widgets"
+  "dailyPhoto": {
+    "message": "Daily photo",
+    "description": "Widget UI string"
   },
   "darkMode": {
     "message": "Modo oscuro"
@@ -143,11 +427,20 @@
   "delete": {
     "message": "Eliminar"
   },
+  "deleteNote": {
+    "message": "Delete note",
+    "description": "Widget UI string"
+  },
+  "deleteSticker": {
+    "message": "Delete sticker",
+    "description": "Widget UI string"
+  },
+  "deleteTask": {
+    "message": "Delete task",
+    "description": "Widget UI string"
+  },
   "description": {
     "message": "Descripción"
-  },
-  "detectLocation": {
-    "message": "Detect location"
   },
   "detectedLocation": {
     "message": "Detected: $1"
@@ -155,8 +448,19 @@
   "detecting": {
     "message": "Detecting..."
   },
+  "detectLocation": {
+    "message": "Detect location"
+  },
   "disabled": {
     "message": "Deshabilitado"
+  },
+  "done": {
+    "message": "Done",
+    "description": "Widget UI string"
+  },
+  "dragToReorder": {
+    "message": "Drag to reorder",
+    "description": "Widget UI string"
   },
   "edit": {
     "message": "Editar"
@@ -164,8 +468,20 @@
   "editLayout": {
     "message": "Edit layout"
   },
+  "editNoteAria": {
+    "message": "Edit note: $1",
+    "description": "Widget UI string"
+  },
   "embed": {
     "message": "Embed"
+  },
+  "embedBlocked": {
+    "message": "This site blocked embedding.",
+    "description": "Widget UI string"
+  },
+  "embedEmptyHint": {
+    "message": "Add a valid web URL in Settings -> Embeds.",
+    "description": "Widget UI string"
   },
   "embedTitleAria": {
     "message": "Embed title"
@@ -194,14 +510,30 @@
   "enterEmbedUrl": {
     "message": "Enter the embed URL."
   },
+  "enterValidUrl": {
+    "message": "Enter a valid URL.",
+    "description": "Widget UI string"
+  },
   "enterValidWebUrlNoCredentials": {
     "message": "Enter a valid web URL without a username or password."
   },
   "error": {
     "message": "Ocurrió un error"
   },
+  "eventName": {
+    "message": "Event name",
+    "description": "Widget UI string"
+  },
   "export": {
     "message": "Exportar"
+  },
+  "failedToFetchUrl": {
+    "message": "Failed to fetch $1",
+    "description": "Widget UI string"
+  },
+  "feedDefaultEmptyHint": {
+    "message": "Add a feed in settings to get started.",
+    "description": "Widget UI string"
   },
   "feedMarkAllReadAria": {
     "message": "Mark all $1 read"
@@ -212,6 +544,22 @@
   "feedRefreshAria": {
     "message": "Refresh $1"
   },
+  "feeds": {
+    "message": "Feeds"
+  },
+  "feedsEmptyTitle": {
+    "message": "No feeds yet"
+  },
+  "feedsFailedDetail": {
+    "message": "Failed: $1. Check your connection or these feed URLs.",
+    "description": "Widget UI string"
+  },
+  "feedsLoadErrorTitle": {
+    "message": "Couldn't load feeds"
+  },
+  "feedsNothingTitle": {
+    "message": "Nothing to show yet"
+  },
   "feedStarError": {
     "message": "Couldn't star item."
   },
@@ -221,20 +569,56 @@
   "feedUpdated": {
     "message": "Updated $1"
   },
-  "feeds": {
-    "message": "Feeds"
+  "filterInboxItems": {
+    "message": "Filter inbox items",
+    "description": "Widget UI string"
   },
-  "feedsEmptyTitle": {
-    "message": "No feeds yet"
+  "filterInboxPlaceholder": {
+    "message": "Filter inbox...",
+    "description": "Widget UI string"
   },
-  "feedsLoadErrorTitle": {
-    "message": "Couldn't load feeds"
-  },
-  "feedsNothingTitle": {
-    "message": "Nothing to show yet"
+  "findDuplicates": {
+    "message": "Find duplicates",
+    "description": "Widget UI string"
   },
   "firstTimeSetup": {
     "message": "First-time setup"
+  },
+  "floodLoading": {
+    "message": "Flood loading",
+    "description": "Widget UI string"
+  },
+  "floodTooltip": {
+    "message": "River discharge $1 m3/s - 7-day max $2 m3/s - $3 risk",
+    "description": "Widget UI string"
+  },
+  "focus": {
+    "message": "Focus",
+    "description": "Widget UI string"
+  },
+  "focusMode": {
+    "message": "Focus mode",
+    "description": "Widget UI string"
+  },
+  "focusModeFullScreen": {
+    "message": "Focus mode (full-screen)",
+    "description": "Widget UI string"
+  },
+  "focusSessionStarting": {
+    "message": "$1 min focus session starting.",
+    "description": "Widget UI string"
+  },
+  "forecastDetailsTitle": {
+    "message": "Precip: $1 mm / $2% - UV: $3 - Wind: $4",
+    "description": "Widget UI string"
+  },
+  "forecastUnavailable": {
+    "message": "Forecast unavailable",
+    "description": "Widget UI string"
+  },
+  "forgotten30d": {
+    "message": "Forgotten (30d+)",
+    "description": "Widget UI string"
   },
   "french": {
     "message": "Francés"
@@ -245,11 +629,83 @@
   "github": {
     "message": "GitHub"
   },
+  "githubEventCommented": {
+    "message": "Commented in $1",
+    "description": "Widget UI string"
+  },
+  "githubEventCreated": {
+    "message": "Created $1 in $2",
+    "description": "Widget UI string"
+  },
+  "githubEventDeleted": {
+    "message": "Deleted $1 in $2",
+    "description": "Widget UI string"
+  },
+  "githubEventForked": {
+    "message": "Forked $1",
+    "description": "Widget UI string"
+  },
+  "githubEventIssue": {
+    "message": "$1 issue in $2",
+    "description": "Widget UI string"
+  },
+  "githubEventPr": {
+    "message": "$1 PR in $2",
+    "description": "Widget UI string"
+  },
+  "githubEventPushed": {
+    "message": "Pushed to $1",
+    "description": "Widget UI string"
+  },
+  "githubEventReleased": {
+    "message": "Released in $1",
+    "description": "Widget UI string"
+  },
+  "githubEventStarred": {
+    "message": "Starred $1",
+    "description": "Widget UI string"
+  },
+  "githubLoadError": {
+    "message": "Couldn't load GitHub data - $1.",
+    "description": "Widget UI string"
+  },
+  "githubNoRecentActivity": {
+    "message": "No recent public activity.",
+    "description": "Widget UI string"
+  },
+  "githubNoTrendingRepos": {
+    "message": "No trending repos found.",
+    "description": "Widget UI string"
+  },
+  "githubRateLimited": {
+    "message": "GitHub API rate-limited this request - try again after $1",
+    "description": "Widget UI string"
+  },
+  "githubSetUsernameHint": {
+    "message": "Set your GitHub username in Settings -> GitHub to see your activity.",
+    "description": "Widget UI string"
+  },
+  "githubShowingCached": {
+    "message": "Showing cached GitHub data - API rate-limited until $1.",
+    "description": "Widget UI string"
+  },
+  "githubUserNotFound": {
+    "message": "User not found",
+    "description": "Widget UI string"
+  },
+  "githubView": {
+    "message": "GitHub view",
+    "description": "Widget UI string"
+  },
   "greeting": {
     "message": "Greeting"
   },
   "greetingNameAria": {
     "message": "Your name for the greeting"
+  },
+  "groupLinksAria": {
+    "message": "$1 links",
+    "description": "Widget UI string"
   },
   "help": {
     "message": "Ayuda"
@@ -278,11 +734,139 @@
   "historySearchPlaceholder": {
     "message": "Search browsing history..."
   },
+  "hostAccessNotGranted": {
+    "message": "Host access not granted",
+    "description": "Widget UI string"
+  },
+  "image": {
+    "message": "Image",
+    "description": "Widget UI string"
+  },
+  "imageUrlPrompt": {
+    "message": "Image URL:",
+    "description": "Widget UI string"
+  },
   "import": {
     "message": "Importar"
   },
   "inbox": {
     "message": "Inbox"
+  },
+  "inboxAddUrlAria": {
+    "message": "Add URL to inbox",
+    "description": "Widget UI string"
+  },
+  "inboxAddUrlTitle": {
+    "message": "Add a URL manually",
+    "description": "Widget UI string"
+  },
+  "inboxAllLinksReachable": {
+    "message": "All links are reachable.",
+    "description": "Widget UI string"
+  },
+  "inboxAlreadySaved": {
+    "message": "Already in your inbox.",
+    "description": "Widget UI string"
+  },
+  "inboxArchivedItem": {
+    "message": "Archived \"$1\".",
+    "description": "Widget UI string"
+  },
+  "inboxBrokenLinks": {
+    "message": "$1 link(s) may be broken.",
+    "description": "Widget UI string"
+  },
+  "inboxCheckingLinks": {
+    "message": "Checking $1 link(s) - this sends HEAD requests to each URL.",
+    "description": "Widget UI string"
+  },
+  "inboxClearedItems": {
+    "message": "Cleared $1 inbox item(s).",
+    "description": "Widget UI string"
+  },
+  "inboxDeletedItem": {
+    "message": "Deleted \"$1\".",
+    "description": "Widget UI string"
+  },
+  "inboxDuplicatesRemoved": {
+    "message": "$1 duplicate(s) across $2 URL(s). Keeping newest, removing older copies.",
+    "description": "Widget UI string"
+  },
+  "inboxEmpty": {
+    "message": "Your inbox is empty. Save tabs here for later.",
+    "description": "Widget UI string"
+  },
+  "inboxForgottenCount": {
+    "message": "$1 item(s) saved more than 30 days ago.",
+    "description": "Widget UI string"
+  },
+  "inboxHygieneTools": {
+    "message": "Inbox hygiene tools",
+    "description": "Widget UI string"
+  },
+  "inboxHygieneToolsTitle": {
+    "message": "Find duplicates, forgotten items, or broken links",
+    "description": "Widget UI string"
+  },
+  "inboxLinkCheckComplete": {
+    "message": "Link check complete.",
+    "description": "Widget UI string"
+  },
+  "inboxNoDuplicateUrls": {
+    "message": "No duplicate URLs found.",
+    "description": "Widget UI string"
+  },
+  "inboxNoFilterMatches": {
+    "message": "No items match your filter.",
+    "description": "Widget UI string"
+  },
+  "inboxNoItemsToCheck": {
+    "message": "No items to check.",
+    "description": "Widget UI string"
+  },
+  "inboxNoOldItems": {
+    "message": "No items older than 30 days.",
+    "description": "Widget UI string"
+  },
+  "inboxNoSaveableTab": {
+    "message": "No saveable tab found in this window.",
+    "description": "Widget UI string"
+  },
+  "inboxSaved": {
+    "message": "Saved to inbox.",
+    "description": "Widget UI string"
+  },
+  "inboxSavePreviousTab": {
+    "message": "Save previous tab",
+    "description": "Widget UI string"
+  },
+  "inboxSavePreviousTabTitle": {
+    "message": "Save the tab you were viewing",
+    "description": "Widget UI string"
+  },
+  "inboxSaveTabError": {
+    "message": "Couldn't save tab.",
+    "description": "Widget UI string"
+  },
+  "inboxTabCaptureUnavailable": {
+    "message": "Tab capture is unavailable.",
+    "description": "Widget UI string"
+  },
+  "inboxTabPermissionDenied": {
+    "message": "Tab permission denied - use Add URL instead.",
+    "description": "Widget UI string"
+  },
+  "inboxUrlPlaceholder": {
+    "message": "https://example.com/article",
+    "description": "Widget UI string"
+  },
+  "inboxUrlToSave": {
+    "message": "URL to save",
+    "description": "Widget UI string"
+  },
+  "invalidWidget": {
+    "message": "Invalid widget: $1",
+    "description": "Widget UI string"
   },
   "japanese": {
     "message": "Japonés"
@@ -356,23 +940,96 @@
   "loading": {
     "message": "Cargando..."
   },
+  "loadingForecast": {
+    "message": "Loading forecast",
+    "description": "Widget UI string"
+  },
+  "loadingWeather": {
+    "message": "Loading weather",
+    "description": "Widget UI string"
+  },
   "localFirstPrivate": {
     "message": "Local-first. Private by default."
   },
   "localStatus": {
     "message": "Local status"
   },
+  "longBreak": {
+    "message": "Long Break",
+    "description": "Widget UI string"
+  },
   "lookingUp": {
     "message": "Looking up..."
+  },
+  "lookupAuthorWikipedia": {
+    "message": "Look up $1 on Wikipedia",
+    "description": "Widget UI string"
+  },
+  "marine": {
+    "message": "Marine",
+    "description": "Widget UI string"
+  },
+  "marineCurrentSummary": {
+    "message": "Current $1$2",
+    "description": "Widget UI string"
+  },
+  "marineDataUnavailable": {
+    "message": "Marine data unavailable",
+    "description": "Widget UI string"
+  },
+  "marineLoading": {
+    "message": "Marine loading",
+    "description": "Widget UI string"
+  },
+  "marineWaveSummary": {
+    "message": "Wave $1$2",
+    "description": "Widget UI string"
   },
   "marineWeather": {
     "message": "Marine Weather"
   },
+  "markComplete": {
+    "message": "Mark complete",
+    "description": "Widget UI string"
+  },
+  "markIncomplete": {
+    "message": "Mark incomplete",
+    "description": "Widget UI string"
+  },
   "name": {
     "message": "Nombre"
   },
-  "newTabTitle": {
-    "message": "New Tab"
+  "nasaApod": {
+    "message": "NASA APOD",
+    "description": "Widget UI string"
+  },
+  "nasaApodLoadError": {
+    "message": "Couldn't load NASA APOD - $1.",
+    "description": "Widget UI string"
+  },
+  "nasaApodNotAvailable": {
+    "message": "NASA APOD is not available for today's date yet - trying again after $1.",
+    "description": "Widget UI string"
+  },
+  "nasaApodRateLimited": {
+    "message": "NASA APOD is rate limited - add a free API key in Settings -> Photo, or try again after $1.",
+    "description": "Widget UI string"
+  },
+  "nasaApodRejected": {
+    "message": "NASA APOD rejected this request - check the API key in Settings -> Photo, or try again after $1.",
+    "description": "Widget UI string"
+  },
+  "nasaApodVideoThumbnail": {
+    "message": "NASA APOD video thumbnail",
+    "description": "Widget UI string"
+  },
+  "newNote": {
+    "message": "New note",
+    "description": "Widget UI string"
+  },
+  "newQuote": {
+    "message": "New quote",
+    "description": "Widget UI string"
   },
   "news": {
     "message": "Noticias"
@@ -380,26 +1037,85 @@
   "newsEmptyHint": {
     "message": "Add a news feed URL in Settings -> News."
   },
+  "newTabTitle": {
+    "message": "New Tab"
+  },
+  "newTask": {
+    "message": "New task",
+    "description": "Widget UI string"
+  },
   "next": {
     "message": "Next"
   },
   "noItems": {
     "message": "No $ITEM$ yet"
   },
+  "noLocation": {
+    "message": "No location",
+    "description": "Widget UI string"
+  },
   "noResults": {
     "message": "Sin resultados"
+  },
+  "noRiverNearby": {
+    "message": "No river nearby",
+    "description": "Widget UI string"
   },
   "noSyncNoTracking": {
     "message": "No sync. No tracking. No profile."
   },
+  "note": {
+    "message": "Note",
+    "description": "Widget UI string"
+  },
+  "noteContent": {
+    "message": "Note content",
+    "description": "Widget UI string"
+  },
+  "noteDeleted": {
+    "message": "Note deleted.",
+    "description": "Widget UI string"
+  },
+  "noteEmptyClickEdit": {
+    "message": "Empty - click to edit",
+    "description": "Widget UI string"
+  },
+  "noteFocusPlaceholder": {
+    "message": "Type... or paste lyrics, a script, a speech.",
+    "description": "Widget UI string"
+  },
   "notes": {
     "message": "Notas"
+  },
+  "notesEmpty": {
+    "message": "No notes yet - click + to add one.",
+    "description": "Widget UI string"
+  },
+  "noteTitle": {
+    "message": "Note title",
+    "description": "Widget UI string"
   },
   "onboardingDoneSubtitle": {
     "message": "Your preferences are saved locally on this device. You can refine the setup from Settings."
   },
   "openDashboard": {
     "message": "Open dashboard"
+  },
+  "openDirectly": {
+    "message": "Open directly",
+    "description": "Widget UI string"
+  },
+  "openInNewTab": {
+    "message": "Open in new tab",
+    "description": "Widget UI string"
+  },
+  "openInNewTabAria": {
+    "message": "Open $1 in new tab",
+    "description": "Widget UI string"
+  },
+  "openNoteFocusMode": {
+    "message": "Open note in focus mode",
+    "description": "Widget UI string"
   },
   "openSettings": {
     "message": "Abrir configuración"
@@ -413,6 +1129,10 @@
   "pageControls": {
     "message": "Page controls"
   },
+  "pause": {
+    "message": "Pause",
+    "description": "Widget UI string"
+  },
   "permissionDeniedWidgetDisabled": {
     "message": "$1 permission denied. The widget stays disabled."
   },
@@ -422,11 +1142,55 @@
   "personalizeSubtitle": {
     "message": "Add a greeting name and weather city now, or leave either blank for a clean start."
   },
+  "photoLoadError": {
+    "message": "Couldn't load photo.",
+    "description": "Widget UI string"
+  },
   "photoOfTheDay": {
     "message": "Photo of the Day"
   },
+  "pictureInPicture": {
+    "message": "Picture-in-Picture",
+    "description": "Widget UI string"
+  },
+  "play": {
+    "message": "Play",
+    "description": "Widget UI string"
+  },
+  "pollenAlder": {
+    "message": "Alder",
+    "description": "Widget UI string"
+  },
+  "pollenBirch": {
+    "message": "Birch",
+    "description": "Widget UI string"
+  },
+  "pollenGrass": {
+    "message": "Grass",
+    "description": "Widget UI string"
+  },
+  "pollenMugwort": {
+    "message": "Mugwort",
+    "description": "Widget UI string"
+  },
+  "pollenOlive": {
+    "message": "Olive",
+    "description": "Widget UI string"
+  },
+  "pollenRagweed": {
+    "message": "Ragweed",
+    "description": "Widget UI string"
+  },
   "pomodoro": {
     "message": "Pomodoro"
+  },
+  "pomodoroSessionStarted": {
+    "message": "$1 session started.",
+    "description": "Widget UI string"
+  },
+  "popOutTimer": {
+    "message": "Pop out timer",
+    "description": "Widget UI string"
   },
   "presetAriaLabel": {
     "message": "$1. $2 Includes $3."
@@ -434,8 +1198,24 @@
   "privacyAndSyncStatus": {
     "message": "Privacy and sync status"
   },
+  "quicklinkAriaWithHost": {
+    "message": "$1 ($2)",
+    "description": "Widget UI string"
+  },
+  "quicklinkGroupEmpty": {
+    "message": "No links in this group.",
+    "description": "Widget UI string"
+  },
   "quickLinks": {
     "message": "Enlaces rápidos"
+  },
+  "quicklinkTitleWithHost": {
+    "message": "$1 - $2\nDrag to reorder",
+    "description": "Widget UI string"
+  },
+  "quickpickHint": {
+    "message": "Cancel to keep the default engine unchanged",
+    "description": "Widget UI string"
   },
   "quote": {
     "message": "Cita"
@@ -443,11 +1223,12 @@
   "quoteOfTheDay": {
     "message": "Quote of the Day"
   },
+  "radarNoLocationHint": {
+    "message": "Set a city in Settings -> Weather to center the radar.",
+    "description": "Widget UI string"
+  },
   "rating": {
     "message": "Rating"
-  },
-  "readMore": {
-    "message": "Leer más"
   },
   "readingListAlreadySaved": {
     "message": "Already in Reading list."
@@ -458,11 +1239,11 @@
   "readingListSaveAria": {
     "message": "Save to Reading list"
   },
-  "readingListSaveFailed": {
-    "message": "Couldn't save - $1."
-  },
   "readingListSaved": {
     "message": "Saved to Reading list."
+  },
+  "readingListSaveFailed": {
+    "message": "Couldn't save - $1."
   },
   "readingListUnavailable": {
     "message": "Reading List is unavailable in this browser."
@@ -470,14 +1251,52 @@
   "readingPanels": {
     "message": "Reading panels"
   },
+  "readMore": {
+    "message": "Leer más"
+  },
+  "ready": {
+    "message": "Ready",
+    "description": "Widget UI string"
+  },
+  "ref": {
+    "message": "ref",
+    "description": "Widget UI string"
+  },
   "refresh": {
     "message": "Refresh"
+  },
+  "refreshCalendar": {
+    "message": "Refresh calendar",
+    "description": "Widget UI string"
   },
   "refreshFeeds": {
     "message": "Refresh feeds"
   },
+  "refreshQuote": {
+    "message": "Refresh quote",
+    "description": "Widget UI string"
+  },
+  "reload": {
+    "message": "Reload",
+    "description": "Widget UI string"
+  },
+  "reloadRadar": {
+    "message": "Reload radar",
+    "description": "Widget UI string"
+  },
+  "removeCountdown": {
+    "message": "Remove countdown",
+    "description": "Widget UI string"
+  },
+  "removedNamedItem": {
+    "message": "Removed \"$1\"."
+  },
   "removeEmbed": {
     "message": "Remove embed"
+  },
+  "removeFromStarred": {
+    "message": "Remove from starred",
+    "description": "Widget UI string"
   },
   "removeLink": {
     "message": "Remove $ITEM$"
@@ -485,8 +1304,33 @@
   "removeThisEmbed": {
     "message": "Remove this embed"
   },
-  "removedNamedItem": {
-    "message": "Removed \"$1\"."
+  "reorderNamed": {
+    "message": "Reorder $1",
+    "description": "Widget UI string"
+  },
+  "reset": {
+    "message": "Reset",
+    "description": "Widget UI string"
+  },
+  "result": {
+    "message": "Result",
+    "description": "Widget UI string"
+  },
+  "riskElevated": {
+    "message": "Elevated",
+    "description": "Widget UI string"
+  },
+  "riskHigh": {
+    "message": "High",
+    "description": "Widget UI string"
+  },
+  "riskLow": {
+    "message": "Low",
+    "description": "Widget UI string"
+  },
+  "riskModerate": {
+    "message": "Moderate",
+    "description": "Widget UI string"
   },
   "riverFloodRisk": {
     "message": "River Flood Risk"
@@ -497,14 +1341,38 @@
   "rssReadingList": {
     "message": "RSS / Reading List"
   },
+  "runSearch": {
+    "message": "Run search",
+    "description": "Widget UI string"
+  },
   "save": {
     "message": "Guardar"
   },
   "searchAndQuickLinks": {
     "message": "Search and quick links"
   },
+  "searchNamed": {
+    "message": "Search $1",
+    "description": "Widget UI string"
+  },
   "searchPlaceholder": {
     "message": "Buscar en la web..."
+  },
+  "searchQuery": {
+    "message": "Search query",
+    "description": "Widget UI string"
+  },
+  "searchQueryWith": {
+    "message": "Search \"$1\" with...",
+    "description": "Widget UI string"
+  },
+  "searchTheWeb": {
+    "message": "Search the web",
+    "description": "Widget UI string"
+  },
+  "searchThisQueryWith": {
+    "message": "Search this query with",
+    "description": "Widget UI string"
   },
   "searchWeb": {
     "message": "Buscar en la web"
@@ -512,8 +1380,9 @@
   "set": {
     "message": "Set"
   },
-  "setToLocation": {
-    "message": "Set to $1"
+  "setCustomSearchUrlPlaceholder": {
+    "message": "Set a custom search URL in settings",
+    "description": "Widget UI string"
   },
   "settings": {
     "message": "Configuración"
@@ -809,6 +1678,9 @@
   "settingsZoom": {
     "message": "Zoom"
   },
+  "setToLocation": {
+    "message": "Set to $1"
+  },
   "setupStepOf": {
     "message": "Step $1 of $2"
   },
@@ -821,26 +1693,102 @@
   "sidePanelTitle": {
     "message": "Vantage Feeds"
   },
+  "skip": {
+    "message": "Skip",
+    "description": "Widget UI string"
+  },
   "skipSetup": {
     "message": "Skip setup"
   },
   "skipToMain": {
     "message": "Ir al contenido principal"
   },
+  "solar": {
+    "message": "Solar",
+    "description": "Widget UI string"
+  },
   "solarRadiation": {
     "message": "Solar Radiation"
+  },
+  "solarRadiationLoading": {
+    "message": "Solar radiation loading",
+    "description": "Widget UI string"
+  },
+  "solarRadiationUnavailable": {
+    "message": "Solar radiation data unavailable",
+    "description": "Widget UI string"
   },
   "spanish": {
     "message": "Español"
   },
+  "starredClearedItems": {
+    "message": "Cleared $1 starred item(s).",
+    "description": "Widget UI string"
+  },
+  "starredClickToRemove": {
+    "message": "Starred - click to remove",
+    "description": "Widget UI string"
+  },
+  "starredEmpty": {
+    "message": "No starred items yet - tap the star icon on any feed headline to pin it here.",
+    "description": "Widget UI string"
+  },
   "starredItems": {
     "message": "Starred Items"
+  },
+  "starredRemovedItem": {
+    "message": "Removed \"$1\".",
+    "description": "Widget UI string"
+  },
+  "starredToast": {
+    "message": "Starred.",
+    "description": "Widget UI string"
+  },
+  "start": {
+    "message": "Start",
+    "description": "Widget UI string"
+  },
+  "starThisItem": {
+    "message": "Star this item",
+    "description": "Widget UI string"
   },
   "startTime": {
     "message": "Start time"
   },
+  "stickerImage": {
+    "message": "Sticker image",
+    "description": "Widget UI string"
+  },
+  "stickerImageEmpty": {
+    "message": "Double-click to add an image URL.",
+    "description": "Widget UI string"
+  },
+  "stop": {
+    "message": "Stop",
+    "description": "Widget UI string"
+  },
   "success": {
     "message": "Éxito"
+  },
+  "swapUnits": {
+    "message": "Swap units",
+    "description": "Widget UI string"
+  },
+  "tabGroupAria": {
+    "message": "Tab Group: $1",
+    "description": "Widget UI string"
+  },
+  "takeBreakMinutes": {
+    "message": "Take a $1 min break.",
+    "description": "Widget UI string"
+  },
+  "targetDate": {
+    "message": "Target date",
+    "description": "Widget UI string"
+  },
+  "taskDeleted": {
+    "message": "Task deleted.",
+    "description": "Widget UI string"
   },
   "theme": {
     "message": "Tema"
@@ -848,17 +1796,45 @@
   "time": {
     "message": "Time"
   },
+  "timeToFocus": {
+    "message": "Time to focus!",
+    "description": "Widget UI string"
+  },
   "title": {
     "message": "Título"
   },
+  "today": {
+    "message": "Today",
+    "description": "Widget UI string"
+  },
+  "todaysApodVideo": {
+    "message": "today's APOD video",
+    "description": "Widget UI string"
+  },
   "todo": {
     "message": "Tareas"
+  },
+  "todoAddPlaceholder": {
+    "message": "Add a task...",
+    "description": "Widget UI string"
+  },
+  "todoClearedCompleted": {
+    "message": "Cleared $1 completed task(s).",
+    "description": "Widget UI string"
+  },
+  "todoEmpty": {
+    "message": "No tasks yet - add one above.",
+    "description": "Widget UI string"
   },
   "todoList": {
     "message": "To-Do List"
   },
   "toggleWidgetLabel": {
     "message": "Toggle $1"
+  },
+  "tomorrow": {
+    "message": "Tomorrow",
+    "description": "Widget UI string"
   },
   "topSites": {
     "message": "Sitios principales"
@@ -875,14 +1851,42 @@
   "topSitesPermissionPrompt": {
     "message": "Top Sites permission not granted. Vantage only reads most-visited sites after you allow access."
   },
+  "trending": {
+    "message": "Trending",
+    "description": "Widget UI string"
+  },
   "undo": {
     "message": "Undo"
+  },
+  "unit": {
+    "message": "Unit",
+    "description": "Widget UI string"
   },
   "unitConverter": {
     "message": "Unit Converter"
   },
+  "unknownError": {
+    "message": "unknown error",
+    "description": "Widget UI string"
+  },
+  "unstarredToast": {
+    "message": "Unstarred.",
+    "description": "Widget UI string"
+  },
+  "unstarThisItem": {
+    "message": "Unstar this item",
+    "description": "Widget UI string"
+  },
+  "untitled": {
+    "message": "Untitled",
+    "description": "Widget UI string"
+  },
   "untitledEmbed": {
     "message": "Untitled Embed"
+  },
+  "updatedRelative": {
+    "message": "Updated $1",
+    "description": "Widget UI string"
   },
   "url": {
     "message": "URL"
@@ -896,14 +1900,58 @@
   "version": {
     "message": "Version $VERSION$"
   },
+  "videoThumbnail": {
+    "message": "Video thumbnail",
+    "description": "Widget UI string"
+  },
   "viewAll": {
     "message": "Ver todo"
+  },
+  "volume": {
+    "message": "Volume",
+    "description": "Widget UI string"
+  },
+  "volumeShort": {
+    "message": "Vol",
+    "description": "Widget UI string"
+  },
+  "watchApodVideo": {
+    "message": "Watch $1",
+    "description": "Widget UI string"
   },
   "weather": {
     "message": "Clima"
   },
+  "weatherDataUnavailable": {
+    "message": "Weather data unavailable",
+    "description": "Widget UI string"
+  },
+  "weatherLoadErrorTitle": {
+    "message": "Couldn't load weather",
+    "description": "Widget UI string"
+  },
   "weatherLocation": {
     "message": "Weather location"
+  },
+  "weatherSetCityTitle": {
+    "message": "Set a city in Settings -> Weather to enable",
+    "description": "Widget UI string"
+  },
+  "weatherUnavailable": {
+    "message": "Weather unavailable",
+    "description": "Widget UI string"
+  },
+  "weatherUnavailableSetCity": {
+    "message": "Weather unavailable - set a city in settings",
+    "description": "Widget UI string"
+  },
+  "widget": {
+    "message": "Widget",
+    "description": "Widget UI string"
+  },
+  "widgetFailedToLoad": {
+    "message": "Widget failed to load.",
+    "description": "Widget UI string"
   },
   "widgetGroupEmbeds": {
     "message": "Embeds"
@@ -1013,6 +2061,18 @@
   "widgetHintWeatherMap": {
     "message": "Weather map"
   },
+  "widgetHomepage": {
+    "message": "Widget homepage",
+    "description": "Widget UI string"
+  },
+  "widgetHomepageAria": {
+    "message": "$1 homepage",
+    "description": "Widget UI string"
+  },
+  "widgetManifestNotLoaded": {
+    "message": "Widget manifest not loaded yet.",
+    "description": "Widget UI string"
+  },
   "widgetPickerSubtitle": {
     "message": "Toggle dashboard modules and add live embeds."
   },
@@ -1022,11 +2082,19 @@
   "windyRadar": {
     "message": "Windy Radar"
   },
+  "windyWeatherRadar": {
+    "message": "Windy weather radar",
+    "description": "Widget UI string"
+  },
   "workspaces": {
     "message": "Workspaces"
   },
   "worldClocks": {
     "message": "World Clocks"
+  },
+  "writeSomethingPlaceholder": {
+    "message": "Write something...",
+    "description": "Widget UI string"
   },
   "yourName": {
     "message": "Your name"

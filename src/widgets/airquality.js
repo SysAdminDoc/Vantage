@@ -6,16 +6,17 @@
 import { el, clear, toast } from "../utils/dom.js";
 import { iconString } from "../icons.js";
 import { detectLocation } from "../utils/weather-source.js";
+import { i18n } from "../utils/i18n.js";
 
 const AQ_BASE = "https://air-quality-api.open-meteo.com/v1/air-quality";
 
 const AQI_LEVELS = [
-  { max: 50,  label: "Good",                color: "var(--green)"  },
-  { max: 100, label: "Moderate",            color: "var(--yellow)" },
-  { max: 150, label: "Sensitive groups",    color: "var(--peach)"  },
-  { max: 200, label: "Unhealthy",           color: "var(--red)"    },
-  { max: 300, label: "Very unhealthy",      color: "var(--mauve)"  },
-  { max: Infinity, label: "Hazardous",      color: "var(--maroon)" }
+  { max: 50,  label: "Good",             key: "aqiGood",            color: "var(--green)"  },
+  { max: 100, label: "Moderate",         key: "aqiModerate",        color: "var(--yellow)" },
+  { max: 150, label: "Sensitive groups", key: "aqiSensitiveGroups", color: "var(--peach)"  },
+  { max: 200, label: "Unhealthy",        key: "aqiUnhealthy",       color: "var(--red)"    },
+  { max: 300, label: "Very unhealthy",   key: "aqiVeryUnhealthy",   color: "var(--mauve)"  },
+  { max: Infinity, label: "Hazardous",   key: "aqiHazardous",       color: "var(--maroon)" }
 ];
 
 function aqiInfo(aqi) {
@@ -36,18 +37,18 @@ async function fetchAirQuality(lat, lon) {
 
 function formatPollens(current) {
   const POLLEN_KEYS = [
-    ["alder_pollen", "Alder"],
-    ["birch_pollen", "Birch"],
-    ["grass_pollen", "Grass"],
-    ["mugwort_pollen", "Mugwort"],
-    ["olive_pollen", "Olive"],
-    ["ragweed_pollen", "Ragweed"]
+    { field: "alder_pollen", key: "pollenAlder", label: "Alder" },
+    { field: "birch_pollen", key: "pollenBirch", label: "Birch" },
+    { field: "grass_pollen", key: "pollenGrass", label: "Grass" },
+    { field: "mugwort_pollen", key: "pollenMugwort", label: "Mugwort" },
+    { field: "olive_pollen", key: "pollenOlive", label: "Olive" },
+    { field: "ragweed_pollen", key: "pollenRagweed", label: "Ragweed" }
   ];
   const active = POLLEN_KEYS
-    .filter(([k]) => current[k] != null && current[k] > 0)
-    .sort((a, b) => current[b[0]] - current[a[0]])
+    .filter(({ field }) => current[field] != null && current[field] > 0)
+    .sort((a, b) => current[b.field] - current[a.field])
     .slice(0, 3)
-    .map(([k, name]) => `${name} ${Math.round(current[k])}`);
+    .map(({ field, key, label }) => `${i18n(key, null, label)} ${Math.round(current[field])}`);
   return active.length ? active.join(" · ") : null;
 }
 
@@ -56,13 +57,13 @@ export function renderAirQuality(mount, settings) {
   if (!settings.airquality?.enabled) return;
 
   // Skeleton placeholder
-  mount.innerHTML = `<div class="aq-pill aq-pill--skeleton" aria-label="Air quality loading"></div>`;
+  mount.appendChild(el("div", { class: "aq-pill aq-pill--skeleton", "aria-label": i18n("airQualityLoading", null, "Air quality loading") }));
 
   (async () => {
     try {
       let loc = settings.weather?.location || null;
       if (!loc) loc = await detectLocation();
-      if (!loc) throw new Error("No location");
+      if (!loc) throw new Error(i18n("noLocation", null, "No location"));
 
       const data = await fetchAirQuality(loc.latitude, loc.longitude);
       const cur  = data.current || {};
@@ -73,7 +74,8 @@ export function renderAirQuality(mount, settings) {
       const pollenStr = formatPollens(cur);
 
       const lines = [pm25, pm10, pollenStr].filter(Boolean);
-      const tooltipText = `AQI ${aqi ?? "—"} · ${info.label}${lines.length ? "\n" + lines.join(" · ") : ""}`;
+      const label = i18n(info.key, null, info.label);
+      const tooltipText = `AQI ${aqi ?? "-"} - ${label}${lines.length ? "\n" + lines.join(" - ") : ""}`;
 
       clear(mount);
       const pill = el("div", {
@@ -86,8 +88,8 @@ export function renderAirQuality(mount, settings) {
         style: { "--aq-color": info.color }
       }, [
         el("span", { class: "aq-pill__icon", innerHTML: iconString("wind", 13) }),
-        el("span", { class: "aq-pill__aqi" }, [String(aqi ?? "—")]),
-        el("span", { class: "aq-pill__label" }, [info.label])
+        el("span", { class: "aq-pill__aqi" }, [String(aqi ?? "-")]),
+        el("span", { class: "aq-pill__label" }, [label])
       ]);
 
       // Expand on click/keyboard to show PM + pollen detail
