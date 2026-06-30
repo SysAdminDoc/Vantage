@@ -114,6 +114,7 @@ For visual QA, open `qa-scenes.html` from the same local server as `newtab.html`
 - **Reddit feed presets** — one-click add for popular subreddits.
 
 ### Productivity
+- **Manual link enrichment** — Quick Links and Inbox URL saves can autofill a blank label from the page title when the destination origin is already granted, reuse cached favicons instantly, and fall back to the hostname without blocking the save.
 - **OPML import + export** — one-click export of all RSS + News feeds; merge-import from any OPML file (Feedly, Inoreader, NetNewsWire compatible).
 - **Settings JSON export / import with partial restore** — download your config as JSON; on import, a section-checklist dialog lets you pick which parts to overwrite (theme, widgets, links, feeds, workspaces, etc.) so accidental imports never wipe your in-progress state. API keys (CoinGecko, NASA APOD) are stripped from exports and share links and re-applied automatically when you import your own backup on the same device. Restore checks also call out OPFS video references and IndexedDB feed archives that must be rebuilt or reselected on a new browser profile.
 - **Config share link** — copy a URL that encodes your settings as a base64 fragment (secrets stripped) and open it on any device with Vantage installed; the same partial-restore dialog gates the apply.
@@ -288,6 +289,7 @@ Vantage/
 | `corsproxy.io` | RSS / News / Calendar (second fallback) | Tried after allorigins fails |
 | `www.google.com/s2/favicons` | Quick Links / Top Sites / Bookmarks / Feeds | 32-64px favicon images |
 | `icons.duckduckgo.com` | Quick Links / Top Sites / Bookmarks / Feeds | Secondary favicon fallback when Google s2 is unavailable |
+| Each manually saved link URL | Quick Links / Inbox URL saves | Optional title lookup only when that origin already has scoped host access; otherwise the hostname is used |
 | `api.coingecko.com` | Crypto widget | Current prices for selected coins |
 | `api.github.com` | GitHub widget | Public user activity and repository search for trending repos |
 | `api.github.com/gists` | Settings → Data → Gist transfer | Import public settings Gists; create a public Gist only when you provide a one-shot GitHub token |

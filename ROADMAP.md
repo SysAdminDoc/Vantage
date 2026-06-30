@@ -5,13 +5,6 @@ Blocked items live in Roadmap_Blocked.md.
 
 ## Research-Driven Additions
 
-- [ ] P2 - Add metadata enrichment for manually saved links
-  Why: Competitor issue demand centers on faster link setup: title/icon autofill, custom icons, and less manual editing.
-  Evidence: Anori issues #279 and #304, Mue issue #1170, `src/settings.js`, `src/widgets/inbox.js`, `src/utils/favicon-cache.js`.
-  Touches: `src/settings.js`, `src/widgets/inbox.js`, `src/widgets/quicklinks.js`, `src/utils/favicon-cache.js`, `src/utils/url-safety.js`.
-  Acceptance: Adding a quick link or inbox URL can fill title/favicon from safe local fetches or existing favicon cache, failures are non-blocking, and credentialed/non-web URLs remain rejected.
-  Complexity: M
-
 - [ ] P2 - Add duplicate workspace/group actions
   Why: Heavy dashboard users want to branch layouts and folders without rebuilding them by hand.
   Evidence: Anori issues #289 and #269, `src/utils/workspace.js`, `src/settings.js`, Vantage quick-link groups and workspace snapshots.

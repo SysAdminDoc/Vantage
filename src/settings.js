@@ -13,6 +13,7 @@ import { exportOPML, importOPML } from "./utils/opml.js";
 import { createSettingsGist, loadSettingsFromGist, generateShareUrl } from "./utils/gist-sync.js";
 import { THEME_OPTIONS, applyThemePreference } from "./utils/theme.js";
 import { clearFaviconCache, getFaviconCacheStats } from "./utils/favicon-cache.js";
+import { enrichLinkMetadata } from "./utils/link-metadata.js";
 import { normalizeWebUrl } from "./utils/url-safety.js";
 import { normalizeWidgetHttpsUrl, validateManifest } from "./utils/widget-host.js";
 import { removeBrowserPermission, requestBrowserPermission } from "./utils/browser-permissions.js";
@@ -2775,24 +2776,29 @@ function buildLinksSection(settings, onChange) {
   const addBtn = el("button", {
     type: "button",
     class: "button button--primary",
-    onClick: () => {
+    onClick: async () => {
       const t = titleInput.value.trim();
       const u = urlInput.value.trim();
-      if (!t || !u) {
-        settingsToast("Label and URL are both required.", "error");
+      if (!u) {
+        settingsToast(i18n("enterValidUrl", null, "Enter a valid URL."), "warning");
         return;
       }
-      const url = normalizeWebUrl(u);
-      if (!url) {
-        settingsToast("That doesn't look like a valid URL.", "error");
-        return;
+      addBtn.disabled = true;
+      try {
+        const metadata = await enrichLinkMetadata(u, { title: t });
+        if (!metadata) {
+          settingsToast(i18n("enterValidUrl", null, "Enter a valid URL."), "warning");
+          return;
+        }
+        settings.quicklinks.items.push({ title: metadata.title, url: metadata.url });
+        onChange(settings);
+        titleInput.value = "";
+        urlInput.value = "";
+        refreshList();
+        settingsToast(i18n("settingsNamedAdded", [metadata.title], "$1 added."), "success");
+      } finally {
+        addBtn.disabled = false;
       }
-      settings.quicklinks.items.push({ title: t, url });
-      onChange(settings);
-      titleInput.value = "";
-      urlInput.value = "";
-      refreshList();
-      settingsToast(i18n("settingsNamedAdded", [t], "$1 added."), "success");
     }
   }, [iconNode("plus", { size: 14 }), " Add link"]);
 

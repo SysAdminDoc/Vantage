@@ -38,18 +38,8 @@ export async function getFaviconUrl(pageUrl) {
     if (!hostname) return "";
     
     // 1. Check cache first (synchronous, no network)
-    const cached = localStorage.getItem(`${FAVICON_CACHE_PREFIX}${hostname}`);
-    if (cached) {
-      try {
-        const { data, ts } = JSON.parse(cached);
-        if (data && ts && Date.now() - ts < FAVICON_CACHE_MAX_AGE) {
-          return data;
-        }
-      } catch {
-        // Corrupted cache entry — evict silently
-      }
-      localStorage.removeItem(`${FAVICON_CACHE_PREFIX}${hostname}`);
-    }
+    const cached = getCachedFaviconUrl(pageUrl);
+    if (cached) return cached;
     
     // 2. Fetch from service with timeout
     const dataUrl = await fetchFaviconWithFallback(hostname, pageUrl);
@@ -70,6 +60,27 @@ export async function getFaviconUrl(pageUrl) {
     return dataUrl || "";
   } catch (e) {
     console.warn(`[Favicon] Error loading favicon for ${pageUrl}:`, e.message);
+    return "";
+  }
+}
+
+export function getCachedFaviconUrl(pageUrl) {
+  try {
+    if (typeof localStorage === "undefined") return "";
+    const hostname = new URL(pageUrl).hostname;
+    if (!hostname) return "";
+    const cacheKey = `${FAVICON_CACHE_PREFIX}${hostname}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (!cached) return "";
+    try {
+      const { data, ts } = JSON.parse(cached);
+      if (data && ts && Date.now() - ts < FAVICON_CACHE_MAX_AGE) return data;
+    } catch {
+      // Corrupted cache entry - evict silently.
+    }
+    localStorage.removeItem(cacheKey);
+    return "";
+  } catch {
     return "";
   }
 }

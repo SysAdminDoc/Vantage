@@ -9,6 +9,7 @@ import { el, clear, relativeTime, hostnameLabel, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { saveSettings } from "../storage.js";
 import { getFaviconUrl } from "../utils/favicon-cache.js";
+import { enrichLinkMetadata } from "../utils/link-metadata.js";
 import { ext } from "../utils/ext.js";
 import { findDuplicateUrls, findForgotten, checkBrokenLinks } from "../utils/inbox-hygiene.js";
 import { i18n } from "../utils/i18n.js";
@@ -48,23 +49,29 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
       ? el("span", { class: "panel-badge" }, [String(itemCount)])
       : null;
 
-    const addItem = async (url, title) => {
-      if ((cfg.items || []).some(i => i.url === url)) {
+    const addItem = async (rawUrl, title) => {
+      const metadata = await enrichLinkMetadata(rawUrl, { title });
+      if (!metadata) {
+        toast(i18n("enterValidUrl", null, "Enter a valid URL."), "warning");
+        return false;
+      }
+      if ((cfg.items || []).some(i => i.url === metadata.url)) {
         toast(i18n("inboxAlreadySaved", null, "Already in your inbox."), "info");
-        return;
+        return false;
       }
       if (!cfg.items) cfg.items = [];
       const maxItems = cfg.maxItems || 200;
       cfg.items.unshift({
-        url,
-        title: title || hostnameLabel(url),
-        hostname: hostnameLabel(url),
+        url: metadata.url,
+        title: metadata.title,
+        hostname: metadata.hostname,
         savedAt: Date.now()
       });
       if (cfg.items.length > maxItems) cfg.items = cfg.items.slice(0, maxItems);
       await persist();
       draw();
       toast(i18n("inboxSaved", null, "Saved to inbox."), "success");
+      return true;
     };
 
     const saveTabBtn = el("button", {
@@ -126,11 +133,13 @@ export function renderInbox(mount, settings, { onChange, onAttachDragHandle } = 
             e.preventDefault();
             const raw = urlInput.value.trim();
             if (!raw) return;
-            try { new URL(raw); } catch {
-              toast(i18n("enterValidUrl", null, "Enter a valid URL."), "warning");
-              return;
+            submitBtn.disabled = true;
+            try {
+              const saved = await addItem(raw, "");
+              if (saved) form.remove();
+            } finally {
+              submitBtn.disabled = false;
             }
-            await addItem(raw, "");
           }
         }, [i18n("save", null, "Save")]);
         const form = el("div", { class: "inbox-url-form" }, [urlInput, submitBtn]);
