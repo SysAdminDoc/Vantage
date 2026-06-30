@@ -7,6 +7,7 @@ import { el, clear, toast } from "../utils/dom.js";
 import { iconString } from "../icons.js";
 import { detectLocation } from "../utils/weather-source.js";
 import { i18n } from "../utils/i18n.js";
+import { recordIntegrationEvent } from "../utils/integration-health.js";
 
 const AQ_BASE = "https://air-quality-api.open-meteo.com/v1/air-quality";
 
@@ -30,9 +31,29 @@ async function fetchAirQuality(lat, lon) {
     current:   "us_aqi,pm10,pm2_5,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen",
     timezone:  "auto"
   });
-  const res = await fetch(`${AQ_BASE}?${params}`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`AQ API ${res.status}`);
-  return res.json();
+  const endpoint = `${AQ_BASE}?${params}`;
+  try {
+    const res = await fetch(endpoint, { cache: "no-store" });
+    if (!res.ok) throw new Error(`AQ API ${res.status}`);
+    const data = await res.json();
+    recordIntegrationEvent("air-quality", {
+      label: "Air quality (Open-Meteo)",
+      kind: "success",
+      message: "air quality fetched",
+      endpoint,
+      source: "air-quality"
+    });
+    return data;
+  } catch (err) {
+    recordIntegrationEvent("air-quality", {
+      label: "Air quality (Open-Meteo)",
+      kind: "error",
+      message: err?.message || "air quality failed",
+      endpoint,
+      source: "air-quality"
+    });
+    throw err;
+  }
 }
 
 function formatPollens(current) {

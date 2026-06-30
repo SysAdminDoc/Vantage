@@ -103,6 +103,17 @@ async function run() {
         await filterInput.click({ clickCount: 3 });
         await filterInput.press("Backspace");
         await new Promise(r => setTimeout(r, 200));
+        await filterInput.type("diagnostics");
+        await new Promise(r => setTimeout(r, 400));
+        const diagnosticsVisible = await page.evaluate(() =>
+          document.body.textContent?.includes("Integration diagnostics") &&
+          document.body.textContent?.includes("Copy diagnostics")
+        );
+        if (diagnosticsVisible) ok("Integration diagnostics - Settings row renders");
+        else fail("Integration diagnostics", "diagnostics row not visible after filtering");
+        await filterInput.click({ clickCount: 3 });
+        await filterInput.press("Backspace");
+        await new Promise(r => setTimeout(r, 200));
       } else {
         fail("Settings filter", "filter input not found");
       }

@@ -4,6 +4,7 @@ import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { relativeTime } from "../utils/dom.js";
 import { i18n } from "../utils/i18n.js";
+import { recordIntegrationEvent } from "../utils/integration-health.js";
 
 const GITHUB_CACHE_KEY = "vantageGithubCache";
 const GITHUB_CACHE_TTL_MS = 10 * 60 * 1000;
@@ -160,9 +161,11 @@ async function fetchGithubJson(key, url, { notFoundMessage } = {}) {
   const now = Date.now();
   const cached = await readGithubCacheEntry(key);
   if (cached?.data && now - cached.cachedAt < GITHUB_CACHE_TTL_MS) {
+    recordGithub("cache", "GitHub data served from cache", url, key, cached.cachedAt ? now - cached.cachedAt : undefined, githubItemCount(cached.data));
     return { data: cached.data, fromCache: true };
   }
   if (cached?.rateLimitedUntil && cached.rateLimitedUntil > now) {
+    recordGithub("error", githubRateLimitMessage(cached.rateLimitedUntil), url, key);
     if (cached.data) {
       return { data: cached.data, fromCache: true, stale: true, rateLimitedUntil: cached.rateLimitedUntil };
     }
@@ -174,6 +177,7 @@ async function fetchGithubJson(key, url, { notFoundMessage } = {}) {
     const resp = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
     const rateLimitedUntil = githubRateLimitedUntil(resp);
     if (rateLimitedUntil) {
+      recordGithub("error", githubRateLimitMessage(rateLimitedUntil), url, key);
       await writeGithubCacheEntry(key, {
         ...cached,
         rateLimitedUntil,
@@ -186,10 +190,12 @@ async function fetchGithubJson(key, url, { notFoundMessage } = {}) {
       throw new Error(githubRateLimitMessage(rateLimitedUntil));
     }
     if (!resp.ok) {
+      recordGithub("error", resp.status === 404 && notFoundMessage ? notFoundMessage : `GitHub API ${resp.status}`, url, key);
       throw new Error(resp.status === 404 && notFoundMessage ? notFoundMessage : `GitHub API ${resp.status}`);
     }
     const data = await resp.json();
     await writeGithubCacheEntry(key, { data, cachedAt: Date.now(), rateLimitedUntil: 0 });
+    recordGithub("success", "GitHub data fetched", url, key, undefined, githubItemCount(data));
     return { data, fromCache: false };
   })().finally(() => {
     githubInflight.delete(key);
@@ -257,4 +263,22 @@ function appendCacheNotice(body, result) {
 function formatRetryAt(ms) {
   if (!Number.isFinite(ms)) return "later";
   return new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function recordGithub(kind, message, endpoint, source, cacheAgeMs, count) {
+  recordIntegrationEvent("github-api", {
+    label: "GitHub API",
+    kind,
+    message,
+    endpoint,
+    source,
+    cacheAgeMs,
+    count
+  });
+}
+
+function githubItemCount(data) {
+  if (Array.isArray(data)) return data.length;
+  if (Array.isArray(data?.items)) return data.items.length;
+  return undefined;
 }

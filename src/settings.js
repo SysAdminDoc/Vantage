@@ -108,6 +108,8 @@ const SETTINGS_TEXT_KEYS = Object.freeze({
   "Pomodoro": "pomodoro",
   "Volume": "settingsVolume",
   "Data": "dataTab",
+  "Integration diagnostics": "settingsIntegrationDiagnostics",
+  "Local health summary for enabled external integrations. Copy output is redacted and nothing is sent anywhere automatically.": "settingsIntegrationDiagnosticsHint",
   "Ambient sounds": "ambientSounds",
   "To-Do List": "todoList",
   "Show to-do panel": "settingsShowTodoPanel",
@@ -4414,6 +4416,85 @@ This will add all your YouTube channels as RSS feeds (when available).`;
     ])
   ));
   
+  const diagnosticsList = el("ul", { class: "item-list" });
+  const diagnosticsStatus = el("span", {
+    class: "icon-button icon-button--ghost icon-button--small",
+    style: { pointerEvents: "none", padding: "0.5rem 0.75rem", fontSize: "0.875rem", opacity: "0.7" }
+  }, ["Loading diagnostics..."]);
+  const renderDiagnostics = async () => {
+    clear(diagnosticsList);
+    diagnosticsStatus.textContent = "Loading diagnostics...";
+    try {
+      const { getIntegrationDiagnostics } = await import("./utils/integration-health.js");
+      const rows = await getIntegrationDiagnostics(settings);
+      diagnosticsStatus.textContent = `${rows.length} enabled integration${rows.length === 1 ? "" : "s"}`;
+      if (!rows.length) {
+        diagnosticsList.appendChild(el("li", { class: "item-list__empty" }, ["No enabled integrations."]));
+        return;
+      }
+      rows.forEach((item) => {
+        const hint = [
+          item.lastAgo,
+          item.endpoint,
+          item.lastError || item.lastMessage
+        ].filter(Boolean).join(" - ");
+        diagnosticsList.appendChild(el("li", { class: "item-list__row" }, [
+          el("div", { class: "item-list__row-content" }, [
+            el("span", { class: "item-list__title" }, [`${item.statusLabel} - ${item.label}`]),
+            el("span", { class: "item-list__hint" }, [hint])
+          ])
+        ]));
+      });
+    } catch (err) {
+      diagnosticsStatus.textContent = "Diagnostics unavailable";
+      diagnosticsList.appendChild(el("li", { class: "item-list__empty" }, [err?.message || "Couldn't load diagnostics."]));
+    }
+  };
+  const copyDiagnosticsBtn = el("button", {
+    type: "button",
+    class: "button button--ghost",
+    onClick: async () => {
+      try {
+        const { formatIntegrationDiagnostics, readIntegrationHealth } = await import("./utils/integration-health.js");
+        const text = formatIntegrationDiagnostics(settings, await readIntegrationHealth());
+        await navigator.clipboard.writeText(text);
+        settingsToast(i18n("settingsDiagnosticsCopied", [text.length], "Integration diagnostics copied ($1 chars)."), "success");
+      } catch {
+        settingsToast("Clipboard access denied. Diagnostics stay local in browser storage.", "error");
+      }
+    }
+  }, [iconNode("download", { size: 14 }), " Copy diagnostics"]);
+  const refreshDiagnosticsBtn = el("button", {
+    type: "button",
+    class: "button button--ghost",
+    onClick: renderDiagnostics
+  }, [iconNode("refresh", { size: 14 }), " Refresh"]);
+  const clearDiagnosticsBtn = el("button", {
+    type: "button",
+    class: "button button--ghost",
+    onClick: async () => {
+      const { clearIntegrationHealth } = await import("./utils/integration-health.js");
+      await clearIntegrationHealth();
+      await renderDiagnostics();
+      settingsToast("Integration diagnostics cleared.", "success");
+    }
+  }, [iconNode("trash", { size: 14 }), " Clear diagnostics"]);
+
+  g.appendChild(rowColumn(
+    "Integration diagnostics",
+    el("div", { class: "tab-groups-section" }, [
+      diagnosticsList,
+      el("div", { class: "compose__row" }, [
+        diagnosticsStatus,
+        refreshDiagnosticsBtn,
+        copyDiagnosticsBtn,
+        clearDiagnosticsBtn
+      ])
+    ]),
+    "Local health summary for enabled external integrations. Copy output is redacted and nothing is sent anywhere automatically."
+  ));
+  setTimeout(() => renderDiagnostics(), 0);
+
   // Favicon cache — displays cache stats and clear button (v1.0.0+)
   g.appendChild(row(
     "Favicon cache",

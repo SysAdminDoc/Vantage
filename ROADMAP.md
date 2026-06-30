@@ -5,13 +5,6 @@ Blocked items live in Roadmap_Blocked.md.
 
 ## Research-Driven Additions
 
-- [ ] P2 - Add integration health diagnostics
-  Why: Vantage depends on many optional external services, and failures should be diagnosable without opening DevTools.
-  Evidence: `src/utils/error-log.js`, `src/utils/weather-source.js`, `src/utils/rss-parser.js`, `src/widgets/github.js`, `src/widgets/crypto.js`, Mue/TablissNG API/cache issue reports.
-  Touches: `src/utils/error-log.js`, `src/settings.js`, `src/widgets/*`, `src/utils/feed-prewarm.js`, `src/utils/favicon-cache.js`.
-  Acceptance: Settings includes a local diagnostics view showing last success/error/cache age per enabled integration, with copyable redacted output and no background telemetry.
-  Complexity: M
-
 - [ ] P3 - Gate any external-widget registry behind a local trust review model
   Why: A curated registry could help discover widgets, but arbitrary remote widgets increase store-review and user-trust risk.
   Evidence: `src/utils/widget-host.js`, `docs/widget-api.md`, Chrome MV3 remote-code policy, Homepage/Dashy/Homarr registry patterns.

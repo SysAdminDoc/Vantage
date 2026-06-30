@@ -15,6 +15,7 @@ import { el, clear } from "../utils/dom.js";
 import { iconString } from "../icons.js";
 import { detectLocation } from "../utils/weather-source.js";
 import { i18n } from "../utils/i18n.js";
+import { recordIntegrationEvent } from "../utils/integration-health.js";
 
 const RADIATION_BASE = "https://api.open-meteo.com/v1/forecast";
 const TTL_MS = 10 * 60 * 1000;
@@ -32,18 +33,47 @@ const VARIABLES = [
 async function fetchRadiation(lat, lon) {
   const key = `${lat},${lon}`;
   const hit = cache.get(key);
-  if (hit && (Date.now() - hit.ts) < TTL_MS) return hit.data;
+  if (hit && (Date.now() - hit.ts) < TTL_MS) {
+    recordIntegrationEvent("solar-radiation", {
+      label: "Solar radiation (Open-Meteo)",
+      kind: "cache",
+      message: "solar radiation served from cache",
+      endpoint: RADIATION_BASE,
+      source: "solar-radiation-cache",
+      cacheAgeMs: Date.now() - hit.ts
+    });
+    return hit.data;
+  }
   const params = new URLSearchParams({
     latitude:  lat,
     longitude: lon,
     current:   VARIABLES.join(","),
     timezone:  "auto"
   });
-  const res = await fetch(`${RADIATION_BASE}?${params}`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Radiation API ${res.status}`);
-  const data = await res.json();
-  cache.set(key, { ts: Date.now(), data });
-  return data;
+  const endpoint = `${RADIATION_BASE}?${params}`;
+  try {
+    const res = await fetch(endpoint, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Radiation API ${res.status}`);
+    const data = await res.json();
+    cache.set(key, { ts: Date.now(), data });
+    recordIntegrationEvent("solar-radiation", {
+      label: "Solar radiation (Open-Meteo)",
+      kind: "success",
+      message: "solar radiation fetched",
+      endpoint,
+      source: "solar-radiation"
+    });
+    return data;
+  } catch (err) {
+    recordIntegrationEvent("solar-radiation", {
+      label: "Solar radiation (Open-Meteo)",
+      kind: "error",
+      message: err?.message || "solar radiation failed",
+      endpoint,
+      source: "solar-radiation"
+    });
+    throw err;
+  }
 }
 
 const LABELS = {

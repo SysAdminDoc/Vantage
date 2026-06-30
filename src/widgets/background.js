@@ -38,6 +38,7 @@
 import { getWeatherData, detectLocation } from "../utils/weather-source.js";
 import { getSunTimes } from "../utils/sun-calc.js";
 import { getBackgroundPreview, hasBackgroundPreview } from "../utils/background-preview.js";
+import { recordIntegrationEvent } from "../utils/integration-health.js";
 
 const HOUR = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR;
@@ -827,6 +828,16 @@ function getSeason(date, hemisphere) {
 const BING_ENDPOINT = "https://www.bing.com/HPImageArchive.aspx?format=js&n=1&mkt=en-US";
 const BING_ENDPOINT_V1 = "https://www.bing.com/hp/api/v1/imagegallery";
 
+function recordBing(kind, message, endpoint) {
+  recordIntegrationEvent("bing-daily", {
+    label: "Bing daily wallpaper",
+    kind,
+    message,
+    endpoint,
+    source: "background"
+  });
+}
+
 const BACKGROUND_DATA_KEYS = [
   "phase",
   "weather",
@@ -982,6 +993,7 @@ export async function renderBackground(mount, settings, saveSettings) {
     };
 
     if (cached?.date === today && cached.url) {
+      recordBing("cache", "Bing daily wallpaper served from cache", "bing-daily-cache");
       applyBing(cached.url);
     } else {
       if (cached?.url) applyBing(cached.url);
@@ -1004,13 +1016,18 @@ export async function renderBackground(mount, settings, saveSettings) {
         }
         if (imageUrl) {
           applyBing(imageUrl);
+          recordBing("success", "Bing daily wallpaper fetched", BING_ENDPOINT);
           if (typeof saveSettings === "function") {
             settings.background.bingDailyCache = { url: imageUrl, date: today };
             await saveSettings(settings);
           }
         }
-        if (!hasImage) applyFallbackBackground(mount, "error");
+        if (!hasImage) {
+          recordBing("error", "Bing daily wallpaper unavailable", BING_ENDPOINT);
+          applyFallbackBackground(mount, "error");
+        }
       } catch {
+        recordBing("error", "Bing daily wallpaper failed", BING_ENDPOINT);
         if (!hasImage) applyFallbackBackground(mount, "error");
       }
     }

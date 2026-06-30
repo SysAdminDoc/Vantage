@@ -3,6 +3,7 @@
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { i18n } from "../utils/i18n.js";
+import { recordIntegrationEvent } from "../utils/integration-health.js";
 
 const APOD_RATE_LIMIT_TTL_MS = 60 * 60 * 1000;
 const APOD_SHORT_ERROR_TTL_MS = 5 * 60 * 1000;
@@ -48,8 +49,12 @@ function loadPicsum(body, dateStr) {
     alt: i18n("dailyPhoto", null, "Daily photo"),
     loading: "lazy"
   });
-  img.addEventListener("load", () => { img.dataset.loaded = "true"; });
+  img.addEventListener("load", () => {
+    img.dataset.loaded = "true";
+    recordPhoto("success", "Picsum photo loaded", img.src, "picsum");
+  });
   img.addEventListener("error", () => {
+    recordPhoto("error", "Picsum photo failed", img.src, "picsum");
     body.innerHTML = "";
     body.appendChild(el("p", { class: "panel-error" }, [i18n("photoLoadError", null, "Couldn't load photo.")]));
   });
@@ -68,6 +73,7 @@ async function loadNasa(body, settings, dateStr, { onSave } = {}) {
   const cached = cfg.apodCache;
 
   if (cached?.key === cacheKey && cached.data) {
+    recordPhoto("cache", "NASA APOD served from cache", "https://api.nasa.gov/planetary/apod", "nasa-cache", cached.fetchedAt ? Date.now() - Date.parse(cached.fetchedAt) : undefined);
     renderNasaData(body, cached.data);
     return;
   }
@@ -75,13 +81,15 @@ async function loadNasa(body, settings, dateStr, { onSave } = {}) {
   const cachedError = cached?.key === cacheKey ? cached.error : null;
   const retryAt = cachedError ? Date.parse(cachedError.retryAt || "") : 0;
   if (retryAt > Date.now()) {
+    recordPhoto("error", `NASA APOD cached error ${cachedError.status || ""}`.trim(), "https://api.nasa.gov/planetary/apod", "nasa-cache");
     renderNasaError(body, apodErrorMessage(cachedError.status, retryAt));
     return;
   }
 
   body.appendChild(el("div", { class: "panel-spinner" }, [iconNode("refresh", { size: 20, className: "spin" })]));
+  const endpoint = `https://api.nasa.gov/planetary/apod?api_key=${encodeURIComponent(apiKey)}&date=${encodeURIComponent(dateStr)}`;
   try {
-    const resp = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${encodeURIComponent(apiKey)}&date=${encodeURIComponent(dateStr)}`, {
+    const resp = await fetch(endpoint, {
       signal: AbortSignal.timeout(10000)
     });
     if (APOD_CACHED_ERROR_STATUSES.has(resp.status)) {
@@ -92,6 +100,7 @@ async function loadNasa(body, settings, dateStr, { onSave } = {}) {
         fetchedAt: new Date().toISOString(),
         error: { status: resp.status, retryAt: retryAtIso }
       }, onSave);
+      recordPhoto("error", `NASA APOD ${resp.status}`, endpoint, "nasa");
       renderNasaError(body, apodErrorMessage(resp.status, Date.parse(retryAtIso)));
       return;
     }
@@ -102,8 +111,10 @@ async function loadNasa(body, settings, dateStr, { onSave } = {}) {
       fetchedAt: new Date().toISOString(),
       data
     }, onSave);
+    recordPhoto("success", "NASA APOD fetched", endpoint, "nasa");
     renderNasaData(body, data);
   } catch (err) {
+    recordPhoto("error", err?.message || "NASA APOD failed", endpoint, "nasa");
     renderNasaError(body, i18n("nasaApodLoadError", [err.message.toLowerCase()], "Couldn't load NASA APOD - $1."));
   }
 }
@@ -193,6 +204,17 @@ function saveApodCache(settings, cfg, apodCache, onSave) {
 function apodCacheKey(dateStr, apiKey) {
   const keyMode = apiKey && apiKey !== "DEMO_KEY" ? "custom" : "demo";
   return `${dateStr}:${keyMode}`;
+}
+
+function recordPhoto(kind, message, endpoint, source, cacheAgeMs) {
+  recordIntegrationEvent("photo", {
+    label: source === "picsum" ? "Picsum photo" : "NASA APOD photo",
+    kind,
+    message,
+    endpoint,
+    source,
+    cacheAgeMs
+  });
 }
 
 function apodErrorMessage(status, retryAtMs) {

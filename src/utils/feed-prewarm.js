@@ -11,6 +11,8 @@
 // Total size kept bounded by capping per-feed item count at the
 // feed-list maxItems and by removing entries with no recent reads.
 
+import { recordIntegrationEvent } from "./integration-health.js";
+
 const CACHE_KEY = "vantageFeedPrewarm";
 const DEFAULT_MAX_AGE_MS = 60 * 60 * 1000; // 1 h — matches default interval
 
@@ -44,7 +46,8 @@ export async function getPrewarmed(url, maxAgeMs = DEFAULT_MAX_AGE_MS) {
   const cache = await loadCache();
   const entry = cache[canonicalize(url)];
   if (!entry?.parsed || !entry.cachedAt) return null;
-  if (Date.now() - entry.cachedAt > maxAgeMs) return null;
+  const age = Date.now() - entry.cachedAt;
+  if (age > maxAgeMs) return null;
   // Re-hydrate Date instances — chrome.storage round-trips them as ISO
   // strings via structured clone, which then drops their Date type
   // when read back. The renderer expects item.published to be a Date.
@@ -56,6 +59,15 @@ export async function getPrewarmed(url, maxAgeMs = DEFAULT_MAX_AGE_MS) {
       }
     }
   }
+  recordIntegrationEvent("feed-prewarm", {
+    label: "Feed pre-warm cache",
+    kind: "cache",
+    message: "pre-warmed feed served",
+    endpoint: url,
+    source: "feed-prewarm-cache",
+    cacheAgeMs: age,
+    count: entry.parsed.items?.length
+  });
   return entry.parsed;
 }
 
@@ -92,6 +104,13 @@ export async function prewarmAll(feedUrls) {
     }
   }
   await saveCache(cache);
+  recordIntegrationEvent("feed-prewarm", {
+    label: "Feed pre-warm cache",
+    kind: failed ? "error" : "success",
+    message: `${ok} warmed, ${failed} failed`,
+    source: "feed-prewarm-alarm",
+    count: ok
+  });
   return { ok, failed };
 }
 

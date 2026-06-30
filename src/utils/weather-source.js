@@ -3,6 +3,8 @@
 // so widgets that mount in parallel don't double-fetch, and so the
 // background tick (every minute) doesn't hit the network repeatedly.
 
+import { recordIntegrationEvent } from "./integration-health.js";
+
 const TTL_MS = 10 * 60 * 1000;
 const cache = new Map(); // key -> { ts, data }
 const inflight = new Map(); // key -> Promise
@@ -25,7 +27,10 @@ export async function getWeatherData(location, units = "fahrenheit", { force = f
 
   if (!force) {
     const hit = cache.get(key);
-    if (hit && (now - hit.ts) < TTL_MS) return hit.data;
+    if (hit && (now - hit.ts) < TTL_MS) {
+      recordWeatherEvent("cache", "current weather served from cache", "current-weather-cache", { cacheAgeMs: now - hit.ts });
+      return hit.data;
+    }
     if (inflight.has(key)) return inflight.get(key);
   }
 
@@ -60,10 +65,12 @@ export async function getWeatherData(location, units = "fahrenheit", { force = f
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     cache.set(key, { ts: Date.now(), data });
+    recordWeatherEvent("success", "current weather fetched", "current-weather", { endpoint: url });
     inflight.delete(key);
     return data;
   })().catch((err) => {
     inflight.delete(key);
+    recordWeatherEvent("error", err?.message || "current weather failed", "current-weather", { endpoint: url });
     throw err;
   });
 
@@ -88,7 +95,10 @@ export async function getEnsembleSpread(location, units = "fahrenheit") {
   const tempUnit = units === "celsius" ? "celsius" : "fahrenheit";
   const key = `${location.latitude},${location.longitude},${tempUnit}`;
   const hit = ensembleCache.get(key);
-  if (hit && (Date.now() - hit.ts) < ENSEMBLE_TTL_MS) return hit.spread;
+  if (hit && (Date.now() - hit.ts) < ENSEMBLE_TTL_MS) {
+    recordWeatherEvent("cache", "ensemble spread served from cache", "ensemble-cache", { cacheAgeMs: Date.now() - hit.ts });
+    return hit.spread;
+  }
 
   // Members 01..50 (m00 is the deterministic control run; we exclude
   // it from the spread so the metric reflects ensemble disagreement
@@ -133,11 +143,13 @@ export async function getEnsembleSpread(location, units = "fahrenheit") {
     const min = Math.min(...samples);
     const spread = max - min;
     ensembleCache.set(key, { ts: Date.now(), spread });
+    recordWeatherEvent("success", "ensemble spread fetched", "ensemble", { endpoint: url });
     return spread;
   } catch (err) {
     // Cache the failure for one minute to avoid hammering on repeated
     // renders when the API is unreachable.
     ensembleCache.set(key, { ts: Date.now() - ENSEMBLE_TTL_MS + 60_000, spread: null });
+    recordWeatherEvent("error", err?.message || "ensemble spread failed", "ensemble", { endpoint: url });
     return null;
   }
 }
@@ -178,7 +190,10 @@ export async function getDailyForecast(location, units = "fahrenheit") {
   const now = Date.now();
 
   const hit = cache.get(key);
-  if (hit && (now - hit.ts) < TTL_MS) return hit.data;
+  if (hit && (now - hit.ts) < TTL_MS) {
+    recordWeatherEvent("cache", "daily forecast served from cache", "daily-forecast-cache", { cacheAgeMs: now - hit.ts });
+    return hit.data;
+  }
   if (inflight.has(key)) return inflight.get(key);
 
   const url =
@@ -194,10 +209,12 @@ export async function getDailyForecast(location, units = "fahrenheit") {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     cache.set(key, { ts: Date.now(), data });
+    recordWeatherEvent("success", "daily forecast fetched", "daily-forecast", { endpoint: url });
     inflight.delete(key);
     return data;
   })().catch((err) => {
     inflight.delete(key);
+    recordWeatherEvent("error", err?.message || "daily forecast failed", "daily-forecast", { endpoint: url });
     throw err;
   });
 
@@ -208,14 +225,31 @@ export async function getDailyForecast(location, units = "fahrenheit") {
 /** City-name → lat/lon via Open-Meteo geocoding. */
 export async function geocodeCity(query) {
   const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  if (!data.results || !data.results.length) throw new Error("City not found");
-  const first = data.results[0];
-  return {
-    name: `${first.name}${first.admin1 ? ", " + first.admin1 : ""}${first.country_code ? ", " + first.country_code : ""}`,
-    latitude: first.latitude,
-    longitude: first.longitude
-  };
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.results || !data.results.length) throw new Error("City not found");
+    const first = data.results[0];
+    recordWeatherEvent("success", "city geocoded", "geocoding", { endpoint: url });
+    return {
+      name: `${first.name}${first.admin1 ? ", " + first.admin1 : ""}${first.country_code ? ", " + first.country_code : ""}`,
+      latitude: first.latitude,
+      longitude: first.longitude
+    };
+  } catch (err) {
+    recordWeatherEvent("error", err?.message || "geocoding failed", "geocoding", { endpoint: url });
+    throw err;
+  }
+}
+
+function recordWeatherEvent(kind, message, source, extra = {}) {
+  recordIntegrationEvent("weather-open-meteo", {
+    label: "Weather and forecast (Open-Meteo)",
+    kind,
+    message,
+    source,
+    endpoint: extra.endpoint || "api.open-meteo.com",
+    cacheAgeMs: extra.cacheAgeMs
+  });
 }

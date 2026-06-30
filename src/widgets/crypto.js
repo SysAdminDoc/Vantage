@@ -7,6 +7,7 @@ import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
 import { relativeTime } from "../utils/dom.js";
 import { i18n } from "../utils/i18n.js";
+import { recordIntegrationEvent } from "../utils/integration-health.js";
 
 const COIN_META = {
   bitcoin:   { symbol: "BTC", name: "Bitcoin" },
@@ -65,14 +66,20 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
       if (apiKey) headers["x-cg-demo-api-key"] = apiKey;
       const resp = await fetch(url, { headers });
       if (resp.status === 401 || resp.status === 429) {
+        recordCrypto("error", resp.status === 401 ? "CoinGecko rejected the request" : "CoinGecko rate-limited the request", url);
         showApiKeyPrompt(resp.status);
         return;
       }
-      if (!resp.ok) throw new Error(`CoinGecko ${resp.status}`);
+      if (!resp.ok) {
+        recordCrypto("error", `CoinGecko ${resp.status}`, url);
+        throw new Error(`CoinGecko ${resp.status}`);
+      }
       const data = await resp.json();
       lastFetch  = new Date();
+      recordCrypto("success", "CoinGecko prices fetched", url, Object.keys(data || {}).length);
       renderRows(data);
     } catch (err) {
+      recordCrypto("error", err?.message || "CoinGecko prices failed", "https://api.coingecko.com/api/v3/simple/price");
       body.innerHTML = "";
       body.appendChild(el("div", { class: "panel-error" }, [
         i18n("cryptoLoadError", [err.message.toLowerCase()], "Couldn't load prices - $1.")
@@ -175,4 +182,15 @@ export function renderCrypto(mount, settings, { onAttachDragHandle } = {}) {
 
   // Return teardown via a cleanup property on the mount (checked in mountAll)
   mount._cryptoCleanup = () => clearInterval(refreshInterval);
+}
+
+function recordCrypto(kind, message, endpoint, count) {
+  recordIntegrationEvent("coingecko", {
+    label: "CoinGecko prices",
+    kind,
+    message,
+    endpoint,
+    source: "crypto-widget",
+    count
+  });
 }

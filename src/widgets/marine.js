@@ -14,6 +14,7 @@ import { el, clear } from "../utils/dom.js";
 import { iconString } from "../icons.js";
 import { detectLocation } from "../utils/weather-source.js";
 import { i18n } from "../utils/i18n.js";
+import { recordIntegrationEvent } from "../utils/integration-health.js";
 
 const MARINE_BASE = "https://marine-api.open-meteo.com/v1/marine";
 const TTL_MS = 10 * 60 * 1000;
@@ -22,7 +23,17 @@ const cache = new Map();
 async function fetchMarine(lat, lon, units = "fahrenheit") {
   const key = `${lat},${lon},${units}`;
   const hit = cache.get(key);
-  if (hit && (Date.now() - hit.ts) < TTL_MS) return hit.data;
+  if (hit && (Date.now() - hit.ts) < TTL_MS) {
+    recordIntegrationEvent("marine-weather", {
+      label: "Marine weather (Open-Meteo)",
+      kind: "cache",
+      message: "marine weather served from cache",
+      endpoint: MARINE_BASE,
+      source: "marine-cache",
+      cacheAgeMs: Date.now() - hit.ts
+    });
+    return hit.data;
+  }
   const params = new URLSearchParams({
     latitude:  lat,
     longitude: lon,
@@ -30,11 +41,30 @@ async function fetchMarine(lat, lon, units = "fahrenheit") {
     timezone:  "auto",
     temperature_unit: units === "celsius" ? "celsius" : "fahrenheit"
   });
-  const res = await fetch(`${MARINE_BASE}?${params}`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Marine API ${res.status}`);
-  const data = await res.json();
-  cache.set(key, { ts: Date.now(), data });
-  return data;
+  const endpoint = `${MARINE_BASE}?${params}`;
+  try {
+    const res = await fetch(endpoint, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Marine API ${res.status}`);
+    const data = await res.json();
+    cache.set(key, { ts: Date.now(), data });
+    recordIntegrationEvent("marine-weather", {
+      label: "Marine weather (Open-Meteo)",
+      kind: "success",
+      message: "marine weather fetched",
+      endpoint,
+      source: "marine"
+    });
+    return data;
+  } catch (err) {
+    recordIntegrationEvent("marine-weather", {
+      label: "Marine weather (Open-Meteo)",
+      kind: "error",
+      message: err?.message || "marine weather failed",
+      endpoint,
+      source: "marine"
+    });
+    throw err;
+  }
 }
 
 // Cardinal direction from a degrees-from-north heading. 16-point

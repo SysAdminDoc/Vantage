@@ -7,6 +7,7 @@ import { iconString, iconNode } from "../icons.js";
 import { parseICal } from "../utils/ical-parser.js";
 import { hasHostPermission } from "../utils/host-permissions.js";
 import { i18n } from "../utils/i18n.js";
+import { recordIntegrationEvent } from "../utils/integration-health.js";
 
 const PROXIES = [
   (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -27,16 +28,25 @@ async function fetchICal(url, auth) {
     if (!(await hasHostPermission(url))) throw new Error(i18n("hostAccessNotGranted", null, "Host access not granted"));
     const r = await fetch(url, { cache: "no-store", headers });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.text();
+    const text = await r.text();
+    recordCalendar("success", "calendar fetched", url, "direct");
+    return text;
   } catch (directErr) {
-    if (hasAuth) throw directErr;
+    if (hasAuth) {
+      recordCalendar("error", directErr?.message || "calendar fetch failed", url, "direct");
+      throw directErr;
+    }
     for (const proxy of PROXIES) {
       try {
-        const r = await fetch(proxy(url), { cache: "no-store" });
+        const endpoint = proxy(url);
+        const r = await fetch(endpoint, { cache: "no-store" });
         if (!r.ok) throw new Error(`Proxy ${r.status}`);
-        return r.text();
+        const text = await r.text();
+        recordCalendar("success", "calendar fetched through proxy", endpoint, "proxy");
+        return text;
       } catch { /* try next */ }
     }
+    recordCalendar("error", "calendar fetch failed", url, "proxy-fallback");
     throw new Error(i18n("failedToFetchUrl", [url], "Failed to fetch $1"));
   }
 }
@@ -152,4 +162,14 @@ export function renderCalendar(mount, settings, { onAttachDragHandle } = {}) {
       body.appendChild(el("p", { class: "panel-error" }, [i18n("calendarLoadError", [err.message.toLowerCase()], "Couldn't load calendar - $1.")]));
     }
   })();
+}
+
+function recordCalendar(kind, message, endpoint, source) {
+  recordIntegrationEvent("calendar-feeds", {
+    label: "Calendar feeds",
+    kind,
+    message,
+    endpoint,
+    source
+  });
 }

@@ -1584,6 +1584,26 @@
     "message": "Link groups",
     "description": "Settings UI string"
   },
+  "settingsLiteral_vz2vt": {
+    "message": "Loading diagnostics...",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_xk8tcy": {
+    "message": "No enabled integrations.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_a727jn": {
+    "message": "Diagnostics unavailable",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_1d8fi6": {
+    "message": "Clipboard access denied. Diagnostics stay local in browser storage.",
+    "description": "Settings UI string"
+  },
+  "settingsLiteral_169n7qx": {
+    "message": "Integration diagnostics cleared.",
+    "description": "Settings UI string"
+  },
   "settingsLiteral_10mrjas": {
     "message": "iCal URL is required.",
     "description": "Settings UI string"
@@ -3527,6 +3547,15 @@
   },
   "settingsDebugLogCopied": {
     "message": "Debug log copied ($1 chars)."
+  },
+  "settingsDiagnosticsCopied": {
+    "message": "Integration diagnostics copied ($1 chars)."
+  },
+  "settingsIntegrationDiagnostics": {
+    "message": "Integration diagnostics"
+  },
+  "settingsIntegrationDiagnosticsHint": {
+    "message": "Local health summary for enabled external integrations. Copy output is redacted and nothing is sent anywhere automatically."
   },
   "settingsFaviconCacheStats": {
     "message": "$1 icons, $2 KB"

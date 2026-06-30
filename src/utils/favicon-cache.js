@@ -26,6 +26,7 @@ const FAVICON_FETCH_TIMEOUT = 3000; // 3s timeout per request
 const FAVICON_CACHE_MAX_AGE = 1000 * 60 * 60 * 24 * 30; // 30 days in ms
 
 import { hasHostPermission } from "./host-permissions.js";
+import { recordIntegrationEvent } from "./integration-health.js";
 
 /**
  * Get favicon URL with caching and fallbacks
@@ -39,7 +40,10 @@ export async function getFaviconUrl(pageUrl) {
     
     // 1. Check cache first (synchronous, no network)
     const cached = getCachedFaviconUrl(pageUrl);
-    if (cached) return cached;
+    if (cached) {
+      recordFavicon("cache", "favicon served from cache", pageUrl, "favicon-cache");
+      return cached;
+    }
     
     // 2. Fetch from service with timeout
     const dataUrl = await fetchFaviconWithFallback(hostname, pageUrl);
@@ -55,11 +59,15 @@ export async function getFaviconUrl(pageUrl) {
         // Storage quota exceeded; silently drop cache entry
         // Next request will re-fetch
       }
+      recordFavicon("success", "favicon fetched", pageUrl, "favicon-fetch");
+    } else {
+      recordFavicon("error", "favicon unavailable", pageUrl, "favicon-fetch");
     }
     
     return dataUrl || "";
   } catch (e) {
     console.warn(`[Favicon] Error loading favicon for ${pageUrl}:`, e.message);
+    recordFavicon("error", e?.message || "favicon failed", pageUrl, "favicon-fetch");
     return "";
   }
 }
@@ -242,4 +250,14 @@ export function getFaviconCacheStats() {
     }
   }
   return { count, size };
+}
+
+function recordFavicon(kind, message, endpoint, source) {
+  recordIntegrationEvent("favicons", {
+    label: "Favicon services",
+    kind,
+    message,
+    endpoint,
+    source
+  });
 }

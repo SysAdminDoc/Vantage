@@ -13,6 +13,7 @@ import { el, clear } from "../utils/dom.js";
 import { iconString } from "../icons.js";
 import { detectLocation } from "../utils/weather-source.js";
 import { i18n } from "../utils/i18n.js";
+import { recordIntegrationEvent } from "../utils/integration-health.js";
 
 const FLOOD_BASE = "https://flood-api.open-meteo.com/v1/flood";
 const TTL_MS = 30 * 60 * 1000; // 30 min — flood data updates much slower than weather
@@ -21,18 +22,47 @@ const cache = new Map();
 async function fetchFlood(lat, lon) {
   const key = `${lat},${lon}`;
   const hit = cache.get(key);
-  if (hit && (Date.now() - hit.ts) < TTL_MS) return hit.data;
+  if (hit && (Date.now() - hit.ts) < TTL_MS) {
+    recordIntegrationEvent("flood-risk", {
+      label: "River flood risk (Open-Meteo)",
+      kind: "cache",
+      message: "flood data served from cache",
+      endpoint: FLOOD_BASE,
+      source: "flood-cache",
+      cacheAgeMs: Date.now() - hit.ts
+    });
+    return hit.data;
+  }
   const params = new URLSearchParams({
     latitude:  lat,
     longitude: lon,
     daily:     "river_discharge,river_discharge_mean,river_discharge_max,river_discharge_min",
     forecast_days: "7"
   });
-  const res = await fetch(`${FLOOD_BASE}?${params}`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Flood API ${res.status}`);
-  const data = await res.json();
-  cache.set(key, { ts: Date.now(), data });
-  return data;
+  const endpoint = `${FLOOD_BASE}?${params}`;
+  try {
+    const res = await fetch(endpoint, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Flood API ${res.status}`);
+    const data = await res.json();
+    cache.set(key, { ts: Date.now(), data });
+    recordIntegrationEvent("flood-risk", {
+      label: "River flood risk (Open-Meteo)",
+      kind: "success",
+      message: "flood data fetched",
+      endpoint,
+      source: "flood"
+    });
+    return data;
+  } catch (err) {
+    recordIntegrationEvent("flood-risk", {
+      label: "River flood risk (Open-Meteo)",
+      kind: "error",
+      message: err?.message || "flood data failed",
+      endpoint,
+      source: "flood"
+    });
+    throw err;
+  }
 }
 
 /** Classify the current discharge against its 7-day ensemble band.

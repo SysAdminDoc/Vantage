@@ -18,6 +18,7 @@ const PROXIES = [
 ];
 
 import { hasHostPermission } from "./host-permissions.js";
+import { recordIntegrationEvent } from "./integration-health.js";
 
 export async function fetchFeed(url, opts = {}) {
   // Pre-warm cache short-circuit. Background.js maintains this when
@@ -29,12 +30,17 @@ export async function fetchFeed(url, opts = {}) {
     try {
       const { getPrewarmed } = await import("./feed-prewarm.js");
       const cached = await getPrewarmed(url);
-      if (cached) return cached;
+      if (cached) {
+        recordFeedEvent("cache", "feed served from pre-warm cache", url, "prewarm-cache", cached.items?.length);
+        return cached;
+      }
     } catch { /* cache lookup failures fall through to network */ }
   }
 
   let body;
   let contentType = "";
+  let source = "direct";
+  let endpoint = url;
 
   // Direct fetch first — works for most feeds that send permissive CORS headers.
   try {
@@ -43,6 +49,8 @@ export async function fetchFeed(url, opts = {}) {
     if (!direct.ok) throw new Error(`HTTP ${direct.status}`);
     contentType = direct.headers.get("content-type") || "";
     body = await direct.text();
+    source = "direct";
+    endpoint = url;
   } catch {
     // Walk the proxy chain until one succeeds. Proxies usually drop the
     // upstream content-type, so we fall back to body sniffing in that case.
@@ -53,15 +61,34 @@ export async function fetchFeed(url, opts = {}) {
         if (!proxied.ok) throw new Error(`Proxy HTTP ${proxied.status}`);
         contentType = proxied.headers.get("content-type") || contentType;
         body = await proxied.text();
+        source = "proxy";
+        endpoint = proxyFn(url);
         break;
       } catch (err) {
         lastErr = err;
       }
     }
-    if (!body) throw lastErr || new Error("All proxies failed");
+    if (!body) {
+      const err = lastErr || new Error("All proxies failed");
+      recordFeedEvent("error", err?.message || "feed fetch failed", url, "proxy-fallback");
+      throw err;
+    }
   }
 
-  return parseFeed(body, url, contentType);
+  const parsed = parseFeed(body, url, contentType);
+  recordFeedEvent("success", "feed fetched", endpoint, source, parsed.items?.length);
+  return parsed;
+}
+
+function recordFeedEvent(kind, message, endpoint, source, count) {
+  recordIntegrationEvent("feeds", {
+    label: "RSS and News feeds",
+    kind,
+    message,
+    endpoint,
+    source,
+    count
+  });
 }
 
 export function parseFeed(body, sourceUrl = "", contentType = "") {

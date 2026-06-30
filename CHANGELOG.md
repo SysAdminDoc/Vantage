@@ -32,6 +32,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 - **Disabled button CSS no longer declares cursor twice.**
 
 ### Added
+- **Local integration health diagnostics** - Settings > Data now shows enabled external integrations with pending/OK/cached/error status, endpoint/cache hints, last error details, refresh/copy/clear actions, redacted clipboard output, and local-only recording from weather, feed, calendar, favicon, GitHub, CoinGecko, photo, and wallpaper fetch paths.
 - **Duplicate workspace and quick-link group actions** - Settings now duplicates workspaces and quick-link groups with deep-cloned contents, fresh non-colliding IDs, non-conflicting copy/import names, undo support, and workspace imports that preserve presets and active preset state.
 - **Manual link metadata enrichment** - Quick Link and Inbox manual URL saves now share a safe metadata helper that normalizes web URLs, rejects credentialed/non-web schemes, keeps manual labels first, fetches page titles only when scoped host access already exists, reuses cached favicons immediately, and warms favicon cache in the background.
 - **Deterministic store evidence command** - `npm run store:evidence` now generates five 1280x800 screenshots, axe accessibility JSON/markdown, permission/network coverage reports, and a store-ready artifact checklist under `dist/store-evidence/`. Privacy docs now explicitly list the DuckDuckGo favicon fallback host declared in the manifests.
