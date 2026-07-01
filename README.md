@@ -117,6 +117,7 @@ For visual QA, open `qa-scenes.html` from the same local server as `newtab.html`
 - **Manual link enrichment** — Quick Links and Inbox URL saves can autofill a blank label from the page title when the destination origin is already granted, reuse cached favicons instantly, and fall back to the hostname without blocking the save.
 - **Duplicate workspaces and link groups** — clone a saved workspace or quick-link folder with its contents intact; Vantage generates fresh IDs and non-conflicting copy/import names.
 - **Integration diagnostics** — Settings shows local health, cache, and last-error status for enabled external integrations, with redacted copy output and no background telemetry.
+- **External widget trust reviews** — Settings -> External Widgets accepts digest-pinned registry entry JSON, shows manifest/network/analytics/permission disclosures before fetch, verifies the SHA-256 manifest digest, and ships with no remote widget registry enabled by default.
 - **OPML import + export** — one-click export of all RSS + News feeds; merge-import from any OPML file (Feedly, Inoreader, NetNewsWire compatible).
 - **Settings JSON export / import with partial restore** — download your config as JSON; on import, a section-checklist dialog lets you pick which parts to overwrite (theme, widgets, links, feeds, workspaces, etc.) so accidental imports never wipe your in-progress state. API keys (CoinGecko, NASA APOD) are stripped from exports and share links and re-applied automatically when you import your own backup on the same device. Restore checks also call out OPFS video references and IndexedDB feed archives that must be rebuilt or reselected on a new browser profile.
 - **Config share link** — copy a URL that encodes your settings as a base64 fragment (secrets stripped) and open it on any device with Vantage installed; the same partial-restore dialog gates the apply.
@@ -300,6 +301,7 @@ Vantage/
 | `www.bing.com` | Background → Bing daily | Daily wallpaper image |
 | Each configured image URL | Background image URL | Load the direct wallpaper image URL you enter; optional host grant enables direct fetch features such as pre-blur |
 | Each configured iframe URL | Embed widget | Render the iframe URL you add after a scoped host grant; blocked sites can be opened in a new tab |
+| Each reviewed external widget manifest / iframe origin | External Widgets | User-added HTTPS manifests or digest-pinned registry entries; registry JSON is pasted locally and no remote registry is fetched by default |
 | `embed.windy.com` | Windy radar widget | Weather radar iframe centered on your configured weather location |
 | `en.wikipedia.org` | Quote author link | Opens only when you click the author link; no background fetch |
 

@@ -3464,6 +3464,69 @@
   "settingsEnableNamedAria": {
     "message": "Enable $1"
   },
+  "settingsExternalWidgetsHint": {
+    "message": "Add third-party widgets by pasting an HTTPS widget manifest URL. Widgets run in sandboxed iframes with no access to your data; manifest and widget frame origins are HTTPS-only."
+  },
+  "settingsExternalWidgetRegistryHint": {
+    "message": "Registry entries stay local: paste JSON to review digest, network, analytics, and permission disclosures before install. No remote widget registry is enabled by default."
+  },
+  "settingsNoExternalWidgets": {
+    "message": "No external widgets added yet."
+  },
+  "settingsReady": {
+    "message": "Ready"
+  },
+  "settingsWidgetTrustedDigestStatus": {
+    "message": "Ready - digest pinned"
+  },
+  "settingsNotLoaded": {
+    "message": "Not loaded"
+  },
+  "settingsRemoveWidget": {
+    "message": "Remove widget"
+  },
+  "settingsRemoveWidgetTitle": {
+    "message": "Remove"
+  },
+  "settingsReloadManifest": {
+    "message": "Reload manifest"
+  },
+  "settingsAddWidget": {
+    "message": "Add widget"
+  },
+  "settingsReviewRegistryEntry": {
+    "message": "Review registry entry"
+  },
+  "settingsWidgetRegistryPrompt": {
+    "message": "Paste a widget registry entry JSON object. The entry must include manifestUrl, manifestDigest, and network disclosures."
+  },
+  "settingsWidgetRegistryInvalidJson": {
+    "message": "Invalid registry entry JSON."
+  },
+  "settingsWidgetRegistryInvalid": {
+    "message": "Invalid registry entry: $1"
+  },
+  "settingsWidgetRegistryCanceled": {
+    "message": "Registry review canceled."
+  },
+  "settingsWidgetRegistryAdded": {
+    "message": "Verified digest and added \"$1\"."
+  },
+  "settingsWidgetRegistryVerifyFailed": {
+    "message": "Registry verification failed - $1."
+  },
+  "settingsWidgetRegistryReviewTitle": {
+    "message": "Review widget registry entry"
+  },
+  "settingsWidgetRegistryReviewHint": {
+    "message": "Vantage will fetch $1 only after you approve this local disclosure review, then verify the manifest digest before adding it."
+  },
+  "settingsWidgetRegistryReviewNote": {
+    "message": "Registry review does not grant extra browser permissions. The widget still runs in the sandboxed HTTPS iframe boundary."
+  },
+  "settingsVerifyDigestAdd": {
+    "message": "Verify digest and add"
+  },
   "settingsInvalidManifest": {
     "message": "Invalid manifest: $1"
   },

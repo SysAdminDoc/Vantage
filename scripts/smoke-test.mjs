@@ -114,6 +114,17 @@ async function run() {
         await filterInput.click({ clickCount: 3 });
         await filterInput.press("Backspace");
         await new Promise(r => setTimeout(r, 200));
+        await filterInput.type("registry");
+        await new Promise(r => setTimeout(r, 400));
+        const registryVisible = await page.evaluate(() =>
+          document.body.textContent?.includes("Review registry entry") &&
+          document.body.textContent?.includes("No remote widget registry is enabled by default.")
+        );
+        if (registryVisible) ok("External widget registry review - Settings control renders");
+        else fail("External widget registry review", "registry review control not visible after filtering");
+        await filterInput.click({ clickCount: 3 });
+        await filterInput.press("Backspace");
+        await new Promise(r => setTimeout(r, 200));
       } else {
         fail("Settings filter", "filter input not found");
       }

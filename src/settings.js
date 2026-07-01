@@ -16,7 +16,13 @@ import { clearFaviconCache, getFaviconCacheStats } from "./utils/favicon-cache.j
 import { enrichLinkMetadata } from "./utils/link-metadata.js";
 import { createWorkspaceId, duplicateQuickLinkGroup, duplicateWorkspace } from "./utils/workspace.js";
 import { normalizeWebUrl } from "./utils/url-safety.js";
-import { normalizeWidgetHttpsUrl, validateManifest } from "./utils/widget-host.js";
+import {
+  buildWidgetRegistryReview,
+  fetchManifest,
+  fetchTrustedRegistryManifest,
+  normalizeWidgetHttpsUrl,
+  validateManifest
+} from "./utils/widget-host.js";
 import { removeBrowserPermission, requestBrowserPermission } from "./utils/browser-permissions.js";
 import { i18n } from "./utils/i18n.js";
 import {
@@ -3516,30 +3522,81 @@ function buildEmbedsSection(settings, onChange) {
 function buildExternalWidgetsSection(settings, onChange) {
   const sec = section("External Widgets", "layout-grid");
   sec.appendChild(el("p", { class: "settings-section__hint" }, [
-    "Add third-party widgets by pasting an HTTPS widget manifest URL. Widgets run in sandboxed iframes with no access to your data; manifest and widget frame origins are HTTPS-only."
+    i18n(
+      "settingsExternalWidgetsHint",
+      null,
+      "Add third-party widgets by pasting an HTTPS widget manifest URL. Widgets run in sandboxed iframes with no access to your data; manifest and widget frame origins are HTTPS-only."
+    )
+  ]));
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    i18n(
+      "settingsExternalWidgetRegistryHint",
+      null,
+      "Registry entries stay local: paste JSON to review digest, network, analytics, and permission disclosures before install. No remote widget registry is enabled by default."
+    )
   ]));
 
   if (!settings.externalWidgets) settings.externalWidgets = [];
   const listEl = el("div", { class: "item-list" });
 
+  function widgetName(widget, fallback = "Widget") {
+    return typeof widget?.manifest?.name === "string"
+      ? widget.manifest.name
+      : typeof widget?.manifestUrl === "string" && widget.manifestUrl
+        ? widget.manifestUrl
+        : fallback;
+  }
+
+  function uniqueWidgetId(baseId) {
+    const base = /^[a-z0-9][a-z0-9-]{0,63}$/.test(baseId || "")
+      ? baseId
+      : `widget-${Date.now()}`;
+    const used = new Set((settings.externalWidgets || []).map(widget => widget.id));
+    if (!used.has(base)) return base;
+    for (let i = 2; i < 100; i++) {
+      const suffix = `-${i}`;
+      const next = `${base.slice(0, 64 - suffix.length)}${suffix}`;
+      if (!used.has(next)) return next;
+    }
+    return `widget-${Date.now()}`;
+  }
+
+  function addTrustedWidget(manifest, manifestUrl, trust = null) {
+    const errs = validateManifest(manifest);
+    if (errs.length) {
+      throw new Error(i18n("settingsInvalidManifest", [errs.join(", ")], "Invalid manifest: $1"));
+    }
+
+    settings.externalWidgets.push({
+      id: uniqueWidgetId(manifest.id),
+      manifestUrl,
+      manifest,
+      enabled: true,
+      data: {},
+      ...(trust ? { registryTrust: trust } : {})
+    });
+    onChange(settings);
+    refreshList();
+  }
+
   function refreshList() {
     clear(listEl);
     const current = settings.externalWidgets || [];
     if (!current.length) {
-      listEl.appendChild(el("div", { class: "item-list__empty" }, ["No external widgets added yet."]));
+      listEl.appendChild(el("div", { class: "item-list__empty" }, [
+        i18n("settingsNoExternalWidgets", null, "No external widgets added yet.")
+      ]));
       return;
     }
     current.forEach((widget, idx) => {
-      const name = typeof widget.manifest?.name === "string"
-        ? widget.manifest.name
-        : typeof widget.manifestUrl === "string" && widget.manifestUrl
-          ? widget.manifestUrl
-          : "Widget";
+      const name = widgetName(widget);
       const status = typeof widget.manifest?.src === "string"
-        ? "Ready"
+        ? widget.registryTrust?.manifestDigest
+          ? i18n("settingsWidgetTrustedDigestStatus", null, "Ready - digest pinned")
+          : i18n("settingsReady", null, "Ready")
         : typeof widget.error === "string" && widget.error
           ? widget.error
-          : "Not loaded";
+          : i18n("settingsNotLoaded", null, "Not loaded");
       const tog = toggle({
         checked: widget.enabled ?? false,
         ariaLabel: i18n("settingsEnableNamedAria", [name], "Enable $1"),
@@ -3547,7 +3604,8 @@ function buildExternalWidgetsSection(settings, onChange) {
       });
       const del = el("button", {
         type: "button", class: "icon-button icon-button--ghost icon-button--small",
-        "aria-label": "Remove widget", title: "Remove",
+        "aria-label": i18n("settingsRemoveWidget", null, "Remove widget"),
+        title: i18n("settingsRemoveWidgetTitle", null, "Remove"),
         onClick: () => {
           settings.externalWidgets.splice(idx, 1);
           onChange(settings);
@@ -3557,15 +3615,39 @@ function buildExternalWidgetsSection(settings, onChange) {
       }, [iconNode("trash", { size: 14 })]);
       const reload = el("button", {
         type: "button", class: "icon-button icon-button--ghost icon-button--small",
-        "aria-label": "Reload manifest", title: "Reload",
+        "aria-label": i18n("settingsReloadManifest", null, "Reload manifest"),
+        title: i18n("refresh", null, "Refresh"),
         onClick: async () => {
           if (!widget.manifestUrl) return;
           reload.disabled = true;
           try {
-            const { fetchManifest, validateManifest } = await import("../utils/widget-host.js");
-            const manifest = await fetchManifest(widget.manifestUrl);
-            const errs = validateManifest(manifest);
-            if (errs.length) { settingsToast(i18n("settingsInvalidManifest", [errs.join(", ")], "Invalid manifest: $1"), "error"); return; }
+            let manifest;
+            if (widget.registryTrust?.manifestDigest) {
+              const trusted = await fetchTrustedRegistryManifest({
+                id: widget.registryTrust.id || widget.manifest?.id || widget.id,
+                name: widget.registryTrust.name || widget.manifest?.name || widget.id,
+                manifestUrl: widget.manifestUrl,
+                manifestDigest: widget.registryTrust.manifestDigest,
+                homepage: widget.registryTrust.homepage || widget.manifest?.homepage || "",
+                publisher: widget.registryTrust.publisher || "",
+                description: widget.registryTrust.description || "",
+                permissions: widget.registryTrust.permissions || [],
+                network: widget.registryTrust.network
+              });
+              manifest = trusted.manifest;
+              widget.registryTrust = {
+                ...widget.registryTrust,
+                ...trusted.review,
+                reviewedAt: widget.registryTrust.reviewedAt || new Date().toISOString()
+              };
+            } else {
+              manifest = await fetchManifest(widget.manifestUrl);
+              const errs = validateManifest(manifest);
+              if (errs.length) {
+                settingsToast(i18n("settingsInvalidManifest", [errs.join(", ")], "Invalid manifest: $1"), "error");
+                return;
+              }
+            }
             widget.manifest = manifest;
             widget.error = "";
             onChange(settings);
@@ -3605,20 +3687,11 @@ function buildExternalWidgetsSection(settings, onChange) {
       if (!url) return;
       addBtn.disabled = true;
       try {
-        const { fetchManifest, validateManifest } = await import("../utils/widget-host.js");
         const manifest = await fetchManifest(url);
         const errs = validateManifest(manifest);
         if (errs.length) { settingsToast(i18n("settingsInvalidManifest", [errs.join(", ")], "Invalid manifest: $1"), "error"); return; }
         const normalizedManifestUrl = normalizeWidgetHttpsUrl(url);
-        settings.externalWidgets.push({
-          id: manifest.id || String(Date.now()),
-          manifestUrl: normalizedManifestUrl || url,
-          manifest,
-          enabled: true,
-          data: {}
-        });
-        onChange(settings);
-        refreshList();
+        addTrustedWidget(manifest, normalizedManifestUrl || url);
         urlIn.value = "";
         settingsToast(i18n("settingsAddedNamedQuoted", [manifest.name], "Added \"$1\"."), "success");
       } catch (err) {
@@ -3627,8 +3700,66 @@ function buildExternalWidgetsSection(settings, onChange) {
         addBtn.disabled = false;
       }
     }
-  }, [iconNode("plus", { size: 14 }), " Add widget"]);
+  }, [iconNode("plus", { size: 14 }), ` ${i18n("settingsAddWidget", null, "Add widget")}`]);
   sec.appendChild(el("div", { class: "embed-item__row" }, [urlIn, addBtn]));
+
+  const reviewRegistryBtn = el("button", {
+    type: "button",
+    class: "button button--ghost",
+    onClick: async () => {
+      const raw = settingsPrompt(i18n(
+        "settingsWidgetRegistryPrompt",
+        null,
+        "Paste a widget registry entry JSON object. The entry must include manifestUrl, manifestDigest, and network disclosures."
+      ));
+      if (!raw) return;
+      let entry;
+      try {
+        entry = JSON.parse(raw);
+      } catch {
+        settingsToast(i18n("settingsWidgetRegistryInvalidJson", null, "Invalid registry entry JSON."), "error");
+        return;
+      }
+
+      const reviewResult = buildWidgetRegistryReview(entry);
+      if (!reviewResult.valid) {
+        settingsToast(
+          i18n("settingsWidgetRegistryInvalid", [reviewResult.errors.join(", ")], "Invalid registry entry: $1"),
+          "error",
+          9000
+        );
+        return;
+      }
+
+      const confirmed = await showWidgetRegistryReviewDialog(reviewResult.review);
+      if (!confirmed) {
+        settingsToast(i18n("settingsWidgetRegistryCanceled", null, "Registry review canceled."), "info");
+        return;
+      }
+
+      reviewRegistryBtn.disabled = true;
+      try {
+        const { manifest, review } = await fetchTrustedRegistryManifest(entry);
+        addTrustedWidget(manifest, review.manifestUrl, {
+          ...review,
+          reviewedAt: new Date().toISOString()
+        });
+        settingsToast(
+          i18n("settingsWidgetRegistryAdded", [manifest.name], "Verified digest and added \"$1\"."),
+          "success"
+        );
+      } catch (err) {
+        settingsToast(
+          i18n("settingsWidgetRegistryVerifyFailed", [err?.message || "verification failed"], "Registry verification failed - $1."),
+          "error",
+          9000
+        );
+      } finally {
+        reviewRegistryBtn.disabled = false;
+      }
+    }
+  }, [iconNode("check", { size: 14 }), ` ${i18n("settingsReviewRegistryEntry", null, "Review registry entry")}`]);
+  sec.appendChild(el("div", { class: "embed-item__row" }, [reviewRegistryBtn]));
   return sec;
 }
 
@@ -4624,6 +4755,86 @@ function showGistExportDialog(safeSettings) {
   });
 }
 
+function showWidgetRegistryReviewDialog(review) {
+  return new Promise((resolve) => {
+    const dialog = el("dialog", {
+      class: "import-dialog",
+      "aria-labelledby": "widget-registry-review-title",
+      closedby: "any"
+    });
+
+    let resolved = false;
+    let unregisterOverlay = null;
+    const close = (result) => {
+      if (resolved) return;
+      resolved = true;
+      unregisterOverlay?.();
+      unregisterOverlay = null;
+      try { dialog.close(); } catch {}
+      dialog.remove();
+      resolve(result);
+    };
+
+    dialog.addEventListener("cancel", (e) => { e.preventDefault(); close(false); });
+    dialog.addEventListener("close", () => close(false));
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) close(false);
+    });
+
+    const list = el("div", { class: "import-dialog__sections" });
+    for (const disclosure of review.disclosures || []) {
+      list.appendChild(el("div", { class: "import-dialog__section", style: "cursor: default;" }, [
+        el("div", { class: "import-dialog__section-text" }, [
+          el("span", { class: "item-list__hint" }, [disclosure])
+        ])
+      ]));
+    }
+
+    dialog.appendChild(el("header", { class: "import-dialog__header" }, [
+      el("h2", { id: "widget-registry-review-title" }, [
+        i18n("settingsWidgetRegistryReviewTitle", null, "Review widget registry entry")
+      ]),
+      el("p", {}, [
+        i18n(
+          "settingsWidgetRegistryReviewHint",
+          [review.name || review.id],
+          "Vantage will fetch $1 only after you approve this local disclosure review, then verify the manifest digest before adding it."
+        )
+      ])
+    ]));
+    dialog.appendChild(list);
+    dialog.appendChild(el("p", { class: "import-dialog__extra-note" }, [
+      i18n(
+        "settingsWidgetRegistryReviewNote",
+        null,
+        "Registry review does not grant extra browser permissions. The widget still runs in the sandboxed HTTPS iframe boundary."
+      )
+    ]));
+    dialog.appendChild(el("footer", { class: "import-dialog__actions" }, [
+      el("button", {
+        type: "button",
+        class: "button button--ghost",
+        onClick: () => close(false)
+      }, [i18n("cancel", null, "Cancel")]),
+      el("span", { class: "import-dialog__spacer" }),
+      el("button", {
+        type: "button",
+        class: "button button--primary",
+        onClick: () => close(true)
+      }, [iconNode("check", { size: 14 }), ` ${i18n("settingsVerifyDigestAdd", null, "Verify digest and add")}`])
+    ]));
+
+    document.body.appendChild(dialog);
+    try { dialog.showModal(); } catch { dialog.setAttribute("open", ""); }
+    unregisterOverlay = registerOverlay({
+      id: "widget-registry-review-dialog",
+      root: dialog,
+      close: () => close(false),
+      closeOnOutside: false
+    });
+  });
+}
+
 async function copyText(text) {
   if (!navigator.clipboard?.writeText) {
     throw new Error("Clipboard access is unavailable.");
@@ -4929,7 +5140,32 @@ function sanitizeImportedExternalWidget(widget) {
   } else {
     cleaned.error = "Manifest needs reload";
   }
+
+  const trust = sanitizeImportedWidgetRegistryTrust(widget.registryTrust, {
+    manifestUrl,
+    id: cleaned.id,
+    name: cleaned.manifest?.name || cleaned.id
+  });
+  if (trust) cleaned.registryTrust = trust;
   return cleaned;
+}
+
+function sanitizeImportedWidgetRegistryTrust(trust, fallback) {
+  if (!trust || typeof trust !== "object" || Array.isArray(trust)) return null;
+  const candidate = {
+    ...trust,
+    id: typeof trust.id === "string" ? trust.id : fallback.id,
+    name: typeof trust.name === "string" ? trust.name : fallback.name,
+    manifestUrl: typeof trust.manifestUrl === "string" ? trust.manifestUrl : fallback.manifestUrl
+  };
+  const result = buildWidgetRegistryReview(candidate);
+  if (!result.valid || result.review.manifestUrl !== fallback.manifestUrl || result.review.id !== fallback.id) {
+    return null;
+  }
+  return {
+    ...result.review,
+    reviewedAt: typeof trust.reviewedAt === "string" && trust.reviewedAt.length <= 40 ? trust.reviewedAt : ""
+  };
 }
 
 function mergeSettings(base, incoming) {

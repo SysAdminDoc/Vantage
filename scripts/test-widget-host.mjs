@@ -3,7 +3,16 @@
 
 import { strict as assert } from "node:assert";
 import { readFile } from "node:fs/promises";
-import { fetchManifest, normalizeWidgetHttpsUrl, sanitizeWidgetSize, validateManifest } from "../src/utils/widget-host.js";
+import {
+  buildWidgetRegistryReview,
+  fetchManifest,
+  fetchTrustedRegistryManifest,
+  normalizeWidgetHttpsUrl,
+  sanitizeWidgetSize,
+  sha256Hex,
+  validateManifest,
+  validateRegistryEntry
+} from "../src/utils/widget-host.js";
 
 const VALID_MANIFEST = Object.freeze({
   id: "sample-widget",
@@ -11,6 +20,28 @@ const VALID_MANIFEST = Object.freeze({
   src: "https://widgets.example.com/widget.html",
   version: "1.0.0"
 });
+
+const VALID_MANIFEST_TEXT = JSON.stringify(VALID_MANIFEST);
+
+async function registryEntryForManifest(manifestText = VALID_MANIFEST_TEXT, overrides = {}) {
+  const digest = `sha256:${await sha256Hex(manifestText)}`;
+  return {
+    id: "sample-widget",
+    name: "Sample Widget",
+    manifestUrl: "https://widgets.example.com/widget.json",
+    manifestDigest: digest,
+    homepage: "https://widgets.example.com/",
+    publisher: "Example Widgets",
+    description: "Small sample widget.",
+    network: {
+      hosts: ["https://widgets.example.com"],
+      analytics: false,
+      notes: "Loads only the widget iframe and manifest."
+    },
+    permissions: ["external-fetch"],
+    ...overrides
+  };
+}
 
 let passed = 0;
 
@@ -96,6 +127,8 @@ await test("docs and settings copy stay HTTPS-only", async () => {
   assert.ok(!docs.includes("http://localhost:8000/manifest.json"));
   assert.ok(settings.includes("HTTPS widget manifest URL"));
   assert.ok(settings.includes("HTTPS-only"));
+  assert.ok(settings.includes("Review registry entry"));
+  assert.ok(settings.includes("No remote widget registry is enabled by default."));
 });
 
 await test("fetchManifest parses bounded JSON responses", async () => {
@@ -121,6 +154,78 @@ await test("fetchManifest rejects oversized responses", async () => {
   });
   try {
     await assert.rejects(() => fetchManifest("https://widgets.example.com/widget.json"), /Manifest is too large/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+await test("registry review accepts digest-pinned disclosures", async () => {
+  const review = buildWidgetRegistryReview(await registryEntryForManifest());
+  assert.equal(review.valid, true);
+  assert.equal(review.review.manifestDigest.startsWith("sha256:"), true);
+  assert.deepEqual(review.review.network.hosts, ["https://widgets.example.com"]);
+  assert.deepEqual(review.review.permissions, ["external-fetch"]);
+  assert.ok(review.review.disclosures.some(item => item.includes("Analytics: no")));
+});
+
+await test("registry review rejects missing digest and network disclosures", () => {
+  const errors = validateRegistryEntry({
+    id: "sample-widget",
+    name: "Sample Widget",
+    manifestUrl: "https://widgets.example.com/widget.json",
+    network: { hosts: ["http://widgets.example.com"], analytics: "no" }
+  });
+  assert.ok(errors.includes("manifestDigest must be sha256:<64 hex chars>"));
+  assert.ok(errors.includes("network hosts must be HTTPS origins"));
+  assert.ok(errors.includes("network analytics disclosure is required"));
+});
+
+await test("trusted registry manifests verify SHA-256 before install", async () => {
+  const entry = await registryEntryForManifest();
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: true,
+    headers: { get: () => String(VALID_MANIFEST_TEXT.length) },
+    text: async () => VALID_MANIFEST_TEXT
+  });
+  try {
+    const { manifest, review } = await fetchTrustedRegistryManifest(entry);
+    assert.deepEqual(manifest, VALID_MANIFEST);
+    assert.equal(review.id, "sample-widget");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+await test("trusted registry manifests reject digest mismatches", async () => {
+  const entry = await registryEntryForManifest();
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: true,
+    headers: { get: () => null },
+    text: async () => JSON.stringify({ ...VALID_MANIFEST, name: "Changed Widget" })
+  });
+  try {
+    await assert.rejects(() => fetchTrustedRegistryManifest(entry), /Manifest digest mismatch/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+await test("trusted registry manifests require disclosed widget frame origin", async () => {
+  const manifestText = JSON.stringify({
+    ...VALID_MANIFEST,
+    src: "https://cdn.widgets.example/widget.html"
+  });
+  const entry = await registryEntryForManifest(manifestText);
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: true,
+    headers: { get: () => null },
+    text: async () => manifestText
+  });
+  try {
+    await assert.rejects(() => fetchTrustedRegistryManifest(entry), /does not disclose widget frame origin/);
   } finally {
     globalThis.fetch = originalFetch;
   }

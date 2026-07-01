@@ -162,6 +162,18 @@ test("malformed imported external widgets are normalized before restore", () => 
           version: "1.0.0",
           homepage: "https://widgets.example.com/"
         },
+        registryTrust: {
+          id: "sample-widget",
+          name: "Sample Widget",
+          manifestUrl: "https://widgets.example.com/manifest.json",
+          manifestDigest: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          network: {
+            hosts: ["https://widgets.example.com"],
+            analytics: false
+          },
+          permissions: ["external-fetch"],
+          reviewedAt: "2026-06-30T00:00:00.000Z"
+        },
         enabled: true,
         data: { compact: true }
       },
@@ -182,6 +194,8 @@ test("malformed imported external widgets are normalized before restore", () => 
   assert.equal(normalized.externalWidgets.length, 2);
   assert.equal(normalized.externalWidgets[0].manifestUrl, "https://widgets.example.com/manifest.json");
   assert.equal(normalized.externalWidgets[0].manifest.name, "Sample Widget");
+  assert.equal(normalized.externalWidgets[0].registryTrust.manifestDigest, "sha256:1111111111111111111111111111111111111111111111111111111111111111");
+  assert.deepEqual(normalized.externalWidgets[0].registryTrust.network.hosts, ["https://widgets.example.com"]);
   assert.deepEqual(normalized.externalWidgets[0].data, { compact: true });
   assert.equal(normalized.externalWidgets[1].manifestUrl, "https://widgets.example.com/reload.json");
   assert.equal(normalized.externalWidgets[1].manifest, undefined);

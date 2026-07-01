@@ -200,7 +200,7 @@ window.parent.postMessage({
 
 ### Loading
 
-1. **Manifest discovery**: Vantage fetches the widget manifest from a user-provided URL or a curated registry.
+1. **Manifest discovery**: Vantage fetches the widget manifest from a user-provided HTTPS URL or a locally reviewed registry entry.
 2. **Validation**: Check `minVantageVersion`, permissions, and HTTPS compliance.
 3. **Container creation**: Create an `<iframe>` with `sandbox` attributes and insert into DOM.
 4. **Message listener**: Vantage listens for `vantage:ready` from the iframe.
@@ -352,15 +352,59 @@ The widget API uses semver:
 
 Widgets can be discovered via:
 
-1. **Vantage official registry** (future, opt-in)
+1. **Digest-pinned registry entries** (paste JSON, local review, digest verification)
 2. **User-provided manifest URL** (immediate, v1.0.0)
 3. **GitHub releases** (manifest hosted on GitHub Pages)
 
-To add a widget in Vantage:
-- Open Settings → Widgets
-- Click "Add external widget"
+No remote widget registry is enabled by default. Vantage does not fetch a registry index, subscribe to a catalog, or install remote entries automatically. A future signed registry can point users at entries, but the addable object still has to pass the same local review model below.
+
+### Direct Manifest URL
+
+To add a widget from a manifest:
+
+- Open Settings -> External Widgets
 - Paste the widget manifest URL (HTTPS required)
-- Confirm permissions + sandbox config
+- Click "Add widget"
+
+Direct manifests are fetched and validated immediately. This path is for a URL the user already trusts.
+
+### Registry Entry Review
+
+Registry entries are local JSON objects that describe one widget manifest and pin the exact manifest body by SHA-256. Paste an entry with "Review registry entry" in Settings -> External Widgets. Vantage shows the disclosure fields first, then fetches the manifest only after approval. The install succeeds only when:
+
+- `manifestUrl`, widget manifest `src`, and optional `homepage` are HTTPS URLs without credentials.
+- `manifestDigest` is `sha256:<64 lowercase hex chars>` for the exact manifest JSON response body.
+- `network.hosts` discloses the manifest origin and the widget iframe origin.
+- `network.analytics` is an explicit boolean.
+- `permissions` is an array of lowercase disclosure labels, or omitted when none apply.
+- The registry `id` matches the fetched manifest `id`.
+
+Example registry entry:
+
+```json
+{
+  "id": "github-trending",
+  "name": "GitHub Trending",
+  "manifestUrl": "https://example.com/widgets/github-trending/manifest.json",
+  "manifestDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "homepage": "https://example.com/widgets/github-trending/",
+  "publisher": "Example Widgets",
+  "description": "Shows trending public repositories.",
+  "network": {
+    "hosts": [
+      "https://example.com",
+      "https://widgets.example.com"
+    ],
+    "analytics": false,
+    "notes": "Loads the manifest, widget iframe, and public GitHub API data from the widget origin."
+  },
+  "permissions": [
+    "external-fetch"
+  ]
+}
+```
+
+The digest value above is a placeholder; real entries must use the SHA-256 of the exact manifest response body. Signed catalog formats can wrap or distribute these entries, but Vantage's local add path currently accepts the digest-pinned entry contract.
 
 ---
 
@@ -438,4 +482,3 @@ This Widget API specification is provided under the MIT License, same as Vantage
 **Widget API v1.0.0**  
 *Frozen as of Vantage v1.0.0 (May 2, 2026)*  
 *Semver stability guaranteed.*
-
