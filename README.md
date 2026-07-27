@@ -17,6 +17,7 @@
 
 <img width="1616" height="883" alt="Vantage screenshot" src="https://github.com/user-attachments/assets/0afeef81-dbf9-4093-8497-8d5115c35744" />
 
+<img width="1872" height="902" alt="2026-07-27 19_03_07-Greenshot" src="https://github.com/user-attachments/assets/265f9677-4b8f-4425-ae15-b5dffa08cd27" />
 
 ## Why another new tab extension?
 
