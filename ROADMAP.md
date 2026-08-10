@@ -1,6 +1,5 @@
 # Vantage Roadmap
 
-Only incomplete work belongs here. Completed items live in git history and CHANGELOG.md.
-Blocked items live in Roadmap_Blocked.md.
+Actionable work only. Historical and completed roadmap material is archived in CHANGELOG.md; blocked work is kept in Roadmap_Blocked.md.
 
-## Research-Driven Additions
+No actionable roadmap items remain.

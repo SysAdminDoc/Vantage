@@ -541,3 +541,19 @@ Initial release.
 - Service worker stub — toolbar action click opens a fresh new tab.
 - Icons (16/48/128/256/512 PNG, master SVG) generated from a single SVG source.
 - README with banner, install instructions, architecture map, privacy/network table, and credits.
+
+## Roadmap archive — 2026-08-10 — ROADMAP.md
+
+<details>
+<summary>Original roadmap snapshot</summary>
+
+```markdown
+# Vantage Roadmap
+
+Only incomplete work belongs here. Completed items live in git history and CHANGELOG.md.
+Blocked items live in Roadmap_Blocked.md.
+
+## Research-Driven Additions
+```
+
+</details>
