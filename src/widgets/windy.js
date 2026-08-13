@@ -1,4 +1,4 @@
-// Vantage — Windy.com radar embed panel.
+// Vantage v1.3.0 — Windy.com radar embed panel.
 
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
@@ -47,6 +47,10 @@ export function renderWindy(mount, settings, { onAttachDragHandle } = {}) {
       el("h2", { class: "panel-header__title" }, [iconNode("wind", { size: 14 }), ` ${i18n("settingsRadar", null, "Radar")}`])
     ]),
     el("div", { class: "panel-header__right" }, [
+      el("span", {
+        class: "panel-provider-boundary",
+        title: i18n("thirdPartyContentBoundary", null, "Third-party content may include ads or tracking that Vantage cannot filter.")
+      }, [i18n("thirdPartyContent", null, "Third-party content")]),
       el("button", {
         type: "button",
         class: "icon-button icon-button--ghost icon-button--small",
@@ -66,6 +70,7 @@ export function renderWindy(mount, settings, { onAttachDragHandle } = {}) {
     const iframe = el("iframe", {
       src: buildSrc(cfg, location),
       class: "map-iframe",
+      sandbox: "allow-scripts allow-same-origin allow-popups",
       allowfullscreen: "true",
       "aria-label": i18n("windyWeatherRadar", null, "Windy weather radar")
     });

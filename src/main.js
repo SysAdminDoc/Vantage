@@ -707,8 +707,7 @@ function wireSettingsFilterShortcut() {
       input.value = query;
       input.dispatchEvent(new Event("input", { bubbles: true }));
       input.focus({ preventScroll: true });
-      const match = [...panel.querySelectorAll(".settings-section")]
-        .find((section) => section.textContent.toLowerCase().includes(query.toLowerCase()));
+      const match = panel.querySelector(".settings-section[data-filter-match='true']");
       const title = match?.querySelector(".settings-section__title");
       if (title?.getAttribute("aria-expanded") !== "true") title?.click();
       match?.scrollIntoView({ block: "start", behavior: "smooth" });

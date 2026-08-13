@@ -72,6 +72,7 @@ async function run() {
   }
 
   const page = await browser.newPage();
+  await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 1 });
 
   try {
     // ── 1. Onboarding skip ──────────────────────────────────
@@ -92,6 +93,25 @@ async function run() {
       const panelVisible = await page.$("dialog[open], .settings-panel[data-open], aside[data-open]");
       if (panelVisible) ok("Settings panel opens");
       else fail("Settings panel", "panel not visible after click");
+
+      const settingsShell = await page.evaluate(() => {
+        const panel = document.getElementById("settings-panel");
+        const rect = panel?.getBoundingClientRect();
+        return {
+          destinationCount: panel?.querySelectorAll(".settings-nav__button").length || 0,
+          current: panel?.querySelector(".settings-nav__button[aria-current='page'] .settings-nav__label")?.textContent?.trim(),
+          containerVisible: [...(panel?.querySelectorAll(".settings-section__title-text") || [])]
+            .some(node => node.textContent?.trim() === "Container Workspaces"),
+          centered: !!rect && Math.abs((rect.left + rect.width / 2) - innerWidth / 2) < 2,
+          desktopWidth: rect?.width || 0
+        };
+      });
+      if (settingsShell.destinationCount === 5 && settingsShell.current === "Personalize" &&
+          !settingsShell.containerVisible && settingsShell.centered && settingsShell.desktopWidth > 1000) {
+        ok("Settings destinations - centered five-page Chromium shell");
+      } else {
+        fail("Settings destinations", JSON.stringify(settingsShell));
+      }
 
       // ── 3. Settings filter ──────────────────────────────────
       const filterInput = await page.$('.settings-filter, input[type="search"][placeholder*="earch"], input[aria-label*="filter" i]');
@@ -122,6 +142,24 @@ async function run() {
         );
         if (registryVisible) ok("External widget registry review - Settings control renders");
         else fail("External widget registry review", "registry review control not visible after filtering");
+        await page.evaluate(() => {
+          const input = document.getElementById("settings-filter-input");
+          input.value = "data";
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        await new Promise(r => setTimeout(r, 300));
+        const dataSearch = await page.evaluate(() => ({
+          destinations: [...document.querySelectorAll(".settings-destination:not([hidden])")]
+            .map(node => node.dataset.destination),
+          matches: [...document.querySelectorAll(".settings-section[data-filter-match='true'] .settings-section__title-text")]
+            .map(node => node.textContent?.trim())
+        }));
+        if (dataSearch.destinations.length === 1 && dataSearch.destinations[0] === "privacy" &&
+            dataSearch.matches.includes("Data")) {
+          ok("Settings filter - data routes to Privacy & data only");
+        } else {
+          fail("Settings filter data routing", JSON.stringify(dataSearch));
+        }
         await filterInput.click({ clickCount: 3 });
         await filterInput.press("Backspace");
         await new Promise(r => setTimeout(r, 200));
@@ -506,6 +544,35 @@ async function smokeFirstRunRecovery(browser, server) {
       ok("First-run recovery - onboarding renders");
     } else {
       fail("First-run recovery", JSON.stringify(state));
+    }
+
+    const balanced = await page.$('.onboard-preset[data-preset="standard"]');
+    await balanced?.click();
+    const next = async () => {
+      const button = await page.$(".onboard-footer .button--primary");
+      await button?.click();
+      await new Promise(resolveWait => setTimeout(resolveWait, 100));
+    };
+    await next();
+    await next();
+    await next();
+    await page.waitForSelector(".onboard-overlay", { hidden: true, timeout: 3000 });
+    const savedPreset = await page.evaluate(() => {
+      const store = JSON.parse(localStorage.getItem("vantage:dev-chrome-storage") || "{}");
+      const settings = store.vantageSettings || {};
+      return {
+        onboardingComplete: settings.onboardingComplete,
+        rss: settings.rss?.enabled,
+        news: settings.news?.enabled,
+        calendar: settings.calendar?.enabled,
+        starred: settings.starred?.enabled
+      };
+    });
+    if (savedPreset.onboardingComplete && savedPreset.rss && savedPreset.news && savedPreset.calendar &&
+        savedPreset.starred === false) {
+      ok("First-run recovery - Balanced preset saves exactly three reading panels");
+    } else {
+      fail("First-run Balanced preset", JSON.stringify(savedPreset));
     }
   } finally {
     await page.close();

@@ -1,4 +1,4 @@
-// Vantage v1.2.0 — External widget panel (manifest-based sandboxed iframe).
+// Vantage v1.3.0 — External widget panel (manifest-based sandboxed iframe).
 
 import { el, clear, toast } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
@@ -39,6 +39,10 @@ export function renderExternalWidget(mount, widgetCfg, settings, { onAttachDragH
       el("h2", { class: "panel-header__title" }, [iconNode("layout-grid", { size: 14 }), " ", title])
     ]),
     el("div", { class: "panel-header__right" }, [
+      el("span", {
+        class: "panel-provider-boundary",
+        title: i18n("thirdPartyContentBoundary", null, "Third-party content may include ads or tracking that Vantage cannot filter.")
+      }, [i18n("thirdPartyContent", null, "Third-party content")]),
       manifest.homepage
         ? el("a", {
             href: manifest.homepage, target: "_blank", rel: "noopener noreferrer",

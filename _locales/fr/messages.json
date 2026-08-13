@@ -1544,7 +1544,7 @@
     "message": "Filter by widget, privacy setting, feed, or visual preference. Matching sections open automatically."
   },
   "settingsFilterPlaceholder": {
-    "message": "Filter settings..."
+    "message": "Rechercher dans tous les paramètres..."
   },
   "settingsFromColor": {
     "message": "From color"
@@ -3682,5 +3682,29 @@
   },
   "settingsLiteral_3xs5es": {
     "message": "Wipe the entire feed archive? This cannot be undone."
-  }
+  },
+  "settingsDestinationsAria": { "message": "Rubriques des paramètres" },
+  "settingsSearchResults": { "message": "Résultats de recherche" },
+  "settingsSearchCountOne": { "message": "$1 rubrique de paramètres trouvée pour « $2 »." },
+  "settingsSearchCountMany": { "message": "$1 rubriques de paramètres trouvées pour « $2 »." },
+  "settingsSearchNone": { "message": "Aucun paramètre trouvé pour « $1 »." },
+  "settingsPersonalizeDestination": { "message": "Personnaliser" },
+  "settingsPersonalizeDescription": { "message": "Adaptez l’apparence, la recherche, la météo et les raccourcis quotidiens de Vantage." },
+  "settingsFeedsDestination": { "message": "Flux et sources" },
+  "settingsFeedsDescription": { "message": "Choisissez les sources d’information et la façon dont Vantage les actualise." },
+  "settingsWidgetsDestination": { "message": "Widgets" },
+  "settingsWidgetsDescription": { "message": "Choisissez les outils et informations affichés sur votre tableau de bord de nouvel onglet." },
+  "settingsWorkspacesDestination": { "message": "Espaces de travail et navigateur" },
+  "settingsWorkspacesDescription": { "message": "Organisez les contextes de navigation et les fonctions propres au navigateur." },
+  "settingsPrivacyDestination": { "message": "Confidentialité et données" },
+  "settingsPrivacyDescription": { "message": "Examinez le stockage local, la sécurité, les transferts et les commandes de réinitialisation." },
+  "settingsLocalFirstTitle": { "message": "Local par défaut" },
+  "settingsLocalFirstDescription": { "message": "Les préférences et le contenu enregistré restent sur cet appareil. Les fonctions distantes activées ne contactent que les fournisseurs nommés dans leurs paramètres." },
+  "settingsAutoSaveStatus": { "message": "Les paramètres sont enregistrés automatiquement et restent sur cet appareil." },
+  "settingsExternalWidgetContentBoundaryHint": { "message": "Les cadres de widgets externes suivent les politiques de confidentialité et de contenu de leur fournisseur. Vantage ne peut pas retirer le contenu, les publicités ou le pistage d’un cadre inter-origines." },
+  "settingsThirdPartyFrame": { "message": "Cadre tiers" },
+  "settingsWindyContentBoundaryHint": { "message": "Windy est un contenu tiers. Il peut utiliser ses propres services réseau et afficher du contenu que Vantage ne peut ni examiner ni filtrer." },
+  "thirdPartyContent": { "message": "Contenu tiers" },
+  "thirdPartyContentBoundary": { "message": "Le contenu tiers peut inclure des publicités ou du pistage que Vantage ne peut pas filtrer." },
+  "settingsLiteral_195tg87": { "message": "Ctrl K" }
 }

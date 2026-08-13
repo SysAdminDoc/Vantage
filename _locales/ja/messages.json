@@ -1544,7 +1544,7 @@
     "message": "Filter by widget, privacy setting, feed, or visual preference. Matching sections open automatically."
   },
   "settingsFilterPlaceholder": {
-    "message": "Filter settings..."
+    "message": "すべての設定を検索..."
   },
   "settingsFromColor": {
     "message": "From color"
@@ -3682,5 +3682,29 @@
   },
   "settingsLiteral_3xs5es": {
     "message": "Wipe the entire feed archive? This cannot be undone."
-  }
+  },
+  "settingsDestinationsAria": { "message": "設定カテゴリ" },
+  "settingsSearchResults": { "message": "検索結果" },
+  "settingsSearchCountOne": { "message": "「$2」に一致する設定セクションが$1件見つかりました。" },
+  "settingsSearchCountMany": { "message": "「$2」に一致する設定セクションが$1件見つかりました。" },
+  "settingsSearchNone": { "message": "「$1」に一致する設定が見つかりません。" },
+  "settingsPersonalizeDestination": { "message": "パーソナライズ" },
+  "settingsPersonalizeDescription": { "message": "Vantageの外観、検索、天気、日常のショートカットを調整します。" },
+  "settingsFeedsDestination": { "message": "フィードとソース" },
+  "settingsFeedsDescription": { "message": "情報ソースとVantageの更新方法を選びます。" },
+  "settingsWidgetsDestination": { "message": "ウィジェット" },
+  "settingsWidgetsDescription": { "message": "新しいタブのダッシュボードに表示するツールと情報を選びます。" },
+  "settingsWorkspacesDestination": { "message": "ワークスペースとブラウザー" },
+  "settingsWorkspacesDescription": { "message": "ブラウジング環境とブラウザー固有の機能を整理します。" },
+  "settingsPrivacyDestination": { "message": "プライバシーとデータ" },
+  "settingsPrivacyDescription": { "message": "ローカルストレージ、セキュリティ、転送、リセット操作を確認します。" },
+  "settingsLocalFirstTitle": { "message": "既定でローカル" },
+  "settingsLocalFirstDescription": { "message": "設定と保存したコンテンツはこのデバイスに残ります。有効にしたオンライン機能は、設定に記載されたプロバイダーにのみ接続します。" },
+  "settingsAutoSaveStatus": { "message": "設定は自動的に保存され、このデバイスに残ります。" },
+  "settingsExternalWidgetContentBoundaryHint": { "message": "外部ウィジェットのフレームにはプロバイダーのプライバシーおよびコンテンツポリシーが適用されます。Vantageはクロスオリジンのフレーム内にあるコンテンツ、広告、トラッキングを削除できません。" },
+  "settingsThirdPartyFrame": { "message": "サードパーティのフレーム" },
+  "settingsWindyContentBoundaryHint": { "message": "Windyはサードパーティのコンテンツです。独自のネットワークサービスを利用し、Vantageで検査またはフィルタリングできないコンテンツを表示する場合があります。" },
+  "thirdPartyContent": { "message": "サードパーティのコンテンツ" },
+  "thirdPartyContentBoundary": { "message": "サードパーティのコンテンツには、Vantageでフィルタリングできない広告やトラッキングが含まれる場合があります。" },
+  "settingsLiteral_195tg87": { "message": "Ctrl K" }
 }

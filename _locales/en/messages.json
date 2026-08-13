@@ -1760,7 +1760,7 @@
     "description": "Settings UI string"
   },
   "settingsFilterPlaceholder": {
-    "message": "Filter settings...",
+    "message": "Search all settings...",
     "description": "Settings UI string"
   },
   "settingsFromColor": {
@@ -4045,5 +4045,77 @@
   },
   "settingsLiteral_3xs5es": {
     "message": "Wipe the entire feed archive? This cannot be undone."
+  },
+  "settingsDestinationsAria": {
+    "message": "Settings destinations"
+  },
+  "settingsSearchResults": {
+    "message": "Search results"
+  },
+  "settingsSearchCountOne": {
+    "message": "$1 setting section found for “$2”."
+  },
+  "settingsSearchCountMany": {
+    "message": "$1 setting sections found for “$2”."
+  },
+  "settingsSearchNone": {
+    "message": "No settings found for “$1”."
+  },
+  "settingsPersonalizeDestination": {
+    "message": "Personalize"
+  },
+  "settingsPersonalizeDescription": {
+    "message": "Shape Vantage's look, search, weather, and everyday shortcuts."
+  },
+  "settingsFeedsDestination": {
+    "message": "Feeds & sources"
+  },
+  "settingsFeedsDescription": {
+    "message": "Choose information sources and how Vantage refreshes them."
+  },
+  "settingsWidgetsDestination": {
+    "message": "Widgets"
+  },
+  "settingsWidgetsDescription": {
+    "message": "Choose the tools and information shown on your new-tab dashboard."
+  },
+  "settingsWorkspacesDestination": {
+    "message": "Workspaces & browser"
+  },
+  "settingsWorkspacesDescription": {
+    "message": "Organize browsing contexts and browser-specific capabilities."
+  },
+  "settingsPrivacyDestination": {
+    "message": "Privacy & data"
+  },
+  "settingsPrivacyDescription": {
+    "message": "Review local storage, security, transfers, and reset controls."
+  },
+  "settingsLocalFirstTitle": {
+    "message": "Local-first by default"
+  },
+  "settingsLocalFirstDescription": {
+    "message": "Preferences and saved content stay on this device. Enabled remote features contact only the providers named in their settings."
+  },
+  "settingsAutoSaveStatus": {
+    "message": "Settings save automatically and stay on this device."
+  },
+  "settingsExternalWidgetContentBoundaryHint": {
+    "message": "External widget frames follow their provider's privacy and content policies. Vantage cannot remove provider content, ads, or tracking from inside a cross-origin frame."
+  },
+  "settingsThirdPartyFrame": {
+    "message": "Third-party frame"
+  },
+  "settingsWindyContentBoundaryHint": {
+    "message": "Windy is third-party content. It can use its own network services and may show content that Vantage cannot inspect or filter."
+  },
+  "thirdPartyContent": {
+    "message": "Third-party content"
+  },
+  "thirdPartyContentBoundary": {
+    "message": "Third-party content may include ads or tracking that Vantage cannot filter."
+  },
+  "settingsLiteral_195tg87": {
+    "message": "Ctrl K"
   }
 }

@@ -1,6 +1,6 @@
 # Vantage Privacy Policy
 
-**Last updated**: June 30, 2026
+**Last updated**: August 13, 2026
 
 ## Overview
 
@@ -71,12 +71,19 @@ Vantage includes optional integrations with third-party services. **You choose w
 | **CoinGecko Crypto Prices** | Crypto symbols in your watchlist | Fetch current prices | [CoinGecko Privacy](https://www.coingecko.com/en/privacy) | Disable crypto widget |
 | **GitHub Widget** | GitHub username and selected language | Fetch public user activity and public repository search results | [GitHub Privacy](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement) | Disable GitHub widget |
 | **GitHub Gist Transfer** | Settings JSON; optional one-shot GitHub token for Gist creation only | Import/export settings across devices | [GitHub Privacy](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement) | Use JSON export/import or share link instead |
-| **Windy Radar Embed** | Your weather location | Render Windy weather radar iframe | [Windy Privacy](https://www.windy.com/privacy) | Disable Windy widget |
-| **Generic iframe embeds** | Iframe URL you add | Render custom embedded dashboards/tools | Per embed provider | Remove embed |
+| **Windy Radar Embed** | Your weather location | Render a sandboxed, visibly labeled Windy weather radar iframe | [Windy Privacy](https://www.windy.com/privacy) | Disable Windy widget |
+| **Generic iframe embeds** | Iframe URL you add | Render a mandatory-sandboxed, visibly labeled third-party dashboard/tool | Per embed provider | Remove embed |
+| **External widgets** | Reviewed manifest URL and frame origin | Render a digest-reviewed HTTPS widget in a sandboxed, visibly labeled frame | Per widget provider | Disable or remove widget |
 | **Quote author link** | Author page URL only when clicked | Open an `en.wikipedia.org` author page | [Wikimedia Privacy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy) | Do not click author link |
 | **Reading List Integration** (Chrome 120+) | Headline URL + title | Save articles to Chrome Reading List | Built-in, your device | Disable reading list button |
 
-**No account required for any integration.** All requests are made on-demand when you interact with the widget (e.g., fetch weather when you click refresh, fetch feeds on load).
+No account is required for Vantage's core experience. Creating a public GitHub Gist is the exception: it requires a one-shot token from your GitHub account, which Vantage never stores. Enabled integrations may refresh automatically on new-tab load or on a configured interval; other requests happen only after a direct action such as adding a feed, clicking refresh, or creating a Gist.
+
+## Advertising and Third-Party Content
+
+Vantage's own new-tab page, side panel, settings, onboarding, and widgets contain no ad SDK, sponsored placement, affiliate unit, or ad-network request. A local runtime regression test checks known ad-network and creative markers before release.
+
+User-added embeds, external widgets, and the optional Windy radar load webpages controlled by their providers. Those cross-origin frames may contain advertising or tracking under the provider's policy. Vantage cannot inspect or remove content inside them. Vantage therefore uses a mandatory iframe sandbox, labels the provider boundary on the dashboard, and explains the limitation before configuration. Disable or remove that frame to prevent its requests.
 
 ---
 
@@ -193,6 +200,5 @@ Vantage is open-source (MIT License). You can review the full source code at htt
 
 ---
 
-**Vantage Privacy Policy v1.2.0**
-*Effective June 11, 2026*
-
+**Vantage Privacy Policy v1.3.0**
+*Effective August 13, 2026*

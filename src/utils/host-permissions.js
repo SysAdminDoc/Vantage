@@ -1,4 +1,4 @@
-// Vantage v1.2.0 — runtime host-permission broker.
+// Vantage v1.3.0 — runtime host-permission broker.
 //
 // User-entered URLs (feeds, iCal, image URLs, embeds) should not force an
 // all-sites install warning. Fixed first-party/service endpoints stay in
@@ -55,7 +55,10 @@ export async function hasHostPermission(rawUrlOrOrigin) {
   const origin = normalizeOrigin(rawUrlOrOrigin);
   if (!origin) return true;
   const ext = extensionApi();
-  if (!ext?.permissions?.contains) return true;
+  // Local-file/HTTP QA shims do not expose the permissions API. Treat that
+  // absence as no grant: background enrichment must never turn a missing API
+  // into permission to contact every saved destination.
+  if (!ext?.permissions?.contains) return false;
   try {
     return await callPermission(ext, "contains", { origins: [origin] });
   } catch {

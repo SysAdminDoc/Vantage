@@ -22,6 +22,7 @@ const PRESETS = [
       s.news.enabled       = true;
       s.calendar.enabled   = false;
       s.pomodoro.enabled   = false;
+      s.starred.enabled    = false;
     }
   },
   {
@@ -46,6 +47,7 @@ const PRESETS = [
       s.news.enabled       = true;
       s.calendar.enabled   = true;
       s.pomodoro.enabled   = false;
+      s.starred.enabled    = false;
     }
   },
   {
@@ -70,6 +72,7 @@ const PRESETS = [
       s.news.enabled       = true;
       s.calendar.enabled   = true;
       s.pomodoro.enabled   = true;
+      s.starred.enabled    = false;
     }
   }
 ];

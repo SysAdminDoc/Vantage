@@ -1,4 +1,4 @@
-// Vantage v1.2.0 — Feed discovery (RSS, Atom, JSON Feed)
+// Vantage v1.3.0 — Feed discovery (RSS, Atom, JSON Feed)
 //
 // Discovers feed URLs on a given website by:
 // 1. Fetching the website HTML
@@ -30,7 +30,7 @@ export async function discoverFeeds(siteUrl) {
     // Fetch the HTML to look for <link rel="alternate"> tags
     const resp = await fetch(siteUrl, { 
       cache: "no-store",
-      headers: { "User-Agent": "Mozilla/5.0 Vantage/1.2.0" }
+      headers: { "User-Agent": "Mozilla/5.0 Vantage/1.3.0" }
     });
     
     if (resp.ok) {

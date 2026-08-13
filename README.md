@@ -6,7 +6,7 @@
 
 **A new tab dashboard for Chromium and Firefox — bring your search engine, your feeds, your weather, your links.**
 
-[![Version](https://img.shields.io/badge/version-1.2.0-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
+[![Version](https://img.shields.io/badge/version-1.3.0-cba6f7?style=flat-square)](https://github.com/SysAdminDoc/Vantage/releases)
 [![License](https://img.shields.io/badge/license-MIT-89b4fa?style=flat-square)](LICENSE)
 [![Manifest](https://img.shields.io/badge/manifest-V3-a6e3a1?style=flat-square)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![Platform](https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave%20%7C%20Firefox-94e2d5?style=flat-square)](#install)
@@ -29,11 +29,13 @@
 
 <img width="1872" height="902" alt="2026-07-27 19_03_07-Greenshot" src="https://github.com/user-attachments/assets/265f9677-4b8f-4425-ae15-b5dffa08cd27" />
 
+<img width="1440" height="900" alt="Vantage 1.3 settings with five desktop destinations" src="assets/screenshots/vantage-settings-v1.3.0.jpg" />
+
 ## Why another new tab extension?
 
 Most new tab dashboards (Momentum, Tabliss, Bonjourr, Mue, Renewed Tab, Horizon) lock you to one search engine — usually Google. **Vantage treats the search engine as a first-class setting**: switch between Google, DuckDuckGo, Startpage, Brave, Kagi, Ecosia, Qwant, SearXNG, Perplexity, or your own self-hosted endpoint with one click, right from the new tab.
 
-Beyond that: 22 toggleable widgets, a place- and time-aware animated sky, multi-profile workspaces, and zero API keys / signups / tracking.
+Beyond that: 30+ configurable dashboard surfaces, a place- and time-aware animated sky, multi-profile workspaces, and zero required API keys, signups, telemetry, or first-party advertising.
 
 ## Features
 
@@ -43,7 +45,7 @@ Beyond that: 22 toggleable widgets, a place- and time-aware animated sky, multi-
 - **`/` to focus search** — keyboard shortcut hint shown inline.
 
 ### Widgets
-22 toggleable widgets, all locally stored, all togglable from a popover quick-picker without opening settings.
+30+ configurable surfaces, all locally stored, with the most common widgets toggleable from a popover quick-picker without opening settings.
 
 | Hero | Status bar | Reading panels | Tools |
 |---|---|---|---|
@@ -138,6 +140,7 @@ For visual QA, open `qa-scenes.html` from the same local server as `newtab.html`
 
 ### Privacy & UX
 - **All local** — `chrome.storage.local` only. No analytics, no telemetry, no remote config server. The only outbound calls are listed in the [Privacy table](#privacy--network).
+- **Ad-free first-party UI** — Vantage ships no ad SDKs, sponsored units, affiliate placements, or ad-network endpoints. User-added embeds, external widgets, and Windy remain third-party content; they are sandboxed and visibly labeled because Vantage cannot inspect or filter a cross-origin provider frame.
 - **No API keys required** — every external service used is free and open.
 - **Cross-tab sync** — change a setting in one tab, every other open new tab updates instantly.
 - **Multi-proxy CORS fallback** — RSS and calendar feeds try direct → allorigins.win → corsproxy.io before failing.
@@ -226,6 +229,8 @@ Stock Chrome / Brave / Edge reject every self-signed CRX dragged onto the extens
 Click the gear icon in the top-right of any new tab. Or click the layout-grid icon next to it for a quick widget toggle popover.
 
 Highlights:
+
+- **Five desktop destinations** — Personalize, Feeds & sources, Widgets, Workspaces & browser, and Privacy & data replace the old 48-section drawer. Search all settings with `Ctrl/Cmd+K`; matches route to the relevant destination and open in context.
 
 - **Theme** — System, Mocha, Macchiato, Frappe, or Latte, plus 9 accent colors and a custom CSS textarea.
 - **Background** — Animated / Solid / Gradient / Image URL / Image upload / Bing daily. Animated includes Motion and Atmosphere controls.
@@ -320,12 +325,12 @@ Vantage/
 | `api.nasa.gov` | Photo widget (NASA APOD mode) | Astronomy picture of the day |
 | `www.bing.com` | Background → Bing daily | Daily wallpaper image |
 | Each configured image URL | Background image URL | Load the direct wallpaper image URL you enter; optional host grant enables direct fetch features such as pre-blur |
-| Each configured iframe URL | Embed widget | Render the iframe URL you add after a scoped host grant; blocked sites can be opened in a new tab |
-| Each reviewed external widget manifest / iframe origin | External Widgets | User-added HTTPS manifests or digest-pinned registry entries; registry JSON is pasted locally and no remote registry is fetched by default |
-| `embed.windy.com` | Windy radar widget | Weather radar iframe centered on your configured weather location |
+| Each configured iframe URL | Embed widget | Render a mandatory-sandboxed third-party frame after a scoped host grant; the UI labels the provider boundary because its contents may include ads or tracking |
+| Each reviewed external widget manifest / iframe origin | External Widgets | User-added sandboxed HTTPS frames or digest-pinned registry entries; no remote registry is enabled by default and provider contents are outside Vantage's filtering boundary |
+| `embed.windy.com` | Windy radar widget | Sandboxed third-party weather radar centered on your configured weather location; provider content is visibly disclosed |
 | `en.wikipedia.org` | Quote author link | Opens only when you click the author link; no background fetch |
 
-Nothing else. No analytics, no error reporting, no auto-update server.
+No Vantage analytics, advertising, remote error reporting, or auto-update server. External providers receive only the requests described above when their features are enabled; third-party frames follow the provider's own privacy and content policies.
 
 Vantage does not request `*://*/*` at install. Fixed service hosts above are required in the manifest; user-entered `http`/`https` origins are listed as optional host permissions and requested only when you add, discover, or import URLs that need them. Denied origins stay local in `chrome.storage.local` so Settings can show a `Grant access` recovery button. Browser-data permissions are runtime-gated: `tabs` is requested only when you click "Save previous tab" in the Inbox widget, `bookmarks` and `topSites` are requested only when enabling those widgets, and Chromium `readingList` is requested only when saving a feed item.
 

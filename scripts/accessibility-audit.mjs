@@ -2,7 +2,7 @@
 /**
  * WCAG 2.2 AA accessibility audit for Vantage NTP
  * 
- * Runs automated axe-core v4.11.3+ scan against the rendered NTP.
+ * Runs the installed axe-core scan against the rendered NTP.
  * Outputs: accessibility-report.md + detailed JSON
  * 
  * Usage:
@@ -11,9 +11,11 @@
  *   node scripts/accessibility-audit.mjs [--headless] [--no-markdown]
  */
 
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'fs';
+import { mkdtemp, rm } from 'fs/promises';
 import { dirname, join } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+import { tmpdir } from 'os';
 
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log(`Usage: npm run audit -- [--headless]\n\nRuns the Vantage accessibility audit with Puppeteer and axe-core.`);
@@ -33,9 +35,11 @@ const AUDIT_DIR = join(REPO_ROOT, 'dist', 'audit');
 const REPORT_PATH = join(AUDIT_DIR, 'accessibility-report.md');
 const RESULTS_PATH = join(AUDIT_DIR, 'accessibility-results.json');
 const writeMarkdownReport = !process.argv.includes('--no-markdown');
+const AUDIT_VERSION = JSON.parse(readFileSync(join(REPO_ROOT, 'manifest.json'), 'utf8')).version;
 
 async function runAudit() {
   let browser;
+  const userDataDir = await mkdtemp(join(tmpdir(), 'vantage-audit-profile-'));
   try {
     mkdirSync(AUDIT_DIR, { recursive: true });
 
@@ -46,6 +50,7 @@ async function runAudit() {
 
     browser = await puppeteer.launch({
       headless: process.argv.includes('--headless') ? 'new' : false,
+      userDataDir,
       args: [
         `--disable-extensions-except=${extPath}`,
         `--load-extension=${extPath}`,
@@ -71,7 +76,7 @@ async function runAudit() {
     });
     
     // Run axe scan
-    console.log('🧪 Running axe-core v4.11.3 scan...');
+    console.log('🧪 Running axe-core accessibility scan...');
     const results = await new AxePuppeteer(page)
       .withTags(['wcag2aa', 'wcag22aa'])
       .analyze();
@@ -93,6 +98,7 @@ async function runAudit() {
     
   } finally {
     if (browser) await browser.close();
+    await rm(userDataDir, { recursive: true, force: true });
   }
 }
 
@@ -151,11 +157,11 @@ function generateMarkdownReport(results) {
   
   const date = new Date().toISOString().split('T')[0];
   
-  let md = `# Vantage v1.0.0 — Accessibility Audit Report
+  let md = `# Vantage v${AUDIT_VERSION} — Accessibility Audit Report
 
 **Date:** ${date}  
 **Standard:** WCAG 2.2 Level AA  
-**Tool:** axe-core v4.11.3  
+**Tool:** axe-core (installed dependency)
 
 ## Summary
 

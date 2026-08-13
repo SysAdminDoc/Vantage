@@ -161,7 +161,30 @@ export const FALLBACK_MESSAGES = Object.freeze({
   allSetReady: "All set. You're ready.",
   onboardingDoneSubtitle: "Your preferences are saved locally on this device. You can refine the setup from Settings.",
   openDashboard: "Open dashboard",
-  sidePanelEmptyHint: "Add an RSS / News feed in Settings -> Reading list or News."
+  sidePanelEmptyHint: "Add an RSS / News feed in Settings -> Reading list or News.",
+  settingsDestinationsAria: "Settings destinations",
+  settingsSearchResults: "Search results",
+  settingsSearchCountOne: "$1 setting section found for “$2”.",
+  settingsSearchCountMany: "$1 setting sections found for “$2”.",
+  settingsSearchNone: "No settings found for “$1”.",
+  settingsPersonalizeDestination: "Personalize",
+  settingsPersonalizeDescription: "Shape Vantage's look, search, weather, and everyday shortcuts.",
+  settingsFeedsDestination: "Feeds & sources",
+  settingsFeedsDescription: "Choose information sources and how Vantage refreshes them.",
+  settingsWidgetsDestination: "Widgets",
+  settingsWidgetsDescription: "Choose the tools and information shown on your new-tab dashboard.",
+  settingsWorkspacesDestination: "Workspaces & browser",
+  settingsWorkspacesDescription: "Organize browsing contexts and browser-specific capabilities.",
+  settingsPrivacyDestination: "Privacy & data",
+  settingsPrivacyDescription: "Review local storage, security, transfers, and reset controls.",
+  settingsLocalFirstTitle: "Local-first by default",
+  settingsLocalFirstDescription: "Preferences and saved content stay on this device. Enabled remote features contact only the providers named in their settings.",
+  settingsAutoSaveStatus: "Settings save automatically and stay on this device.",
+  settingsExternalWidgetContentBoundaryHint: "External widget frames follow their provider's privacy and content policies. Vantage cannot remove provider content, ads, or tracking from inside a cross-origin frame.",
+  settingsThirdPartyFrame: "Third-party frame",
+  settingsWindyContentBoundaryHint: "Windy is third-party content. It can use its own network services and may show content that Vantage cannot inspect or filter.",
+  thirdPartyContent: "Third-party content",
+  thirdPartyContentBoundary: "Third-party content may include ads or tracking that Vantage cannot filter."
 });
 
 export function i18n(messageKey, substitutions = null, fallbackText = "") {

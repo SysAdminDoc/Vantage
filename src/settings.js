@@ -1,5 +1,6 @@
-// Vantage v1.1.0 — settings panel built with primitives (toggle, segmented, icon-button).
-// Sections render as grouped rows with hints and icons. Sticky header with close button.
+// Vantage v1.3.0 — destination-based settings built with primitives.
+// Every existing control remains in its original section; the shell adds navigation,
+// focused search, and a desktop dialog hierarchy around those stable contracts.
 
 import { el, clear, toggle, segmented, toast as showToast, hostnameLabel } from "./utils/dom.js";
 import { playAlarm as playAlarmTone } from "./utils/alarm-audio.js";
@@ -51,6 +52,26 @@ import { registerOverlay } from "./utils/overlay-stack.js";
 const SETTINGS_TEXT_KEYS = Object.freeze({
   "Settings": "settings",
   "Close settings": "settingsClose",
+  "Search all settings...": "settingsFilterPlaceholder",
+  "Settings destinations": "settingsDestinationsAria",
+  "Search results": "settingsSearchResults",
+  "Personalize": "settingsPersonalizeDestination",
+  "Shape Vantage's look, search, weather, and everyday shortcuts.": "settingsPersonalizeDescription",
+  "Feeds & sources": "settingsFeedsDestination",
+  "Choose information sources and how Vantage refreshes them.": "settingsFeedsDescription",
+  "Widgets": "settingsWidgetsDestination",
+  "Choose the tools and information shown on your new-tab dashboard.": "settingsWidgetsDescription",
+  "Workspaces & browser": "settingsWorkspacesDestination",
+  "Organize browsing contexts and browser-specific capabilities.": "settingsWorkspacesDescription",
+  "Privacy & data": "settingsPrivacyDestination",
+  "Review local storage, security, transfers, and reset controls.": "settingsPrivacyDescription",
+  "Local-first by default": "settingsLocalFirstTitle",
+  "Preferences and saved content stay on this device. Enabled remote features contact only the providers named in their settings.": "settingsLocalFirstDescription",
+  "Settings save automatically and stay on this device.": "settingsAutoSaveStatus",
+  "External widget frames follow their provider's privacy and content policies. Vantage cannot remove provider content, ads, or tracking from inside a cross-origin frame.": "settingsExternalWidgetContentBoundaryHint",
+  "Third-party frame": "settingsThirdPartyFrame",
+  "Windy is third-party content. It can use its own network services and may show content that Vantage cannot inspect or filter.": "settingsWindyContentBoundaryHint",
+  "Close": "close",
   "Filter settings...": "settingsFilterPlaceholder",
   "Filter settings sections": "settingsFilterAria",
   "Filter by widget, privacy setting, feed, or visual preference. Matching sections open automatically.": "settingsFilterHint",
@@ -182,57 +203,104 @@ const SETTINGS_TEXT_KEYS = Object.freeze({
   "Reset": "settingsReset"
 });
 
+const SETTINGS_DESTINATION_STORAGE_KEY = "vantage-settings-destination";
+
+const SETTINGS_DESTINATION_DEFINITIONS = Object.freeze([
+  {
+    id: "personalize",
+    label: "Personalize",
+    description: "Shape Vantage's look, search, weather, and everyday shortcuts.",
+    icon: "palette"
+  },
+  {
+    id: "feeds",
+    label: "Feeds & sources",
+    description: "Choose information sources and how Vantage refreshes them.",
+    icon: "rss"
+  },
+  {
+    id: "widgets",
+    label: "Widgets",
+    description: "Choose the tools and information shown on your new-tab dashboard.",
+    icon: "layout-grid"
+  },
+  {
+    id: "workspaces",
+    label: "Workspaces & browser",
+    description: "Organize browsing contexts and browser-specific capabilities.",
+    icon: "folder"
+  },
+  {
+    id: "privacy",
+    label: "Privacy & data",
+    description: "Review local storage, security, transfers, and reset controls.",
+    icon: "lock"
+  }
+]);
+
 export function renderSettingsPanel(panel, settings, onChange, { showWizard } = {}) {
   clear(panel);
   delete panel.dataset.filtering;
 
-  // Sticky header
+  const searchIn = el("input", {
+    type: "search",
+    id: "settings-filter-input",
+    class: "text-input settings-search",
+    placeholder: settingsText("Search all settings..."),
+    "aria-label": settingsText("Filter settings sections"),
+    "aria-describedby": "settings-filter-hint",
+  });
+
+  const searchWrap = el("div", { class: "settings-search-wrap" }, [
+    iconNode("search", { size: 16 }),
+    searchIn,
+    el("kbd", { class: "settings-search-shortcut", "aria-hidden": "true" }, ["Ctrl K"])
+  ]);
+
+  const searchHint = el("p", {
+    id: "settings-filter-hint",
+    class: "visually-hidden"
+  }, [settingsText("Filter by widget, privacy setting, feed, or visual preference. Matching sections open automatically.")]);
+
   panel.appendChild(el("header", { class: "settings-panel__header" }, [
-    el("h2", { id: "settings-panel-title", class: "settings-panel__title" }, [settingsText("Settings")]),
+    el("div", { class: "settings-panel__brand" }, [
+      iconNode("settings", { size: 20 }),
+      el("h2", { id: "settings-panel-title", class: "settings-panel__title" }, [
+        "Vantage ", settingsText("Settings")
+      ])
+    ]),
+    searchWrap,
+    searchHint,
     el("button", {
       type: "button",
-      class: "icon-button icon-button--ghost",
+      class: "icon-button icon-button--ghost settings-panel__close",
       "aria-label": settingsText("Close settings"),
       title: settingsText("Close settings"),
       onClick: () => closePanel(panel)
     }, [iconNode("close", { size: 18 })])
   ]));
 
-  const body = el("div", { class: "settings-panel__body" });
-  panel.appendChild(body);
-
-  // Search / filter
-  const searchWrap = el("div", { class: "settings-search-wrap" });
-  const searchIn = el("input", {
-    type: "search",
-    id: "settings-filter-input",
-    class: "text-input settings-search",
-    placeholder: settingsText("Filter settings..."),
-    "aria-label": settingsText("Filter settings sections"),
-    "aria-describedby": "settings-filter-hint",
-    onInput: (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      let visibleCount = 0;
-      body.querySelectorAll(".settings-section").forEach(sec => {
-        const matches = !q || sec.textContent.toLowerCase().includes(q);
-        const title = sec.querySelector(".settings-section__title");
-        const region = sec.querySelector(".settings-section__body");
-        sec.style.display = matches ? "" : "none";
-        if (q && matches) sec.dataset.filterMatch = "true";
-        else delete sec.dataset.filterMatch;
-        region?.setAttribute("aria-hidden", String(!(q && matches) && title?.getAttribute("aria-expanded") !== "true"));
-        if (matches) visibleCount++;
-      });
-      panel.dataset.filtering = q ? "true" : "false";
-      filterEmpty.hidden = !q || visibleCount > 0;
-    }
+  const nav = el("nav", {
+    class: "settings-nav",
+    "aria-label": settingsText("Settings destinations")
   });
-  searchWrap.appendChild(searchIn);
-  searchWrap.appendChild(el("p", {
-    id: "settings-filter-hint",
-    class: "settings-search-hint"
-  }, [settingsText("Filter by widget, privacy setting, feed, or visual preference. Matching sections open automatically.")]));
-  body.appendChild(searchWrap);
+  const body = el("div", { class: "settings-panel__body" });
+  const layout = el("div", { class: "settings-panel__layout" }, [nav, body]);
+  panel.appendChild(layout);
+
+  const searchSummaryTitle = el("h3", { class: "settings-search-summary__title" }, [
+    settingsText("Search results")
+  ]);
+  const searchStatus = el("p", {
+    class: "settings-search-summary__status",
+    role: "status",
+    "aria-live": "polite"
+  });
+  const searchSummary = el("div", { class: "settings-search-summary", hidden: true }, [
+    searchSummaryTitle,
+    searchStatus
+  ]);
+  body.appendChild(searchSummary);
 
   const filterEmpty = el("p", {
     class: "panel-empty settings-filter-empty",
@@ -242,60 +310,240 @@ export function renderSettingsPanel(panel, settings, onChange, { showWizard } = 
   }, [settingsText("No settings match that filter. Try a widget name, feature, or privacy setting.")]);
   body.appendChild(filterEmpty);
 
-  body.appendChild(buildAppearance(settings, onChange));
-  body.appendChild(buildBackground(settings, onChange));
-  body.appendChild(buildGreeting(settings, onChange));
-  body.appendChild(buildLocalitySection(settings, onChange));
-  body.appendChild(buildSearchSection(settings, onChange));
-  body.appendChild(buildWeatherSection(settings, onChange));
-  body.appendChild(buildClockSection(settings, onChange));
-  body.appendChild(buildLinksSection(settings, onChange));
-  body.appendChild(buildTopSitesSection(settings, onChange));
-  body.appendChild(buildFeedsSection(settings, onChange, "rss", "Reading list", "rss",
-    "URLs you want to follow personally — RSS or Atom."));
-  body.appendChild(buildFeedsSection(settings, onChange, "news", "News", "newspaper",
-    "Curated headlines and news sources."));
-  body.appendChild(buildFeedFiltersSection(settings, onChange));
-  body.appendChild(buildFeedAlertsSection(settings, onChange));
-  body.appendChild(buildFeedArchiveSection(settings, onChange));
-  body.appendChild(buildFeedPreWarmSection(settings, onChange));
-  body.appendChild(buildAirQualitySection(settings, onChange));
-  body.appendChild(buildMarineSection(settings, onChange));
-  body.appendChild(buildFloodSection(settings, onChange));
-  body.appendChild(buildSolarRadiationSection(settings, onChange));
-  body.appendChild(buildWindySection(settings, onChange));
-  body.appendChild(buildEmbedsSection(settings, onChange));
-  body.appendChild(buildExternalWidgetsSection(settings, onChange));
-  body.appendChild(buildCalendarSection(settings, onChange));
-  body.appendChild(buildPomodoroSection(settings, onChange));
-  body.appendChild(buildAmbientSection(settings, onChange));
-  body.appendChild(buildTodoSection(settings, onChange));
-  body.appendChild(buildNotesSection(settings, onChange));
-  body.appendChild(buildZenShelfSection(settings, onChange));
-  body.appendChild(buildBookmarksSection(settings, onChange));
-  body.appendChild(buildStarredSection(settings, onChange));
-  body.appendChild(buildInboxSection(settings, onChange));
-  body.appendChild(buildWorldClockSection(settings, onChange));
-  body.appendChild(buildCryptoSection(settings, onChange));
-  body.appendChild(buildGithubSection(settings, onChange));
-  body.appendChild(buildQuoteSection(settings, onChange));
-  body.appendChild(buildPhotoSection(settings, onChange));
-  body.appendChild(buildCountdownSection(settings, onChange));
-  body.appendChild(buildConverterSection(settings, onChange));
-  body.appendChild(buildWorkspacesSection(settings, onChange));
-  const containerSec = buildContainerMapSection(settings, onChange);
-  if (containerSec) body.appendChild(containerSec);
-  body.appendChild(buildCustomCSSSection(settings, onChange));
-  body.appendChild(buildTypographySection(settings, onChange));
-  body.appendChild(buildStorageQuotaSection(settings));
-  body.appendChild(buildSecuritySection(settings, onChange));
-  body.appendChild(buildSidePanelSection(settings, onChange));
-  body.appendChild(buildHistorySearchSection(settings, onChange));
-  body.appendChild(buildDataSection(settings, onChange, showWizard));
-  body.appendChild(buildResetSection(onChange));
+  const destinations = buildSettingsDestinations(settings, onChange, showWizard);
+  const destinationPanels = new Map();
+  const navButtons = new Map();
+
+  for (const destination of destinations) {
+    const headingId = `settings-destination-${destination.id}-title`;
+    const matchCount = el("span", { class: "settings-nav__match-count", hidden: true });
+    const button = el("button", {
+      type: "button",
+      class: "settings-nav__button",
+      "data-destination-target": destination.id,
+      onClick: () => {
+        searchIn.value = "";
+        activateDestination(destination.id, { focusHeading: true });
+      }
+    }, [
+      iconNode(destination.icon, { size: 18 }),
+      el("span", { class: "settings-nav__label" }, [settingsText(destination.label)]),
+      matchCount
+    ]);
+    nav.appendChild(button);
+    navButtons.set(destination.id, { button, matchCount });
+
+    const sectionHost = el("div", { class: "settings-destination__sections" });
+    destination.sections.forEach(sectionEl => sectionHost.appendChild(sectionEl));
+
+    const intro = destination.id === "privacy"
+      ? el("div", { class: "settings-destination__callout" }, [
+          iconNode("lock", { size: 18 }),
+          el("div", {}, [
+            el("strong", {}, [settingsText("Local-first by default")]),
+            el("p", {}, [settingsText("Preferences and saved content stay on this device. Enabled remote features contact only the providers named in their settings.")])
+          ])
+        ])
+      : null;
+
+    const destinationPanel = el("section", {
+      class: "settings-destination",
+      "data-destination": destination.id,
+      "aria-labelledby": headingId
+    }, [
+      el("header", { class: "settings-destination__header" }, [
+        el("h3", { id: headingId, tabindex: "-1" }, [settingsText(destination.label)]),
+        el("p", {}, [settingsText(destination.description)])
+      ]),
+      intro,
+      sectionHost
+    ]);
+    body.appendChild(destinationPanel);
+    destinationPanels.set(destination.id, destinationPanel);
+  }
+
+  panel.appendChild(el("footer", { class: "settings-panel__footer" }, [
+    el("span", { class: "settings-panel__save-state" }, [
+      iconNode("circle-check", { size: 14 }),
+      settingsText("Settings save automatically and stay on this device.")
+    ]),
+    el("span", { class: "settings-panel__escape-hint", "aria-hidden": "true" }, [
+      el("kbd", {}, ["Esc"]), " ", settingsText("Close")
+    ])
+  ]));
+
+  let activeDestination = sessionStorage.getItem(SETTINGS_DESTINATION_STORAGE_KEY) || "personalize";
+  if (!destinationPanels.has(activeDestination)) activeDestination = "personalize";
+
+  function activateDestination(id, { focusHeading = false } = {}) {
+    activeDestination = destinationPanels.has(id) ? id : "personalize";
+    sessionStorage.setItem(SETTINGS_DESTINATION_STORAGE_KEY, activeDestination);
+    delete panel.dataset.filtering;
+    searchSummary.hidden = true;
+    filterEmpty.hidden = true;
+
+    for (const sectionEl of panel.querySelectorAll(".settings-section")) {
+      sectionEl.hidden = false;
+      delete sectionEl.dataset.filterMatch;
+      const title = sectionEl.querySelector(".settings-section__title");
+      const region = sectionEl.querySelector(".settings-section__body");
+      region?.setAttribute("aria-hidden", String(title?.getAttribute("aria-expanded") !== "true"));
+    }
+    for (const [destinationId, destinationPanel] of destinationPanels) {
+      destinationPanel.hidden = destinationId !== activeDestination;
+    }
+    for (const [destinationId, entry] of navButtons) {
+      const isCurrent = destinationId === activeDestination;
+      entry.button.setAttribute("aria-current", isCurrent ? "page" : "false");
+      entry.matchCount.hidden = true;
+      entry.matchCount.textContent = "";
+    }
+    body.scrollTop = 0;
+    if (focusHeading) {
+      requestAnimationFrame(() => destinationPanels.get(activeDestination)
+        ?.querySelector(".settings-destination__header h3")?.focus({ preventScroll: true }));
+    }
+  }
+
+  function filterSettings(rawQuery) {
+    const query = normalizeSettingsQuery(rawQuery);
+    if (!query) {
+      activateDestination(activeDestination);
+      return;
+    }
+
+    panel.dataset.filtering = "true";
+    searchSummary.hidden = false;
+    const allSections = [...panel.querySelectorAll(".settings-section")];
+    const primaryMatches = allSections.filter(sectionEl => {
+      const title = sectionEl.querySelector(".settings-section__title-text")?.textContent || "";
+      return settingsQueryMatches(query, `${title} ${sectionEl.dataset.searchKeywords || ""}`);
+    });
+    const matchedSections = primaryMatches.length
+      ? primaryMatches
+      : allSections.filter(sectionEl => settingsQueryMatches(query, sectionEl.textContent || ""));
+    const matched = new Set(matchedSections);
+
+    for (const sectionEl of allSections) {
+      const isMatch = matched.has(sectionEl);
+      sectionEl.hidden = !isMatch;
+      if (isMatch) sectionEl.dataset.filterMatch = "true";
+      else delete sectionEl.dataset.filterMatch;
+      const title = sectionEl.querySelector(".settings-section__title");
+      const region = sectionEl.querySelector(".settings-section__body");
+      region?.setAttribute("aria-hidden", String(!isMatch && title?.getAttribute("aria-expanded") !== "true"));
+    }
+
+    for (const [destinationId, destinationPanel] of destinationPanels) {
+      const count = destinationPanel.querySelectorAll(".settings-section[data-filter-match='true']").length;
+      destinationPanel.hidden = count === 0;
+      const entry = navButtons.get(destinationId);
+      entry.matchCount.hidden = count === 0;
+      entry.matchCount.textContent = count ? String(count) : "";
+    }
+
+    searchStatus.textContent = matched.size
+      ? i18n(
+          matched.size === 1 ? "settingsSearchCountOne" : "settingsSearchCountMany",
+          [matched.size, rawQuery.trim()],
+          `$1 setting ${matched.size === 1 ? "section" : "sections"} found for “$2”.`
+        )
+      : i18n("settingsSearchNone", [rawQuery.trim()], "No settings found for “$1”.");
+    filterEmpty.hidden = matched.size > 0;
+    body.scrollTop = 0;
+  }
+
+  searchIn.addEventListener("input", event => filterSettings(event.target.value));
+  panel.onkeydown = (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault();
+      searchIn.focus({ preventScroll: true });
+      searchIn.select();
+    }
+  };
+
+  activateDestination(activeDestination);
 
   localizeSettingsTree(panel);
   observeSettingsLocalization(panel);
+}
+
+function buildSettingsDestinations(settings, onChange, showWizard) {
+  const sections = new Map(SETTINGS_DESTINATION_DEFINITIONS.map(destination => [destination.id, []]));
+  const add = (destinationId, sectionEl, keywords = "") => {
+    if (!sectionEl) return;
+    sectionEl.dataset.searchKeywords = normalizeSettingsQuery(keywords);
+    sections.get(destinationId)?.push(sectionEl);
+  };
+
+  add("personalize", buildAppearance(settings, onChange), "theme accent color contrast density context menu appearance");
+  add("personalize", buildBackground(settings, onChange), "wallpaper image video bing gradient solid animation motion atmosphere readability preset");
+  add("personalize", buildGreeting(settings, onChange), "name birthday welcome salutation");
+  add("personalize", buildLocalitySection(settings, onChange), "scene scenery locality biome coastal urban forest mountain lake meadow tropical desert polar");
+  add("personalize", buildSearchSection(settings, onChange), "engine google bing duckduckgo startpage brave kagi ecosia qwant searxng perplexity query");
+  add("personalize", buildWeatherSection(settings, onChange), "forecast temperature city location geolocation units");
+  add("personalize", buildClockSection(settings, onChange), "time date 12 hour 24 hour seconds");
+  add("personalize", buildLinksSection(settings, onChange), "shortcut links favicon grid add link folders speculation prefetch");
+  add("personalize", buildTopSitesSection(settings, onChange), "frequent sites browser permission");
+  add("personalize", buildCustomCSSSection(settings, onChange), "style stylesheet advanced css");
+  add("personalize", buildTypographySection(settings, onChange), "fonts body display local font access text");
+
+  add("feeds", buildFeedsSection(settings, onChange, "rss", "Reading list", "rss",
+    "URLs you want to follow personally — RSS or Atom."), "rss atom json feed subscriptions sources articles");
+  add("feeds", buildFeedsSection(settings, onChange, "news", "News", "newspaper",
+    "Curated headlines and news sources."), "headlines feed subscriptions sources articles");
+  add("feeds", buildFeedFiltersSection(settings, onChange), "mute highlight keyword domain regex rules");
+  add("feeds", buildFeedAlertsSection(settings, onChange), "notifications keywords bell matches");
+  add("feeds", buildFeedArchiveSection(settings, onChange), "indexeddb retention saved articles history search");
+  add("feeds", buildFeedPreWarmSection(settings, onChange), "background refresh alarms polling cache fresh");
+  add("feeds", buildAirQualitySection(settings, onChange), "aqi pm pollen pollution environmental open meteo");
+  add("feeds", buildMarineSection(settings, onChange), "waves ocean current sea coastal environmental weather");
+  add("feeds", buildFloodSection(settings, onChange), "river discharge risk environmental weather");
+  add("feeds", buildSolarRadiationSection(settings, onChange), "uv irradiance sun environmental weather");
+  add("feeds", buildWindySection(settings, onChange), "map wind rain temperature clouds pressure humidity environmental weather");
+  add("feeds", buildCalendarSection(settings, onChange), "ical ics events schedule google outlook feed");
+
+  add("widgets", buildEmbedsSection(settings, onChange), "iframe custom url flight tracker third party content ads tracking");
+  add("widgets", buildExternalWidgetsSection(settings, onChange), "manifest registry trust digest sandbox network analytics third party");
+  add("widgets", buildPomodoroSection(settings, onChange), "timer focus break alarm notification productivity");
+  add("widgets", buildAmbientSection(settings, onChange), "sounds audio rain cafe noise productivity");
+  add("widgets", buildTodoSection(settings, onChange), "tasks checklist completed productivity");
+  add("widgets", buildNotesSection(settings, onChange), "sticky notes writing productivity");
+  add("widgets", buildZenShelfSection(settings, onChange), "sticky notes free position shelf productivity");
+  add("widgets", buildBookmarksSection(settings, onChange), "browser saved links permission reading capture");
+  add("widgets", buildStarredSection(settings, onChange), "saved pinned feed items reading capture");
+  add("widgets", buildInboxSection(settings, onChange), "capture links tasks notes reading later");
+  add("widgets", buildWorldClockSection(settings, onChange), "timezone cities time strip");
+  add("widgets", buildCryptoSection(settings, onChange), "coingecko coins prices currency api key");
+  add("widgets", buildGithubSection(settings, onChange), "activity trending repositories username api");
+  add("widgets", buildQuoteSection(settings, onChange), "daily quote inspiration category");
+  add("widgets", buildPhotoSection(settings, onChange), "daily photo nasa apod picsum image api key");
+  add("widgets", buildCountdownSection(settings, onChange), "dates deadlines events timer");
+  add("widgets", buildConverterSection(settings, onChange), "units length weight temperature area volume speed bytes digital");
+
+  add("workspaces", buildWorkspacesSection(settings, onChange), "profiles layouts snapshots tabs duplicate browser contexts");
+  add("workspaces", buildContainerMapSection(settings, onChange), "firefox contextual identities tabs mapping browser support");
+  add("workspaces", buildSidePanelSection(settings, onChange), "sidebar chrome firefox toolbar feed reader browser support");
+  add("workspaces", buildHistorySearchSection(settings, onChange), "browser history optional permission results search");
+
+  add("privacy", buildStorageQuotaSection(settings), "local usage quota cache indexeddb opfs disk space");
+  add("privacy", buildSecuritySection(settings, onChange), "encryption api keys passphrase aes pbkdf2 permissions trust");
+  add("privacy", buildDataSection(settings, onChange, showWizard), "export import backup restore opml gist share diagnostics debug screenshot setup wizard transfer data");
+  add("privacy", buildResetSection(onChange), "erase delete defaults start over danger wipe");
+
+  return SETTINGS_DESTINATION_DEFINITIONS.map(destination => ({
+    ...destination,
+    sections: sections.get(destination.id) || []
+  }));
+}
+
+function normalizeSettingsQuery(value) {
+  return String(value || "").toLocaleLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function settingsQueryMatches(query, candidate) {
+  const haystack = normalizeSettingsQuery(candidate);
+  return query.split(" ").filter(Boolean).every(token => haystack.includes(token));
 }
 
 let _panelFocusTimer = null;
@@ -2212,7 +2460,7 @@ function buildHistorySearchSection(settings, onChange) {
 /* ---- Container Map (Firefox-only) -------------------------------------- */
 
 function buildContainerMapSection(settings, onChange) {
-  const isFirefox = typeof browser !== "undefined";
+  const isFirefox = !!globalThis.browser?.contextualIdentities;
   if (!isFirefox) return null;
 
   const sec = section("Container Workspaces", "folder");
@@ -3342,6 +3590,9 @@ const WINDY_OVERLAYS = [
 function buildWindySection(settings, onChange) {
   const cfg = settings.windy || {};
   const sec = section("Radar", "wind");
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    "Windy is third-party content. It can use its own network services and may show content that Vantage cannot inspect or filter."
+  ]));
   const g = group();
 
   g.appendChild(row(
@@ -3393,7 +3644,8 @@ function buildEmbedsSection(settings, onChange) {
   const sec  = section("Embeds", "plane");
   const hint = el("p", { class: "settings-section__hint" }, [
     "Add any website as a panel — flight tracker, traffic map, custom dashboard, etc. " +
-    "Some sites block embedding; the panel shows an \u201copen in new tab\u201d fallback."
+    "Some sites block embedding; the panel shows an \u201copen in new tab\u201d fallback. " +
+    "Third-party pages may contain ads or tracking that Vantage cannot inspect or filter inside a cross-origin frame."
   ]);
   sec.appendChild(hint);
 
@@ -3476,18 +3728,13 @@ function buildEmbedsSection(settings, onChange) {
         }
       }, [iconNode("trash", { size: 14 })]);
 
-      const sandboxTog = toggle({
-        checked: embed.sandbox !== false,
-        ariaLabel: "Sandbox this embed",
-        onChange: (v) => { embed.sandbox = v; onChange(settings); }
-      });
       const geoTog = toggle({
         checked: embed.allowGeolocation || false,
         ariaLabel: "Allow geolocation",
         onChange: (v) => { embed.allowGeolocation = v; onChange(settings); }
       });
       const sandboxRow = el("div", { class: "embed-item__sandbox" }, [
-        el("label", { class: "embed-item__label" }, [sandboxTog, " Sandbox"]),
+        el("span", { class: "chip" }, [settingsText("Third-party frame")]),
         el("label", { class: "embed-item__label" }, [geoTog, " Geolocation"])
       ]);
 
@@ -3508,7 +3755,7 @@ function buildEmbedsSection(settings, onChange) {
     type: "button", class: "button button--ghost",
     onClick: () => {
       if (!settings.embeds) settings.embeds = [];
-      settings.embeds.push({ id: String(Date.now()), title: "Embed", url: "", enabled: false });
+      settings.embeds.push({ id: String(Date.now()), title: "Embed", url: "", enabled: false, sandbox: true });
       onChange(settings);
       refreshList();
     }
@@ -3533,6 +3780,13 @@ function buildExternalWidgetsSection(settings, onChange) {
       "settingsExternalWidgetRegistryHint",
       null,
       "Registry entries stay local: paste JSON to review digest, network, analytics, and permission disclosures before install. No remote widget registry is enabled by default."
+    )
+  ]));
+  sec.appendChild(el("p", { class: "settings-section__hint" }, [
+    i18n(
+      "settingsExternalWidgetContentBoundaryHint",
+      null,
+      "External widget frames follow their provider's privacy and content policies. Vantage cannot remove provider content, ads, or tracking from inside a cross-origin frame."
     )
   ]));
 

@@ -7,6 +7,27 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 ### Changed
 - **Install docs no longer ask readers to pipe a remote script into their shell.** README, `docs/getting-started.md`, and `scripts/install.ps1`'s own header comment now tell readers to download `install.ps1`, read it, unblock it, and run the local copy instead of `irm ... | iex`. No version bump: the extension itself didn't change, and bumping `manifest.json` here would need a matching rebuild of the ZIP/CRX/XPI artifacts and their `updates.xml` / `firefox-updates.json` hashes.
 
+## v1.3.0 - 2026-08-13
+
+### Added
+- **Five-destination desktop settings** - the complete 47-section Chromium / 48-section Firefox settings inventory now lives under Personalize, Feeds & sources, Widgets, Workspaces & browser, and Privacy & data. The centered 1120x780 dialog adds persistent navigation, `Ctrl/Cmd+K` search, curated section keywords, automatic result routing, an autosave footer, and a local-first privacy summary without changing stored keys or defaults.
+- **ImageGen-led settings references** - high-fidelity 1440x900 mockups and in-browser implementation captures for all five destinations are stored under `design/mockups/` and `design/implemented/` for future parity checks.
+- **Ad-free runtime contract test** - `scripts/test-ad-free-contract.mjs` rejects known ad-network/creative hooks, requires mandatory third-party frame sandboxes, and verifies visible provider-boundary disclosures.
+- **Settings and onboarding smoke coverage** - browser smoke now asserts the centered five-page Chromium shell, Firefox-only section gating, targeted Data search routing, and completion of the Balanced onboarding preset with exactly the three promised reading panels.
+
+### Changed
+- **Third-party frames are mandatory-sandboxed and disclosed** - generic embeds can no longer disable their sandbox or retain same-origin privileges; Windy and external widgets show the same visible provider boundary. Settings and privacy copy state plainly that Vantage cannot inspect or filter ads/tracking inside a cross-origin provider frame.
+- **Localized redesign copy** - destination labels, descriptions, search counts, autosave status, and third-party boundaries are present in the English, German, Spanish, French, and Japanese catalogs with parity enforcement.
+- **QA dependencies refreshed** - Puppeteer and axe integration moved to current compatible releases, and accessibility audit profiles are unique per run to avoid collisions with an open browser.
+
+### Fixed
+- **Native dialog placement collision** - the prior settings drawer could inherit the user agent's `left: 0` placement and render at the wrong edge. Full inset positioning, explicit centering, background scroll lock, and smoke geometry assertions now make failure visible.
+- **Local QA permission broker no longer fails open** - missing `permissions.contains` now means no host grant, preventing background link enrichment from contacting saved article destinations during local QA. Callback/promise API paths and Firefox optional-host metadata are covered by tests.
+- **Chromium no longer exposes Firefox container settings** - capability detection now checks `contextualIdentities` instead of treating any `browser` namespace as Firefox.
+- **Settings search is relevant before exhaustive** - curated title/keyword matches run first, with body-text fallback only when no primary result exists; queries such as `data` no longer open unrelated weather or converter sections.
+- **Onboarding panel previews match saved presets** - Minimal, Balanced, and Expanded now explicitly disable Starred so their two/three/four-panel previews and final dashboards agree.
+- **Accessibility audit profile locks** - the audit uses a per-run temporary browser profile and cleans it after completion.
+
 ### Fixed
 - **Automated contrast audit now resolves cleanly** — decorative search and quick-link initials render through CSS-generated content instead of text nodes, and search/empty-state surfaces use determinate semantic backgrounds so axe no longer needs manual color-contrast review for the default dashboard.
 - **Settings restore covers modern feature state** — the partial-import dialog now exposes current top-level settings for environmental widgets, feed archive/alerts/prewarm, external widgets, inbox, Zen Shelf, starred items, browser integrations, and Firefox container auto-mapping; imported external-widget records are normalized before saving, and a regression test prevents future settings from becoming silently unimportable.

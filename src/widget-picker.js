@@ -434,7 +434,8 @@ function buildAddEmbedRow(settings, onSave, rebuildPicker) {
           id: String(Date.now()),
           title: newTitle.trim(),
           url: normalizedUrl,
-          enabled: true
+          enabled: true,
+          sandbox: true
         };
         const next = { ...settings, embeds: [...(settings.embeds || []), newEmbed] };
         onSave(next);

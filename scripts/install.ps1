@@ -1,4 +1,4 @@
-# Vantage v1.2.0 -- Chromium installer (Windows)
+# Vantage v1.3.0 -- Chromium installer (Windows)
 #
 # Strategy: persistent unpacked extension load via --load-extension launch flag
 # baked into every Brave / Chrome / Edge / Vivaldi / Opera shortcut on the
@@ -39,7 +39,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$script:Version       = '1.2.0'
+$script:Version       = '1.3.0'
 $script:RepoOwner     = 'SysAdminDoc'
 $script:RepoName      = 'Vantage'
 $script:SelfUrl       = "https://raw.githubusercontent.com/$($script:RepoOwner)/$($script:RepoName)/main/scripts/install.ps1"

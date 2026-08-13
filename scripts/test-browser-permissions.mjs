@@ -35,6 +35,16 @@ async function testManifestPermissions() {
     optional: ["bookmarks", "topSites"],
     requiredAbsent: ["bookmarks", "topSites"]
   });
+  assert.deepEqual(
+    new Set(firefox.optional_host_permissions || []),
+    new Set(["http://*/*", "https://*/*"]),
+    "firefox host patterns belong only in optional_host_permissions"
+  );
+  assert.equal(
+    (firefox.optional_permissions || []).some(permission => permission.includes("://")),
+    false,
+    "firefox optional_permissions must contain named permissions only"
+  );
 }
 
 async function testWidgetPickerPermissionHooks() {
@@ -106,13 +116,37 @@ async function testPromisePermissions() {
   assert.equal(await mod.hasBrowserPermission("topSites"), false, "promise remove revokes permission");
 }
 
+async function testHostPermissionBroker() {
+  delete globalThis.browser;
+  globalThis.chrome = undefined;
+  const mod = await import(`../src/utils/host-permissions.js?host=${Date.now()}`);
+  assert.equal(
+    await mod.hasHostPermission("https://news.example/article"),
+    false,
+    "missing permissions API fails closed"
+  );
+
+  globalThis.chrome = {
+    runtime: { lastError: null },
+    permissions: {
+      contains(payload, cb) {
+        cb(payload.origins?.includes("https://allowed.example/*"));
+      }
+    }
+  };
+  assert.equal(await mod.hasHostPermission("https://allowed.example/path"), true, "granted host is allowed");
+  assert.equal(await mod.hasHostPermission("https://blocked.example/path"), false, "missing host stays blocked");
+}
+
 await testManifestPermissions();
 await testWidgetPickerPermissionHooks();
 await testCallbackPermissions();
 await testPromisePermissions();
+await testHostPermissionBroker();
 
 console.log("Browser permission tests");
 console.log("  PASS  manifest browser-data permissions are optional");
 console.log("  PASS  widget picker gates optional browser-data permissions");
 console.log("  PASS  callback-style permissions helper");
 console.log("  PASS  promise-style permissions helper");
+console.log("  PASS  host-permission broker fails closed without a native API");

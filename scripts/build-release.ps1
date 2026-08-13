@@ -235,7 +235,37 @@ $ChecksumLines = foreach ($artifact in $Artifacts) {
 }
 $ChecksumLines | Set-Content -LiteralPath $SumsPath -Encoding ASCII
 
+$CrxHash = Get-Sha256Hex -Path $ChromiumCrx
+$XpiHash = Get-Sha256Hex -Path $FirefoxXpi
+$UpdatesXmlPath = Join-Path $RepoRoot 'updates.xml'
+$FirefoxUpdatesPath = Join-Path $RepoRoot 'firefox-updates.json'
+$UpdatesXml = @"
+<?xml version="1.0" encoding="UTF-8"?>
+<gupdate xmlns="http://www.google.com/update2/response" protocol="2.0">
+  <app appid="hkfepknnglonkidihcoicdfkjkjfnejn">
+    <updatecheck codebase="https://github.com/SysAdminDoc/Vantage/releases/download/v$Version/Vantage-v$Version.crx" version="$Version" hash_sha256="$CrxHash"/>
+  </app>
+</gupdate>
+"@
+$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($UpdatesXmlPath, $UpdatesXml, $Utf8NoBom)
+
+$FirefoxUpdatesText = Get-Content -LiteralPath $FirefoxUpdatesPath -Raw
+$FirefoxUpdatesText = [regex]::Replace($FirefoxUpdatesText, '"version"\s*:\s*"[^"]+"', '"version": "' + $Version + '"', 1)
+$FirefoxUpdatesText = [regex]::Replace(
+    $FirefoxUpdatesText,
+    '"update_link"\s*:\s*"[^"]+"',
+    '"update_link": "https://github.com/SysAdminDoc/Vantage/releases/download/v' + $Version + '/Vantage-v' + $Version + '-firefox.xpi"',
+    1
+)
+$FirefoxUpdatesText = [regex]::Replace($FirefoxUpdatesText, '"update_hash"\s*:\s*"[^"]+"', '"update_hash": "sha256:' + $XpiHash + '"', 1)
+[System.IO.File]::WriteAllText($FirefoxUpdatesPath, $FirefoxUpdatesText, $Utf8NoBom)
+
+& (Join-Path $PSScriptRoot 'validate-release-metadata.ps1') -Version $Version
+
 Write-Host "  ok  $SumsPath"
+Write-Host "  ok  $UpdatesXmlPath"
+Write-Host "  ok  $FirefoxUpdatesPath"
 Write-Host ''
 Write-Host 'Release artifacts ready:'
 foreach ($artifact in $Artifacts + @($SumsPath)) {

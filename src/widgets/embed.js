@@ -1,4 +1,4 @@
-// Vantage — Configurable iframe embed panel (v0.7.0: accepts per-embed config object).
+// Vantage v1.3.0 — Configurable iframe embed panel.
 
 import { el, clear } from "../utils/dom.js";
 import { iconString, iconNode } from "../icons.js";
@@ -27,6 +27,10 @@ export function renderEmbed(mount, embedCfg, { onAttachDragHandle } = {}) {
       el("h2", { class: "panel-header__title" }, [iconNode("plane", { size: 14 }), " ", title])
     ]),
     el("div", { class: "panel-header__right" }, [
+      el("span", {
+        class: "panel-provider-boundary",
+        title: i18n("thirdPartyContentBoundary", null, "Third-party content may include ads or tracking that Vantage cannot filter.")
+      }, [i18n("thirdPartyContent", null, "Third-party content")]),
       url
         ? el("a", {
             href: url, target: "_blank", rel: "noopener noreferrer",
@@ -44,9 +48,10 @@ export function renderEmbed(mount, embedCfg, { onAttachDragHandle } = {}) {
       i18n("embedEmptyHint", null, "Add a valid web URL in Settings -> Embeds.")
     ]));
   } else {
-    const sandbox = embedCfg.sandbox !== false
-      ? "allow-scripts allow-same-origin allow-popups allow-forms"
-      : undefined;
+    // This URL can never be the extension origin (normalizeWebUrl accepts only
+    // http/https), so allow-same-origin restores provider storage/geolocation
+    // compatibility without giving the frame access to Vantage's origin.
+    const sandbox = "allow-scripts allow-same-origin allow-popups allow-forms";
     const allow = [
       embedCfg.allowFullscreen !== false ? "fullscreen" : null,
       embedCfg.allowGeolocation ? "geolocation" : null
@@ -54,7 +59,7 @@ export function renderEmbed(mount, embedCfg, { onAttachDragHandle } = {}) {
     const iframe = el("iframe", {
       src: url,
       class: "map-iframe",
-      ...(sandbox ? { sandbox } : {}),
+      sandbox,
       ...(allow ? { allow } : {}),
       "aria-label": title
     });
