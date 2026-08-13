@@ -2,12 +2,12 @@
 
 Incomplete work only, ordered by priority.
 
-## P1 - Prove native installed-extension journeys in Chromium and Firefox
+## P1 - Complete native permission and Firefox UI journeys
 
-- Hook: `dist/unpacked-chromium`, `dist/unpacked-firefox`, browser permission prompts, Chrome `sidePanel`, Firefox `sidebar_action`, and `contextualIdentities`.
-- Need: verify install/update, first run, runtime host grants and denials, Bookmarks/Top Sites/History/Reading List prompts, toolbar side-panel behavior, Firefox container mapping, and persistence after browser restart.
-- Acceptance: a documented browser/version matrix with native screenshots and network evidence; no local HTTP shim fallback; smoke fails visibly when the extension is not actually loaded.
-- Blocker: this pass's automated Chromium launch did not expose an extension ID, so native-only behavior remains unverified.
+- Hook: browser permission prompts, Chrome `sidePanel`, Firefox `sidebar_action` / `contextualIdentities`, the native Chromium harness, and `npm run smoke:firefox`.
+- Need: exercise real grant/deny/revoke prompts for Bookmarks, Top Sites, History, Reading List, and user hosts; verify toolbar-driven side-panel behavior; verify Firefox new-tab replacement, sidebar, container mapping, signed-XPI restart, and update replacement.
+- Acceptance: native screenshots and network evidence for every remaining journey across supported Chromium and Firefox versions, including persisted grants and state after a full browser restart.
+- Blocker: headless Chromium does not resolve extension permission dialogs, and Firefox WebDriver BiDi rejects navigation to `about:newtab` and `moz-extension:` URLs. The remaining UI paths require isolated headed sessions; signed restart/update also requires a signed XPI or an explicitly configured test channel.
 
 ## P1 - Reconcile local and public release channels
 

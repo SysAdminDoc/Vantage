@@ -14,8 +14,9 @@
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'fs';
 import { mkdtemp, rm } from 'fs/promises';
 import { dirname, join } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
+import { launchNativeExtension } from './native-extension-harness.mjs';
 
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log(`Usage: npm run audit -- [--headless]\n\nRuns the Vantage accessibility audit with Puppeteer and axe-core.`);
@@ -43,31 +44,22 @@ async function runAudit() {
   try {
     mkdirSync(AUDIT_DIR, { recursive: true });
 
-    const extPath =
-      existsSync(UNPACKED_DIR) && existsSync(join(UNPACKED_DIR, '.vantage-unpacked'))
-        ? UNPACKED_DIR
-        : REPO_ROOT;
-
-    browser = await puppeteer.launch({
-      headless: process.argv.includes('--headless') ? 'new' : false,
+    if (!existsSync(UNPACKED_DIR) || !existsSync(join(UNPACKED_DIR, '.vantage-unpacked'))) {
+      throw new Error('Build the unpacked Chromium extension first: npm run build:unpacked');
+    }
+    const native = await launchNativeExtension(puppeteer, {
+      extensionPath: UNPACKED_DIR,
       userDataDir,
-      args: [
-        `--disable-extensions-except=${extPath}`,
-        `--load-extension=${extPath}`,
-      ]
+      headless: process.argv.includes('--headless')
     });
+    browser = native.browser;
 
     const page = await browser.newPage();
-    let auditUrl;
-    try {
-      const extId = await discoverExtensionId(browser);
-      auditUrl = `chrome-extension://${extId}/newtab.html`;
-    } catch (err) {
-      console.warn(`Could not discover extension ID; auditing local newtab.html instead. ${err.message}`);
-      auditUrl = pathToFileURL(join(REPO_ROOT, 'newtab.html')).href;
+    await page.goto('chrome://newtab/', { waitUntil: 'domcontentloaded' });
+    if (page.url() !== `chrome-extension://${native.id}/newtab.html`) {
+      throw new Error(`New-tab override did not resolve to the installed extension: ${page.url()}`);
     }
-
-    await page.goto(auditUrl, { waitUntil: 'domcontentloaded' });
+    console.log(`🔌 Auditing installed ${native.extension.name} v${native.extension.version} (${native.id})`);
     await seedDashboardState(page);
     await page.reload({ waitUntil: 'domcontentloaded' });
     
@@ -100,26 +92,6 @@ async function runAudit() {
     if (browser) await browser.close();
     await rm(userDataDir, { recursive: true, force: true });
   }
-}
-
-async function discoverExtensionId(browser) {
-  const targets = browser.targets();
-  const sw = targets.find(t =>
-    t.type() === 'service_worker' && t.url().startsWith('chrome-extension://')
-  );
-  if (sw) return new URL(sw.url()).hostname;
-  const page = await browser.newPage();
-  await page.goto('chrome://extensions', { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 1000));
-  const id = await page.evaluate(() => {
-    const el = document.querySelector('extensions-manager');
-    const items = el?.shadowRoot?.querySelector('extensions-item-list');
-    const item = items?.shadowRoot?.querySelector('extensions-item');
-    return item?.id || null;
-  }).catch(() => null);
-  await page.close();
-  if (id) return id;
-  throw new Error('Could not discover extension ID. Build the unpacked extension first: scripts/build-unpacked.ps1');
 }
 
 async function waitForDashboardReady(page) {

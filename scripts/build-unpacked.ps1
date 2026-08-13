@@ -87,6 +87,11 @@ if ($Manifest.chrome_url_overrides -and $Manifest.chrome_url_overrides.newtab) {
 if ($Manifest.background -and $Manifest.background.service_worker) {
     $ReferencedFiles.Add($Manifest.background.service_worker)
 }
+if ($Manifest.background -and $Manifest.background.scripts) {
+    foreach ($BackgroundScript in $Manifest.background.scripts) {
+        if ($BackgroundScript) { $ReferencedFiles.Add([string]$BackgroundScript) }
+    }
+}
 if ($Manifest.side_panel -and $Manifest.side_panel.default_path) {
     $ReferencedFiles.Add($Manifest.side_panel.default_path)
 }

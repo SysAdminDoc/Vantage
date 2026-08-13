@@ -28,7 +28,9 @@
     }
   },
   "background": {
-    "service_worker": "src/background.js"
+    "scripts": [
+      "src/background.js"
+    ]
   },
   "sidebar_action": {
     "default_title": "Vantage — Feeds",

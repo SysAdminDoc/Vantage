@@ -2,7 +2,7 @@
 
 ## Snapshot
 
-- Observed: 2026-08-13, desktop 1440x900, public/local new-tab, onboarding, settings, side-panel shell, default feed state, and public GitHub project/release pages. No authentication exists and no login handoff was needed.
+- Observed: 2026-08-13, desktop 1440x900, public/local new-tab, onboarding, settings, side-panel shell, default feed state, public GitHub project/release pages, a native Chromium installation in Chrome for Testing 152.0.7977.42, and a temporary Firefox installation in Developer Edition 154.0. No authentication exists and no login handoff was needed.
 - Target: `C:\Users\--\repos\Vantage`, branch `main`. `C:\Users\--\repos\Vigil\ntp-extension` is a distinct bundled privacy NTP for Vigil Browser and was inspected but not edited.
 - Public status: GitHub `main` was active (481 commits observed), while the latest public release page still exposed v1.1.0. Local 1.2.0 therefore already exceeded the published channel before this pass; v1.3.0 must not be described as published until artifacts are uploaded.
 - Product: local-first Manifest V3 new-tab dashboard for Chromium and Firefox. The runtime is readable vanilla modules with `chrome.storage.local`, session storage, IndexedDB feed archive, optional OPFS media, fixed provider endpoints, and runtime-granted user URL origins.
@@ -14,10 +14,21 @@
 | `newtab.html` -> `src/main.js` | Verified in the in-app browser; onboarding, search, widget picker, dashboard, settings, and reset/recovery entry points render | Static IDs and module paths are stable; smoke waits for `.search-form`, `#settings-toggle`, and the storage API |
 | Settings `<dialog id="settings-panel">` | Verified across Personalize, Feeds & sources, Widgets, Workspaces & browser, and Privacy & data | Native dialog UA positioning is a collision risk; CSS must set the full inset and smoke asserts centered width/placement |
 | Settings section registry | 47 Chromium-applicable sections and 48 Firefox sections; every existing section is mounted once under a destination | `browser` existence is not a Firefox signal because the local shim aliases namespaces; feature-detect `contextualIdentities` |
-| Side panel / Firefox sidebar | Side-panel shell verified locally; native installed-browser integration is unverified | Requires a genuinely loaded extension and supported browser API; local HTTP fallback cannot prove toolbar/sidebar behavior |
+| Side panel / Firefox sidebar | Chromium registration and the extension-owned side-panel document are verified natively; toolbar opening and Firefox sidebar UI remain unverified | Chrome's `sidePanel.getOptions()` proves registration but not the user-gesture path; Firefox internal extension pages are blocked by WebDriver BiDi |
 | Feed and calendar sources | Direct fetch after scoped grant, then documented proxy fallback; default feed UI verified | User endpoints and proxy availability are external contracts; integration diagnostics and visible inline failure are the signal |
 | Browser data APIs | Bookmarks, history, reading list, tabs, and top sites are optional or user-triggered; Firefox containers are required only in Firefox | Permission helpers must fail closed when the API is absent; manifest/helper tests enforce placement |
 | External widget protocol | HTTPS manifest/src, bounded schema, digest review, exact-origin messaging, sandboxed frame | Provider frame/network declarations remain user-controlled and need review; widget-host tests fail on drift |
+
+## Native Installed-Extension Matrix
+
+| Browser / harness | Verified on 2026-08-13 | Not yet proven |
+|---|---|---|
+| Chrome for Testing 152.0.7977.42 / Puppeteer 25.7 | Unpacked install metadata and MV3 service worker; `chrome://newtab` override and runtime ID; clean onboarding and settings flows; native `chrome.i18n` substitutions; optional browser-data and broad host access absent by default; side-panel registration and document; `chrome.storage.local` identity/state after a same-profile browser restart | Real permission-prompt grant, denial, and revocation; toolbar-click opening of the side panel |
+| Firefox Developer Edition 154.0 / Puppeteer WebDriver BiDi | Temporary unpacked install and generated XPI install; stable declared ID; supported MV3 event-page manifest; uninstall/reinstall lifecycle | New-tab override, sidebar, container mapping, signed-XPI persistence, and update replacement. WebDriver BiDi rejects automated navigation to `about:newtab` and `moz-extension:` URLs |
+
+Puppeteer 25 disables extensions unless extension support is enabled explicitly. The native Chromium harness now uses that supported path, installs the unpacked directory through the extension protocol, and requires the expected worker before accepting a result. This exposed two package-level defects that the old HTTP fallback hid: raw positional localization tokens without WebExtension placeholder declarations, and Firefox's unsupported `background.service_worker` manifest entry.
+
+All five locale catalogs now declare named placeholders whose `content` fields map to the original positional substitutions, and `scripts/test-i18n.mjs` validates both directions of the schema. Firefox uses a Manifest V3 non-persistent background script (event page), without `type: module`; MDN compatibility data places `background.type` support at Firefox 112, while Vantage continues to declare Firefox 109 as its minimum.
 
 ## Ad Surface and Network Map
 
@@ -41,7 +52,7 @@ No Declarative Net Request blocker was added. Chrome documents DNR as a required
 - v1.3 groups the unchanged controls into five persistent destinations, adds targeted section metadata, `Ctrl/Cmd+K` search, automatic destination routing, session-persisted destination/section state, an autosave footer, and a local-first privacy callout.
 - Search now uses curated keywords first and section body text only as a fallback. The previous query `data` surfaced unrelated weather/converter copy; it now targets the Data section under Privacy & data.
 - First-run preset previews promised two/three/four reading panels but the always-on Starred default added a hidden extra panel. Presets now explicitly disable Starred and the Balanced journey is smoke-tested through completion.
-- Mockups and implemented captures live in `design/mockups/` and `design/implemented/` for all five destinations. ImageGen established the Catppuccin desktop shell; implementation preserved real values and control behavior instead of copying invented sample data.
+- Mockups and implemented captures live in `design/mockups/` and `design/implemented/` for all five destinations. The visual exploration established the Catppuccin desktop shell; implementation preserved real values and control behavior instead of copying invented sample data.
 
 ## Competitive Conclusions
 
@@ -59,7 +70,8 @@ No Declarative Net Request blocker was added. Chrome documents DNR as a required
 | Now - shipped | Fail-closed host metadata fetches | Local shim lacked `permissions.contains` and fetched destination pages | 5 | S; regression tested and network verified |
 | Now - shipped | Honest third-party content boundary | User iframe, external widget, and Windy hooks | 5 | M; sandbox compatibility needs real provider testing |
 | Now - shipped | Accurate onboarding panel promises | Existing preset `apply()` and preview count | 4 | S; end-to-end smoke verified |
-| Next | Real installed-extension matrix | Native side panel/sidebar and extension permission prompts | 5 | M; Chromium/Firefox browser sessions needed |
+| Now - shipped | Native installability and fail-closed browser gates | Chromium extension protocol, locale placeholder schema, Firefox MV3 event page | 5 | M; Chrome and Firefox install smoke verified |
+| Next | Complete native permission and Firefox UI matrix | Real prompts, toolbar side panel, Firefox new tab/sidebar/containers | 5 | M; isolated headed sessions and signing needed |
 | Next | Release/public-channel reconciliation | GitHub releases lag local metadata | 5 | S plus owner-controlled upload |
 | Next | Professional translation review | Five catalogs are structurally complete; new destination copy is translated but unreviewed | 4 | M; human language review |
 | Later | Full-state browser round-trip | Existing restore planner, OPFS, IndexedDB | 4 | L; multi-store fixtures/profile lifecycle |
@@ -75,6 +87,13 @@ No Declarative Net Request blocker was added. Chrome documents DNR as a required
 - https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest
 - https://developer.chrome.com/docs/extensions/develop/migrate/blocking-web-requests
 - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/optional_host_permissions
+- https://pptr.dev/guides/chrome-extensions
+- https://pptr.dev/api/puppeteer.launchoptions
+- https://developer.chrome.com/docs/extensions/how-to/test/end-to-end-testing
+- https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/background
+- https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Background_scripts
+- https://extensionworkshop.com/documentation/develop/getting-started-with-web-ext/
+- https://extensionworkshop.com/documentation/develop/testing-persistent-and-restart-features/
 
 ### Product and competitors
 

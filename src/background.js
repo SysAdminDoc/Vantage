@@ -1,4 +1,5 @@
-// Vantage — service worker. Opens a new tab when the toolbar action is clicked.
+// Vantage background runtime — a Chromium service worker or Firefox event page.
+// Opens a new tab (or the configured Firefox sidebar) from the toolbar action.
 // Firefox exposes `browser` as a global; Chrome does not. We use whichever is present.
 // Chrome navigates to chrome://newtab so the override fires; Firefox opens a blank tab
 // which Firefox itself routes to our overridden newtab page.

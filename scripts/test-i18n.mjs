@@ -18,8 +18,32 @@ function keysOf(catalog) {
 function placeholders(message) {
   return [...String(message).matchAll(/\$([A-Za-z0-9_]+)\$/g)]
     .map(match => match[1])
-    .filter(name => !/^\d+$/.test(name))
+    .map(name => name.toLowerCase())
     .sort();
+}
+
+function validateWebExtensionMessage(locale, key, entry) {
+  assert.doesNotMatch(
+    entry.message,
+    /\$[1-9][0-9]*/,
+    `${locale}.${key} must use declared WebExtension placeholders instead of raw positional tokens`
+  );
+
+  const referenced = new Set(placeholders(entry.message));
+  const declared = new Map(
+    Object.entries(entry.placeholders || {}).map(([name, value]) => [name.toLowerCase(), value])
+  );
+  for (const name of referenced) {
+    assert.ok(declared.has(name), `${locale}.${key} references undeclared placeholder $${name.toUpperCase()}$`);
+  }
+  for (const [name, value] of declared) {
+    assert.ok(referenced.has(name), `${locale}.${key} declares unused placeholder ${name}`);
+    assert.match(
+      String(value?.content || ""),
+      /^\$[1-9][0-9]*$/,
+      `${locale}.${key}.${name} must map to a positional substitution such as $1`
+    );
+  }
 }
 
 function settingsLiteralKey(value) {
@@ -116,6 +140,7 @@ async function testLocaleParity() {
     for (const key of expectedKeys) {
       assert.equal(typeof catalog[key]?.message, "string", `${locale}.${key} must have a message`);
       assert.notEqual(catalog[key].message.trim(), "", `${locale}.${key} must not be empty`);
+      validateWebExtensionMessage(locale, key, catalog[key]);
       assert.deepEqual(
         placeholders(catalog[key].message),
         placeholders(en[key].message),
@@ -174,5 +199,6 @@ await testRuntimeFallbacks();
 
 console.log("i18n tests");
 console.log("  PASS  locale keys and placeholders are in parity");
+console.log("  PASS  WebExtension placeholder declarations are installable");
 console.log("  PASS  source references resolve to locale messages");
 console.log("  PASS  fallback substitutions, DOM localization, and RTL setup");

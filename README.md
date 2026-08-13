@@ -216,6 +216,25 @@ For local source testing, run `.\scripts\build-unpacked.ps1 -Target firefox`, th
 
 To update: download the new XPI, repeat the install step — the old version is replaced automatically.
 
+### Local verification
+
+Install the development dependencies once with `npm install`, then run:
+
+```powershell
+npm test
+npm run build:unpacked
+npm run build:unpacked:firefox
+npm run smoke
+npm run smoke:firefox
+npm run audit -- --headless --no-markdown
+```
+
+`npm run smoke` builds and installs the real Chromium extension, verifies its service worker and `chrome://newtab` override, then exercises onboarding, settings, localization, the side-panel document, optional-access defaults, and storage across a browser restart. It fails if the extension does not load; there is no HTTP fallback for the native checks. A local HTTP shim is used only for deterministic helper-level permission and import scenarios that cannot accept a headless browser prompt.
+
+`npm run smoke:firefox` auto-detects Firefox Developer Edition or Firefox, or accepts `-- --firefox-path "C:\path\to\firefox.exe"`. It verifies temporary installation, the Firefox MV3 event-page manifest, the declared add-on ID, and uninstall/reinstall lifecycle. Firefox new-tab, sidebar, container mapping, and signed restart/update journeys still require a manual browser session because WebDriver BiDi does not permit automation to navigate to `about:newtab` or `moz-extension:` pages.
+
+The accessibility audit also installs the Chromium build and audits the extension-owned new-tab page directly.
+
 ### Why no Enterprise Policy install? (Chromium)
 
 I tried. Modern Chromium browsers (Chrome 137+, Brave 147+) now silently filter self-hosted CRX URLs out of `ExtensionInstallForcelist` — the registry policy is accepted but never propagates to the extension service. The only update_urls that actually install through that policy are Chrome Web Store entries. The launch-flag path above is the reliable alternative.
@@ -251,11 +270,11 @@ Pure vanilla JS modules. No build step. No bundler. No framework. Ships exactly 
 ```
 Vantage/
 ├── manifest.json              MV3 manifest (chrome_url_overrides → newtab.html)
-├── manifest.firefox.json      Firefox variant (no module worker)
+├── manifest.firefox.json      Firefox MV3 event-page variant
 ├── newtab.html                Static HTML shell
 ├── src/
 │   ├── main.js                Entry — settings, mounts, keyboard, workspace bar
-│   ├── background.js          Service worker (toolbar action → open new tab)
+│   ├── background.js          Chromium service worker / Firefox event page
 │   ├── style.css              Design tokens, type, motion, all UI styles
 │   ├── storage.js             chrome.storage.local wrapper with deep-merged defaults
 │   ├── search-engines.js      Engine catalog + URL builder

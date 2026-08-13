@@ -29,6 +29,7 @@ import { spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { dirname, extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { launchNativeExtension } from "./native-extension-harness.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, "..");
@@ -46,37 +47,75 @@ async function run() {
   const extPath = await resolveExtensionPath();
   const userDataDir = await mkdtemp(join(tmpdir(), "vantage-smoke-profile-"));
 
-  const browser = await puppeteer.launch({
-    headless: headed ? false : "new",
-    userDataDir,
-    args: [
-      `--disable-extensions-except=${extPath}`,
-      `--load-extension=${extPath}`,
-    ]
-  });
-
-  let staticServer = null;
-  let extId;
+  let browser;
   try {
-    extId = await discoverExtensionId(browser);
-  } catch {
-    console.warn("Could not discover extension ID; using local HTTP fallback.");
-  }
+    const native = await launchNativeExtension(puppeteer, {
+      extensionPath: extPath,
+      userDataDir,
+      headless: !headed
+    });
+    browser = native.browser;
+    const extId = native.id;
+    const browserVersion = await browser.version();
+    ok(`Native extension loaded - ${native.extension.name} v${native.extension.version} in ${browserVersion}`);
 
-  let ntpUrl;
-  if (extId) {
-    ntpUrl = `chrome-extension://${extId}/newtab.html`;
-  } else {
-    staticServer = await startStaticServer(REPO_ROOT);
-    ntpUrl = `${staticServer.origin}/newtab.html`;
-  }
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 1 });
 
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 1 });
-
-  try {
     // ── 1. Onboarding skip ──────────────────────────────────
-    await page.goto(ntpUrl, { waitUntil: "domcontentloaded" });
+    await page.goto("chrome://newtab/", { waitUntil: "domcontentloaded" });
+    const nativeState = await page.evaluate(async () => ({
+      runtimeId: chrome.runtime.id,
+      version: chrome.runtime.getManifest().version,
+      setupMessage: chrome.i18n.getMessage("setupStepOf", ["2", "3"]),
+      searchMessage: chrome.i18n.getMessage("settingsSearchCountMany", ["4", "weather"]),
+      permissions: await chrome.permissions.getAll(),
+      sidePanel: await chrome.sidePanel.getOptions({})
+    }));
+    const nativeUrl = page.url();
+    if (
+      nativeUrl === `chrome-extension://${extId}/newtab.html` &&
+      nativeState.runtimeId === extId &&
+      nativeState.version === native.manifest.version
+    ) {
+      ok("Native new-tab override - extension origin and runtime identity verified");
+    } else {
+      fail("Native new-tab override", JSON.stringify({ nativeUrl, nativeState }));
+    }
+    if (
+      nativeState.setupMessage === "Step 2 of 3" &&
+      nativeState.searchMessage === "4 setting sections found for “weather”."
+    ) {
+      ok("Native i18n - positional substitutions resolve through chrome.i18n");
+    } else {
+      fail("Native i18n", JSON.stringify(nativeState));
+    }
+    const optionalPermissions = ["bookmarks", "history", "readingList", "tabs", "topSites"];
+    const permissionNames = nativeState.permissions.permissions || [];
+    const optionalHostsAbsent = !(nativeState.permissions.origins || [])
+      .some(origin => origin === "http://*/*" || origin === "https://*/*");
+    if (
+      optionalPermissions.every(permission => !permissionNames.includes(permission)) &&
+      optionalHostsAbsent &&
+      nativeState.sidePanel?.enabled &&
+      nativeState.sidePanel?.path === "sidepanel.html"
+    ) {
+      ok("Native capability baseline - optional access absent and side panel registered");
+    } else {
+      fail("Native capability baseline", JSON.stringify(nativeState));
+    }
+
+    await page.waitForSelector(".onboard-overlay .onboard-card", { timeout: 5000 });
+    const firstRunState = await page.evaluate(() => ({
+      title: document.querySelector(".onboard-title")?.textContent?.trim(),
+      presetCount: document.querySelectorAll(".onboard-preset").length
+    }));
+    if (firstRunState.title && firstRunState.presetCount === 3) {
+      ok("Native first run - onboarding renders from a clean profile");
+    } else {
+      fail("Native first run", JSON.stringify(firstRunState));
+    }
+
     await seedOnboarding(page);
     await page.reload({ waitUntil: "domcontentloaded" });
     await waitForDashboardReady(page);
@@ -256,7 +295,7 @@ async function run() {
     else ok(`Widget error state — skipped (${widgetErrorResult})`);
 
     // 7+. Deterministic local workflow probes through the HTTP shim.
-    const workflowServer = staticServer || await startStaticServer(REPO_ROOT);
+    const workflowServer = await startStaticServer(REPO_ROOT);
     try {
       const workflowPage = await openSeededHttpPage(browser, workflowServer);
       try {
@@ -269,6 +308,7 @@ async function run() {
       }
 
       await smokeSidePanelWorkflow(browser, workflowServer);
+      await smokeNativeSidePanel(browser, extId);
       await smokeFirstRunRecovery(browser, workflowServer);
 
       // RTL language simulation through the local browser shim.
@@ -295,12 +335,48 @@ async function run() {
         }
       }
     } finally {
-      if (!staticServer) await workflowServer.close();
+      await workflowServer.close();
+    }
+
+    const restartMarker = `native-restart-${Date.now()}`;
+    await page.evaluate(marker => chrome.storage.local.set({ vantageNativeRestartProbe: marker }), restartMarker);
+    await browser.close();
+    browser = null;
+
+    const restarted = await launchNativeExtension(puppeteer, {
+      extensionPath: extPath,
+      userDataDir,
+      headless: !headed
+    });
+    browser = restarted.browser;
+    const restartPage = await browser.newPage();
+    try {
+      await restartPage.goto("chrome://newtab/", { waitUntil: "domcontentloaded" });
+      const restartState = await restartPage.evaluate(async () => {
+        const stored = await chrome.storage.local.get(["vantageNativeRestartProbe", "vantageSettings"]);
+        return {
+          marker: stored.vantageNativeRestartProbe,
+          onboardingComplete: stored.vantageSettings?.onboardingComplete,
+          runtimeId: chrome.runtime.id
+        };
+      });
+      if (
+        restarted.id === extId &&
+        restartPage.url() === `chrome-extension://${extId}/newtab.html` &&
+        restartState.marker === restartMarker &&
+        restartState.onboardingComplete === true &&
+        restartState.runtimeId === extId
+      ) {
+        ok("Native restart - extension identity and storage persist in the clean test profile");
+      } else {
+        fail("Native restart", JSON.stringify({ id: restarted.id, url: restartPage.url(), restartState }));
+      }
+    } finally {
+      await restartPage.close();
     }
 
   } finally {
-    await browser.close();
-    if (staticServer) await staticServer.close();
+    if (browser) await browser.close();
     await rm(userDataDir, { recursive: true, force: true });
   }
 
@@ -529,6 +605,32 @@ async function smokeSidePanelWorkflow(browser, server) {
   }
 }
 
+async function smokeNativeSidePanel(browser, extId) {
+  const page = await browser.newPage();
+  try {
+    await page.goto(`chrome-extension://${extId}/sidepanel.html`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector("#sidepanel-feed-mount .panel-empty, #sidepanel-feed-mount .feed-list", { timeout: 5000 });
+    const state = await page.evaluate(() => ({
+      runtimeId: chrome.runtime.id,
+      title: document.querySelector(".sidepanel-header h1")?.textContent?.trim(),
+      hasRefreshLabel: document.getElementById("sidepanel-refresh")?.getAttribute("aria-label"),
+      hasFeedMount: !!document.querySelector("#sidepanel-feed-mount")
+    }));
+    if (
+      state.runtimeId === extId &&
+      state.title === "Vantage Feeds" &&
+      state.hasRefreshLabel &&
+      state.hasFeedMount
+    ) {
+      ok("Native side panel - extension page renders with runtime access");
+    } else {
+      fail("Native side panel", JSON.stringify(state));
+    }
+  } finally {
+    await page.close();
+  }
+}
+
 async function smokeFirstRunRecovery(browser, server) {
   const page = await browser.newPage();
   try {
@@ -643,26 +745,6 @@ async function waitForDashboardReady(page) {
       !!settings?.firstElementChild &&
       typeof globalThis.chrome?.storage?.local?.get === "function";
   }, { timeout: 10000 });
-}
-
-async function discoverExtensionId(browser) {
-  const targets = browser.targets();
-  const sw = targets.find(t =>
-    t.type() === "service_worker" && t.url().startsWith("chrome-extension://")
-  );
-  if (sw) return new URL(sw.url()).hostname;
-  const page = await browser.newPage();
-  await page.goto("chrome://extensions", { waitUntil: "domcontentloaded" });
-  await new Promise(r => setTimeout(r, 1500));
-  const id = await page.evaluate(() => {
-    const el = document.querySelector("extensions-manager");
-    const items = el?.shadowRoot?.querySelector("extensions-item-list");
-    const item = items?.shadowRoot?.querySelector("extensions-item");
-    return item?.id || null;
-  }).catch(() => null);
-  await page.close();
-  if (id) return id;
-  throw new Error("Could not discover extension ID");
 }
 
 async function seedOnboarding(page) {

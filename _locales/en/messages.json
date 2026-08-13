@@ -8,8 +8,13 @@
     "description": "Setting label"
   },
   "activateDragToReorder": {
-    "message": "Activate: $1\nDrag to reorder",
-    "description": "Widget UI string"
+    "message": "Activate: $ARG1$\nDrag to reorder",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "activeCountSuffix": {
     "message": "on",
@@ -80,8 +85,13 @@
     "description": "UI string"
   },
   "ambientResumeError": {
-    "message": "Couldn't resume audio - $1.",
-    "description": "Widget UI string"
+    "message": "Couldn't resume audio - $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "ambientSoundAria": {
     "message": "Ambient sound",
@@ -112,8 +122,13 @@
     "description": "Widget UI string"
   },
   "ambientStartError": {
-    "message": "Couldn't start audio - $1.",
-    "description": "Widget UI string"
+    "message": "Couldn't start audio - $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "animatedBackground": {
     "message": "Animated Background",
@@ -232,12 +247,22 @@
     "description": "Widget UI string"
   },
   "calendarLoadError": {
-    "message": "Couldn't load calendar - $1.",
-    "description": "Widget UI string"
+    "message": "Couldn't load calendar - $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "calendarNoEvents": {
-    "message": "No events in the next $1 days.",
-    "description": "Widget UI string"
+    "message": "No events in the next $ARG1$ days.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "cancel": {
     "message": "Cancel",
@@ -432,16 +457,26 @@
     "description": "Widget UI string"
   },
   "countdownTimeAgo": {
-    "message": "$1 ago",
-    "description": "Widget UI string"
+    "message": "$ARG1$ ago",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "crypto": {
     "message": "Crypto",
     "description": "Widget title"
   },
   "cryptoLoadError": {
-    "message": "Couldn't load prices - $1.",
-    "description": "Widget UI string"
+    "message": "Couldn't load prices - $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "cryptoNoPrices": {
     "message": "No prices returned for the configured coins.",
@@ -492,8 +527,13 @@
     "description": "Label for date input"
   },
   "daysAgoShort": {
-    "message": "$1d ago",
-    "description": "Widget UI string"
+    "message": "$ARG1$d ago",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "delete": {
     "message": "Delete",
@@ -516,8 +556,13 @@
     "description": "Label for description input"
   },
   "detectedLocation": {
-    "message": "Detected: $1",
-    "description": "UI string"
+    "message": "Detected: $ARG1$",
+    "description": "UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "detecting": {
     "message": "Detecting...",
@@ -548,8 +593,13 @@
     "description": "UI string"
   },
   "editNoteAria": {
-    "message": "Edit note: $1",
-    "description": "Widget UI string"
+    "message": "Edit note: $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "embed": {
     "message": "Embed",
@@ -624,24 +674,39 @@
     "description": "Widget UI string"
   },
   "failedToFetchUrl": {
-    "message": "Failed to fetch $1",
-    "description": "Widget UI string"
+    "message": "Failed to fetch $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "feedDefaultEmptyHint": {
     "message": "Add a feed in settings to get started.",
     "description": "Widget UI string"
   },
   "feedMarkAllReadAria": {
-    "message": "Mark all $1 read",
-    "description": "Widget UI string"
+    "message": "Mark all $ARG1$ read",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "feedMarkAllReadTitle": {
     "message": "Mark all as read",
     "description": "Widget UI string"
   },
   "feedRefreshAria": {
-    "message": "Refresh $1",
-    "description": "Widget UI string"
+    "message": "Refresh $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "feeds": {
     "message": "Feeds",
@@ -652,8 +717,13 @@
     "description": "Widget UI string"
   },
   "feedsFailedDetail": {
-    "message": "Failed: $1. Check your connection or these feed URLs.",
-    "description": "Widget UI string"
+    "message": "Failed: $ARG1$. Check your connection or these feed URLs.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "feedsLoadErrorTitle": {
     "message": "Couldn't load feeds",
@@ -668,12 +738,22 @@
     "description": "Widget UI string"
   },
   "feedUnreadCount": {
-    "message": "$1 unread",
-    "description": "Widget UI string"
+    "message": "$ARG1$ unread",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "feedUpdated": {
-    "message": "Updated $1",
-    "description": "Widget UI string"
+    "message": "Updated $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "filterInboxItems": {
     "message": "Filter inbox items",
@@ -696,8 +776,19 @@
     "description": "Widget UI string"
   },
   "floodTooltip": {
-    "message": "River discharge $1 m3/s - 7-day max $2 m3/s - $3 risk",
-    "description": "Widget UI string"
+    "message": "River discharge $ARG1$ m3/s - 7-day max $ARG2$ m3/s - $ARG3$ risk",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      },
+      "arg3": {
+        "content": "$3"
+      }
+    }
   },
   "focus": {
     "message": "Focus",
@@ -712,12 +803,31 @@
     "description": "Widget UI string"
   },
   "focusSessionStarting": {
-    "message": "$1 min focus session starting.",
-    "description": "Widget UI string"
+    "message": "$ARG1$ min focus session starting.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "forecastDetailsTitle": {
-    "message": "Precip: $1 mm / $2% - UV: $3 - Wind: $4",
-    "description": "Widget UI string"
+    "message": "Precip: $ARG1$ mm / $ARG2$% - UV: $ARG3$ - Wind: $ARG4$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      },
+      "arg3": {
+        "content": "$3"
+      },
+      "arg4": {
+        "content": "$4"
+      }
+    }
   },
   "forecastUnavailable": {
     "message": "Forecast unavailable",
@@ -740,44 +850,106 @@
     "description": "UI string"
   },
   "githubEventCommented": {
-    "message": "Commented in $1",
-    "description": "Widget UI string"
+    "message": "Commented in $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "githubEventCreated": {
-    "message": "Created $1 in $2",
-    "description": "Widget UI string"
+    "message": "Created $ARG1$ in $ARG2$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "githubEventDeleted": {
-    "message": "Deleted $1 in $2",
-    "description": "Widget UI string"
+    "message": "Deleted $ARG1$ in $ARG2$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "githubEventForked": {
-    "message": "Forked $1",
-    "description": "Widget UI string"
+    "message": "Forked $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "githubEventIssue": {
-    "message": "$1 issue in $2",
-    "description": "Widget UI string"
+    "message": "$ARG1$ issue in $ARG2$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "githubEventPr": {
-    "message": "$1 PR in $2",
-    "description": "Widget UI string"
+    "message": "$ARG1$ PR in $ARG2$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "githubEventPushed": {
-    "message": "Pushed to $1",
-    "description": "Widget UI string"
+    "message": "Pushed to $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "githubEventReleased": {
-    "message": "Released in $1",
-    "description": "Widget UI string"
+    "message": "Released in $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "githubEventStarred": {
-    "message": "Starred $1",
-    "description": "Widget UI string"
+    "message": "Starred $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "githubLoadError": {
-    "message": "Couldn't load GitHub data - $1.",
-    "description": "Widget UI string"
+    "message": "Couldn't load GitHub data - $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "githubNoRecentActivity": {
     "message": "No recent public activity.",
@@ -788,16 +960,26 @@
     "description": "Widget UI string"
   },
   "githubRateLimited": {
-    "message": "GitHub API rate-limited this request - try again after $1",
-    "description": "Widget UI string"
+    "message": "GitHub API rate-limited this request - try again after $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "githubSetUsernameHint": {
     "message": "Set your GitHub username in Settings -> GitHub to see your activity.",
     "description": "Widget UI string"
   },
   "githubShowingCached": {
-    "message": "Showing cached GitHub data - API rate-limited until $1.",
-    "description": "Widget UI string"
+    "message": "Showing cached GitHub data - API rate-limited until $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "githubUserNotFound": {
     "message": "User not found",
@@ -832,8 +1014,13 @@
     "description": "UI string"
   },
   "groupLinksAria": {
-    "message": "$1 links",
-    "description": "Widget UI string"
+    "message": "$ARG1$ links",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "help": {
     "message": "Help",
@@ -844,8 +1031,13 @@
     "description": "Widget UI string"
   },
   "historyNoQueryMatches": {
-    "message": "No history entries matching \"$1\".",
-    "description": "Widget UI string"
+    "message": "No history entries matching \"$ARG1$\".",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "historyNoRecent": {
     "message": "No recent browser history.",
@@ -864,8 +1056,13 @@
     "description": "Widget UI string"
   },
   "historySearchFailed": {
-    "message": "History search failed - $1.",
-    "description": "Widget UI string"
+    "message": "History search failed - $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "historySearchPlaceholder": {
     "message": "Search browsing history...",
@@ -876,8 +1073,13 @@
     "description": "Widget UI string"
   },
   "hoursAgoShort": {
-    "message": "$1h ago",
-    "description": "Widget UI string"
+    "message": "$ARG1$h ago",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "image": {
     "message": "Image",
@@ -912,36 +1114,74 @@
     "description": "Widget UI string"
   },
   "inboxArchivedItem": {
-    "message": "Archived \"$1\".",
-    "description": "Widget UI string"
+    "message": "Archived \"$ARG1$\".",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "inboxBrokenLinks": {
-    "message": "$1 link(s) may be broken.",
-    "description": "Widget UI string"
+    "message": "$ARG1$ link(s) may be broken.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "inboxCheckingLinks": {
-    "message": "Checking $1 link(s) - this sends HEAD requests to each URL.",
-    "description": "Widget UI string"
+    "message": "Checking $ARG1$ link(s) - this sends HEAD requests to each URL.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "inboxClearedItems": {
-    "message": "Cleared $1 inbox item(s).",
-    "description": "Widget UI string"
+    "message": "Cleared $ARG1$ inbox item(s).",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "inboxDeletedItem": {
-    "message": "Deleted \"$1\".",
-    "description": "Widget UI string"
+    "message": "Deleted \"$ARG1$\".",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "inboxDuplicatesRemoved": {
-    "message": "$1 duplicate(s) across $2 URL(s). Keeping newest, removing older copies.",
-    "description": "Widget UI string"
+    "message": "$ARG1$ duplicate(s) across $ARG2$ URL(s). Keeping newest, removing older copies.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "inboxEmpty": {
     "message": "Your inbox is empty. Save tabs here for later.",
     "description": "Widget UI string"
   },
   "inboxForgottenCount": {
-    "message": "$1 item(s) saved more than 30 days ago.",
-    "description": "Widget UI string"
+    "message": "$ARG1$ item(s) saved more than 30 days ago.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "inboxHygieneTools": {
     "message": "Inbox hygiene tools",
@@ -1008,8 +1248,13 @@
     "description": "Widget UI string"
   },
   "invalidWidget": {
-    "message": "Invalid widget: $1",
-    "description": "Widget UI string"
+    "message": "Invalid widget: $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "japanese": {
     "message": "Japanese",
@@ -1136,16 +1381,29 @@
     "description": "UI string"
   },
   "lookupAuthorWikipedia": {
-    "message": "Look up $1 on Wikipedia",
-    "description": "Widget UI string"
+    "message": "Look up $ARG1$ on Wikipedia",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "marine": {
     "message": "Marine",
     "description": "Widget UI string"
   },
   "marineCurrentSummary": {
-    "message": "Current $1$2",
-    "description": "Widget UI string"
+    "message": "Current $ARG1$$ARG2$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "marineDataUnavailable": {
     "message": "Marine data unavailable",
@@ -1156,8 +1414,16 @@
     "description": "Widget UI string"
   },
   "marineWaveSummary": {
-    "message": "Wave $1$2",
-    "description": "Widget UI string"
+    "message": "Wave $ARG1$$ARG2$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "marineWeather": {
     "message": "Marine Weather",
@@ -1172,8 +1438,13 @@
     "description": "Widget UI string"
   },
   "minutesAgoShort": {
-    "message": "$1m ago",
-    "description": "Widget UI string"
+    "message": "$ARG1$m ago",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "name": {
     "message": "Name",
@@ -1184,20 +1455,40 @@
     "description": "Widget UI string"
   },
   "nasaApodLoadError": {
-    "message": "Couldn't load NASA APOD - $1.",
-    "description": "Widget UI string"
+    "message": "Couldn't load NASA APOD - $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "nasaApodNotAvailable": {
-    "message": "NASA APOD is not available for today's date yet - trying again after $1.",
-    "description": "Widget UI string"
+    "message": "NASA APOD is not available for today's date yet - trying again after $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "nasaApodRateLimited": {
-    "message": "NASA APOD is rate limited - add a free API key in Settings -> Photo, or try again after $1.",
-    "description": "Widget UI string"
+    "message": "NASA APOD is rate limited - add a free API key in Settings -> Photo, or try again after $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "nasaApodRejected": {
-    "message": "NASA APOD rejected this request - check the API key in Settings -> Photo, or try again after $1.",
-    "description": "Widget UI string"
+    "message": "NASA APOD rejected this request - check the API key in Settings -> Photo, or try again after $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "nasaApodVideoThumbnail": {
     "message": "NASA APOD video thumbnail",
@@ -1306,8 +1597,13 @@
     "description": "Widget UI string"
   },
   "openInNewTabAria": {
-    "message": "Open $1 in new tab",
-    "description": "Widget UI string"
+    "message": "Open $ARG1$ in new tab",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "openNoteFocusMode": {
     "message": "Open note in focus mode",
@@ -1334,8 +1630,13 @@
     "description": "Widget UI string"
   },
   "permissionDeniedWidgetDisabled": {
-    "message": "$1 permission denied. The widget stays disabled.",
-    "description": "UI string"
+    "message": "$ARG1$ permission denied. The widget stays disabled.",
+    "description": "UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "personalize": {
     "message": "Personalize",
@@ -1390,24 +1691,48 @@
     "description": "Widget title"
   },
   "pomodoroSessionStarted": {
-    "message": "$1 session started.",
-    "description": "Widget UI string"
+    "message": "$ARG1$ session started.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "popOutTimer": {
     "message": "Pop out timer",
     "description": "Widget UI string"
   },
   "presetAriaLabel": {
-    "message": "$1. $2 Includes $3.",
-    "description": "UI string"
+    "message": "$ARG1$. $ARG2$ Includes $ARG3$.",
+    "description": "UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      },
+      "arg3": {
+        "content": "$3"
+      }
+    }
   },
   "privacyAndSyncStatus": {
     "message": "Privacy and sync status",
     "description": "UI string"
   },
   "quicklinkAriaWithHost": {
-    "message": "$1 ($2)",
-    "description": "Widget UI string"
+    "message": "$ARG1$ ($ARG2$)",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "quicklinkGroupEmpty": {
     "message": "No links in this group.",
@@ -1418,8 +1743,16 @@
     "description": "Section title for quick links"
   },
   "quicklinkTitleWithHost": {
-    "message": "$1 - $2\nDrag to reorder",
-    "description": "Widget UI string"
+    "message": "$ARG1$ - $ARG2$\nDrag to reorder",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "quickpickHint": {
     "message": "Cancel to keep the default engine unchanged",
@@ -1458,8 +1791,13 @@
     "description": "Widget UI string"
   },
   "readingListSaveFailed": {
-    "message": "Couldn't save - $1.",
-    "description": "Widget UI string"
+    "message": "Couldn't save - $ARG1$.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "readingListUnavailable": {
     "message": "Reading List is unavailable in this browser.",
@@ -1510,8 +1848,13 @@
     "description": "Widget UI string"
   },
   "removedNamedItem": {
-    "message": "Removed \"$1\".",
-    "description": "UI string"
+    "message": "Removed \"$ARG1$\".",
+    "description": "UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "removeEmbed": {
     "message": "Remove embed",
@@ -1536,8 +1879,13 @@
     "description": "UI string"
   },
   "reorderNamed": {
-    "message": "Reorder $1",
-    "description": "Widget UI string"
+    "message": "Reorder $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "reset": {
     "message": "Reset",
@@ -1588,8 +1936,13 @@
     "description": "UI string"
   },
   "searchNamed": {
-    "message": "Search $1",
-    "description": "Widget UI string"
+    "message": "Search $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "searchPlaceholder": {
     "message": "Search the web...",
@@ -1600,8 +1953,13 @@
     "description": "Widget UI string"
   },
   "searchQueryWith": {
-    "message": "Search \"$1\" with...",
-    "description": "Widget UI string"
+    "message": "Search \"$ARG1$\" with...",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "searchTheWeb": {
     "message": "Search the web",
@@ -1616,8 +1974,13 @@
     "description": "ARIA label for search section"
   },
   "secondsAgoShort": {
-    "message": "$1s ago",
-    "description": "Widget UI string"
+    "message": "$ARG1$s ago",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "set": {
     "message": "Set",
@@ -2992,12 +3355,25 @@
     "description": "Settings UI string"
   },
   "setToLocation": {
-    "message": "Set to $1",
-    "description": "UI string"
+    "message": "Set to $ARG1$",
+    "description": "UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "setupStepOf": {
-    "message": "Step $1 of $2",
-    "description": "UI string"
+    "message": "Step $ARG1$ of $ARG2$",
+    "description": "UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "sidePanelEmptyHint": {
     "message": "Add an RSS / News feed in Settings -> Reading list or News.",
@@ -3044,8 +3420,13 @@
     "description": "Language name"
   },
   "starredClearedItems": {
-    "message": "Cleared $1 starred item(s).",
-    "description": "Widget UI string"
+    "message": "Cleared $ARG1$ starred item(s).",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "starredClickToRemove": {
     "message": "Starred - click to remove",
@@ -3060,8 +3441,13 @@
     "description": "UI string"
   },
   "starredRemovedItem": {
-    "message": "Removed \"$1\".",
-    "description": "Widget UI string"
+    "message": "Removed \"$ARG1$\".",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "starredToast": {
     "message": "Starred.",
@@ -3100,12 +3486,22 @@
     "description": "Widget UI string"
   },
   "tabGroupAria": {
-    "message": "Tab Group: $1",
-    "description": "Widget UI string"
+    "message": "Tab Group: $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "takeBreakMinutes": {
-    "message": "Take a $1 min break.",
-    "description": "Widget UI string"
+    "message": "Take a $ARG1$ min break.",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "targetDate": {
     "message": "Target date",
@@ -3148,8 +3544,13 @@
     "description": "Widget UI string"
   },
   "todoClearedCompleted": {
-    "message": "Cleared $1 completed task(s).",
-    "description": "Widget UI string"
+    "message": "Cleared $ARG1$ completed task(s).",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "todoEmpty": {
     "message": "No tasks yet - add one above.",
@@ -3160,8 +3561,13 @@
     "description": "UI string"
   },
   "toggleWidgetLabel": {
-    "message": "Toggle $1",
-    "description": "UI string"
+    "message": "Toggle $ARG1$",
+    "description": "UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "tomorrow": {
     "message": "Tomorrow",
@@ -3224,8 +3630,13 @@
     "description": "UI string"
   },
   "updatedRelative": {
-    "message": "Updated $1",
-    "description": "Widget UI string"
+    "message": "Updated $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "url": {
     "message": "URL",
@@ -3270,16 +3681,26 @@
     "description": "Widget UI string"
   },
   "watchApodVideo": {
-    "message": "Watch $1",
-    "description": "Widget UI string"
+    "message": "Watch $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "weather": {
     "message": "Weather",
     "description": "Widget title"
   },
   "weatherCapeCompact": {
-    "message": "CAPE $1 J/kg",
-    "description": "Widget UI string"
+    "message": "CAPE $ARG1$ J/kg",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "weatherCodeClear": {
     "message": "Clear",
@@ -3386,28 +3807,73 @@
     "description": "Widget UI string"
   },
   "weatherDewCompact": {
-    "message": "dew $1$2",
-    "description": "Widget UI string"
+    "message": "dew $ARG1$$ARG2$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "weatherFeelsChip": {
-    "message": "feels $1$2",
-    "description": "Widget UI string"
+    "message": "feels $ARG1$$ARG2$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "weatherFeelsLikeAria": {
-    "message": "feels like $1 degrees",
-    "description": "Widget UI string"
+    "message": "feels like $ARG1$ degrees",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "weatherFeelsLikeCompact": {
-    "message": "feels like $1$2",
-    "description": "Widget UI string"
+    "message": "feels like $ARG1$$ARG2$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "weatherForecastConfidence": {
-    "message": "forecast confidence $1 (+/-$2$3)",
-    "description": "Widget UI string"
+    "message": "forecast confidence $ARG1$ (+/-$ARG2$$ARG3$)",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      },
+      "arg3": {
+        "content": "$3"
+      }
+    }
   },
   "weatherHumidityCompact": {
-    "message": "humidity $1%",
-    "description": "Widget UI string"
+    "message": "humidity $ARG1$%",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "weatherLoadErrorTitle": {
     "message": "Couldn't load weather",
@@ -3418,32 +3884,74 @@
     "description": "UI string"
   },
   "weatherPrecipAria": {
-    "message": "$1% chance of precipitation",
-    "description": "Widget UI string"
+    "message": "$ARG1$% chance of precipitation",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "weatherPrecipCompact": {
-    "message": "precip $1%",
-    "description": "Widget UI string"
+    "message": "precip $ARG1$%",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "weatherPressureCompact": {
-    "message": "pressure $1",
-    "description": "Widget UI string"
+    "message": "pressure $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "weatherSetCityTitle": {
     "message": "Set a city in Settings -> Weather to enable",
     "description": "Widget UI string"
   },
   "weatherSoilMoistureCompact": {
-    "message": "soil $1 $2%",
-    "description": "Widget UI string"
+    "message": "soil $ARG1$ $ARG2$%",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "weatherSoilTempCompact": {
-    "message": "soil-T $1 $2$3",
-    "description": "Widget UI string"
+    "message": "soil-T $ARG1$ $ARG2$$ARG3$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      },
+      "arg3": {
+        "content": "$3"
+      }
+    }
   },
   "weatherTemperatureAria": {
-    "message": "$1 degrees $2",
-    "description": "Widget UI string"
+    "message": "$ARG1$ degrees $ARG2$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "weatherUnavailable": {
     "message": "Weather unavailable",
@@ -3454,16 +3962,31 @@
     "description": "Widget UI string"
   },
   "weatherUvIndexCompact": {
-    "message": "UV index $1",
-    "description": "Widget UI string"
+    "message": "UV index $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "weatherVisibilityCompact": {
-    "message": "visibility $1",
-    "description": "Widget UI string"
+    "message": "visibility $ARG1$",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "weatherVpdCompact": {
-    "message": "VPD $1 kPa",
-    "description": "Widget UI string"
+    "message": "VPD $ARG1$ kPa",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "widget": {
     "message": "Widget",
@@ -3622,8 +4145,13 @@
     "description": "Widget UI string"
   },
   "widgetHomepageAria": {
-    "message": "$1 homepage",
-    "description": "Widget UI string"
+    "message": "$ARG1$ homepage",
+    "description": "Widget UI string",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "widgetManifestNotLoaded": {
     "message": "Widget manifest not loaded yet.",
@@ -3666,142 +4194,377 @@
     "description": "UI string"
   },
   "settingsAccentAria": {
-    "message": "Accent: $1"
+    "message": "Accent: $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsThemesLoadError": {
-    "message": "Couldn't load themes - $1."
+    "message": "Couldn't load themes - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsResolvedThemeLabel": {
-    "message": "$1 ($2)"
+    "message": "$ARG1$ ($ARG2$)",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsBackgroundPresetApplied": {
-    "message": "Applied $1 background preset."
+    "message": "Applied $ARG1$ background preset.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsPreviewAria": {
-    "message": "$1 preview"
+    "message": "$ARG1$ preview",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsVideoSizeLimit": {
-    "message": "Video must be under $1 MB."
+    "message": "Video must be under $ARG1$ MB.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsVideoStoredOpfs": {
-    "message": "Video stored in OPFS ($1 MB). Loops automatically."
+    "message": "Video stored in OPFS ($ARG1$ MB). Loops automatically.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsOpfsWriteFailed": {
-    "message": "OPFS write failed ($1). File too large for fallback storage."
+    "message": "OPFS write failed ($ARG1$). File too large for fallback storage.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsBingDailyCacheHint": {
-    "message": "Cached from $1. Uses the cached image if today's fetch fails."
+    "message": "Cached from $ARG1$. Uses the cached image if today's fetch fails.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsNotificationPermissionEnable": {
-    "message": "Notification permission $1. Enable it in your browser's site settings to receive alerts."
+    "message": "Notification permission $ARG1$. Enable it in your browser's site settings to receive alerts.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsAlreadyNotifiedCount": {
-    "message": "$1 item(s) marked as notified. Reset to re-fire on next match."
+    "message": "$ARG1$ item(s) marked as notified. Reset to re-fire on next match.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsNotificationPermission": {
-    "message": "Notification permission $1."
+    "message": "Notification permission $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsArchiveItemCount": {
-    "message": "$1 item(s)"
+    "message": "$ARG1$ item(s)",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsArchiveClearedCount": {
-    "message": "Cleared $1 archived item(s)."
+    "message": "Cleared $ARG1$ archived item(s).",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsArchiveClearFailed": {
     "message": "Couldn't clear archive."
   },
   "settingsArchiveSearchError": {
-    "message": "Couldn't search archive - $1."
+    "message": "Couldn't search archive - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsWorkspaceSnapshotSaved": {
-    "message": "Snapshot saved for \"$1\"."
+    "message": "Snapshot saved for \"$ARG1$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsWorkspaceExportAria": {
-    "message": "Export workspace \"$1\" as JSON"
+    "message": "Export workspace \"$ARG1$\" as JSON",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsWorkspaceCopied": {
-    "message": "Workspace \"$1\" copied to clipboard ($2 KB)."
+    "message": "Workspace \"$ARG1$\" copied to clipboard ($ARG2$ KB).",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsCopyFailed": {
-    "message": "Couldn't copy - $1."
+    "message": "Couldn't copy - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsWorkspaceRemoved": {
-    "message": "Removed workspace \"$1\"."
+    "message": "Removed workspace \"$ARG1$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsWorkspaceImported": {
-    "message": "Imported \"$1\"."
+    "message": "Imported \"$ARG1$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsWorkspaceImportFailed": {
-    "message": "Couldn't import workspace - $1."
+    "message": "Couldn't import workspace - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsTabsSavedAsWorkspace": {
-    "message": "Saved $1 tab(s) as \"$2\"."
+    "message": "Saved $ARG1$ tab(s) as \"$ARG2$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsTabsReadFailed": {
-    "message": "Couldn't read tabs - $1."
+    "message": "Couldn't read tabs - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsStorageUsedValue": {
-    "message": "$1 of $2 ($3%)"
+    "message": "$ARG1$ of $ARG2$ ($ARG3$%)",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      },
+      "arg3": {
+        "content": "$3"
+      }
+    }
   },
   "settingsEncryptFailed": {
-    "message": "Couldn't encrypt - $1."
+    "message": "Couldn't encrypt - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsDecryptionFailed": {
     "message": "Decryption failed."
   },
   "settingsSidePanelUpdateFailed": {
-    "message": "Couldn't update side panel behavior - $1."
+    "message": "Couldn't update side panel behavior - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsPermissionRequestFailed": {
-    "message": "Permission request failed - $1."
+    "message": "Permission request failed - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsContainerWorkspaceAria": {
-    "message": "Workspace for $1"
+    "message": "Workspace for $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsGreetingOverrideAria": {
-    "message": "$1 greeting override"
+    "message": "$ARG1$ greeting override",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsGreetingSlotTitle": {
-    "message": "$1 greeting"
+    "message": "$ARG1$ greeting",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsLocationSet": {
-    "message": "Location set to $1."
+    "message": "Location set to $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsLocationNotFound": {
-    "message": "Couldn't find \"$1\"."
+    "message": "Couldn't find \"$ARG1$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsSetGridPositionAria": {
-    "message": "Set grid position for $1"
+    "message": "Set grid position for $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsRemoveNamedAria": {
-    "message": "Remove $1"
+    "message": "Remove $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsRemovedNamed": {
-    "message": "Removed \"$1\"."
+    "message": "Removed \"$ARG1$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsNamedAdded": {
-    "message": "$1 added."
+    "message": "$ARG1$ added.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsTabGroupTabCount": {
-    "message": "$1 tabs"
+    "message": "$ARG1$ tabs",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsUnpinNamedAria": {
-    "message": "Unpin $1"
+    "message": "Unpin $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsPinNamedAria": {
-    "message": "Pin $1"
+    "message": "Pin $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsUnpinnedNamed": {
-    "message": "Unpinned \"$1\"."
+    "message": "Unpinned \"$ARG1$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsPinnedNamed": {
-    "message": "Pinned \"$1\"."
+    "message": "Pinned \"$ARG1$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsShowNamedAria": {
-    "message": "Show $1"
+    "message": "Show $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsNamedFeedLabel": {
-    "message": "$1 feed"
+    "message": "$ARG1$ feed",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsDiscoveringFeeds": {
     "message": "Discovering feeds..."
@@ -3813,19 +4576,44 @@
     "message": "No feeds found on this website. Try entering a feed URL directly."
   },
   "settingsFeedDiscoveryCount": {
-    "message": "Found $1 feed(s):"
+    "message": "Found $ARG1$ feed(s):",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsSubscribeToFeedAria": {
-    "message": "Subscribe to $1"
+    "message": "Subscribe to $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsNamedAddedQuoted": {
-    "message": "\"$1\" added."
+    "message": "\"$ARG1$\" added.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsFeedDiscoveryError": {
-    "message": "Error: $1"
+    "message": "Error: $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsEnableNamedAria": {
-    "message": "Enable $1"
+    "message": "Enable $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsExternalWidgetsHint": {
     "message": "Add third-party widgets by pasting an HTTPS widget manifest URL. Widgets run in sandboxed iframes with no access to your data; manifest and widget frame origins are HTTPS-only."
@@ -3867,22 +4655,42 @@
     "message": "Invalid registry entry JSON."
   },
   "settingsWidgetRegistryInvalid": {
-    "message": "Invalid registry entry: $1"
+    "message": "Invalid registry entry: $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsWidgetRegistryCanceled": {
     "message": "Registry review canceled."
   },
   "settingsWidgetRegistryAdded": {
-    "message": "Verified digest and added \"$1\"."
+    "message": "Verified digest and added \"$ARG1$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsWidgetRegistryVerifyFailed": {
-    "message": "Registry verification failed - $1."
+    "message": "Registry verification failed - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsWidgetRegistryReviewTitle": {
     "message": "Review widget registry entry"
   },
   "settingsWidgetRegistryReviewHint": {
-    "message": "Vantage will fetch $1 only after you approve this local disclosure review, then verify the manifest digest before adding it."
+    "message": "Vantage will fetch $ARG1$ only after you approve this local disclosure review, then verify the manifest digest before adding it.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsWidgetRegistryReviewNote": {
     "message": "Registry review does not grant extra browser permissions. The widget still runs in the sandboxed HTTPS iframe boundary."
@@ -3891,37 +4699,90 @@
     "message": "Verify digest and add"
   },
   "settingsInvalidManifest": {
-    "message": "Invalid manifest: $1"
+    "message": "Invalid manifest: $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsLoadedNamed": {
-    "message": "Loaded \"$1\"."
+    "message": "Loaded \"$ARG1$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsManifestLoadFailed": {
-    "message": "Couldn't load manifest - $1."
+    "message": "Couldn't load manifest - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsAddedNamedQuoted": {
-    "message": "Added \"$1\"."
+    "message": "Added \"$ARG1$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsLoadFailed": {
-    "message": "Couldn't load - $1."
+    "message": "Couldn't load - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsCustomAlarmSet": {
-    "message": "Custom alarm set ($1 KB)."
+    "message": "Custom alarm set ($ARG1$ KB).",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsImportedFromFile": {
-    "message": "Settings imported from $1."
+    "message": "Settings imported from $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsInvalidJsonFile": {
     "message": "Invalid JSON file."
   },
   "settingsNoNewFeedsInFile": {
-    "message": "No new feeds found in $1."
+    "message": "No new feeds found in $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsOpmlImportSource": {
-    "message": "$1 OPML import"
+    "message": "$ARG1$ OPML import",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsFeedsImportedCount": {
-    "message": "Imported $1 new feed(s) from $2."
+    "message": "Imported $ARG1$ new feed(s) from $ARG2$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsInvalidOpmlFile": {
     "message": "Invalid OPML file."
@@ -3930,25 +4791,63 @@
     "message": "1. Go to Google Takeout (link will open in a new tab)\n2. Deselect all, then scroll down and select only \"YouTube and YouTube Music\"\n3. Click \"Next step\" and \"Create export\"\n4. Wait for the export to complete, then download the ZIP\n5. Extract the ZIP → YouTube → subscriptions.xml\n6. Come back here and click \"Import OPML\" to import subscriptions.xml\n\nThis will add all your YouTube channels as RSS feeds (when available)."
   },
   "settingsPocketImportCount": {
-    "message": "Imported $1 link(s) from Pocket ($2 duplicates skipped)."
+    "message": "Imported $ARG1$ link(s) from Pocket ($ARG2$ duplicates skipped).",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsPocketImportFailed": {
-    "message": "Pocket import failed - $1."
+    "message": "Pocket import failed - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsInstapaperImportCount": {
-    "message": "Imported $1 link(s) from Instapaper."
+    "message": "Imported $ARG1$ link(s) from Instapaper.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsInstapaperImportFailed": {
-    "message": "Instapaper import failed - $1."
+    "message": "Instapaper import failed - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsGistJsonCopied": {
-    "message": "Gist JSON copied ($1 KB). Paste it into a new GitHub Gist."
+    "message": "Gist JSON copied ($ARG1$ KB). Paste it into a new GitHub Gist.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsGistCreatedAndCopied": {
-    "message": "Gist created and URL copied: $1"
+    "message": "Gist created and URL copied: $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsGistCreated": {
-    "message": "Gist created: $1"
+    "message": "Gist created: $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsGistExportFailed": {
     "message": "Failed to export Gist."
@@ -3957,25 +4856,56 @@
     "message": "Failed to load Gist."
   },
   "settingsScreenshotSaved": {
-    "message": "Screenshot saved: $1"
+    "message": "Screenshot saved: $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsScreenshotCaptureFailed": {
     "message": "Failed to capture screenshot."
   },
   "settingsWidgetConfigsCopied": {
-    "message": "Copied $1 widget config(s) ($2 KB)."
+    "message": "Copied $ARG1$ widget config(s) ($ARG2$ KB).",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsFileSaved": {
-    "message": "Saved $1 ($2 KB)."
+    "message": "Saved $ARG1$ ($ARG2$ KB).",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsDashboardCaptureFailed": {
     "message": "Couldn't capture screenshot."
   },
   "settingsDebugLogCopied": {
-    "message": "Debug log copied ($1 chars)."
+    "message": "Debug log copied ($ARG1$ chars).",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsDiagnosticsCopied": {
-    "message": "Integration diagnostics copied ($1 chars)."
+    "message": "Integration diagnostics copied ($ARG1$ chars).",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsIntegrationDiagnostics": {
     "message": "Integration diagnostics"
@@ -3984,61 +4914,165 @@
     "message": "Local health summary for enabled external integrations. Copy output is redacted and nothing is sent anywhere automatically."
   },
   "settingsFaviconCacheStats": {
-    "message": "$1 icons, $2 KB"
+    "message": "$ARG1$ icons, $ARG2$ KB",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsGistPayloadSize": {
-    "message": "Secrets are stripped. Payload size: $1 KB. Public Gist imports do not need a token."
+    "message": "Secrets are stripped. Payload size: $ARG1$ KB. Public Gist imports do not need a token.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsHostAccessPrompt": {
-    "message": "Vantage will ask your browser for scoped access to $1 for $2."
+    "message": "Vantage will ask your browser for scoped access to $ARG1$ for $ARG2$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsHostAccessGranted": {
-    "message": "Host access granted for $1."
+    "message": "Host access granted for $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsHostAccessDenied": {
-    "message": "Host access was not granted for $1. You can grant it later from Settings."
+    "message": "Host access was not granted for $ARG1$. You can grant it later from Settings.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsAdditionalOriginsRequested": {
-    "message": "$1 additional origin(s) will be requested in the same browser prompt."
+    "message": "$ARG1$ additional origin(s) will be requested in the same browser prompt.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsHostAccessSourceHint": {
-    "message": "$1 includes user URLs that need scoped browser host access for direct feed, calendar, image, or embed loading."
+    "message": "$ARG1$ includes user URLs that need scoped browser host access for direct feed, calendar, image, or embed loading.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsStarredItemCount": {
-    "message": "$1 item(s) starred."
+    "message": "$ARG1$ item(s) starred.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsStarredClearedCount": {
-    "message": "Cleared $1 starred item(s)."
+    "message": "Cleared $ARG1$ starred item(s).",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsInboxArchivedCount": {
-    "message": "$1 item(s) archived."
+    "message": "$ARG1$ item(s) archived.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsInboxArchivedClearedCount": {
-    "message": "Cleared $1 archived item(s)."
+    "message": "Cleared $ARG1$ archived item(s).",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsLocalFontsReadFailed": {
-    "message": "Couldn't read local fonts - $1."
+    "message": "Couldn't read local fonts - $ARG1$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsThemeApplied": {
-    "message": "Applied \"$1\"."
+    "message": "Applied \"$ARG1$\".",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsThemeByAuthor": {
-    "message": "by $1"
+    "message": "by $ARG1$",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsFilterFontsPlaceholder": {
-    "message": "Filter $1 fonts..."
+    "message": "Filter $ARG1$ fonts...",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsFontPickerLimitHint": {
-    "message": "Showing first $1; refine the filter to narrow results."
+    "message": "Showing first $ARG1$; refine the filter to narrow results.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsCellPlacementTitle": {
-    "message": "Set grid position for \"$1\""
+    "message": "Set grid position for \"$ARG1$\"",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsColumnMaxLabel": {
-    "message": "Column (0-indexed, max $1)"
+    "message": "Column (0-indexed, max $ARG1$)",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsPositionSet": {
-    "message": "Position set to row $1, col $2."
+    "message": "Position set to row $ARG1$, col $ARG2$.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsLiteral_z3mnmx": {
     "message": "Feed added."
@@ -4053,13 +5087,34 @@
     "message": "Search results"
   },
   "settingsSearchCountOne": {
-    "message": "$1 setting section found for “$2”."
+    "message": "$ARG1$ setting section found for “$ARG2$”.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsSearchCountMany": {
-    "message": "$1 setting sections found for “$2”."
+    "message": "$ARG1$ setting sections found for “$ARG2$”.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      },
+      "arg2": {
+        "content": "$2"
+      }
+    }
   },
   "settingsSearchNone": {
-    "message": "No settings found for “$1”."
+    "message": "No settings found for “$ARG1$”.",
+    "placeholders": {
+      "arg1": {
+        "content": "$1"
+      }
+    }
   },
   "settingsPersonalizeDestination": {
     "message": "Personalize"
