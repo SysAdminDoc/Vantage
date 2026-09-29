@@ -5,7 +5,7 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 ## Unreleased
 
 ### Changed
-- **Install docs no longer ask readers to pipe a remote script into their shell.** README, `docs/getting-started.md`, and `scripts/install.ps1`'s own header comment now tell readers to download `install.ps1`, read it, unblock it, and run the local copy instead of `irm ... | iex`. No version bump: the extension itself didn't change, and bumping `manifest.json` here would need a matching rebuild of the ZIP/CRX/XPI artifacts and their `updates.xml` / `firefox-updates.json` hashes.
+- **Install docs no longer ask readers to pipe a remote script into their shell.** README, `docs/getting-started.md`, and `scripts/install.ps1`'s own header comment now point to a plain download link for `install.ps1` and tell readers to read it in a text editor first, then run the local copy they saved (`.\install.ps1`, `-Verify`, `-Uninstall`). No `irm`/`iwr` fetch-and-run one-liner remains, and no URL appears inside a code block in the install section. No version bump: the extension itself didn't change, and bumping `manifest.json` here would need a matching rebuild of the ZIP/CRX/XPI artifacts and their `updates.xml` / `firefox-updates.json` hashes.
 
 ## v1.3.0 - 2026-08-13
 

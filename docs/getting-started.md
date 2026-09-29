@@ -9,13 +9,15 @@ title: Getting started
 
 ### Chromium-based browsers (Chrome, Brave, Edge, Vivaldi, Opera)
 
-Recommended on Windows. Download the installer script, read it, then run your
-own local copy rather than piping a remote script into your shell:
+Recommended on Windows. [Download install.ps1](https://github.com/SysAdminDoc/Vantage/blob/main/scripts/install.ps1)
+from its GitHub page (or Save link as from the
+[raw file](https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1)),
+open it in a text editor and read it, then run your own local copy from the
+folder you saved it to:
 
 ```powershell
-iwr https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 -OutFile "$env:TEMP\vantage-install.ps1"
-Unblock-File "$env:TEMP\vantage-install.ps1"
-& "$env:TEMP\vantage-install.ps1"
+Unblock-File .\install.ps1
+.\install.ps1
 ```
 
 The installer downloads the latest release ZIP, extracts it to

@@ -157,32 +157,26 @@ Release artifacts are built locally with `npm run build:release`, which cleans o
 
 Downloads the latest release, extracts to `%LOCALAPPDATA%\Vantage\extension`, and adds `--load-extension="<that path>"` to every Brave / Chrome / Edge / Vivaldi / Opera shortcut on the system (Start Menu, Desktop, Taskbar pin — user-level and system-wide). Relaunch the browser from any of those shortcuts and Vantage loads.
 
-Download the script, read it, then run your own local copy. Don't pipe a remote script straight into your shell.
+[**Download install.ps1**](https://github.com/SysAdminDoc/Vantage/blob/main/scripts/install.ps1) (GitHub's file page has a Download button; or right-click [the raw file](https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1) and choose Save link as). Open it in a text editor and read it before running it.
+
+Then, from the folder you saved it to:
 
 ```powershell
-# Download it
-iwr https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 -OutFile "$env:TEMP\vantage-install.ps1"
-
-# Open $env:TEMP\vantage-install.ps1 in a text editor and read it first
-
-# Windows marks a downloaded script as untrusted; unblock it before running
-Unblock-File "$env:TEMP\vantage-install.ps1"
-
-# Then run it (auto-elevates to write system shortcuts)
-& "$env:TEMP\vantage-install.ps1"
+Unblock-File .\install.ps1
+.\install.ps1
 ```
 
 UAC prompts → approve → menu lists detected browsers → pick which ones → done. Fully quit and re-open the browser.
 
 ```powershell
 # Verify which shortcuts carry the flag
-& "$env:TEMP\vantage-install.ps1" -Verify
+.\install.ps1 -Verify
 
 # Update to a newer release (re-runs the download + extract)
-& "$env:TEMP\vantage-install.ps1"
+.\install.ps1
 
 # Uninstall (strips the flag, deletes the extension files)
-& "$env:TEMP\vantage-install.ps1" -Uninstall
+.\install.ps1 -Uninstall
 ```
 
 ### Option B — Load unpacked from the ZIP (Chromium, any OS, no admin)
