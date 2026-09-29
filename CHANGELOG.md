@@ -4,6 +4,9 @@ All notable changes to Vantage are documented here. Format follows [Keep a Chang
 
 ## Unreleased
 
+### Changed
+- **Install docs no longer ask readers to pipe a remote script into their shell.** README, `docs/getting-started.md`, and `scripts/install.ps1`'s own header comment now tell readers to download `install.ps1`, read it, unblock it, and run the local copy instead of `irm ... | iex`. No version bump: the extension itself didn't change, and bumping `manifest.json` here would need a matching rebuild of the ZIP/CRX/XPI artifacts and their `updates.xml` / `firefox-updates.json` hashes.
+
 ### Fixed
 - **Automated contrast audit now resolves cleanly** — decorative search and quick-link initials render through CSS-generated content instead of text nodes, and search/empty-state surfaces use determinate semantic backgrounds so axe no longer needs manual color-contrast review for the default dashboard.
 - **Settings restore covers modern feature state** — the partial-import dialog now exposes current top-level settings for environmental widgets, feed archive/alerts/prewarm, external widgets, inbox, Zen Shelf, starred items, browser integrations, and Firefox container auto-mapping; imported external-widget records are normalized before saving, and a regression test prevents future settings from becoming silently unimportable.

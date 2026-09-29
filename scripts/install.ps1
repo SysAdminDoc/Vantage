@@ -19,10 +19,11 @@
 #      arguments (idempotent -- reruns don't double-add)
 #   6. Tell the user to relaunch their browser from any shortcut
 #
-# Run from any PowerShell window (auto-elevates to write system-wide shortcuts):
-#   irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex
+# Download this file, read it, then run your own local copy (auto-elevates
+# to write system-wide shortcuts). Don't pipe a remote script into iex:
+#   .\install.ps1
 #
-# Or with parameters (after downloading first):
+# Or with parameters:
 #   .\install.ps1 -Browsers Brave,Chrome -NoPrompt
 #   .\install.ps1 -Uninstall    # strip the flag and remove extension files
 #   .\install.ps1 -Verify       # show which shortcuts carry the flag

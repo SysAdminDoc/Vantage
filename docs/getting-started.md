@@ -9,16 +9,19 @@ title: Getting started
 
 ### Chromium-based browsers (Chrome, Brave, Edge, Vivaldi, Opera)
 
-Recommended on Windows:
+Recommended on Windows. Download the installer script, read it, then run your
+own local copy rather than piping a remote script into your shell:
 
 ```powershell
-irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex
+iwr https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 -OutFile "$env:TEMP\vantage-install.ps1"
+Unblock-File "$env:TEMP\vantage-install.ps1"
+& "$env:TEMP\vantage-install.ps1"
 ```
 
 The installer downloads the latest release ZIP, extracts it to
 `%LOCALAPPDATA%\Vantage\extension`, and adds a persistent
 `--load-extension="<path>"` launch flag to selected Chromium browser shortcuts.
-Re-run the same command to update. Use `-Verify` to inspect shortcuts and
+Re-run the same local script to update. Use `-Verify` to inspect shortcuts and
 `-Uninstall` to remove the launch flag and local files.
 
 Manual install on any OS:

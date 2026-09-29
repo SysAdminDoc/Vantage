@@ -150,27 +150,36 @@ Three paths for Chromium browsers, one for Firefox. Pick the one that fits.
 
 Release artifacts are built locally with `npm run build:release`, which cleans old release assets and writes the Chromium ZIP, Firefox XPI, CRX3, and `SHA256SUMS.txt` under `dist\`. Store evidence is generated locally with `npm run store:evidence`, which writes 1280x800 screenshots, accessibility evidence, permission/network reports, and a submission checklist under `dist\store-evidence\`. Use the published ZIP/XPI/CRX assets for installs and store submissions; use `.\scripts\build-unpacked.ps1` only for local source testing. Do not hand-package the repo, because ignored docs, QA state, or signing files can accidentally enter an ad hoc ZIP.
 
-### Option A — One-line PowerShell installer (Windows, recommended, Chromium only)
+### Option A — PowerShell installer (Windows, recommended, Chromium only)
 
 Downloads the latest release, extracts to `%LOCALAPPDATA%\Vantage\extension`, and adds `--load-extension="<that path>"` to every Brave / Chrome / Edge / Vivaldi / Opera shortcut on the system (Start Menu, Desktop, Taskbar pin — user-level and system-wide). Relaunch the browser from any of those shortcuts and Vantage loads.
 
-**Run from any PowerShell window** (auto-elevates to write system shortcuts):
+Download the script, read it, then run your own local copy. Don't pipe a remote script straight into your shell.
 
 ```powershell
-irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex
+# Download it
+iwr https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 -OutFile "$env:TEMP\vantage-install.ps1"
+
+# Open $env:TEMP\vantage-install.ps1 in a text editor and read it first
+
+# Windows marks a downloaded script as untrusted; unblock it before running
+Unblock-File "$env:TEMP\vantage-install.ps1"
+
+# Then run it (auto-elevates to write system shortcuts)
+& "$env:TEMP\vantage-install.ps1"
 ```
 
 UAC prompts → approve → menu lists detected browsers → pick which ones → done. Fully quit and re-open the browser.
 
 ```powershell
 # Verify which shortcuts carry the flag
-$f="$env:TEMP\vantage-install.ps1"; iwr https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 -OutFile $f -UseBasicParsing; & $f -Verify
+& "$env:TEMP\vantage-install.ps1" -Verify
 
 # Update to a newer release (re-runs the download + extract)
-irm https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 | iex
+& "$env:TEMP\vantage-install.ps1"
 
 # Uninstall (strips the flag, deletes the extension files)
-$f="$env:TEMP\vantage-install.ps1"; iwr https://raw.githubusercontent.com/SysAdminDoc/Vantage/main/scripts/install.ps1 -OutFile $f -UseBasicParsing; & $f -Uninstall
+& "$env:TEMP\vantage-install.ps1" -Uninstall
 ```
 
 ### Option B — Load unpacked from the ZIP (Chromium, any OS, no admin)
